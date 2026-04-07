@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:synthese/config/firebase_options.dart';
 
 import 'package:synthese/ui/start_page.dart';
@@ -11,6 +12,7 @@ import 'package:synthese/ui/dashboard.dart'; // <-- IMPORT YOUR NEW DASHBOARD FI
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

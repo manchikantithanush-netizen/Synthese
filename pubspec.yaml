@@ -47,6 +47,7 @@ dependencies:
   modal_bottom_sheet: ^3.0.0
   http: ^1.1.0
   image_picker: ^1.0.4
+  flutter_dotenv: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -77,6 +78,7 @@ flutter:
     - assets/image4.jpg
     - assets/image5.jpg
     - assets/image6.jpg
+    - .env
 
   # To add assets to your application, add an assets section, like this:
   # assets:
