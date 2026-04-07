@@ -1,0 +1,71 @@
+Synthese Finance Feature Report
+==============================
+
+Overview:
+---------
+The Synthese app's Finance module is a comprehensive personal finance tracker designed with a premium iOS-inspired UI. It enables users to manage accounts, track transactions, analyze spending, and gain insights into their financial habits.
+
+Key Features:
+-------------
+1. **Account Management**
+   - Supports multiple account types: Cash, Bank, Card
+   - Custom account naming and setup during onboarding
+   - Transfer funds between accounts with currency-aware formatting
+
+2. **Category System**
+   - Predefined and customizable categories for both expenses and income
+   - Pill-shaped, icon-labeled category selector with wrap layout
+   - Category filtering in transaction history and analytics
+
+3. **Add Transaction Flow**
+   - Quick-add modal for logging expenses/income
+   - Amount, account, category, date, notes, and recurring toggle
+   - Currency symbol auto-selected based on user country
+   - Error handling with animated red text feedback
+
+4. **Transaction History**
+   - Chronological list of all transactions (newest first)
+   - Filters by month and category
+   - Search bar for quick lookup
+   - Swipe-to-delete with confirmation dialog and animation
+
+5. **Analytics & Insights**
+   - Monthly summary: total spent vs. earned
+   - Spending by category: interactive pie chart
+   - Monthly trends: bar/line chart
+   - Income vs. expense comparison graph
+   - Net worth tracker and spending insights
+   - Contextual Insights & Alerts: dynamic, dismissible cards for spending spikes, budget burn rate, top category, overspending, savings, debt warnings, no-spend streaks, and more, with severity levels and iOS-style UI
+
+6. **Onboarding & Setup**
+   - Multi-step onboarding for finance setup
+   - Welcome, account selection, monthly budget, and finish screens
+   - Currency and account setup based on country
+
+7. **Premium UI/UX**
+   - iOS-style modals, bottom sheets, and buttons
+   - Animated, pill-shaped selectors and premium dropdowns
+   - Consistent error feedback and haptic responses
+
+8. **Recurring Transactions**
+   - Toggle for marking transactions as recurring
+   - Management of recurring payments
+
+9. **Transfers**
+   - Move money between accounts with validation
+   - Error feedback for insufficient funds
+
+10. **Accessibility & Feedback**
+    - Haptic feedback on actions
+    - Animated error messages and confirmations
+
+11. **Debt Tracker**
+    - Track debts you owe and debts owed to you ("I Owe" / "Owe Me")
+    - Add, edit, and delete debts with details: title, type, amount, due date, linked account, category, notes, recurring/installment options
+    - Debt detail modal: progress bar, payment history, make/record payments, mark as paid/received
+    - Segmented tabs for "I Owe" and "Owe Me" with pill-style selectors
+    - Analytics: total debt load, debt-to-income ratio, overdue detection, and insights
+    - Premium iOS-style modals, pill selectors, and swipe-to-delete for debts
+    - Consistent background color and padding with the rest of the Finance module
+
+This engine is modular, scalable, and designed for extensibility, supporting future features like advanced budgeting, reminders, and more.

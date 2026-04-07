@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "118165710666",
+    "project_id": "synthese-c2958",
+    "storage_bucket": "synthese-c2958.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:118165710666:android:f9e77be691d911db7143b3",
+        "android_client_info": {
+          "package_name": "com.example.synthese"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB78Uwe3Xxg7Zk1jKqsRkFmST8pQ0mAmIo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
