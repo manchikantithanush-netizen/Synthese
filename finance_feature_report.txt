@@ -1,6 +1,8 @@
 Synthese Finance Feature Report
 ==============================
 
+git test
+
 Overview:
 ---------
 The Synthese app's Finance module is a comprehensive personal finance tracker designed with a premium iOS-inspired UI. It enables users to manage accounts, track transactions, analyze spending, and gain insights into their financial habits.
