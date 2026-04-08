@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class FoodAnalysisResult {
   final int estimatedCalories;
@@ -39,7 +40,7 @@ class FoodAnalysisResult {
 }
 
 class FoodAnalysisService {
-  static const String _token = 'YOUR_ACCESS_TOKEN_HERE';
+  static String get _token => dotenv.env['GITHUB_TOKEN'] ?? '';
   static const String _model = 'meta/llama-4-scout-17b-16e-instruct';
   static const String _baseUrl = 'https://models.github.ai/inference/chat/completions';
 

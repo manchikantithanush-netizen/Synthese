@@ -6,9 +6,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 
 import 'food_analysis_service.dart';
 import 'diet_onboarding.dart';
+import 'water_tracker_widget.dart';
 
 class DietPage extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -19,7 +21,7 @@ class DietPage extends StatefulWidget {
   State<DietPage> createState() => _DietPageState();
 }
 
-class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin {
+class _DietPageState extends State<DietPage> {
   late ImagePicker _picker;
   late FoodAnalysisService _foodService;
   
@@ -27,7 +29,10 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
   FoodAnalysisResult? _analysisResult;
   bool _isAnalyzing = false;
   final List<FoodLogEntry> _foodLog = [];
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  
+  // Water tracking state
+  int _waterGlasses = 0;
+  static const int _dailyWaterGoal = 8;
   
   // Orange theme color
   static const Color orangeColor = Color(0xFFFF9500);
@@ -42,6 +47,7 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
     _picker = ImagePicker();
     _foodService = FoodAnalysisService();
     _checkDietSetup();
+    _loadFoodLogs();
   }
 
   Future<void> _checkDietSetup() async {
@@ -57,6 +63,74 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
         _dietSetupCompleted = completed;
         _dailyCalorieGoal = goal;
       });
+    }
+  }
+
+  Future<void> _loadFoodLogs() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    
+    try {
+      // Load today's food logs only
+      final now = DateTime.now();
+      final startOfDay = DateTime(now.year, now.month, now.day);
+      
+      final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('foodLogs')
+        .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+        .orderBy('timestamp', descending: true)
+        .get();
+      
+      if (mounted) {
+        final loadedLogs = snapshot.docs.map((doc) {
+          final data = doc.data();
+          return FoodLogEntry(
+            foodName: data['foodName'] ?? 'Unknown',
+            calories: data['calories'] ?? 0,
+            description: data['description'] ?? '',
+            timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+            imageFile: null, // Images are not stored in Firestore
+            protein: data['protein'] ?? 0,
+            carbs: data['carbs'] ?? 0,
+            fats: data['fats'] ?? 0,
+            firestoreId: doc.id, // Store the document ID
+          );
+        }).toList();
+        
+        setState(() {
+          _foodLog.clear();
+          _foodLog.addAll(loadedLogs);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading food logs: $e');
+    }
+  }
+
+  Future<String?> _saveFoodLog(FoodLogEntry entry) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return null;
+    
+    try {
+      final docRef = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('foodLogs')
+        .add({
+          'foodName': entry.foodName,
+          'calories': entry.calories,
+          'description': entry.description,
+          'timestamp': Timestamp.fromDate(entry.timestamp),
+          'protein': entry.protein,
+          'carbs': entry.carbs,
+          'fats': entry.fats,
+        });
+      return docRef.id;
+    } catch (e) {
+      debugPrint('Error saving food log: $e');
+      return null;
     }
   }
 
@@ -138,6 +212,7 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
       );
       
       if (image != null) {
+        HapticFeedback.mediumImpact();
         setState(() {
           _selectedImage = File(image.path);
           _analysisResult = null;
@@ -154,6 +229,7 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
     if (_selectedImage == null) return;
     
     setState(() => _isAnalyzing = true);
+    HapticFeedback.selectionClick();
     
     final result = await _foodService.analyzeFood(_selectedImage!);
     
@@ -162,10 +238,17 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
         _analysisResult = result;
         _isAnalyzing = false;
       });
+      
+      // Haptic feedback based on result
+      if (result.success) {
+        HapticFeedback.mediumImpact();
+      } else {
+        HapticFeedback.lightImpact();
+      }
     }
   }
 
-  void _addToLog() {
+  void _addToLog() async {
     if (_analysisResult == null || !_analysisResult!.success) return;
     
     HapticFeedback.mediumImpact();
@@ -187,10 +270,75 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
       _analysisResult = null;
     });
     
+    // Save to Firestore and update with document ID
+    final docId = await _saveFoodLog(newEntry);
+    if (docId != null && mounted) {
+      setState(() {
+        final index = _foodLog.indexOf(newEntry);
+        if (index >= 0) {
+          _foodLog[index] = FoodLogEntry(
+            foodName: newEntry.foodName,
+            calories: newEntry.calories,
+            description: newEntry.description,
+            timestamp: newEntry.timestamp,
+            imageFile: newEntry.imageFile,
+            protein: newEntry.protein,
+            carbs: newEntry.carbs,
+            fats: newEntry.fats,
+            firestoreId: docId,
+          );
+        }
+      });
+    }
+    
     // Trigger haptic after animation
     Future.delayed(const Duration(milliseconds: 200), () {
       HapticFeedback.lightImpact();
     });
+  }
+
+  Future<bool> _showDeleteConfirmation(BuildContext context, bool isDark) async {
+    bool result = false;
+    await AdaptiveAlertDialog.show(
+      context: context,
+      title: 'Delete Food Log',
+      message: 'Are you sure you want to delete this food entry? This will remove it from your calorie count.',
+      icon: 'trash.fill',
+      actions: [
+        AlertAction(title: 'Cancel', style: AlertActionStyle.cancel, onPressed: () {}),
+        AlertAction(title: 'Delete', style: AlertActionStyle.destructive, onPressed: () { HapticFeedback.lightImpact(); result = true; }),
+      ],
+    );
+    return result;
+  }
+
+  void _deleteFoodLog(int index) async {
+    if (index >= 0 && index < _foodLog.length) {
+      final entry = _foodLog[index];
+      
+      setState(() {
+        _foodLog.removeAt(index);
+      });
+      
+      HapticFeedback.mediumImpact();
+      
+      // Delete from Firestore if it has a document ID
+      if (entry.firestoreId != null) {
+        final uid = FirebaseAuth.instance.currentUser?.uid;
+        if (uid != null) {
+          try {
+            await FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .collection('foodLogs')
+              .doc(entry.firestoreId)
+              .delete();
+          } catch (e) {
+            debugPrint('Error deleting food log from Firestore: $e');
+          }
+        }
+      }
+    }
   }
 
   void _showImageSourcePicker() {
@@ -473,25 +621,51 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
                     ),
                   ),
                   const SizedBox(height: 16),
-                  // Progress bar
+                  // Progress bar with animation
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: _dailyCalorieGoal > 0 ? (_totalCaloriesToday / _dailyCalorieGoal).clamp(0.0, 1.0) : 0.0,
-                      minHeight: 8,
-                      backgroundColor: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        _getProgressColor(_totalCaloriesToday, _dailyCalorieGoal),
+                    child: TweenAnimationBuilder<double>(
+                      duration: const Duration(milliseconds: 800),
+                      curve: Curves.easeOutCubic,
+                      tween: Tween<double>(
+                        begin: 0.0,
+                        end: _dailyCalorieGoal > 0 ? (_totalCaloriesToday / _dailyCalorieGoal).clamp(0.0, 1.0) : 0.0,
                       ),
+                      builder: (context, value, child) {
+                        return LinearProgressIndicator(
+                          value: value,
+                          minHeight: 8,
+                          backgroundColor: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            _getProgressColor(_totalCaloriesToday, _dailyCalorieGoal),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    _getProgressMessage(_totalCaloriesToday, _dailyCalorieGoal),
-                    style: TextStyle(
-                      color: _getProgressColor(_totalCaloriesToday, _dailyCalorieGoal),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 0.3),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: Text(
+                      _getProgressMessage(_totalCaloriesToday, _dailyCalorieGoal),
+                      key: ValueKey(_getProgressMessage(_totalCaloriesToday, _dailyCalorieGoal)),
+                      style: TextStyle(
+                        color: _getProgressColor(_totalCaloriesToday, _dailyCalorieGoal),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -554,13 +728,27 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
                   
                   // Image Preview or Upload Button
                   if (_selectedImage != null) ...[
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(
-                        _selectedImage!,
-                        width: double.infinity,
-                        height: 200,
-                        fit: BoxFit.cover,
+                    TweenAnimationBuilder<double>(
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeOutCubic,
+                      tween: Tween<double>(begin: 0.0, end: 1.0),
+                      builder: (context, value, child) {
+                        return Transform.scale(
+                          scale: 0.9 + (0.1 * value),
+                          child: Opacity(
+                            opacity: value,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(
+                          _selectedImage!,
+                          width: double.infinity,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -584,19 +772,39 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
                       ),
                     ] else if (_analysisResult != null) ...[
                       if (_analysisResult!.success) ...[
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: orangeColor.withOpacity(0.3),
-                              width: 1,
-                            ),
-                          ),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 400),
+                          transitionBuilder: (child, animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(0, 0.1),
+                                  end: Offset.zero,
+                                ).animate(CurvedAnimation(
+                                  parent: animation,
+                                  curve: Curves.easeOutCubic,
+                                )),
+                                child: child,
+                              ),
+                            );
+                          },
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            key: ValueKey(_analysisResult!.estimatedCalories),
                             children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: orangeColor.withOpacity(0.3),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
                               // Food name with success icon
                               Row(
                                 children: [
@@ -698,28 +906,31 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
                                   height: 1.4,
                                 ),
                               ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CNButton(
+                                  label: "Add to Log",
+                                  style: CNButtonStyle.tinted,
+                                  tint: orangeColor,
+                                  onPressed: _addToLog,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              CNButton.icon(
+                                icon: const CNSymbol('arrow.clockwise', size: 20),
+                                style: CNButtonStyle.glass,
+                                onPressed: _analyzeImage,
+                              ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: CNButton(
-                                label: "Add to Log",
-                                style: CNButtonStyle.tinted,
-                                tint: orangeColor,
-                                onPressed: _addToLog,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            CNButton.icon(
-                              icon: const CNSymbol('arrow.clockwise', size: 20),
-                              style: CNButtonStyle.glass,
-                              onPressed: _analyzeImage,
-                            ),
-                          ],
-                        ),
+                        ],
+                      ),
+                    ),
                       ] else ...[
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -823,8 +1034,63 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
                 ),
               ),
               const SizedBox(height: 16),
-              ...(_foodLog.map((entry) => _buildFoodLogEntry(entry, isDark, textColor, subTextColor, cardColor))),
+              ...(_foodLog.asMap().entries.map((entry) {
+                final index = entry.key;
+                final logEntry = entry.value;
+                return TweenAnimationBuilder<double>(
+                  key: ValueKey(logEntry.timestamp),
+                  duration: Duration(milliseconds: 400 + (index * 50)),
+                  curve: Curves.easeOutCubic,
+                  tween: Tween<double>(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return Transform.translate(
+                      offset: Offset(0, 20 * (1 - value)),
+                      child: Opacity(
+                        opacity: value,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Dismissible(
+                    key: Key(logEntry.timestamp.toString()),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 20),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF3B30),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(CupertinoIcons.trash_fill, color: Colors.white, size: 22),
+                    ),
+                    confirmDismiss: (direction) async {
+                      HapticFeedback.mediumImpact();
+                      return await _showDeleteConfirmation(context, isDark);
+                    },
+                    onDismissed: (direction) {
+                      _deleteFoodLog(index);
+                    },
+                    child: _buildFoodLogEntry(logEntry, isDark, textColor, subTextColor, cardColor),
+                  ),
+                );
+              })),
             ],
+            
+            const SizedBox(height: 32),
+            
+            // Water Tracking Section
+            WaterTrackerSection(
+              waterGlasses: _waterGlasses,
+              dailyGoal: _dailyWaterGoal,
+              onWaterChanged: (newValue) {
+                setState(() => _waterGlasses = newValue);
+              },
+              isDark: isDark,
+              textColor: textColor,
+              subTextColor: subTextColor,
+              cardColor: cardColor,
+            ),
           ],
         ),
       ),
@@ -961,6 +1227,9 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildMacroCard(String label, String value, Color color, bool isDark) {
+    // Extract numeric value for animation
+    final numericValue = int.tryParse(value.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+    
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
@@ -969,13 +1238,20 @@ class _DietPageState extends State<DietPage> with SingleTickerProviderStateMixin
       ),
       child: Column(
         children: [
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          TweenAnimationBuilder<int>(
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeOutCubic,
+            tween: IntTween(begin: 0, end: numericValue),
+            builder: (context, animatedValue, child) {
+              return Text(
+                '${animatedValue}g',
+                style: TextStyle(
+                  color: color,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            },
           ),
           const SizedBox(height: 4),
           Text(
@@ -1001,6 +1277,7 @@ class FoodLogEntry {
   final int protein;
   final int carbs;
   final int fats;
+  final String? firestoreId; // Add Firestore document ID
 
   FoodLogEntry({
     required this.foodName,
@@ -1011,5 +1288,6 @@ class FoodLogEntry {
     this.protein = 0,
     this.carbs = 0,
     this.fats = 0,
+    this.firestoreId,
   });
 }
