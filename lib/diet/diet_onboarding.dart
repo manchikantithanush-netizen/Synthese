@@ -72,9 +72,49 @@ class _DietOnboardingState extends State<DietOnboarding> {
   int _currentPage = 0;
   
   int _dailyCalorieGoal = 2000; // Default: 2000 calories
+  double _currentWaterIntake = 2.0; // Fetched from first onboarding
+  double _dailyWaterGoalLitres = 2.0; // Default: 2L
+  int _dailyWaterGoalGlasses = 8; // Calculated from litres
   bool _isSaving = false;
 
   final Color orangeColor = const Color(0xFFFF9500);
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchWaterIntake();
+  }
+
+  Future<void> _fetchWaterIntake() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .get();
+        
+        if (doc.exists && doc.data() != null) {
+          final data = doc.data()!;
+          if (data['waterIntake'] != null) {
+            setState(() {
+              _currentWaterIntake = (data['waterIntake'] as num).toDouble();
+              _dailyWaterGoalLitres = _currentWaterIntake; // Default to current intake
+              _calculateGlasses();
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching water intake: $e");
+    }
+  }
+
+  void _calculateGlasses() {
+    // 1 glass = 250ml = 0.25L
+    // So glasses = litres / 0.25 = litres * 4
+    _dailyWaterGoalGlasses = (_dailyWaterGoalLitres * 4).round();
+  }
 
   void _nextPage() {
     setState(() {
@@ -95,6 +135,8 @@ class _DietOnboardingState extends State<DietOnboarding> {
       if (uid != null) {
         await FirebaseFirestore.instance.collection('users').doc(uid).set({
           'dailyCalorieGoal': _dailyCalorieGoal,
+          'dailyWaterGoalLitres': _dailyWaterGoalLitres,
+          'dailyWaterGoalGlasses': _dailyWaterGoalGlasses,
           'dietSetupCompleted': true,
         }, SetOptions(merge: true));
       }
@@ -143,6 +185,8 @@ class _DietOnboardingState extends State<DietOnboarding> {
         return _buildDisclaimerPage(isDark, textColor);
       case 2:
         return _buildCalorieGoalPage(isDark, textColor);
+      case 3:
+        return _buildWaterGoalPage(isDark, textColor);
       default:
         return const SizedBox.shrink();
     }
@@ -270,94 +314,105 @@ class _DietOnboardingState extends State<DietOnboarding> {
     return Padding(
       key: const ValueKey('disclaimer'),
       padding: const EdgeInsets.symmetric(horizontal: 28.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          const SizedBox(height: 16),
-          CNButton.icon(
-            icon: const CNSymbol('chevron.left'),
-            style: CNButtonStyle.glass,
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              _previousPage();
-            },
-          ),
-          const SizedBox(height: 24),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          // Scrollable content
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                CupertinoIcons.exclamationmark_triangle_fill,
-                color: Color(0xFFFF9F0A), // iOS Warning Orange
-                size: 32,
+              const SizedBox(height: 16),
+              CNButton.icon(
+                icon: const CNSymbol('chevron.left'),
+                style: CNButtonStyle.glass,
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  _previousPage();
+                },
               ),
-              const SizedBox(width: 12),
+              const SizedBox(height: 24),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(
+                    CupertinoIcons.exclamationmark_triangle_fill,
+                    color: Color(0xFFFF9F0A), // iOS Warning Orange
+                    size: 32,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      "Important Notice",
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        height: 1.2,
+                        letterSpacing: -1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
               Expanded(
-                child: Text(
-                  "Important Notice",
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    height: 1.2,
-                    letterSpacing: -1,
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      buildDisclaimerParagraph(
+                        "This app uses AI to analyze food images and estimate calorie counts. These estimates are approximations and may not be 100% accurate.",
+                      ),
+                      buildDisclaimerParagraph(
+                        "AI recognition can be affected by image quality, portion sizes, food preparation methods, and other factors. The calorie estimates provided should be used as a general guide only.",
+                        isBold: true,
+                      ),
+                      buildDisclaimerParagraph(
+                        "This app is not a substitute for professional nutritional advice. For personalized dietary guidance, consult a registered dietitian or healthcare professional.",
+                      ),
+                      buildDisclaimerParagraph(
+                        "Calorie needs vary based on age, gender, activity level, metabolism, and health conditions. Always consult a professional before making significant dietary changes.",
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.05)
+                              : Colors.black.withOpacity(0.03),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isDark ? Colors.white12 : Colors.black12,
+                          ),
+                        ),
+                        child: Text(
+                          "By continuing, you acknowledge that this app provides estimates for informational purposes only and does not replace professional nutritional advice.",
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 15,
+                            height: 1.4,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 140), // Space for button + extra scroll room
+                    ],
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 32),
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  buildDisclaimerParagraph(
-                    "This app uses AI to analyze food images and estimate calorie counts. These estimates are approximations and may not be 100% accurate.",
-                  ),
-                  buildDisclaimerParagraph(
-                    "AI recognition can be affected by image quality, portion sizes, food preparation methods, and other factors. The calorie estimates provided should be used as a general guide only.",
-                    isBold: true,
-                  ),
-                  buildDisclaimerParagraph(
-                    "This app is not a substitute for professional nutritional advice. For personalized dietary guidance, consult a registered dietitian or healthcare professional.",
-                  ),
-                  buildDisclaimerParagraph(
-                    "Calorie needs vary based on age, gender, activity level, metabolism, and health conditions. Always consult a professional before making significant dietary changes.",
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.black.withOpacity(0.03),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark ? Colors.white12 : Colors.black12,
-                      ),
-                    ),
-                    child: Text(
-                      "By continuing, you acknowledge that this app provides estimates for informational purposes only and does not replace professional nutritional advice.",
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 15,
-                        height: 1.4,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
+          
+          // Fixed button at bottom
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 40,
+            child: PremiumButton(
+              text: "I Understand",
+              onPressed: _nextPage,
+              color: orangeColor,
             ),
           ),
-          PremiumButton(
-            text: "I Understand",
-            onPressed: _nextPage,
-            color: orangeColor,
-          ),
-          const SizedBox(height: 40),
         ],
       ),
     );
@@ -419,6 +474,141 @@ class _DietOnboardingState extends State<DietOnboarding> {
                     ),
                   ),
                 ),
+              ),
+            ),
+          ),
+          const Spacer(),
+          PremiumButton(
+            text: "Next",
+            onPressed: _nextPage,
+            color: orangeColor,
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWaterGoalPage(bool isDark, Color textColor) {
+    return Padding(
+      key: const ValueKey('water-goal'),
+      padding: const EdgeInsets.symmetric(horizontal: 28.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          CNButton.icon(
+            icon: const CNSymbol('chevron.left'),
+            style: CNButtonStyle.glass,
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              _previousPage();
+            },
+          ),
+          const SizedBox(height: 24),
+          Text(
+            "Water Intake Goal",
+            style: TextStyle(
+              color: textColor,
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+              letterSpacing: -1,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.03),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? Colors.white12 : Colors.black12,
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  CupertinoIcons.drop_fill,
+                  color: Color(0xFF4FC3F7),
+                  size: 28,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    "You logged ${_currentWaterIntake.toStringAsFixed(1)}L of water intake daily",
+                    style: TextStyle(
+                      color: textColor.withOpacity(0.85),
+                      fontSize: 15,
+                      height: 1.4,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            "What's your daily water goal?",
+            style: TextStyle(
+              color: textColor.withOpacity(0.6),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const Spacer(),
+          SizedBox(
+            height: 250,
+            child: CupertinoPicker(
+              itemExtent: 60,
+              diameterRatio: 1.5,
+              squeeze: 1.2,
+              scrollController: FixedExtentScrollController(
+                initialItem: ((_dailyWaterGoalLitres * 2) - 2).round(),
+              ),
+              selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+                background: const Color(0xFF4FC3F7).withOpacity(0.15),
+              ),
+              onSelectedItemChanged: (int index) {
+                setState(() {
+                  _dailyWaterGoalLitres = (index + 2) * 0.5; // 1.0, 1.5, 2.0, 2.5...
+                  _calculateGlasses();
+                });
+                HapticFeedback.selectionClick();
+              },
+              children: List.generate(
+                15, // 1.0L to 8.0L in 0.5L increments
+                (index) {
+                  final litres = (index + 2) * 0.5;
+                  final glasses = (litres * 4).round();
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "${litres.toStringAsFixed(1)}L",
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          "$glasses glasses",
+                          style: TextStyle(
+                            color: textColor.withOpacity(0.4),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ),
