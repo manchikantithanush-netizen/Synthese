@@ -32,7 +32,9 @@ class _DietPageState extends State<DietPage> {
   
   // Water tracking state
   int _waterGlasses = 0;
-  static const int _dailyWaterGoal = 8;
+  static int _dailyWaterGoal = 8; // Will be fetched from Firestore
+  double _baselineWaterIntakeLitres = 2.0; // From first onboarding
+  List<double> _weeklyWaterIntakeLitres = []; // Last 7 days
   
   // Orange theme color
   static const Color orangeColor = Color(0xFFFF9500);
@@ -48,6 +50,7 @@ class _DietPageState extends State<DietPage> {
     _foodService = FoodAnalysisService();
     _checkDietSetup();
     _loadFoodLogs();
+    _loadWaterHistory();
   }
 
   Future<void> _checkDietSetup() async {
@@ -57,12 +60,78 @@ class _DietPageState extends State<DietPage> {
     final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
     final completed = doc.data()?['dietSetupCompleted'] as bool? ?? false;
     final goal = doc.data()?['dailyCalorieGoal'] as int? ?? 2000;
+    final waterGoal = doc.data()?['dailyWaterGoalGlasses'] as int? ?? 8;
+    final baseline = doc.data()?['waterIntake'] as num? ?? 2.0;
     
     if (mounted) {
       setState(() {
         _dietSetupCompleted = completed;
         _dailyCalorieGoal = goal;
+        _dailyWaterGoal = waterGoal;
+        _baselineWaterIntakeLitres = baseline.toDouble();
       });
+    }
+  }
+
+  Future<void> _loadWaterHistory() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    try {
+      // Get last 7 days of water intake
+      final now = DateTime.now();
+      final weeklyData = <double>[];
+
+      for (int i = 6; i >= 0; i--) {
+        final day = now.subtract(Duration(days: i));
+        final startOfDay = DateTime(day.year, day.month, day.day);
+        final endOfDay = startOfDay.add(const Duration(days: 1));
+
+        final snapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection('waterLogs')
+            .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
+            .where('timestamp', isLessThan: Timestamp.fromDate(endOfDay))
+            .get();
+
+        // Calculate total litres for the day (1 glass = 0.25L)
+        final totalGlasses = snapshot.docs.fold<int>(
+          0,
+          (sum, doc) => sum + ((doc.data()['glasses'] as num?)?.toInt() ?? 0),
+        );
+        final litres = totalGlasses * 0.25;
+        weeklyData.add(litres);
+      }
+
+      if (mounted) {
+        setState(() {
+          _weeklyWaterIntakeLitres = weeklyData;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading water history: $e");
+    }
+  }
+
+  Future<void> _saveWaterIntake(int glasses) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('waterLogs')
+          .add({
+        'glasses': glasses,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+      
+      // Reload water history to update the graph
+      await _loadWaterHistory();
+    } catch (e) {
+      debugPrint("Error saving water intake: $e");
     }
   }
 
@@ -1083,13 +1152,16 @@ class _DietPageState extends State<DietPage> {
             WaterTrackerSection(
               waterGlasses: _waterGlasses,
               dailyGoal: _dailyWaterGoal,
-              onWaterChanged: (newValue) {
+              onWaterChanged: (newValue) async {
                 setState(() => _waterGlasses = newValue);
+                await _saveWaterIntake(newValue);
               },
               isDark: isDark,
               textColor: textColor,
               subTextColor: subTextColor,
               cardColor: cardColor,
+              baselineWaterIntakeLitres: _baselineWaterIntakeLitres,
+              weeklyIntakeLitres: _weeklyWaterIntakeLitres,
             ),
           ],
         ),
