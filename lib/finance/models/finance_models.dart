@@ -1,6 +1,24 @@
 import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+const Map<int, IconData> _cupertinoIconByCodePoint = {
+  0xf4c4: CupertinoIcons.money_dollar_circle_fill,
+  0xf3ef: CupertinoIcons.building_2_fill,
+  0xf3f7: CupertinoIcons.creditcard_fill,
+  0xf3f8: CupertinoIcons.cart_fill,
+  0xf3f2: CupertinoIcons.car_fill,
+  0xf3f0: CupertinoIcons.bag_fill,
+  0xf468: CupertinoIcons.tv_fill,
+  0xf43d: CupertinoIcons.doc_text_fill,
+  0xf46b: CupertinoIcons.heart_fill,
+  0xf473: CupertinoIcons.ellipsis_circle_fill,
+  0xf422: CupertinoIcons.briefcase_fill,
+  0xf463: CupertinoIcons.graph_square_fill,
+  0xf43f: CupertinoIcons.gift_fill,
+  0xf47d: CupertinoIcons.person_fill,
+  0xf46f: CupertinoIcons.house_fill,
+};
+
 /// Represents where money is stored (e.g., Cash, Bank, Card)
 class Account {
   final String id;
@@ -17,7 +35,9 @@ class Account {
     required this.iconCodePoint,
   });
 
-  IconData get icon => IconData(iconCodePoint, fontFamily: CupertinoIcons.iconFont, fontPackage: CupertinoIcons.iconFontPackage);
+  IconData get icon =>
+      _cupertinoIconByCodePoint[iconCodePoint] ??
+      CupertinoIcons.question_circle_fill;
 
   Map<String, dynamic> toMap() {
     return {
@@ -56,7 +76,9 @@ class Category {
     required this.color,
   });
 
-  IconData get icon => IconData(iconCodePoint, fontFamily: CupertinoIcons.iconFont, fontPackage: CupertinoIcons.iconFontPackage);
+  IconData get icon =>
+      _cupertinoIconByCodePoint[iconCodePoint] ??
+      CupertinoIcons.question_circle_fill;
 
   Map<String, dynamic> toMap() {
     return {
@@ -318,7 +340,9 @@ class DebtCategory {
     required this.color,
   });
 
-  IconData get icon => IconData(iconCodePoint, fontFamily: CupertinoIcons.iconFont, fontPackage: CupertinoIcons.iconFontPackage);
+  IconData get icon =>
+      _cupertinoIconByCodePoint[iconCodePoint] ??
+      CupertinoIcons.question_circle_fill;
 }
 
 // Default Income Categories - using muted iOS-style colors

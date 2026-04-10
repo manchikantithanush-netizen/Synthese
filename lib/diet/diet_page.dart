@@ -7,6 +7,7 @@ import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
+import 'package:intl/intl.dart';
 
 import 'food_analysis_service.dart';
 import 'diet_onboarding.dart';
@@ -32,6 +33,7 @@ class _DietPageState extends State<DietPage> {
   
   // Water tracking state
   int _waterGlasses = 0;
+  String _activeWaterDayKey = '';
   static int _dailyWaterGoal = 8; // Will be fetched from Firestore
   double _baselineWaterIntakeLitres = 2.0; // From first onboarding
   List<double> _weeklyWaterIntakeLitres = []; // Last 7 days
@@ -50,7 +52,20 @@ class _DietPageState extends State<DietPage> {
     _foodService = FoodAnalysisService();
     _checkDietSetup();
     _loadFoodLogs();
+    _loadTodayWaterIntake();
     _loadWaterHistory();
+  }
+
+  String _waterDayKey(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+
+  String _dateKey(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
   }
 
   Future<void> _checkDietSetup() async {
@@ -78,28 +93,19 @@ class _DietPageState extends State<DietPage> {
     if (uid == null) return;
 
     try {
-      // Get last 7 days of water intake
       final now = DateTime.now();
       final weeklyData = <double>[];
 
       for (int i = 6; i >= 0; i--) {
         final day = now.subtract(Duration(days: i));
-        final startOfDay = DateTime(day.year, day.month, day.day);
-        final endOfDay = startOfDay.add(const Duration(days: 1));
-
-        final snapshot = await FirebaseFirestore.instance
+        final dayKey = _waterDayKey(day);
+        final dayDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(uid)
-            .collection('waterLogs')
-            .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfDay))
-            .where('timestamp', isLessThan: Timestamp.fromDate(endOfDay))
+            .collection('waterDaily')
+            .doc(dayKey)
             .get();
-
-        // Calculate total litres for the day (1 glass = 0.25L)
-        final totalGlasses = snapshot.docs.fold<int>(
-          0,
-          (sum, doc) => sum + ((doc.data()['glasses'] as num?)?.toInt() ?? 0),
-        );
+        final totalGlasses = (dayDoc.data()?['glasses'] as num?)?.toInt() ?? 0;
         final litres = totalGlasses * 0.25;
         weeklyData.add(litres);
       }
@@ -114,19 +120,57 @@ class _DietPageState extends State<DietPage> {
     }
   }
 
+  Future<void> _loadTodayWaterIntake() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    try {
+      final now = DateTime.now();
+      final todayKey = _waterDayKey(now);
+      final dayDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('waterDaily')
+          .doc(todayKey)
+          .get();
+
+      final glasses = (dayDoc.data()?['glasses'] as num?)?.toInt() ?? 0;
+      if (mounted) {
+        setState(() {
+          _waterGlasses = glasses;
+          _activeWaterDayKey = todayKey;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading today's water intake: $e");
+    }
+  }
+
   Future<void> _saveWaterIntake(int glasses) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
 
     try {
+      final now = DateTime.now();
+      final todayKey = _waterDayKey(now);
+
       await FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
-          .collection('waterLogs')
-          .add({
+          .collection('waterDaily')
+          .doc(todayKey)
+          .set({
+        'dateKey': todayKey,
         'glasses': glasses,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+        'litres': glasses * 0.25,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      if (mounted) {
+        setState(() {
+          _activeWaterDayKey = todayKey;
+        });
+      }
       
       // Reload water history to update the graph
       await _loadWaterHistory();
@@ -250,12 +294,17 @@ class _DietPageState extends State<DietPage> {
         await FirebaseFirestore.instance.collection('users').doc(uid).set({
           'dietSetupCompleted': false,
           'dailyCalorieGoal': 2000,
+          'dailyWaterGoalGlasses': 8,
         }, SetOptions(merge: true));
 
         if (mounted) {
           setState(() {
             _dietSetupCompleted = false;
             _dailyCalorieGoal = 2000;
+            _dailyWaterGoal = 8;
+            _waterGlasses = 0;
+            _activeWaterDayKey = _waterDayKey(DateTime.now());
+            _weeklyWaterIntakeLitres = List.filled(7, 0.0);
             _foodLog.clear();
             _selectedImage = null;
             _analysisResult = null;
@@ -507,6 +556,225 @@ class _DietPageState extends State<DietPage> {
         .fold(0, (sum, entry) => sum + entry.fats);
   }
 
+  Widget _buildGoalCalendar({
+    required BuildContext context,
+    required String title,
+    required Stream<Map<String, int>> goalsByDateStream,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF151515) : Colors.grey.shade100;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final now = DateTime.now();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                DateFormat('MMMM yyyy').format(now),
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                title,
+                style: TextStyle(
+                  color: textColor.withOpacity(0.5),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 52,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const itemWidth = 48.0;
+                final totalWidth = 14 * itemWidth;
+                final scrollOffset = (totalWidth - constraints.maxWidth).clamp(
+                  0.0,
+                  double.infinity,
+                );
+                final controller = ScrollController(
+                  initialScrollOffset: scrollOffset,
+                );
+
+                return StreamBuilder<Map<String, int>>(
+                  stream: goalsByDateStream,
+                  builder: (context, snapshot) {
+                    final goalsByDate = snapshot.data ?? const <String, int>{};
+
+                    return ListView.builder(
+                      controller: controller,
+                      scrollDirection: Axis.horizontal,
+                      itemCount: 14,
+                      itemBuilder: (context, index) {
+                        final daysAgo = 13 - index;
+                        final date = now.subtract(Duration(days: daysAgo));
+                        final isToday = daysAgo == 0;
+                        final dateKey = _dateKey(date);
+                        final achieved = (goalsByDate[dateKey] ?? 0) > 0;
+
+                        return _buildGoalCalendarDay(
+                          context: context,
+                          date: date,
+                          isToday: isToday,
+                          achieved: achieved,
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGoalCalendarDay({
+    required BuildContext context,
+    required DateTime date,
+    required bool isToday,
+    required bool achieved,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
+    const achievedColor = Color(0xFF30D158);
+    const notAchievedColor = Color(0xFFFFCC00);
+    final statusColor = achieved ? achievedColor : notAchievedColor;
+
+    return Container(
+      width: 40,
+      margin: const EdgeInsets.only(right: 8),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            DateFormat('E').format(date).substring(0, 1),
+            style: TextStyle(
+              color: textColor.withOpacity(0.4),
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.2),
+              shape: BoxShape.circle,
+              border: isToday ? Border.all(color: statusColor, width: 2) : null,
+            ),
+            child: Center(
+              child: Icon(
+                CupertinoIcons.circle_fill,
+                color: statusColor,
+                size: 10,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Stream<Map<String, int>> _calorieGoalStatusStream() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return Stream.value(const <String, int>{});
+    }
+
+    final now = DateTime.now();
+    final startDate = DateTime(now.year, now.month, now.day).subtract(
+      const Duration(days: 13),
+    );
+
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('foodLogs')
+        .where('timestamp', isGreaterThanOrEqualTo: Timestamp.fromDate(startDate))
+        .snapshots()
+        .map((snapshot) {
+      final caloriesByDate = <String, int>{};
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final ts = data['timestamp'] as Timestamp?;
+        if (ts == null) continue;
+
+        final date = ts.toDate();
+        final key = _dateKey(DateTime(date.year, date.month, date.day));
+        final calories = (data['calories'] as num?)?.toInt() ?? 0;
+        caloriesByDate[key] = (caloriesByDate[key] ?? 0) + calories;
+      }
+
+      final result = <String, int>{};
+      for (int i = 0; i <= 13; i++) {
+        final day = startDate.add(Duration(days: i));
+        final key = _dateKey(day);
+        final total = caloriesByDate[key] ?? 0;
+        result[key] = total >= _dailyCalorieGoal ? 1 : 0;
+      }
+      return result;
+    });
+  }
+
+  Stream<Map<String, int>> _waterGoalStatusStream() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return Stream.value(const <String, int>{});
+    }
+
+    final now = DateTime.now();
+    final startDate = DateTime(now.year, now.month, now.day).subtract(
+      const Duration(days: 13),
+    );
+    final startKey = _dateKey(startDate);
+    final endKey = _dateKey(DateTime(now.year, now.month, now.day));
+
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('waterDaily')
+        .where('dateKey', isGreaterThanOrEqualTo: startKey)
+        .where('dateKey', isLessThanOrEqualTo: endKey)
+        .snapshots()
+        .map((snapshot) {
+      final achievedByDate = <String, int>{};
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final key = data['dateKey'] as String?;
+        if (key == null) continue;
+        final glasses = (data['glasses'] as num?)?.toInt() ?? 0;
+        achievedByDate[key] = glasses >= _dailyWaterGoal ? 1 : 0;
+      }
+
+      for (int i = 0; i <= 13; i++) {
+        final day = startDate.add(Duration(days: i));
+        final key = _dateKey(day);
+        achievedByDate[key] = achievedByDate[key] ?? 0;
+      }
+      return achievedByDate;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // Show onboarding if not completed
@@ -576,6 +844,13 @@ class _DietPageState extends State<DietPage> {
               ),
             ),
             const SizedBox(height: 24),
+
+            _buildGoalCalendar(
+              context: context,
+              title: "Calorie Goal",
+              goalsByDateStream: _calorieGoalStatusStream(),
+            ),
+            const SizedBox(height: 16),
 
             // Today's Calories Summary Card
             Container(
@@ -1147,14 +1422,36 @@ class _DietPageState extends State<DietPage> {
             ],
             
             const SizedBox(height: 32),
+
+            _buildGoalCalendar(
+              context: context,
+              title: "Water Goal",
+              goalsByDateStream: _waterGoalStatusStream(),
+            ),
+            const SizedBox(height: 16),
             
             // Water Tracking Section
             WaterTrackerSection(
               waterGlasses: _waterGlasses,
               dailyGoal: _dailyWaterGoal,
               onWaterChanged: (newValue) async {
-                setState(() => _waterGlasses = newValue);
-                await _saveWaterIntake(newValue);
+                final todayKey = _waterDayKey(DateTime.now());
+                final crossedIntoNewDay =
+                    _activeWaterDayKey.isNotEmpty &&
+                    _activeWaterDayKey != todayKey;
+
+                int valueToPersist = newValue;
+                if (crossedIntoNewDay) {
+                  // If midnight passed while app stayed open, start a fresh day.
+                  final isIncrement = newValue > _waterGlasses;
+                  valueToPersist = isIncrement ? 1 : 0;
+                }
+
+                setState(() {
+                  _waterGlasses = valueToPersist;
+                  _activeWaterDayKey = todayKey;
+                });
+                await _saveWaterIntake(valueToPersist);
               },
               isDark: isDark,
               textColor: textColor,
