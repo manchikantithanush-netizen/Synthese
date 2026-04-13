@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/services/finance_service.dart';
-import 'package:synthese/ui/components/premium_button.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 
 class AddTransactionModal extends StatefulWidget {
   const AddTransactionModal({super.key});
@@ -63,7 +63,10 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
   Future<void> _fetchUserCurrency() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
     final country = doc.data()?['country'] as String?;
     if (country != null && mounted) {
       setState(() => _currencySymbol = _getCurrencySymbol(country));
@@ -333,7 +336,11 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
           children: [
             // --- HEADER ---
             Padding(
-              padding: const EdgeInsets.only(top: 24.0, left: 20.0, right: 20.0),
+              padding: const EdgeInsets.only(
+                top: 24.0,
+                left: 20.0,
+                right: 20.0,
+              ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -368,10 +375,17 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
               duration: const Duration(milliseconds: 300),
               child: _errorMessage != null
                   ? Padding(
-                      padding: const EdgeInsets.only(top: 16, left: 20, right: 20),
+                      padding: const EdgeInsets.only(
+                        top: 16,
+                        left: 20,
+                        right: 20,
+                      ),
                       child: Text(
                         _errorMessage!,
-                        style: const TextStyle(color: Color(0xFFFF3B30), fontSize: 13),
+                        style: const TextStyle(
+                          color: Color(0xFFFF3B30),
+                          fontSize: 13,
+                        ),
                       ),
                     )
                   : const SizedBox.shrink(),
@@ -502,7 +516,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
           Expanded(
             child: TextField(
               controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               style: TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.bold,
@@ -578,7 +594,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                 children: [
                   Icon(
                     account.icon,
-                    color: isSelected ? _activeColor : (isDark ? Colors.white70 : Colors.black54),
+                    color: isSelected
+                        ? _activeColor
+                        : (isDark ? Colors.white70 : Colors.black54),
                     size: 22,
                   ),
                   const SizedBox(height: 4),
@@ -586,7 +604,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                     account.name,
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                       color: isSelected ? _activeColor : textColor,
                     ),
                   ),
@@ -642,11 +662,16 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? category.color.withOpacity(0.15)
-                      : (isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.05)),
+                      : (isDark
+                            ? Colors.white.withOpacity(0.08)
+                            : Colors.black.withOpacity(0.05)),
                   borderRadius: BorderRadius.circular(50),
                   border: Border.all(
                     color: isSelected ? category.color : Colors.transparent,
@@ -658,7 +683,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                   children: [
                     Icon(
                       category.icon,
-                      color: isSelected ? category.color : (isDark ? Colors.white70 : Colors.black54),
+                      color: isSelected
+                          ? category.color
+                          : (isDark ? Colors.white70 : Colors.black54),
                       size: 18,
                     ),
                     const SizedBox(width: 8),
@@ -666,8 +693,12 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                       category.name,
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        color: isSelected ? category.color : (isDark ? Colors.white : Colors.black87),
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                        color: isSelected
+                            ? category.color
+                            : (isDark ? Colors.white : Colors.black87),
                       ),
                     ),
                   ],
@@ -682,7 +713,8 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
 
   Widget _buildDatePicker(bool isDark, Color cardColor, Color textColor) {
     final formattedDate = DateFormat('EEEE, MMM d, yyyy').format(_selectedDate);
-    final isToday = DateFormat('yyyy-MM-dd').format(_selectedDate) ==
+    final isToday =
+        DateFormat('yyyy-MM-dd').format(_selectedDate) ==
         DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     return GestureDetector(
@@ -695,11 +727,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
         ),
         child: Row(
           children: [
-            Icon(
-              CupertinoIcons.calendar,
-              color: _activeColor,
-              size: 20,
-            ),
+            Icon(CupertinoIcons.calendar, color: _activeColor, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -736,7 +764,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
             children: [
               Icon(
                 CupertinoIcons.repeat,
-                color: _isRecurring ? _activeColor : (isDark ? Colors.white38 : Colors.black38),
+                color: _isRecurring
+                    ? _activeColor
+                    : (isDark ? Colors.white38 : Colors.black38),
                 size: 20,
               ),
               const SizedBox(width: 12),
@@ -761,11 +791,15 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
           const SizedBox(height: 12),
           CNSegmentedControl(
             labels: const ['Daily', 'Weekly', 'Monthly'],
-            selectedIndex: _recurrenceType == 'daily' ? 0 : (_recurrenceType == 'weekly' ? 1 : 2),
+            selectedIndex: _recurrenceType == 'daily'
+                ? 0
+                : (_recurrenceType == 'weekly' ? 1 : 2),
             onValueChanged: (value) {
               HapticFeedback.selectionClick();
               setState(() {
-                _recurrenceType = value == 0 ? 'daily' : (value == 1 ? 'weekly' : 'monthly');
+                _recurrenceType = value == 0
+                    ? 'daily'
+                    : (value == 1 ? 'weekly' : 'monthly');
               });
             },
           ),
@@ -783,15 +817,10 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: TextField(
         controller: _noteController,
-        style: TextStyle(
-          fontSize: 16,
-          color: textColor,
-        ),
+        style: TextStyle(fontSize: 16, color: textColor),
         decoration: InputDecoration(
           hintText: 'Add a note...',
-          hintStyle: TextStyle(
-            color: isDark ? Colors.white38 : Colors.black38,
-          ),
+          hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
           border: InputBorder.none,
           prefixIcon: Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -801,7 +830,10 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
               size: 20,
             ),
           ),
-          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 0,
+            minHeight: 0,
+          ),
         ),
         maxLines: 1,
       ),

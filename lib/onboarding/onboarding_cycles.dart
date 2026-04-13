@@ -4,58 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-class PremiumButton extends StatelessWidget {
-  final String text;
-  final VoidCallback onPressed;
-  final bool isLoading;
-
-  const PremiumButton({
-    super.key,
-    required this.text,
-    required this.onPressed,
-    this.isLoading = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    const Color pinkColor = Color(0xFFEC548A);
-
-    return SizedBox(
-      height: 60,
-      width: double.infinity,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(50),
-        child: isLoading
-            ? Container(
-                decoration: BoxDecoration(
-                  color: pinkColor,
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: const Center(
-                  child: SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                ),
-              )
-            : CNButton(
-                label: text,
-                style: CNButtonStyle.prominentGlass,
-                tint: pinkColor,
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                  onPressed();
-                },
-              ),
-      ),
-    );
-  }
-}
+import 'package:synthese/ui/components/universalbutton.dart';
 
 class OnboardingCycles extends StatefulWidget {
   final VoidCallback onContinue;
@@ -68,10 +17,10 @@ class OnboardingCycles extends StatefulWidget {
 
 class _OnboardingCyclesState extends State<OnboardingCycles> {
   int _currentPage = 0;
-  
-  DateTime _selectedDate = DateTime.now(); 
-  int _periodLength = 5; 
-  int _cycleLength = 28; 
+
+  DateTime _selectedDate = DateTime.now();
+  int _periodLength = 5;
+  int _cycleLength = 28;
 
   bool _isSaving = false;
 
@@ -101,9 +50,9 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
           'cyclesSetupCompleted': true,
         }, SetOptions(merge: true));
       }
-      
+
       HapticFeedback.mediumImpact();
-      widget.onContinue(); 
+      widget.onContinue();
     } catch (e) {
       debugPrint("Error saving cycle data: $e");
     } finally {
@@ -127,10 +76,7 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
           switchInCurve: Curves.easeInOut,
           switchOutCurve: Curves.easeInOut,
           transitionBuilder: (Widget child, Animation<double> animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
+            return FadeTransition(opacity: animation, child: child);
           },
           child: _buildCurrentPage(isDark, textColor),
         ),
@@ -156,21 +102,22 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
   }
 
   Widget _buildIntroPage(bool isDark, Color textColor) {
-    Widget buildFeature(String title, String desc, IconData iconData, Color iconColor) {
+    Widget buildFeature(
+      String title,
+      String desc,
+      IconData iconData,
+      Color iconColor,
+    ) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 32.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: 56, 
+              width: 56,
               child: Padding(
-                padding: const EdgeInsets.only(top: 2.0), 
-                child: Icon(
-                  iconData,
-                  color: iconColor,
-                  size: 35,
-                ),
+                padding: const EdgeInsets.only(top: 2.0),
+                child: Icon(iconData, color: iconColor, size: 35),
               ),
             ),
             const SizedBox(width: 8),
@@ -243,11 +190,11 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
           buildFeature(
             "Cycle history",
             "See patterns across your past cycles and understand what's normal for your body.",
-            Icons.history, 
+            Icons.history,
             const Color(0xFF32ADE6), // Light Blue
           ),
           const Spacer(),
-          PremiumButton(text: "Next", onPressed: _nextPage),
+          PremiumButton(text: "Next", onPressed: _nextPage, color: pinkColor),
           const SizedBox(height: 40),
         ],
       ),
@@ -291,15 +238,21 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const Icon(
-                CupertinoIcons.exclamationmark_triangle_fill, 
+                CupertinoIcons.exclamationmark_triangle_fill,
                 color: Color(0xFFFF9F0A), // iOS Warning Orange
-                size: 32
+                size: 32,
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  "Important Notice", 
-                  style: TextStyle(color: textColor, fontSize: 32, fontWeight: FontWeight.bold, height: 1.2, letterSpacing: -1)
+                  "Important Notice",
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    height: 1.2,
+                    letterSpacing: -1,
+                  ),
                 ),
               ),
             ],
@@ -311,20 +264,31 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  buildWarningParagraph("This app provides cycle predictions based on the information you enter. These predictions are estimates and may not be accurate for everyone."),
-                  
+                  buildWarningParagraph(
+                    "This app provides cycle predictions based on the information you enter. These predictions are estimates and may not be accurate for everyone.",
+                  ),
+
                   // Made the birth control warning bold for emphasis
-                  buildWarningParagraph("This app provides general cycle tracking and predictions based on user input. It is not a medical tool and should not be used for diagnosis or health decisions. For medical advice, consult a qualified healthcare professional.", isBold: true),
-                  
-                  buildWarningParagraph("Cycle lengths and ovulation can vary due to stress, health conditions, lifestyle changes, and other factors. Always listen to your body and seek medical advice if you notice unusual symptoms."),
-                  
+                  buildWarningParagraph(
+                    "This app provides general cycle tracking and predictions based on user input. It is not a medical tool and should not be used for diagnosis or health decisions. For medical advice, consult a qualified healthcare professional.",
+                    isBold: true,
+                  ),
+
+                  buildWarningParagraph(
+                    "Cycle lengths and ovulation can vary due to stress, health conditions, lifestyle changes, and other factors. Always listen to your body and seek medical advice if you notice unusual symptoms.",
+                  ),
+
                   // Final acknowledgment
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                      color: isDark
+                          ? Colors.white.withOpacity(0.05)
+                          : Colors.black.withOpacity(0.03),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: isDark ? Colors.white12 : Colors.black12)
+                      border: Border.all(
+                        color: isDark ? Colors.white12 : Colors.black12,
+                      ),
                     ),
                     child: Text(
                       "By continuing, you acknowledge that this app is for informational purposes only and does not provide medical advice.",
@@ -341,7 +305,11 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
               ),
             ),
           ),
-          PremiumButton(text: "I Understand", onPressed: _nextPage),
+          PremiumButton(
+            text: "I Understand",
+            onPressed: _nextPage,
+            color: pinkColor,
+          ),
           const SizedBox(height: 40),
         ],
       ),
@@ -365,27 +333,47 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
             },
           ),
           const SizedBox(height: 24),
-          Text("When did your last period start?", style: TextStyle(color: textColor, fontSize: 32, fontWeight: FontWeight.bold, height: 1.2, letterSpacing: -1)),
+          Text(
+            "When did your last period start?",
+            style: TextStyle(
+              color: textColor,
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+              letterSpacing: -1,
+            ),
+          ),
           const Spacer(),
           Theme(
-            data: isDark 
+            data: isDark
                 ? ThemeData.dark().copyWith(
-                    colorScheme: ColorScheme.dark(primary: pinkColor, onPrimary: Colors.white, surface: Colors.black, onSurface: Colors.white),
+                    colorScheme: ColorScheme.dark(
+                      primary: pinkColor,
+                      onPrimary: Colors.white,
+                      surface: Colors.black,
+                      onSurface: Colors.white,
+                    ),
                     dialogBackgroundColor: Colors.black,
                   )
                 : ThemeData.light().copyWith(
-                    colorScheme: ColorScheme.light(primary: pinkColor, onPrimary: Colors.white, surface: Colors.white, onSurface: Colors.black),
+                    colorScheme: ColorScheme.light(
+                      primary: pinkColor,
+                      onPrimary: Colors.white,
+                      surface: Colors.white,
+                      onSurface: Colors.black,
+                    ),
                     dialogBackgroundColor: Colors.white,
                   ),
             child: CalendarDatePicker(
               initialDate: _selectedDate,
-              firstDate: DateTime.now().subtract(const Duration(days: 365)), 
-              lastDate: DateTime.now(), 
-              onDateChanged: (DateTime newDate) => setState(() => _selectedDate = newDate),
+              firstDate: DateTime.now().subtract(const Duration(days: 365)),
+              lastDate: DateTime.now(),
+              onDateChanged: (DateTime newDate) =>
+                  setState(() => _selectedDate = newDate),
             ),
           ),
           const Spacer(),
-          PremiumButton(text: "Next", onPressed: _nextPage),
+          PremiumButton(text: "Next", onPressed: _nextPage, color: pinkColor),
           const SizedBox(height: 40),
         ],
       ),
@@ -409,23 +397,50 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
             },
           ),
           const SizedBox(height: 24),
-          Text("How long does your period usually last?", style: TextStyle(color: textColor, fontSize: 32, fontWeight: FontWeight.bold, height: 1.2, letterSpacing: -1)),
+          Text(
+            "How long does your period usually last?",
+            style: TextStyle(
+              color: textColor,
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+              letterSpacing: -1,
+            ),
+          ),
           const Spacer(),
           SizedBox(
             height: 250,
             child: CupertinoPicker(
-              itemExtent: 60, diameterRatio: 1.5, squeeze: 1.2,
-              scrollController: FixedExtentScrollController(initialItem: _periodLength - 1),
-              selectionOverlay: CupertinoPickerDefaultSelectionOverlay(background: pinkColor.withOpacity(0.15)),
+              itemExtent: 60,
+              diameterRatio: 1.5,
+              squeeze: 1.2,
+              scrollController: FixedExtentScrollController(
+                initialItem: _periodLength - 1,
+              ),
+              selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+                background: pinkColor.withOpacity(0.15),
+              ),
               onSelectedItemChanged: (int index) {
                 setState(() => _periodLength = index + 1);
-                HapticFeedback.selectionClick(); 
+                HapticFeedback.selectionClick();
               },
-              children: List.generate(20, (index) => Center(child: Text("${index + 1} days", style: TextStyle(color: textColor, fontSize: 26, fontWeight: FontWeight.w600)))),
+              children: List.generate(
+                20,
+                (index) => Center(
+                  child: Text(
+                    "${index + 1} days",
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
           const Spacer(),
-          PremiumButton(text: "Next", onPressed: _nextPage),
+          PremiumButton(text: "Next", onPressed: _nextPage, color: pinkColor),
           const SizedBox(height: 40),
         ],
       ),
@@ -449,26 +464,54 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
             },
           ),
           const SizedBox(height: 24),
-          Text("How long is your typical cycle?", style: TextStyle(color: textColor, fontSize: 32, fontWeight: FontWeight.bold, height: 1.2, letterSpacing: -1)),
+          Text(
+            "How long is your typical cycle?",
+            style: TextStyle(
+              color: textColor,
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+              letterSpacing: -1,
+            ),
+          ),
           const Spacer(),
           SizedBox(
             height: 250,
             child: CupertinoPicker(
-              itemExtent: 60, diameterRatio: 1.5, squeeze: 1.2,
-              scrollController: FixedExtentScrollController(initialItem: _cycleLength - 1),
-              selectionOverlay: CupertinoPickerDefaultSelectionOverlay(background: pinkColor.withOpacity(0.15)),
+              itemExtent: 60,
+              diameterRatio: 1.5,
+              squeeze: 1.2,
+              scrollController: FixedExtentScrollController(
+                initialItem: _cycleLength - 1,
+              ),
+              selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
+                background: pinkColor.withOpacity(0.15),
+              ),
               onSelectedItemChanged: (int index) {
                 setState(() => _cycleLength = index + 1);
                 HapticFeedback.selectionClick();
               },
-              children: List.generate(90, (index) => Center(child: Text("${index + 1} days", style: TextStyle(color: textColor, fontSize: 26, fontWeight: FontWeight.w600)))),
+              children: List.generate(
+                90,
+                (index) => Center(
+                  child: Text(
+                    "${index + 1} days",
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
           const Spacer(),
           PremiumButton(
-            text: "Finish Setup", 
-            isLoading: _isSaving, 
-            onPressed: _isSaving ? () {} : _saveData, 
+            text: "Finish Setup",
+            isLoading: _isSaving,
+            onPressed: _isSaving ? () {} : _saveData,
+            color: pinkColor,
           ),
           const SizedBox(height: 40),
         ],

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:synthese/ui/components/premium_button.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 // 1. IMPORT DASHBOARD INSTEAD OF MAIN
-import 'package:synthese/ui/dashboard.dart'; 
+import 'package:synthese/ui/dashboard.dart';
 import 'onboarding_data.dart';
 
 class OnboardingIntro extends StatefulWidget {
@@ -76,9 +76,7 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
 
     if (_isLoading) {
       return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
+        body: Center(child: CircularProgressIndicator(strokeWidth: 2)),
       );
     }
 
@@ -93,11 +91,11 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
                   padding: const EdgeInsets.symmetric(horizontal: 28.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween, 
-                    children:[
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children:[
+                        children: [
                           const SizedBox(height: 60),
                           Text(
                             "Hello,",
@@ -123,32 +121,38 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
                       ),
 
                       Column(
-                        children:[
+                        children: [
                           const SizedBox(height: 40),
                           Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
                               // DYNAMIC: Dark gray in dark mode, light gray in light mode
-                              color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
+                              color: isDark
+                                  ? const Color(0xFF1C1C1E)
+                                  : Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(28),
                               // DYNAMIC: Subtle border matching the theme
-                              border: Border.all(color: textColor.withOpacity(0.1)),
+                              border: Border.all(
+                                color: textColor.withOpacity(0.1),
+                              ),
                             ),
                             child: Column(
-                              children:[
+                              children: [
                                 Row(
-                                  children:[
+                                  children: [
                                     Icon(
-                                      Icons.shield_outlined, 
-                                      color: textColor.withOpacity(0.7), // DYNAMIC
-                                      size: 20
+                                      Icons.shield_outlined,
+                                      color: textColor.withOpacity(
+                                        0.7,
+                                      ), // DYNAMIC
+                                      size: 20,
                                     ),
                                     const SizedBox(width: 12),
                                     Text(
                                       "Privacy First",
                                       style: TextStyle(
                                         color: textColor, // DYNAMIC
-                                        fontWeight: FontWeight.w600
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ],
@@ -157,27 +161,29 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
                                 Text(
                                   "Your data is yours, we will not be using your data for any purpose other than improving your experience.",
                                   style: TextStyle(
-                                    color: textColor.withOpacity(0.5), // DYNAMIC
-                                    fontSize: 13, 
-                                    height: 1.5
+                                    color: textColor.withOpacity(
+                                      0.5,
+                                    ), // DYNAMIC
+                                    fontSize: 13,
+                                    height: 1.5,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                           const SizedBox(height: 40),
-                          
+
                           // Continue Button uses Navigator.push so that OnboardingIntro stays in the background
                           PremiumButton(
                             text: "Continue",
                             onPressed: () {
                               Navigator.push(
                                 context,
-                                _fadeRoute(const OnboardingData()), 
+                                _fadeRoute(const OnboardingData()),
                               );
                             },
                           ),
-                          
+
                           const SizedBox(height: 40),
                         ],
                       ),
@@ -200,8 +206,8 @@ class _PremiumButton extends StatefulWidget {
   final bool isSecondary;
 
   const _PremiumButton({
-    required this.text, 
-    required this.onPressed, 
+    required this.text,
+    required this.onPressed,
     this.isSecondary = false,
   });
 
@@ -209,17 +215,22 @@ class _PremiumButton extends StatefulWidget {
   State<_PremiumButton> createState() => _PremiumButtonState();
 }
 
-class _PremiumButtonState extends State<_PremiumButton> with SingleTickerProviderStateMixin {
+class _PremiumButtonState extends State<_PremiumButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 100));
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
     );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.96,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -248,24 +259,24 @@ class _PremiumButtonState extends State<_PremiumButton> with SingleTickerProvide
           height: 60,
           decoration: BoxDecoration(
             // DYNAMIC: Primary button adapts to theme, Secondary is transparent
-            color: widget.isSecondary 
-                ? Colors.transparent 
+            color: widget.isSecondary
+                ? Colors.transparent
                 : (isDark ? Colors.white : Colors.black),
             borderRadius: BorderRadius.circular(50),
             // DYNAMIC: Secondary button border matches the current text color
-            border: widget.isSecondary 
-                ? Border.all(color: textColor.withOpacity(0.2), width: 1.5) 
+            border: widget.isSecondary
+                ? Border.all(color: textColor.withOpacity(0.2), width: 1.5)
                 : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children:[
+            children: [
               Text(
                 widget.text,
                 style: TextStyle(
                   // DYNAMIC: Secondary button text matches theme, primary inverts it
-                  color: widget.isSecondary 
-                      ? textColor 
+                  color: widget.isSecondary
+                      ? textColor
                       : (isDark ? Colors.black : Colors.white),
                   fontSize: 16,
                   fontWeight: FontWeight.w700,

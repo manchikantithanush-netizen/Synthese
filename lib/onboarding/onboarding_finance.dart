@@ -5,6 +5,7 @@ import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:synthese/finance/models/finance_models.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 
 class OnboardingFinance extends StatefulWidget {
   final VoidCallback onContinue;
@@ -24,9 +25,15 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
   bool _cashEnabled = true;
   bool _bankEnabled = true;
   bool _cardEnabled = true;
-  final TextEditingController _cashNameController = TextEditingController(text: 'Cash');
-  final TextEditingController _bankNameController = TextEditingController(text: 'Bank');
-  final TextEditingController _cardNameController = TextEditingController(text: 'Card');
+  final TextEditingController _cashNameController = TextEditingController(
+    text: 'Cash',
+  );
+  final TextEditingController _bankNameController = TextEditingController(
+    text: 'Bank',
+  );
+  final TextEditingController _cardNameController = TextEditingController(
+    text: 'Card',
+  );
 
   // Budget state
   final TextEditingController _budgetController = TextEditingController();
@@ -41,19 +48,60 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
 
   String _getCurrencySymbol(String country) {
     final Map<String, String> currencyMap = {
-      'United States': '\$', 'USA': '\$', 'Canada': 'CA\$', 'Mexico': 'MX\$',
-      'Brazil': 'R\$', 'Argentina': 'AR\$', 'United Kingdom': '£', 'UK': '£',
-      'Germany': '€', 'France': '€', 'Italy': '€', 'Spain': '€', 'Netherlands': '€',
-      'Belgium': '€', 'Austria': '€', 'Ireland': '€', 'Portugal': '€', 'Greece': '€',
-      'Finland': '€', 'Switzerland': 'CHF ', 'Sweden': 'kr ', 'Norway': 'kr ',
-      'Denmark': 'kr ', 'Poland': 'zł ', 'Russia': '₽', 'Turkey': '₺',
-      'United Arab Emirates': 'AED ', 'UAE': 'AED ', 'Saudi Arabia': 'SAR ',
-      'Qatar': 'QAR ', 'Kuwait': 'KWD ', 'Bahrain': 'BHD ', 'Oman': 'OMR ',
-      'Israel': '₪', 'Egypt': 'E£', 'India': '₹', 'Japan': '¥', 'China': '¥',
-      'South Korea': '₩', 'Singapore': 'S\$', 'Malaysia': 'RM ', 'Thailand': '฿',
-      'Indonesia': 'Rp ', 'Philippines': '₱', 'Vietnam': '₫', 'Pakistan': 'Rs ',
-      'Bangladesh': '৳', 'Hong Kong': 'HK\$', 'Taiwan': 'NT\$', 'Australia': 'A\$',
-      'New Zealand': 'NZ\$', 'South Africa': 'R ', 'Nigeria': '₦', 'Kenya': 'KSh ',
+      'United States': '\$',
+      'USA': '\$',
+      'Canada': 'CA\$',
+      'Mexico': 'MX\$',
+      'Brazil': 'R\$',
+      'Argentina': 'AR\$',
+      'United Kingdom': '£',
+      'UK': '£',
+      'Germany': '€',
+      'France': '€',
+      'Italy': '€',
+      'Spain': '€',
+      'Netherlands': '€',
+      'Belgium': '€',
+      'Austria': '€',
+      'Ireland': '€',
+      'Portugal': '€',
+      'Greece': '€',
+      'Finland': '€',
+      'Switzerland': 'CHF ',
+      'Sweden': 'kr ',
+      'Norway': 'kr ',
+      'Denmark': 'kr ',
+      'Poland': 'zł ',
+      'Russia': '₽',
+      'Turkey': '₺',
+      'United Arab Emirates': 'AED ',
+      'UAE': 'AED ',
+      'Saudi Arabia': 'SAR ',
+      'Qatar': 'QAR ',
+      'Kuwait': 'KWD ',
+      'Bahrain': 'BHD ',
+      'Oman': 'OMR ',
+      'Israel': '₪',
+      'Egypt': 'E£',
+      'India': '₹',
+      'Japan': '¥',
+      'China': '¥',
+      'South Korea': '₩',
+      'Singapore': 'S\$',
+      'Malaysia': 'RM ',
+      'Thailand': '฿',
+      'Indonesia': 'Rp ',
+      'Philippines': '₱',
+      'Vietnam': '₫',
+      'Pakistan': 'Rs ',
+      'Bangladesh': '৳',
+      'Hong Kong': 'HK\$',
+      'Taiwan': 'NT\$',
+      'Australia': 'A\$',
+      'New Zealand': 'NZ\$',
+      'South Africa': 'R ',
+      'Nigeria': '₦',
+      'Kenya': 'KSh ',
     };
     return currencyMap[country] ?? '\$';
   }
@@ -61,7 +109,10 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
   Future<void> _fetchUserCurrency() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
     final country = doc.data()?['country'] as String?;
     if (country != null && mounted) {
       setState(() => _currencySymbol = _getCurrencySymbol(country));
@@ -100,7 +151,10 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
       final accountsRef = userRef.collection('accounts');
 
       // Parse budget amount
-      final budgetText = _budgetController.text.replaceAll(RegExp(r'[^\d.]'), '');
+      final budgetText = _budgetController.text.replaceAll(
+        RegExp(r'[^\d.]'),
+        '',
+      );
       final monthlyBudget = double.tryParse(budgetText) ?? 0.0;
 
       // Save user settings
@@ -113,7 +167,9 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
       if (_cashEnabled) {
         final account = Account(
           id: 'cash',
-          name: _cashNameController.text.trim().isEmpty ? 'Cash' : _cashNameController.text.trim(),
+          name: _cashNameController.text.trim().isEmpty
+              ? 'Cash'
+              : _cashNameController.text.trim(),
           type: 'cash',
           balance: 0.0,
           iconCodePoint: CupertinoIcons.money_dollar_circle_fill.codePoint,
@@ -124,7 +180,9 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
       if (_bankEnabled) {
         final account = Account(
           id: 'bank',
-          name: _bankNameController.text.trim().isEmpty ? 'Bank' : _bankNameController.text.trim(),
+          name: _bankNameController.text.trim().isEmpty
+              ? 'Bank'
+              : _bankNameController.text.trim(),
           type: 'bank',
           balance: 0.0,
           iconCodePoint: CupertinoIcons.building_2_fill.codePoint,
@@ -135,7 +193,9 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
       if (_cardEnabled) {
         final account = Account(
           id: 'card',
-          name: _cardNameController.text.trim().isEmpty ? 'Card' : _cardNameController.text.trim(),
+          name: _cardNameController.text.trim().isEmpty
+              ? 'Card'
+              : _cardNameController.text.trim(),
           type: 'card',
           balance: 0.0,
           iconCodePoint: CupertinoIcons.creditcard_fill.codePoint,
@@ -170,10 +230,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           switchInCurve: Curves.easeInOut,
           switchOutCurve: Curves.easeInOut,
           transitionBuilder: (Widget child, Animation<double> animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
+            return FadeTransition(opacity: animation, child: child);
           },
           child: _buildCurrentPage(isDark, textColor),
         ),
@@ -195,7 +252,12 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
   }
 
   Widget _buildWelcomePage(bool isDark, Color textColor) {
-    Widget buildFeature(String title, String desc, IconData iconData, Color iconColor) {
+    Widget buildFeature(
+      String title,
+      String desc,
+      IconData iconData,
+      Color iconColor,
+    ) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 32.0),
         child: Row(
@@ -205,11 +267,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
               width: 56,
               child: Padding(
                 padding: const EdgeInsets.only(top: 2.0),
-                child: Icon(
-                  iconData,
-                  color: iconColor,
-                  size: 35,
-                ),
+                child: Icon(iconData, color: iconColor, size: 35),
               ),
             ),
             const SizedBox(width: 8),
@@ -283,9 +341,13 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+              color: isDark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.03),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
+              border: Border.all(
+                color: isDark ? Colors.white12 : Colors.black12,
+              ),
             ),
             child: Text(
               "This app is for personal finance tracking only and does not provide financial advice.",
@@ -297,14 +359,23 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
             ),
           ),
           const SizedBox(height: 24),
-          _PremiumButton(text: "Get Started", onPressed: _nextPage, accentColor: greenColor),
+          PremiumButton(
+            text: "Get Started",
+            onPressed: _nextPage,
+            color: greenColor,
+          ),
           const SizedBox(height: 40),
         ],
       ),
     );
   }
 
-  Widget _buildAccountPill(String title, bool isSelected, VoidCallback onTap, {TextEditingController? nameController}) {
+  Widget _buildAccountPill(
+    String title,
+    bool isSelected,
+    VoidCallback onTap, {
+    TextEditingController? nameController,
+  }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).colorScheme.onSurface;
 
@@ -332,22 +403,43 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
               child: nameController != null
                   ? TextField(
                       controller: nameController,
-                      style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: title,
                         hintStyle: TextStyle(color: textColor.withOpacity(0.5)),
                       ),
                     )
-                  : Text(title, style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w600)),
+                  : Text(
+                      title,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               switchInCurve: Curves.easeOutBack,
-              transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
+              transitionBuilder: (child, animation) =>
+                  ScaleTransition(scale: animation, child: child),
               child: isSelected
-                  ? const Icon(Icons.check_circle, color: Color(0xFF34C759), size: 22, key: ValueKey('checked'))
-                  : const SizedBox(width: 22, height: 22, key: ValueKey('unchecked')),
+                  ? const Icon(
+                      Icons.check_circle,
+                      color: Color(0xFF34C759),
+                      size: 22,
+                      key: ValueKey('checked'),
+                    )
+                  : const SizedBox(
+                      width: 22,
+                      height: 22,
+                      key: ValueKey('unchecked'),
+                    ),
             ),
           ],
         ),
@@ -411,10 +503,12 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
             nameController: _cardNameController,
           ),
           const Spacer(),
-          _PremiumButton(
+          PremiumButton(
             text: "Continue",
-            onPressed: (_cashEnabled || _bankEnabled || _cardEnabled) ? _nextPage : () {},
-            accentColor: greenColor,
+            onPressed: (_cashEnabled || _bankEnabled || _cardEnabled)
+                ? _nextPage
+                : () {},
+            color: greenColor,
           ),
           const SizedBox(height: 40),
         ],
@@ -462,7 +556,9 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+              color: isDark
+                  ? Colors.white.withOpacity(0.05)
+                  : Colors.black.withOpacity(0.03),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -480,7 +576,9 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
                 Expanded(
                   child: TextField(
                     controller: _budgetController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: textColor,
@@ -502,65 +600,14 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
             ),
           ),
           const Spacer(),
-          _PremiumButton(
+          PremiumButton(
             text: "Finish Setup",
             isLoading: _isSaving,
             onPressed: _isSaving ? () {} : _saveData,
-            accentColor: greenColor,
+            color: greenColor,
           ),
           const SizedBox(height: 40),
         ],
-      ),
-    );
-  }
-}
-
-class _PremiumButton extends StatelessWidget {
-  final String text;
-  final VoidCallback onPressed;
-  final bool isLoading;
-  final Color accentColor;
-
-  const _PremiumButton({
-    required this.text,
-    required this.onPressed,
-    this.isLoading = false,
-    required this.accentColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 60,
-      width: double.infinity,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(50),
-        child: isLoading
-            ? Container(
-                decoration: BoxDecoration(
-                  color: accentColor,
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: const Center(
-                  child: SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                ),
-              )
-            : CNButton(
-                label: text,
-                style: CNButtonStyle.prominentGlass,
-                tint: accentColor,
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                  onPressed();
-                },
-              ),
       ),
     );
   }

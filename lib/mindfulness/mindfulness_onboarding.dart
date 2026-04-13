@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:synthese/mindfulness/mindfulness_page.dart';
-import 'package:synthese/ui/components/premium_button.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 
 class MindfulnessOnboarding extends StatelessWidget {
   final VoidCallback onContinue;
@@ -11,7 +11,9 @@ class MindfulnessOnboarding extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
-    final accentColor = isDark ? const Color(0xFF009688) : const Color(0xFF33BEBE);
+    final accentColor = isDark
+        ? const Color(0xFF009688)
+        : const Color(0xFF33BEBE);
 
     return Scaffold(
       body: SafeArea(
@@ -33,25 +35,43 @@ class MindfulnessOnboarding extends StatelessWidget {
               ),
               const Spacer(),
               _FeatureRow(
-                icon: const Icon(CupertinoIcons.moon_stars, size: 35, color: Color(0xFF5E5CE6)), // Indigo
+                icon: const Icon(
+                  CupertinoIcons.moon_stars,
+                  size: 35,
+                  color: Color(0xFF5E5CE6),
+                ), // Indigo
                 title: 'Guided Meditations',
                 subtitle: 'Relax and refocus with science-backed sessions.',
               ),
               const SizedBox(height: 20),
               _FeatureRow(
-                icon: const Icon(CupertinoIcons.bell, size: 35, color: Color(0xFFFF9F0A)), // Orange
+                icon: const Icon(
+                  CupertinoIcons.bell,
+                  size: 35,
+                  color: Color(0xFFFF9F0A),
+                ), // Orange
                 title: 'Mindful Reminders',
-                subtitle: 'Gentle nudges to help you stay present throughout your day.',
+                subtitle:
+                    'Gentle nudges to help you stay present throughout your day.',
               ),
               const SizedBox(height: 20),
               _FeatureRow(
-                icon: const Icon(CupertinoIcons.heart_fill, size: 35, color: Color(0xFFFF453A)), // Red
+                icon: const Icon(
+                  CupertinoIcons.heart_fill,
+                  size: 35,
+                  color: Color(0xFFFF453A),
+                ), // Red
                 title: 'Mood & Reflection',
-                subtitle: 'Track your mood and reflect on your mental well-being.',
+                subtitle:
+                    'Track your mood and reflect on your mental well-being.',
               ),
               const SizedBox(height: 20),
               _FeatureRow(
-                icon: const Icon(CupertinoIcons.chart_bar_fill, size: 35, color: Color(0xFF32ADE6)), // Light Blue
+                icon: const Icon(
+                  CupertinoIcons.chart_bar_fill,
+                  size: 35,
+                  color: Color(0xFF32ADE6),
+                ), // Light Blue
                 title: 'Progress Insights',
                 subtitle: 'See your mindfulness journey and growth over time.',
               ),
@@ -74,7 +94,11 @@ class _FeatureRow extends StatelessWidget {
   final Widget icon;
   final String title;
   final String subtitle;
-  const _FeatureRow({required this.icon, required this.title, required this.subtitle});
+  const _FeatureRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -85,10 +109,7 @@ class _FeatureRow extends StatelessWidget {
       children: [
         SizedBox(
           width: 56,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 2.0),
-            child: icon,
-          ),
+          child: Padding(padding: const EdgeInsets.only(top: 2.0), child: icon),
         ),
         const SizedBox(width: 8),
         Expanded(

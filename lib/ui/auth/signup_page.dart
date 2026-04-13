@@ -5,7 +5,7 @@ import 'package:cupertino_native/cupertino_native.dart';
 import 'dart:async';
 import 'login_page.dart';
 import 'verification_page.dart';
-import 'package:synthese/ui/components/premium_button.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -17,7 +17,8 @@ class SignupPage extends StatefulWidget {
 class _SignupPageState extends State<SignupPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   late FocusNode _passwordFocusNode;
   String _passwordText = '';
@@ -31,7 +32,9 @@ class _SignupPageState extends State<SignupPage> {
     super.initState();
     _passwordFocusNode = FocusNode();
     _passwordFocusNode.addListener(() => setState(() {}));
-    passwordController.addListener(() => setState(() => _passwordText = passwordController.text));
+    passwordController.addListener(
+      () => setState(() => _passwordText = passwordController.text),
+    );
   }
 
   @override
@@ -67,7 +70,8 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   Future<void> signUp() async {
-    if (emailController.text.trim().isEmpty || passwordController.text.trim().isEmpty) {
+    if (emailController.text.trim().isEmpty ||
+        passwordController.text.trim().isEmpty) {
       _triggerError('Please fill in all fields');
       return;
     }
@@ -83,7 +87,10 @@ class _SignupPageState extends State<SignupPage> {
       );
       if (mounted) {
         HapticFeedback.mediumImpact();
-        Navigator.pushReplacement(context, _fadeRoute(const VerificationPage()));
+        Navigator.pushReplacement(
+          context,
+          _fadeRoute(const VerificationPage()),
+        );
       }
     } on FirebaseAuthException catch (e) {
       _triggerError(e.message ?? 'Sign up failed');
@@ -92,7 +99,11 @@ class _SignupPageState extends State<SignupPage> {
     }
   }
 
-  InputDecoration _iosInputDecoration(BuildContext context, String hint, IconData icon) {
+  InputDecoration _iosInputDecoration(
+    BuildContext context,
+    String hint,
+    IconData icon,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return InputDecoration(
       hintText: hint,
@@ -182,7 +193,11 @@ class _SignupPageState extends State<SignupPage> {
               TextField(
                 controller: emailController,
                 style: TextStyle(color: textColor),
-                decoration: _iosInputDecoration(context, 'Email', Icons.mail_outline),
+                decoration: _iosInputDecoration(
+                  context,
+                  'Email',
+                  Icons.mail_outline,
+                ),
               ),
 
               const SizedBox(height: 14),
@@ -192,7 +207,11 @@ class _SignupPageState extends State<SignupPage> {
                 focusNode: _passwordFocusNode,
                 obscureText: true,
                 style: TextStyle(color: textColor),
-                decoration: _iosInputDecoration(context, 'Password', Icons.lock_outline),
+                decoration: _iosInputDecoration(
+                  context,
+                  'Password',
+                  Icons.lock_outline,
+                ),
               ),
 
               const SizedBox(height: 14),
@@ -201,34 +220,44 @@ class _SignupPageState extends State<SignupPage> {
                 controller: confirmPasswordController,
                 obscureText: true,
                 style: TextStyle(color: textColor),
-                decoration: _iosInputDecoration(context, 'Confirm Password', Icons.lock_outline),
+                decoration: _iosInputDecoration(
+                  context,
+                  'Confirm Password',
+                  Icons.lock_outline,
+                ),
               ),
 
               const SizedBox(height: 32),
 
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : PremiumButton(
-                      text: 'Create Account',
-                      onPressed: signUp,
-                    ),
+                  : PremiumButton(text: 'Create Account', onPressed: signUp),
 
               const SizedBox(height: 32),
 
               GestureDetector(
                 onTap: () {
                   HapticFeedback.selectionClick();
-                  Navigator.pushReplacement(context, _fadeRoute(const LoginPage()));
+                  Navigator.pushReplacement(
+                    context,
+                    _fadeRoute(const LoginPage()),
+                  );
                 },
                 child: RichText(
                   textAlign: TextAlign.center,
                   text: TextSpan(
-                    style: TextStyle(color: textColor.withOpacity(0.54), fontSize: 14),
+                    style: TextStyle(
+                      color: textColor.withOpacity(0.54),
+                      fontSize: 14,
+                    ),
                     children: [
                       const TextSpan(text: 'Already have an account? '),
                       TextSpan(
                         text: 'Login',
-                        style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: textColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),

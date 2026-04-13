@@ -243,12 +243,14 @@ Open `.env` and add your Firebase API keys:
 ```env
 # Firebase API Keys
 FIREBASE_WEB_API_KEY=your_web_api_key_here
+GOOGLE_WEB_CLIENT_ID=your_web_oauth_client_id_here
 FIREBASE_ANDROID_API_KEY=your_android_api_key_here
 FIREBASE_IOS_API_KEY=your_ios_api_key_here
 ```
 
 **Where to find API keys:**
 - Web API Key: Firebase Console → Project Settings → General → Web API Key
+- Google Web Client ID: Firebase Console → Authentication → Sign-in method → Google → Web SDK configuration
 - Android API Key: From `google-services.json` → `client[0].api_key[0].current_key`
 - iOS API Key: From `GoogleService-Info.plist` → `API_KEY`
 
@@ -275,12 +277,13 @@ static FirebaseOptions get web => FirebaseOptions(
 #### For Android:
 1. In Firebase Console → Authentication → Sign-in method
 2. Enable "Google" provider
-3. Add SHA-1 fingerprint:
+3. Add SHA-1 and SHA-256 fingerprints:
    ```bash
    cd android
    ./gradlew signingReport
    ```
-4. Copy SHA-1 and add to Firebase project settings
+4. Copy debug/release SHA-1 and SHA-256 values into Firebase project settings for your Android app
+5. Re-download `google-services.json` and replace `android/app/google-services.json`
 
 #### For iOS:
 1. Open `ios/Runner/Info.plist`

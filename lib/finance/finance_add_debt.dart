@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/services/finance_service.dart';
-import 'package:synthese/ui/components/premium_button.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 
 class AddDebtModal extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -69,7 +69,10 @@ class _AddDebtModalState extends State<AddDebtModal> {
   Future<void> _fetchUserCurrency() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
     final country = doc.data()?['country'] as String?;
     if (country != null && mounted) {
       setState(() => _currencySymbol = _getCurrencySymbol(country));
@@ -213,7 +216,9 @@ class _AddDebtModalState extends State<AddDebtModal> {
 
     double? installmentAmount;
     if (_hasInstallment) {
-      installmentAmount = double.tryParse(_installmentController.text.replaceAll(',', '.'));
+      installmentAmount = double.tryParse(
+        _installmentController.text.replaceAll(',', '.'),
+      );
       if (installmentAmount == null || installmentAmount <= 0) {
         _showError('Please enter a valid installment amount');
         return;
@@ -322,7 +327,8 @@ class _AddDebtModalState extends State<AddDebtModal> {
             Expanded(
               child: CupertinoDatePicker(
                 mode: CupertinoDatePickerMode.date,
-                initialDateTime: _dueDate ?? DateTime.now().add(const Duration(days: 30)),
+                initialDateTime:
+                    _dueDate ?? DateTime.now().add(const Duration(days: 30)),
                 minimumDate: DateTime.now(),
                 onDateTimeChanged: (date) {
                   setState(() => _dueDate = date);
@@ -344,7 +350,9 @@ class _AddDebtModalState extends State<AddDebtModal> {
         ? const Color(0xFF19191A)
         : const Color(0xFFF0F0F6); // Unified modal background
 
-    final cardColor = isDark ? const Color(0xFF19191A) : const Color(0xFFF0F0F6);
+    final cardColor = isDark
+        ? const Color(0xFF19191A)
+        : const Color(0xFFF0F0F6);
     final textColor = isDark ? Colors.white : Colors.black;
     final subtextColor = isDark ? Colors.white54 : Colors.black54;
 
@@ -370,7 +378,11 @@ class _AddDebtModalState extends State<AddDebtModal> {
 
             // --- HEADER ---
             Padding(
-              padding: const EdgeInsets.only(top: 16.0, left: 20.0, right: 20.0),
+              padding: const EdgeInsets.only(
+                top: 16.0,
+                left: 20.0,
+                right: 20.0,
+              ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -405,10 +417,17 @@ class _AddDebtModalState extends State<AddDebtModal> {
               duration: const Duration(milliseconds: 300),
               child: _errorMessage != null
                   ? Padding(
-                      padding: const EdgeInsets.only(top: 16, left: 20, right: 20),
+                      padding: const EdgeInsets.only(
+                        top: 16,
+                        left: 20,
+                        right: 20,
+                      ),
                       child: Text(
                         _errorMessage!,
-                        style: const TextStyle(color: Color(0xFFFF3B30), fontSize: 13),
+                        style: const TextStyle(
+                          color: Color(0xFFFF3B30),
+                          fontSize: 13,
+                        ),
                       ),
                     )
                   : const SizedBox.shrink(),
@@ -465,14 +484,21 @@ class _AddDebtModalState extends State<AddDebtModal> {
                           const SizedBox(height: 20),
 
                           // --- DUE DATE PICKER ---
-                          _buildSectionLabel('Due Date (optional)', subtextColor),
+                          _buildSectionLabel(
+                            'Due Date (optional)',
+                            subtextColor,
+                          ),
                           const SizedBox(height: 8),
                           _buildDueDatePicker(isDark, cardColor, textColor),
 
                           const SizedBox(height: 20),
 
                           // --- INSTALLMENT TOGGLE ---
-                          _buildInstallmentSection(isDark, cardColor, textColor),
+                          _buildInstallmentSection(
+                            isDark,
+                            cardColor,
+                            textColor,
+                          ),
 
                           const SizedBox(height: 20),
 
@@ -523,15 +549,10 @@ class _AddDebtModalState extends State<AddDebtModal> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: TextField(
         controller: _titleController,
-        style: TextStyle(
-          fontSize: 16,
-          color: textColor,
-        ),
+        style: TextStyle(fontSize: 16, color: textColor),
         decoration: InputDecoration(
           hintText: 'e.g., Car Loan, Credit Card Balance...',
-          hintStyle: TextStyle(
-            color: isDark ? Colors.white38 : Colors.black38,
-          ),
+          hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
           border: InputBorder.none,
         ),
         maxLines: 1,
@@ -573,7 +594,9 @@ class _AddDebtModalState extends State<AddDebtModal> {
           Expanded(
             child: TextField(
               controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               style: TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.bold,
@@ -649,7 +672,9 @@ class _AddDebtModalState extends State<AddDebtModal> {
                 children: [
                   Icon(
                     account.icon,
-                    color: isSelected ? _activeColor : (isDark ? Colors.white70 : Colors.black54),
+                    color: isSelected
+                        ? _activeColor
+                        : (isDark ? Colors.white70 : Colors.black54),
                     size: 22,
                   ),
                   const SizedBox(height: 4),
@@ -657,7 +682,9 @@ class _AddDebtModalState extends State<AddDebtModal> {
                     account.name,
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
                       color: isSelected ? _activeColor : textColor,
                     ),
                   ),
@@ -697,11 +724,16 @@ class _AddDebtModalState extends State<AddDebtModal> {
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? category.color.withOpacity(0.15)
-                      : (isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.05)),
+                      : (isDark
+                            ? Colors.white.withOpacity(0.08)
+                            : Colors.black.withOpacity(0.05)),
                   borderRadius: BorderRadius.circular(50),
                   border: Border.all(
                     color: isSelected ? category.color : Colors.transparent,
@@ -713,7 +745,9 @@ class _AddDebtModalState extends State<AddDebtModal> {
                   children: [
                     Icon(
                       category.icon,
-                      color: isSelected ? category.color : (isDark ? Colors.white70 : Colors.black54),
+                      color: isSelected
+                          ? category.color
+                          : (isDark ? Colors.white70 : Colors.black54),
                       size: 18,
                     ),
                     const SizedBox(width: 8),
@@ -721,8 +755,12 @@ class _AddDebtModalState extends State<AddDebtModal> {
                       category.name,
                       style: TextStyle(
                         fontSize: 14,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        color: isSelected ? category.color : (isDark ? Colors.white : Colors.black87),
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                        color: isSelected
+                            ? category.color
+                            : (isDark ? Colors.white : Colors.black87),
                       ),
                     ),
                   ],
@@ -752,7 +790,9 @@ class _AddDebtModalState extends State<AddDebtModal> {
           children: [
             Icon(
               CupertinoIcons.calendar,
-              color: _dueDate != null ? _activeColor : (isDark ? Colors.white38 : Colors.black38),
+              color: _dueDate != null
+                  ? _activeColor
+                  : (isDark ? Colors.white38 : Colors.black38),
               size: 20,
             ),
             const SizedBox(width: 12),
@@ -762,7 +802,9 @@ class _AddDebtModalState extends State<AddDebtModal> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: _dueDate != null ? textColor : (isDark ? Colors.white38 : Colors.black38),
+                  color: _dueDate != null
+                      ? textColor
+                      : (isDark ? Colors.white38 : Colors.black38),
                 ),
               ),
             ),
@@ -777,7 +819,11 @@ class _AddDebtModalState extends State<AddDebtModal> {
     );
   }
 
-  Widget _buildInstallmentSection(bool isDark, Color cardColor, Color textColor) {
+  Widget _buildInstallmentSection(
+    bool isDark,
+    Color cardColor,
+    Color textColor,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -791,7 +837,9 @@ class _AddDebtModalState extends State<AddDebtModal> {
             children: [
               Icon(
                 CupertinoIcons.repeat,
-                color: _hasInstallment ? _activeColor : (isDark ? Colors.white38 : Colors.black38),
+                color: _hasInstallment
+                    ? _activeColor
+                    : (isDark ? Colors.white38 : Colors.black38),
                 size: 20,
               ),
               const SizedBox(width: 12),
@@ -814,7 +862,10 @@ class _AddDebtModalState extends State<AddDebtModal> {
         ),
         if (_hasInstallment) ...[
           const SizedBox(height: 12),
-          _buildSectionLabel('Installment Amount', isDark ? Colors.white54 : Colors.black54),
+          _buildSectionLabel(
+            'Installment Amount',
+            isDark ? Colors.white54 : Colors.black54,
+          ),
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
@@ -836,7 +887,9 @@ class _AddDebtModalState extends State<AddDebtModal> {
                 Expanded(
                   child: TextField(
                     controller: _installmentController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
@@ -854,7 +907,9 @@ class _AddDebtModalState extends State<AddDebtModal> {
                       isDense: true,
                     ),
                     inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                      FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d*\.?\d{0,2}'),
+                      ),
                     ],
                   ),
                 ),
@@ -882,15 +937,10 @@ class _AddDebtModalState extends State<AddDebtModal> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: TextField(
         controller: _notesController,
-        style: TextStyle(
-          fontSize: 16,
-          color: textColor,
-        ),
+        style: TextStyle(fontSize: 16, color: textColor),
         decoration: InputDecoration(
           hintText: 'Add notes...',
-          hintStyle: TextStyle(
-            color: isDark ? Colors.white38 : Colors.black38,
-          ),
+          hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
           border: InputBorder.none,
           prefixIcon: Padding(
             padding: const EdgeInsets.only(right: 12),
@@ -900,7 +950,10 @@ class _AddDebtModalState extends State<AddDebtModal> {
               size: 20,
             ),
           ),
-          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 0,
+            minHeight: 0,
+          ),
         ),
         maxLines: 3,
         minLines: 1,
@@ -911,11 +964,15 @@ class _AddDebtModalState extends State<AddDebtModal> {
 }
 
 /// Helper function to show the AddDebtModal
-Future<bool?> showAddDebtModal(BuildContext context, {Function(bool)? onModalStateChanged}) {
+Future<bool?> showAddDebtModal(
+  BuildContext context, {
+  Function(bool)? onModalStateChanged,
+}) {
   return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => AddDebtModal(onModalStateChanged: onModalStateChanged),
+    builder: (context) =>
+        AddDebtModal(onModalStateChanged: onModalStateChanged),
   );
 }
