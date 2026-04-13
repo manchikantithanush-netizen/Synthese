@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
-import 'package:cupertino_native/cupertino_native.dart'; 
-import 'package:synthese/ui/components/premium_button.dart';
+import 'package:cupertino_native/cupertino_native.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/auth/login_page.dart';
 import 'package:synthese/ui/auth/signup_page.dart';
 
@@ -18,20 +18,22 @@ class StartPage extends StatefulWidget {
 class _StartPageState extends State<StartPage> {
   // --- TEXT CONSTANTS ---
   final String _introText = 'Hello,\nWelcome to Synthese';
-  
+
   // Dictionary parts broken down for dynamic styling during typing
   final String _defWord = 'Synthese\n';
   final String _defPron = '/ˈsɪnθɪsiːz/\n';
   final String _defPos = 'noun\n\n';
-  final String _defMeaning = 'The synthesis of athletic health data into clear, instantly understandable insights, designed to help young athletes view performance, recovery, and lifestyle information without unnecessary complexity.\n\n';
-  final String _defOrigin = 'From Greek: synthesis — a combining of elements to form a unified whole.';
-  
+  final String _defMeaning =
+      'The synthesis of athletic health data into clear, instantly understandable insights, designed to help young athletes view performance, recovery, and lifestyle information without unnecessary complexity.\n\n';
+  final String _defOrigin =
+      'From Greek: synthesis — a combining of elements to form a unified whole.';
+
   late final String _dictText;
 
   // --- STATE ---
   String _displayedText = '';
   int _phase = 0; // 0: Typing Intro, 1: Backspacing Intro, 2: Typing Dictionary
-  
+
   ModalRoute<dynamic>? _route;
 
   @override
@@ -53,12 +55,12 @@ class _StartPageState extends State<StartPage> {
     for (int i = 0; i < _introText.length; i++) {
       if (!mounted) return;
       setState(() => _displayedText = _introText.substring(0, i + 1));
-      
+
       String char = _introText[i];
       if (_route?.isCurrent == true && char != ' ' && char != '\n') {
-        HapticFeedback.lightImpact(); 
+        HapticFeedback.lightImpact();
       }
-      
+
       int delay = (char == ',' || char == '\n') ? 400 : 50;
       await Future.delayed(Duration(milliseconds: delay));
     }
@@ -70,11 +72,11 @@ class _StartPageState extends State<StartPage> {
     for (int i = _introText.length; i >= 0; i--) {
       if (!mounted) return;
       setState(() => _displayedText = _introText.substring(0, i));
-      
+
       if (_route?.isCurrent == true && i > 0) {
-        HapticFeedback.selectionClick(); 
+        HapticFeedback.selectionClick();
       }
-      await Future.delayed(const Duration(milliseconds: 20)); 
+      await Future.delayed(const Duration(milliseconds: 20));
     }
 
     await Future.delayed(const Duration(milliseconds: 600));
@@ -84,16 +86,18 @@ class _StartPageState extends State<StartPage> {
     for (int i = 0; i < _dictText.length; i++) {
       if (!mounted) return;
       setState(() => _displayedText = _dictText.substring(0, i + 1));
-      
+
       String char = _dictText[i];
       if (_route?.isCurrent == true && char != ' ' && char != '\n') {
-        HapticFeedback.lightImpact(); 
+        HapticFeedback.lightImpact();
       }
-      
-      int delay = 15; 
-      if (char == '.' || char == ',') delay = 150;
-      else if (char == '\n') delay = 200;
-      
+
+      int delay = 15;
+      if (char == '.' || char == ',')
+        delay = 150;
+      else if (char == '\n')
+        delay = 200;
+
       await Future.delayed(Duration(milliseconds: delay));
     }
   }
@@ -130,29 +134,70 @@ class _StartPageState extends State<StartPage> {
         if (currentIndex >= _displayedText.length) return;
         int endIndex = currentIndex + partText.length;
         if (endIndex > _displayedText.length) endIndex = _displayedText.length;
-        
-        spans.add(TextSpan(
-          text: _displayedText.substring(currentIndex, endIndex),
-          style: style,
-        ));
+
+        spans.add(
+          TextSpan(
+            text: _displayedText.substring(currentIndex, endIndex),
+            style: style,
+          ),
+        );
         currentIndex += partText.length;
       }
 
-      addPart(_defWord, TextStyle(
-        color: textColor, fontSize: 34, fontWeight: FontWeight.bold, letterSpacing: -0.5)); 
-      addPart(_defPron, TextStyle(
-        color: textColor.withOpacity(0.7), fontSize: 18, fontStyle: FontStyle.italic)); 
-      addPart(_defPos, TextStyle(
-        color: textColor.withOpacity(0.5), fontSize: 16, fontStyle: FontStyle.italic)); 
-      addPart(_defMeaning, TextStyle(
-        color: textColor.withOpacity(0.95), fontSize: 18, height: 1.5, fontWeight: FontWeight.w400)); 
-      addPart(_defOrigin, TextStyle(
-        color: textColor.withOpacity(0.5), fontSize: 14, height: 1.4, fontStyle: FontStyle.italic)); 
+      addPart(
+        _defWord,
+        TextStyle(
+          color: textColor,
+          fontSize: 34,
+          fontWeight: FontWeight.bold,
+          letterSpacing: -0.5,
+        ),
+      );
+      addPart(
+        _defPron,
+        TextStyle(
+          color: textColor.withOpacity(0.7),
+          fontSize: 18,
+          fontStyle: FontStyle.italic,
+        ),
+      );
+      addPart(
+        _defPos,
+        TextStyle(
+          color: textColor.withOpacity(0.5),
+          fontSize: 16,
+          fontStyle: FontStyle.italic,
+        ),
+      );
+      addPart(
+        _defMeaning,
+        TextStyle(
+          color: textColor.withOpacity(0.95),
+          fontSize: 18,
+          height: 1.5,
+          fontWeight: FontWeight.w400,
+        ),
+      );
+      addPart(
+        _defOrigin,
+        TextStyle(
+          color: textColor.withOpacity(0.5),
+          fontSize: 14,
+          height: 1.4,
+          fontStyle: FontStyle.italic,
+        ),
+      );
 
-      spans.add(TextSpan(
-        text: '|',
-        style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.w300), 
-      ));
+      spans.add(
+        TextSpan(
+          text: '|',
+          style: TextStyle(
+            color: textColor,
+            fontSize: 18,
+            fontWeight: FontWeight.w300,
+          ),
+        ),
+      );
 
       return spans;
     }
@@ -199,43 +244,45 @@ class _StartPageState extends State<StartPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  
                   // Continue with Sign In Button
-// Continue with Sign In Button
-// Continue with Sign In Button
-// Sign In Button
-PremiumButton(
-  text: 'Continue with Sign In',
-  onPressed: () {
-    Navigator.push(context, _fadeRoute(const LoginPage()));
-  },
-),
+                  // Continue with Sign In Button
+                  // Continue with Sign In Button
+                  // Sign In Button
+                  PremiumButton(
+                    text: 'Continue with Sign In',
+                    onPressed: () {
+                      Navigator.push(context, _fadeRoute(const LoginPage()));
+                    },
+                  ),
 
-const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
-// Sign Up Button
-ClipRRect(
-  borderRadius: BorderRadius.circular(50),
-  child: SizedBox(
-    height: 56,
-    width: double.infinity,
-    child: Theme(
-      data: Theme.of(context).copyWith(
-        colorScheme: Theme.of(context).colorScheme.copyWith(
-          primary: Colors.green,
-        ),
-      ),
-      child: CNButton(
-        label: 'Continue with Sign Up',
-        style: CNButtonStyle.bordered,
-        onPressed: () {
-          HapticFeedback.lightImpact();
-          Navigator.push(context, _fadeRoute(const SignupPage()));
-        },
-      ),
-    ),
-  ),
-),
+                  // Sign Up Button
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(50),
+                    child: SizedBox(
+                      height: 56,
+                      width: double.infinity,
+                      child: Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: Theme.of(
+                            context,
+                          ).colorScheme.copyWith(primary: Colors.green),
+                        ),
+                        child: CNButton(
+                          label: 'Continue with Sign Up',
+                          style: CNButtonStyle.bordered,
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.push(
+                              context,
+                              _fadeRoute(const SignupPage()),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
 
                   const SizedBox(height: 24),
 
@@ -249,17 +296,23 @@ ClipRRect(
                         letterSpacing: 0.2,
                       ),
                       children: [
-                        const TextSpan(text: 'By pressing Continue you agree with our\n'),
+                        const TextSpan(
+                          text: 'By pressing Continue you agree with our\n',
+                        ),
                         TextSpan(
                           text: 'privacy policy',
                           style: TextStyle(
-                              color: textColor, fontWeight: FontWeight.bold), 
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const TextSpan(text: ' and '),
                         TextSpan(
                           text: 'terms and conditions',
                           style: TextStyle(
-                              color: textColor, fontWeight: FontWeight.bold), 
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const TextSpan(text: '.'),
                       ],

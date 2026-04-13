@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'dart:async';
 import 'signup_page.dart';
 import 'package:synthese/onboarding/onboarding_intro.dart';
-import 'package:synthese/ui/components/premium_button.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -54,7 +56,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> signInWithEmail() async {
-    if (emailController.text.trim().isEmpty || passwordController.text.trim().isEmpty) {
+    if (emailController.text.trim().isEmpty ||
+        passwordController.text.trim().isEmpty) {
       _triggerNotification('Please enter email and password');
       return;
     }
@@ -89,8 +92,16 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> signInWithGoogle() async {
     setState(() => _isLoading = true);
     try {
+      final webClientId = dotenv.env['GOOGLE_WEB_CLIENT_ID']?.trim();
       final googleSignIn = GoogleSignIn(
-        clientId: '118165710666-mu9h11167ij8v9ttqs8u569g0d77bqke.apps.googleusercontent.com',
+        // `clientId` is needed for Apple platforms; using it on Android can
+        // break the token handoff after account selection.
+        clientId: defaultTargetPlatform == TargetPlatform.iOS
+            ? '118165710666-mu9h11167ij8v9ttqs8u569g0d77bqke.apps.googleusercontent.com'
+            : null,
+        serverClientId: webClientId != null && webClientId.isNotEmpty
+            ? webClientId
+            : null,
       );
       final googleUser = await googleSignIn.signIn();
       if (googleUser == null) {
@@ -98,6 +109,12 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
       final googleAuth = await googleUser.authentication;
+      if (googleAuth.idToken == null && googleAuth.accessToken == null) {
+        throw FirebaseAuthException(
+          code: 'missing-google-token',
+          message: 'Google sign-in did not return an auth token.',
+        );
+      }
       final credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
         accessToken: googleAuth.accessToken,
@@ -112,7 +129,25 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      _triggerNotification(e.message ?? 'Google Sign-In failed');
+      _triggerNotification(e.message ?? 'Google Sign-In failed (${e.code})');
+    } on PlatformException catch (e) {
+      final rawMessage = e.message ?? '';
+      if (e.code == 'sign_in_failed' &&
+          rawMessage.contains('ApiException: 10')) {
+        _triggerNotification(
+          'Google Sign-In Android config is incomplete. Add SHA-1/SHA-256 for this app in Firebase, enable Google provider, then download the updated google-services.json.',
+        );
+        return;
+      }
+      final details = [
+        e.code,
+        e.message,
+      ].whereType<String>().where((part) => part.isNotEmpty).join(': ');
+      _triggerNotification(
+        'Google Sign-In failed${details.isNotEmpty ? ' ($details)' : ''}',
+      );
+    } catch (e) {
+      _triggerNotification('Google Sign-In failed (${e.runtimeType}).');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -127,7 +162,10 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = true);
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      _triggerNotification('Reset email sent! Check your inbox.', isError: false);
+      _triggerNotification(
+        'Reset email sent! Check your inbox.',
+        isError: false,
+      );
     } catch (e) {
       _triggerNotification('Failed to send reset email.');
     } finally {
@@ -135,7 +173,11 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  InputDecoration _iosInputDecoration(BuildContext context, String hint, IconData icon) {
+  InputDecoration _iosInputDecoration(
+    BuildContext context,
+    String hint,
+    IconData icon,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return InputDecoration(
       hintText: hint,
@@ -227,7 +269,11 @@ class _LoginPageState extends State<LoginPage> {
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
                 style: TextStyle(color: textColor),
-                decoration: _iosInputDecoration(context, 'Email', Icons.mail_outline),
+                decoration: _iosInputDecoration(
+                  context,
+                  'Email',
+                  Icons.mail_outline,
+                ),
               ),
 
               const SizedBox(height: 14),
@@ -236,7 +282,11 @@ class _LoginPageState extends State<LoginPage> {
                 controller: passwordController,
                 obscureText: true,
                 style: TextStyle(color: textColor),
-                decoration: _iosInputDecoration(context, 'Password', Icons.lock_outline),
+                decoration: _iosInputDecoration(
+                  context,
+                  'Password',
+                  Icons.lock_outline,
+                ),
               ),
 
               const SizedBox(height: 12),
@@ -279,7 +329,10 @@ class _LoginPageState extends State<LoginPage> {
               GestureDetector(
                 onTap: () {
                   HapticFeedback.selectionClick();
-                  Navigator.pushReplacement(context, _fadeRoute(const SignupPage()));
+                  Navigator.pushReplacement(
+                    context,
+                    _fadeRoute(const SignupPage()),
+                  );
                 },
                 child: RichText(
                   textAlign: TextAlign.center,

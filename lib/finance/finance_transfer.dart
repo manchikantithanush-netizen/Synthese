@@ -7,7 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/services/finance_service.dart';
-import 'package:synthese/ui/components/premium_button.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 
 class TransferModal extends StatefulWidget {
   const TransferModal({super.key});
@@ -41,19 +41,60 @@ class _TransferModalState extends State<TransferModal> {
 
   String _getCurrencySymbol(String country) {
     final Map<String, String> currencyMap = {
-      'United States': '\$', 'USA': '\$', 'Canada': 'CA\$', 'Mexico': 'MX\$',
-      'Brazil': 'R\$', 'Argentina': 'AR\$', 'United Kingdom': '£', 'UK': '£',
-      'Germany': '€', 'France': '€', 'Italy': '€', 'Spain': '€', 'Netherlands': '€',
-      'Belgium': '€', 'Austria': '€', 'Ireland': '€', 'Portugal': '€', 'Greece': '€',
-      'Finland': '€', 'Switzerland': 'CHF ', 'Sweden': 'kr ', 'Norway': 'kr ',
-      'Denmark': 'kr ', 'Poland': 'zł ', 'Russia': '₽', 'Turkey': '₺',
-      'United Arab Emirates': 'AED ', 'UAE': 'AED ', 'Saudi Arabia': 'SAR ',
-      'Qatar': 'QAR ', 'Kuwait': 'KWD ', 'Bahrain': 'BHD ', 'Oman': 'OMR ',
-      'Israel': '₪', 'Egypt': 'E£', 'India': '₹', 'Japan': '¥', 'China': '¥',
-      'South Korea': '₩', 'Singapore': 'S\$', 'Malaysia': 'RM ', 'Thailand': '฿',
-      'Indonesia': 'Rp ', 'Philippines': '₱', 'Vietnam': '₫', 'Pakistan': 'Rs ',
-      'Bangladesh': '৳', 'Hong Kong': 'HK\$', 'Taiwan': 'NT\$', 'Australia': 'A\$',
-      'New Zealand': 'NZ\$', 'South Africa': 'R ', 'Nigeria': '₦', 'Kenya': 'KSh ',
+      'United States': '\$',
+      'USA': '\$',
+      'Canada': 'CA\$',
+      'Mexico': 'MX\$',
+      'Brazil': 'R\$',
+      'Argentina': 'AR\$',
+      'United Kingdom': '£',
+      'UK': '£',
+      'Germany': '€',
+      'France': '€',
+      'Italy': '€',
+      'Spain': '€',
+      'Netherlands': '€',
+      'Belgium': '€',
+      'Austria': '€',
+      'Ireland': '€',
+      'Portugal': '€',
+      'Greece': '€',
+      'Finland': '€',
+      'Switzerland': 'CHF ',
+      'Sweden': 'kr ',
+      'Norway': 'kr ',
+      'Denmark': 'kr ',
+      'Poland': 'zł ',
+      'Russia': '₽',
+      'Turkey': '₺',
+      'United Arab Emirates': 'AED ',
+      'UAE': 'AED ',
+      'Saudi Arabia': 'SAR ',
+      'Qatar': 'QAR ',
+      'Kuwait': 'KWD ',
+      'Bahrain': 'BHD ',
+      'Oman': 'OMR ',
+      'Israel': '₪',
+      'Egypt': 'E£',
+      'India': '₹',
+      'Japan': '¥',
+      'China': '¥',
+      'South Korea': '₩',
+      'Singapore': 'S\$',
+      'Malaysia': 'RM ',
+      'Thailand': '฿',
+      'Indonesia': 'Rp ',
+      'Philippines': '₱',
+      'Vietnam': '₫',
+      'Pakistan': 'Rs ',
+      'Bangladesh': '৳',
+      'Hong Kong': 'HK\$',
+      'Taiwan': 'NT\$',
+      'Australia': 'A\$',
+      'New Zealand': 'NZ\$',
+      'South Africa': 'R ',
+      'Nigeria': '₦',
+      'Kenya': 'KSh ',
     };
     return currencyMap[country] ?? '\$';
   }
@@ -61,7 +102,10 @@ class _TransferModalState extends State<TransferModal> {
   Future<void> _fetchUserCurrency() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
-    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
     final country = doc.data()?['country'] as String?;
     if (country != null && mounted) {
       setState(() => _currencySymbol = _getCurrencySymbol(country));
@@ -131,7 +175,10 @@ class _TransferModalState extends State<TransferModal> {
     }
 
     // Fetch latest balance for from account
-    final latestFromAccount = await _financeService.getAccount(uid, _fromAccount!.id);
+    final latestFromAccount = await _financeService.getAccount(
+      uid,
+      _fromAccount!.id,
+    );
     if (latestFromAccount == null) {
       _showError('Source account not found');
       return;
@@ -198,7 +245,11 @@ class _TransferModalState extends State<TransferModal> {
           children: [
             // --- HEADER ---
             Padding(
-              padding: const EdgeInsets.only(top: 24.0, left: 20.0, right: 20.0),
+              padding: const EdgeInsets.only(
+                top: 24.0,
+                left: 20.0,
+                right: 20.0,
+              ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -233,10 +284,17 @@ class _TransferModalState extends State<TransferModal> {
               duration: const Duration(milliseconds: 300),
               child: _errorMessage != null
                   ? Padding(
-                      padding: const EdgeInsets.only(top: 16, left: 20, right: 20),
+                      padding: const EdgeInsets.only(
+                        top: 16,
+                        left: 20,
+                        right: 20,
+                      ),
                       child: Text(
                         _errorMessage!,
-                        style: const TextStyle(color: Color(0xFFFF3B30), fontSize: 13),
+                        style: const TextStyle(
+                          color: Color(0xFFFF3B30),
+                          fontSize: 13,
+                        ),
                       ),
                     )
                   : const SizedBox.shrink(),
@@ -345,7 +403,9 @@ class _TransferModalState extends State<TransferModal> {
           Expanded(
             child: TextField(
               controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
@@ -391,8 +451,8 @@ class _TransferModalState extends State<TransferModal> {
           color: cardColor,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: selectedAccount != null 
-                ? transferColor.withOpacity(0.3) 
+            color: selectedAccount != null
+                ? transferColor.withOpacity(0.3)
                 : Colors.transparent,
             width: 1.5,
           ),
@@ -467,10 +527,8 @@ class _TransferModalState extends State<TransferModal> {
     required ValueChanged<Account?> onChanged,
   }) {
     HapticFeedback.lightImpact();
-    
-    final bgColor = isDark
-        ? const Color(0xFF252528)
-        : Colors.white;
+
+    final bgColor = isDark ? const Color(0xFF252528) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
 
     showModalBottomSheet(
@@ -520,7 +578,9 @@ class _TransferModalState extends State<TransferModal> {
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.white12 : Colors.black.withOpacity(0.05),
+                        color: isDark
+                            ? Colors.white12
+                            : Colors.black.withOpacity(0.05),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -544,7 +604,7 @@ class _TransferModalState extends State<TransferModal> {
                 itemBuilder: (context, index) {
                   final account = _accounts[index];
                   final isSelected = selectedAccount?.id == account.id;
-                  
+
                   return GestureDetector(
                     onTap: () {
                       HapticFeedback.selectionClick();
@@ -553,15 +613,22 @@ class _TransferModalState extends State<TransferModal> {
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: isSelected 
-                            ? transferColor.withOpacity(0.12) 
-                            : (isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03)),
+                        color: isSelected
+                            ? transferColor.withOpacity(0.12)
+                            : (isDark
+                                  ? Colors.white.withOpacity(0.05)
+                                  : Colors.black.withOpacity(0.03)),
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color: isSelected ? transferColor : Colors.transparent,
+                          color: isSelected
+                              ? transferColor
+                              : Colors.transparent,
                           width: 1.5,
                         ),
                       ),
@@ -570,14 +637,18 @@ class _TransferModalState extends State<TransferModal> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: isSelected 
-                                  ? transferColor.withOpacity(0.15) 
-                                  : (isDark ? Colors.white12 : Colors.black.withOpacity(0.06)),
+                              color: isSelected
+                                  ? transferColor.withOpacity(0.15)
+                                  : (isDark
+                                        ? Colors.white12
+                                        : Colors.black.withOpacity(0.06)),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
                               account.icon,
-                              color: isSelected ? transferColor : (isDark ? Colors.white70 : Colors.black54),
+                              color: isSelected
+                                  ? transferColor
+                                  : (isDark ? Colors.white70 : Colors.black54),
                               size: 22,
                             ),
                           ),
@@ -590,8 +661,12 @@ class _TransferModalState extends State<TransferModal> {
                                   account.name,
                                   style: TextStyle(
                                     fontSize: 16,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                    color: isSelected ? transferColor : textColor,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.w500,
+                                    color: isSelected
+                                        ? transferColor
+                                        : textColor,
                                   ),
                                 ),
                                 const SizedBox(height: 3),
@@ -600,7 +675,9 @@ class _TransferModalState extends State<TransferModal> {
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
-                                    color: isDark ? Colors.white54 : Colors.black54,
+                                    color: isDark
+                                        ? Colors.white54
+                                        : Colors.black54,
                                   ),
                                 ),
                               ],

@@ -7,7 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/services/finance_service.dart';
-import 'package:synthese/ui/components/premium_button.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 
 /// Model for debt payment history
 class DebtPayment {
@@ -121,8 +121,10 @@ class _DebtDetailModalState extends State<DebtDetailModal>
 
     try {
       // Load currency
-      final userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
       final country = userDoc.data()?['country'] as String?;
       if (country != null) {
         _currencySymbol = _getCurrencySymbol(country);
@@ -135,8 +137,9 @@ class _DebtDetailModalState extends State<DebtDetailModal>
           .doc(uid)
           .collection('finance_accounts')
           .get();
-      _accounts =
-          accountsSnapshot.docs.map((doc) => Account.fromMap(doc.data())).toList();
+      _accounts = accountsSnapshot.docs
+          .map((doc) => Account.fromMap(doc.data()))
+          .toList();
 
       // Load payment history
       final paymentsSnapshot = await FirebaseFirestore.instance
@@ -174,19 +177,60 @@ class _DebtDetailModalState extends State<DebtDetailModal>
 
   String _getCurrencySymbol(String country) {
     final Map<String, String> currencyMap = {
-      'United States': '\$', 'USA': '\$', 'Canada': 'CA\$', 'Mexico': 'MX\$',
-      'Brazil': 'R\$', 'Argentina': 'AR\$', 'United Kingdom': '£', 'UK': '£',
-      'Germany': '€', 'France': '€', 'Italy': '€', 'Spain': '€', 'Netherlands': '€',
-      'Belgium': '€', 'Austria': '€', 'Ireland': '€', 'Portugal': '€', 'Greece': '€',
-      'Finland': '€', 'Switzerland': 'CHF ', 'Sweden': 'kr ', 'Norway': 'kr ',
-      'Denmark': 'kr ', 'Poland': 'zł ', 'Russia': '₽', 'Turkey': '₺',
-      'United Arab Emirates': 'AED ', 'UAE': 'AED ', 'Saudi Arabia': 'SAR ',
-      'Qatar': 'QAR ', 'Kuwait': 'KWD ', 'Bahrain': 'BHD ', 'Oman': 'OMR ',
-      'Israel': '₪', 'Egypt': 'E£', 'India': '₹', 'Japan': '¥', 'China': '¥',
-      'South Korea': '₩', 'Singapore': 'S\$', 'Malaysia': 'RM ', 'Thailand': '฿',
-      'Indonesia': 'Rp ', 'Philippines': '₱', 'Vietnam': '₫', 'Pakistan': 'Rs ',
-      'Bangladesh': '৳', 'Hong Kong': 'HK\$', 'Taiwan': 'NT\$', 'Australia': 'A\$',
-      'New Zealand': 'NZ\$', 'South Africa': 'R ', 'Nigeria': '₦', 'Kenya': 'KSh ',
+      'United States': '\$',
+      'USA': '\$',
+      'Canada': 'CA\$',
+      'Mexico': 'MX\$',
+      'Brazil': 'R\$',
+      'Argentina': 'AR\$',
+      'United Kingdom': '£',
+      'UK': '£',
+      'Germany': '€',
+      'France': '€',
+      'Italy': '€',
+      'Spain': '€',
+      'Netherlands': '€',
+      'Belgium': '€',
+      'Austria': '€',
+      'Ireland': '€',
+      'Portugal': '€',
+      'Greece': '€',
+      'Finland': '€',
+      'Switzerland': 'CHF ',
+      'Sweden': 'kr ',
+      'Norway': 'kr ',
+      'Denmark': 'kr ',
+      'Poland': 'zł ',
+      'Russia': '₽',
+      'Turkey': '₺',
+      'United Arab Emirates': 'AED ',
+      'UAE': 'AED ',
+      'Saudi Arabia': 'SAR ',
+      'Qatar': 'QAR ',
+      'Kuwait': 'KWD ',
+      'Bahrain': 'BHD ',
+      'Oman': 'OMR ',
+      'Israel': '₪',
+      'Egypt': 'E£',
+      'India': '₹',
+      'Japan': '¥',
+      'China': '¥',
+      'South Korea': '₩',
+      'Singapore': 'S\$',
+      'Malaysia': 'RM ',
+      'Thailand': '฿',
+      'Indonesia': 'Rp ',
+      'Philippines': '₱',
+      'Vietnam': '₫',
+      'Pakistan': 'Rs ',
+      'Bangladesh': '৳',
+      'Hong Kong': 'HK\$',
+      'Taiwan': 'NT\$',
+      'Australia': 'A\$',
+      'New Zealand': 'NZ\$',
+      'South Africa': 'R ',
+      'Nigeria': '₦',
+      'Kenya': 'KSh ',
     };
     return currencyMap[country] ?? '\$';
   }
@@ -245,7 +289,10 @@ class _DebtDetailModalState extends State<DebtDetailModal>
       batch.set(paymentRef, payment.toMap());
 
       // Update debt remaining amount
-      final newRemaining = (_debt.remainingAmount - amount).clamp(0.0, _debt.totalAmount);
+      final newRemaining = (_debt.remainingAmount - amount).clamp(
+        0.0,
+        _debt.totalAmount,
+      );
       final debtRef = FirebaseFirestore.instance
           .collection('users')
           .doc(uid)
@@ -353,7 +400,9 @@ class _DebtDetailModalState extends State<DebtDetailModal>
         if (accountDoc.exists) {
           final currentBalance =
               (accountDoc.data() as Map<String, dynamic>)['balance'] as num;
-          final balanceChange = _isOweMe ? _debt.remainingAmount : -_debt.remainingAmount;
+          final balanceChange = _isOweMe
+              ? _debt.remainingAmount
+              : -_debt.remainingAmount;
           batch.update(accountRef, {'balance': currentBalance + balanceChange});
         }
       }
@@ -364,10 +413,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
           .doc(uid)
           .collection('finance_debts')
           .doc(_debt.id);
-      batch.update(debtRef, {
-        'remainingAmount': 0.0,
-        'isPaid': true,
-      });
+      batch.update(debtRef, {'remainingAmount': 0.0, 'isPaid': true});
 
       await batch.commit();
 
@@ -428,7 +474,9 @@ class _DebtDetailModalState extends State<DebtDetailModal>
             : const Color(0xFFF0F0F6);
         final textColor = isDark ? Colors.white : Colors.black;
         final subtextColor = isDark ? Colors.white54 : Colors.black54;
-        final cardColor = isDark ? const Color(0xFF19191A) : const Color(0xFFF0F0F6);
+        final cardColor = isDark
+            ? const Color(0xFF19191A)
+            : const Color(0xFFF0F0F6);
 
         return Padding(
           padding: EdgeInsets.only(
@@ -437,7 +485,9 @@ class _DebtDetailModalState extends State<DebtDetailModal>
           child: Container(
             decoration: BoxDecoration(
               color: bgColor,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
             ),
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -469,16 +519,16 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                 const SizedBox(height: 8),
                 Text(
                   'Remaining: ${_formatCurrency(_debt.remainingAmount)}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: subtextColor,
-                  ),
+                  style: TextStyle(fontSize: 14, color: subtextColor),
                 ),
                 const SizedBox(height: 24),
 
                 // Amount input
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius: BorderRadius.circular(16),
@@ -497,7 +547,9 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                       Expanded(
                         child: TextField(
                           controller: amountController,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
                           autofocus: true,
                           style: TextStyle(
                             fontSize: 28,
@@ -514,7 +566,9 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                             border: InputBorder.none,
                           ),
                           inputFormatters: [
-                            FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[\d.,]'),
+                            ),
                           ],
                         ),
                       ),
@@ -554,7 +608,10 @@ class _DebtDetailModalState extends State<DebtDetailModal>
 
                 // Note input
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius: BorderRadius.circular(12),
@@ -592,7 +649,10 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                       return;
                     }
                     Navigator.pop(context);
-                    _makePayment(amount, noteController.text.isEmpty ? null : noteController.text);
+                    _makePayment(
+                      amount,
+                      noteController.text.isEmpty ? null : noteController.text,
+                    );
                   },
                 ),
                 SizedBox(height: MediaQuery.of(context).padding.bottom + 10),
@@ -666,11 +726,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
             _buildHeader(isDark, textColor, category),
 
             if (_isLoading)
-              const Expanded(
-                child: Center(
-                  child: CupertinoActivityIndicator(),
-                ),
-              )
+              const Expanded(child: Center(child: CupertinoActivityIndicator()))
             else ...[
               // Content
               Expanded(
@@ -683,22 +739,43 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                       const SizedBox(height: 8),
 
                       // Progress Section
-                      _buildProgressCard(isDark, cardColor, textColor, subtextColor, category),
+                      _buildProgressCard(
+                        isDark,
+                        cardColor,
+                        textColor,
+                        subtextColor,
+                        category,
+                      ),
                       const SizedBox(height: 16),
 
                       // Due Date Section
                       if (_debt.dueDate != null)
-                        _buildDueDateCard(isDark, cardColor, textColor, subtextColor),
+                        _buildDueDateCard(
+                          isDark,
+                          cardColor,
+                          textColor,
+                          subtextColor,
+                        ),
                       if (_debt.dueDate != null) const SizedBox(height: 16),
 
                       // Notes Section
                       if (_debt.notes != null && _debt.notes!.isNotEmpty)
-                        _buildNotesCard(isDark, cardColor, textColor, subtextColor),
+                        _buildNotesCard(
+                          isDark,
+                          cardColor,
+                          textColor,
+                          subtextColor,
+                        ),
                       if (_debt.notes != null && _debt.notes!.isNotEmpty)
                         const SizedBox(height: 16),
 
                       // Payment History Section
-                      _buildPaymentHistorySection(isDark, cardColor, textColor, subtextColor),
+                      _buildPaymentHistorySection(
+                        isDark,
+                        cardColor,
+                        textColor,
+                        subtextColor,
+                      ),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -716,7 +793,12 @@ class _DebtDetailModalState extends State<DebtDetailModal>
 
   Widget _buildHeader(bool isDark, Color textColor, DebtCategory category) {
     return Padding(
-      padding: const EdgeInsets.only(top: 24.0, left: 20.0, right: 20.0, bottom: 16.0),
+      padding: const EdgeInsets.only(
+        top: 24.0,
+        left: 20.0,
+        right: 20.0,
+        bottom: 16.0,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -729,11 +811,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
               borderRadius: BorderRadius.circular(16),
             ),
             child: Center(
-              child: Icon(
-                category.icon,
-                color: category.color,
-                size: 28,
-              ),
+              child: Icon(category.icon, color: category.color, size: 28),
             ),
           ),
           const SizedBox(width: 16),
@@ -755,7 +833,10 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                 ),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: _isOweMe
                         ? const Color(0xFF34C759).withOpacity(0.15)
@@ -805,10 +886,10 @@ class _DebtDetailModalState extends State<DebtDetailModal>
     final progressColor = _debt.isPaid
         ? const Color(0xFF34C759)
         : _progressPercent > 0.8
-            ? const Color(0xFF34C759)
-            : _progressPercent > 0.5
-                ? const Color(0xFFFF9500)
-                : category.color;
+        ? const Color(0xFF34C759)
+        : _progressPercent > 0.5
+        ? const Color(0xFFFF9500)
+        : category.color;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -845,10 +926,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                   children: [
                     Text(
                       _debt.isPaid ? 'Completed' : 'Progress',
-                      style: TextStyle(
-                        color: subtextColor,
-                        fontSize: 13,
-                      ),
+                      style: TextStyle(color: subtextColor, fontSize: 13),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -894,10 +972,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
             const SizedBox(height: 12),
             Text(
               'Remaining: ${_formatCurrency(_debt.remainingAmount)}',
-              style: TextStyle(
-                color: subtextColor,
-                fontSize: 13,
-              ),
+              style: TextStyle(color: subtextColor, fontSize: 13),
             ),
           ],
         ],
@@ -925,14 +1000,19 @@ class _DebtDetailModalState extends State<DebtDetailModal>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: (_isOverdue ? const Color(0xFFFF3B30) : const Color(0xFF007AFF))
-                  .withOpacity(0.15),
+              color:
+                  (_isOverdue
+                          ? const Color(0xFFFF3B30)
+                          : const Color(0xFF007AFF))
+                      .withOpacity(0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Center(
               child: Icon(
                 CupertinoIcons.calendar,
-                color: _isOverdue ? const Color(0xFFFF3B30) : const Color(0xFF007AFF),
+                color: _isOverdue
+                    ? const Color(0xFFFF3B30)
+                    : const Color(0xFF007AFF),
                 size: 20,
               ),
             ),
@@ -944,10 +1024,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
               children: [
                 Text(
                   'Due Date',
-                  style: TextStyle(
-                    color: subtextColor,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: subtextColor, fontSize: 12),
                 ),
                 Text(
                   dueDateStr,
@@ -1018,18 +1095,12 @@ class _DebtDetailModalState extends State<DebtDetailModal>
               children: [
                 Text(
                   'Notes',
-                  style: TextStyle(
-                    color: subtextColor,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: subtextColor, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _debt.notes!,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: textColor, fontSize: 14),
                 ),
               ],
             ),
@@ -1068,18 +1139,11 @@ class _DebtDetailModalState extends State<DebtDetailModal>
             child: Center(
               child: Column(
                 children: [
-                  Icon(
-                    CupertinoIcons.doc_text,
-                    color: subtextColor,
-                    size: 32,
-                  ),
+                  Icon(CupertinoIcons.doc_text, color: subtextColor, size: 32),
                   const SizedBox(height: 8),
                   Text(
                     'No payments yet',
-                    style: TextStyle(
-                      color: subtextColor,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: subtextColor, fontSize: 14),
                   ),
                 ],
               ),
@@ -1149,20 +1213,14 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                 if (payment.note != null && payment.note!.isNotEmpty)
                   Text(
                     payment.note!,
-                    style: TextStyle(
-                      color: subtextColor,
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: subtextColor, fontSize: 12),
                   ),
               ],
             ),
           ),
           Text(
             _formatDate(payment.date),
-            style: TextStyle(
-              color: subtextColor,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: subtextColor, fontSize: 12),
           ),
         ],
       ),
@@ -1292,8 +1350,18 @@ class _DebtDetailModalState extends State<DebtDetailModal>
     }
 
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }

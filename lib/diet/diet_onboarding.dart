@@ -4,60 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-class PremiumButton extends StatelessWidget {
-  final String text;
-  final VoidCallback onPressed;
-  final bool isLoading;
-  final Color? color;
-
-  const PremiumButton({
-    super.key,
-    required this.text,
-    required this.onPressed,
-    this.isLoading = false,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final buttonColor = color ?? const Color(0xFFFF9500);
-
-    return SizedBox(
-      height: 60,
-      width: double.infinity,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(50),
-        child: isLoading
-            ? Container(
-                decoration: BoxDecoration(
-                  color: buttonColor,
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: const Center(
-                  child: SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  ),
-                ),
-              )
-            : CNButton(
-                label: text,
-                style: CNButtonStyle.prominentGlass,
-                tint: buttonColor,
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                  onPressed();
-                },
-              ),
-      ),
-    );
-  }
-}
+import 'package:synthese/ui/components/universalbutton.dart';
 
 class DietOnboarding extends StatefulWidget {
   final VoidCallback onContinue;
@@ -70,7 +17,7 @@ class DietOnboarding extends StatefulWidget {
 
 class _DietOnboardingState extends State<DietOnboarding> {
   int _currentPage = 0;
-  
+
   int _dailyCalorieGoal = 2000; // Default: 2000 calories
   double _currentWaterIntake = 2.0; // Fetched from first onboarding
   double _dailyWaterGoalLitres = 2.0; // Default: 2L
@@ -93,13 +40,14 @@ class _DietOnboardingState extends State<DietOnboarding> {
             .collection('users')
             .doc(uid)
             .get();
-        
+
         if (doc.exists && doc.data() != null) {
           final data = doc.data()!;
           if (data['waterIntake'] != null) {
             setState(() {
               _currentWaterIntake = (data['waterIntake'] as num).toDouble();
-              _dailyWaterGoalLitres = _currentWaterIntake; // Default to current intake
+              _dailyWaterGoalLitres =
+                  _currentWaterIntake; // Default to current intake
               _calculateGlasses();
             });
           }
@@ -140,9 +88,9 @@ class _DietOnboardingState extends State<DietOnboarding> {
           'dietSetupCompleted': true,
         }, SetOptions(merge: true));
       }
-      
+
       HapticFeedback.mediumImpact();
-      widget.onContinue(); 
+      widget.onContinue();
     } catch (e) {
       debugPrint("Error saving diet data: $e");
     } finally {
@@ -166,10 +114,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
           switchInCurve: Curves.easeInOut,
           switchOutCurve: Curves.easeInOut,
           transitionBuilder: (Widget child, Animation<double> animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
+            return FadeTransition(opacity: animation, child: child);
           },
           child: _buildCurrentPage(isDark, textColor),
         ),
@@ -193,21 +138,22 @@ class _DietOnboardingState extends State<DietOnboarding> {
   }
 
   Widget _buildWelcomePage(bool isDark, Color textColor) {
-    Widget buildFeature(String title, String desc, IconData iconData, Color iconColor) {
+    Widget buildFeature(
+      String title,
+      String desc,
+      IconData iconData,
+      Color iconColor,
+    ) {
       return Padding(
         padding: const EdgeInsets.only(bottom: 32.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: 56, 
+              width: 56,
               child: Padding(
-                padding: const EdgeInsets.only(top: 2.0), 
-                child: Icon(
-                  iconData,
-                  color: iconColor,
-                  size: 35,
-                ),
+                padding: const EdgeInsets.only(top: 2.0),
+                child: Icon(iconData, color: iconColor, size: 35),
               ),
             ),
             const SizedBox(width: 8),
@@ -284,11 +230,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
             const Color(0xFF30D158), // Green
           ),
           const Spacer(),
-          PremiumButton(
-            text: "Next", 
-            onPressed: _nextPage,
-            color: orangeColor,
-          ),
+          PremiumButton(text: "Next", onPressed: _nextPage, color: orangeColor),
           const SizedBox(height: 40),
         ],
       ),
@@ -394,14 +336,16 @@ class _DietOnboardingState extends State<DietOnboarding> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 140), // Space for button + extra scroll room
+                      const SizedBox(
+                        height: 140,
+                      ), // Space for button + extra scroll room
                     ],
                   ),
                 ),
               ),
             ],
           ),
-          
+
           // Fixed button at bottom
           Positioned(
             left: 0,
@@ -478,11 +422,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
             ),
           ),
           const Spacer(),
-          PremiumButton(
-            text: "Next",
-            onPressed: _nextPage,
-            color: orangeColor,
-          ),
+          PremiumButton(text: "Next", onPressed: _nextPage, color: orangeColor),
           const SizedBox(height: 40),
         ],
       ),
@@ -574,7 +514,8 @@ class _DietOnboardingState extends State<DietOnboarding> {
               ),
               onSelectedItemChanged: (int index) {
                 setState(() {
-                  _dailyWaterGoalLitres = (index + 2) * 0.5; // 1.0, 1.5, 2.0, 2.5...
+                  _dailyWaterGoalLitres =
+                      (index + 2) * 0.5; // 1.0, 1.5, 2.0, 2.5...
                   _calculateGlasses();
                 });
                 HapticFeedback.selectionClick();
