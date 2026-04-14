@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
+import 'package:synthese/ui/components/universalclosebutton.dart';
 
 class HistoryCyclesModal extends StatefulWidget {
   const HistoryCyclesModal({super.key});
@@ -17,7 +18,7 @@ class HistoryCyclesModal extends StatefulWidget {
 class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
   String? _selectedCycleId;
   final Map<String, GlobalKey> _itemKeys = {};
-  
+
   // Cache the stream so it doesn't reconnect on every tap
   Stream<QuerySnapshot>? _cyclesStream;
 
@@ -83,11 +84,8 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                 ),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: CNButton.icon(
-                    icon: const CNSymbol('xmark'),
-                    style: CNButtonStyle.glass,
+                  child: UniversalCloseButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
                       Navigator.pop(context);
                     },
                   ),
@@ -104,11 +102,14 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                   : StreamBuilder<QuerySnapshot>(
                       stream: _cyclesStream,
                       builder: (context, snapshot) {
-                        
                         // Only show loading if we have absolutely no data yet
-                        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                        if (snapshot.connectionState ==
+                                ConnectionState.waiting &&
+                            !snapshot.hasData) {
                           return const Center(
-                            child: CircularProgressIndicator(color: Color(0xFFEC548A)),
+                            child: CircularProgressIndicator(
+                              color: Color(0xFFEC548A),
+                            ),
                           );
                         }
 
@@ -121,13 +122,27 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                             child: Column(
                               children: [
                                 _buildSummaryStatsBar(
-                                    isDark: isDark, avgCycle: 0, avgPeriod: 0, maxCycle: 0, minCycle: 0),
+                                  isDark: isDark,
+                                  avgCycle: 0,
+                                  avgPeriod: 0,
+                                  maxCycle: 0,
+                                  minCycle: 0,
+                                ),
                                 const SizedBox(height: 24),
-                                _buildChart(isDark: isDark, recentCycles: [], avgCycle: 0),
+                                _buildChart(
+                                  isDark: isDark,
+                                  recentCycles: [],
+                                  avgCycle: 0,
+                                ),
                                 const SizedBox(height: 40),
                                 Text(
                                   "No cycles logged yet.",
-                                  style: TextStyle(color: isDark ? Colors.white54 : Colors.black54, fontSize: 16),
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.white54
+                                        : Colors.black54,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ],
                             ),
@@ -136,16 +151,25 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
 
                         // --- DATA PROCESSING ---
                         List<Map<String, dynamic>> allCycles = docs.map((d) {
-                          return {'id': d.id, ...d.data() as Map<String, dynamic>};
+                          return {
+                            'id': d.id,
+                            ...d.data() as Map<String, dynamic>,
+                          };
                         }).toList();
 
                         allCycles.sort((a, b) {
-                          Timestamp tA = a['startDate'] as Timestamp? ?? Timestamp.now();
-                          Timestamp tB = b['startDate'] as Timestamp? ?? Timestamp.now();
+                          Timestamp tA =
+                              a['startDate'] as Timestamp? ?? Timestamp.now();
+                          Timestamp tB =
+                              b['startDate'] as Timestamp? ?? Timestamp.now();
                           return tB.compareTo(tA);
                         });
 
-                        int totalCycle = 0, totalPeriod = 0, maxCycle = 0, minCycle = 999, validCycles = 0;
+                        int totalCycle = 0,
+                            totalPeriod = 0,
+                            maxCycle = 0,
+                            minCycle = 999,
+                            validCycles = 0;
 
                         for (var c in allCycles) {
                           String cId = c['id'];
@@ -163,16 +187,27 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                           if (pLen > 0) totalPeriod += pLen;
                         }
 
-                        int avgCycle = validCycles > 0 ? (totalCycle / validCycles).round() : 0;
-                        int avgPeriod = validCycles > 0 ? (totalPeriod / validCycles).round() : 0;
+                        int avgCycle = validCycles > 0
+                            ? (totalCycle / validCycles).round()
+                            : 0;
+                        int avgPeriod = validCycles > 0
+                            ? (totalPeriod / validCycles).round()
+                            : 0;
                         if (minCycle == 999) minCycle = 0;
 
-                        List<Map<String, dynamic>> recent6 = allCycles.take(6).toList().reversed.toList();
+                        List<Map<String, dynamic>> recent6 = allCycles
+                            .take(6)
+                            .toList()
+                            .reversed
+                            .toList();
 
                         // Select the most recent cycle by default on first load
                         if (_selectedCycleId == null && recent6.isNotEmpty) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted) setState(() => _selectedCycleId = allCycles.first['id']);
+                            if (mounted)
+                              setState(
+                                () => _selectedCycleId = allCycles.first['id'],
+                              );
                           });
                         }
 
@@ -199,7 +234,7 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                                 isDark: isDark,
                                 cycles: allCycles,
                               ),
-                              const SizedBox(height: 40), 
+                              const SizedBox(height: 40),
                             ],
                           ),
                         );
@@ -234,23 +269,65 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Expanded(child: _buildStatColumn("Avg Cycle", "$avgCycle", "d", textColor, subTextColor)),
-          Expanded(child: _buildStatColumn("Avg Period", "$avgPeriod", "d", textColor, subTextColor)),
-          Expanded(child: _buildStatColumn("Longest", "$maxCycle", "d", textColor, subTextColor)),
-          Expanded(child: _buildStatColumn("Shortest", "$minCycle", "d", textColor, subTextColor)),
+          Expanded(
+            child: _buildStatColumn(
+              "Avg Cycle",
+              "$avgCycle",
+              "d",
+              textColor,
+              subTextColor,
+            ),
+          ),
+          Expanded(
+            child: _buildStatColumn(
+              "Avg Period",
+              "$avgPeriod",
+              "d",
+              textColor,
+              subTextColor,
+            ),
+          ),
+          Expanded(
+            child: _buildStatColumn(
+              "Longest",
+              "$maxCycle",
+              "d",
+              textColor,
+              subTextColor,
+            ),
+          ),
+          Expanded(
+            child: _buildStatColumn(
+              "Shortest",
+              "$minCycle",
+              "d",
+              textColor,
+              subTextColor,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatColumn(String label, String value, String unit, Color textColor, Color subTextColor) {
+  Widget _buildStatColumn(
+    String label,
+    String value,
+    String unit,
+    Color textColor,
+    Color subTextColor,
+  ) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           label,
           textAlign: TextAlign.center,
-          style: TextStyle(color: subTextColor, fontSize: 11, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: subTextColor,
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const SizedBox(height: 10),
         Row(
@@ -258,9 +335,23 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
           children: [
-            Text(value, style: TextStyle(color: textColor, fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(
+              value,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(width: 2),
-            Text(unit, style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.w600)),
+            Text(
+              unit,
+              style: TextStyle(
+                color: subTextColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ],
@@ -278,7 +369,9 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
     final subTextColor = isDark ? Colors.white54 : Colors.black54;
     const pinkColor = Color(0xFFEC548A);
 
-    int localMax = recentCycles.isEmpty ? 30 : recentCycles.map((c) => c['cycleLength'] as int? ?? 0).reduce(max);
+    int localMax = recentCycles.isEmpty
+        ? 30
+        : recentCycles.map((c) => c['cycleLength'] as int? ?? 0).reduce(max);
     double maxScale = max(localMax.toDouble(), 35.0);
 
     const double chartHeight = 120.0;
@@ -287,21 +380,42 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(24)),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Recent Cycles", style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold)),
+              Text(
+                "Recent Cycles",
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               Row(
                 children: [
-                  Container(width: 12, height: 2, color: isDark ? Colors.white30 : Colors.black26),
+                  Container(
+                    width: 12,
+                    height: 2,
+                    color: isDark ? Colors.white30 : Colors.black26,
+                  ),
                   const SizedBox(width: 6),
-                  Text("Average ($avgCycle d)", style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.w600)),
+                  Text(
+                    "Average ($avgCycle d)",
+                    style: TextStyle(
+                      color: subTextColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
-              )
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -315,7 +429,9 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                   right: 0,
                   child: CustomPaint(
                     size: const Size(double.infinity, 1),
-                    painter: DashedLinePainter(color: isDark ? Colors.white24 : Colors.black26),
+                    painter: DashedLinePainter(
+                      color: isDark ? Colors.white24 : Colors.black26,
+                    ),
                   ),
                 ),
                 Row(
@@ -327,7 +443,9 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                     bool isSelected = c['id'] == _selectedCycleId;
 
                     Timestamp? ts = c['startDate'] as Timestamp?;
-                    String monthStr = ts != null ? DateFormat('MMM').format(ts.toDate()) : '-';
+                    String monthStr = ts != null
+                        ? DateFormat('MMM').format(ts.toDate())
+                        : '-';
 
                     return GestureDetector(
                       behavior: HitTestBehavior.opaque,
@@ -337,7 +455,7 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                           setState(() => _selectedCycleId = c['id']);
                         }
                         // Always scroll to the card when tapping the chart
-                        _scrollToItem(c['id']); 
+                        _scrollToItem(c['id']);
                       },
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -347,7 +465,9 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                             style: TextStyle(
                               color: isSelected ? pinkColor : subTextColor,
                               fontSize: 12,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w600,
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -356,14 +476,22 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                             width: 28,
                             height: barHeight,
                             decoration: BoxDecoration(
-                              color: isSelected ? pinkColor : (isDark ? Colors.white12 : Colors.black.withOpacity(0.05)),
+                              color: isSelected
+                                  ? pinkColor
+                                  : (isDark
+                                        ? Colors.white12
+                                        : Colors.black.withOpacity(0.05)),
                               borderRadius: BorderRadius.circular(6),
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             monthStr,
-                            style: TextStyle(color: subTextColor, fontSize: 11, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              color: subTextColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
@@ -392,10 +520,12 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
       children: cycles.map((c) {
         final String cycleId = c['id'];
         final bool isSelected = cycleId == _selectedCycleId;
-        
+
         final Timestamp? ts = c['startDate'] as Timestamp?;
-        final String dateStr = ts != null ? DateFormat('MMMM d, yyyy').format(ts.toDate()) : 'Unknown Date';
-        
+        final String dateStr = ts != null
+            ? DateFormat('MMMM d, yyyy').format(ts.toDate())
+            : 'Unknown Date';
+
         final int cLen = c['cycleLength'] as int? ?? 0;
         final int pLen = c['periodLength'] as int? ?? 0;
 
@@ -415,8 +545,10 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
 
         // Pull symptoms (Assumes DB saves them as a list under "symptoms")
         List<dynamic> rawSymptoms = c['symptoms'] is List ? c['symptoms'] : [];
-        String symText = rawSymptoms.isNotEmpty 
-            ? rawSymptoms.take(3).join(', ') // Takes top 3 symptoms
+        String symText = rawSymptoms.isNotEmpty
+            ? rawSymptoms
+                  .take(3)
+                  .join(', ') // Takes top 3 symptoms
             : "No symptoms logged";
 
         return Container(
@@ -428,7 +560,9 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
               color: isSelected ? pinkColor.withOpacity(0.05) : cardColor,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isSelected ? pinkColor.withOpacity(0.5) : Colors.transparent,
+                color: isSelected
+                    ? pinkColor.withOpacity(0.5)
+                    : Colors.transparent,
                 width: 1.5,
               ),
             ),
@@ -436,7 +570,10 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
               children: [
                 // Top Header Section (Always Visible)
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   onTap: () {
                     HapticFeedback.selectionClick();
                     if (_selectedCycleId == cycleId) {
@@ -453,7 +590,10 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                       Container(
                         width: 10,
                         height: 10,
-                        decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
+                        decoration: BoxDecoration(
+                          color: statusColor,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Text(
@@ -467,68 +607,106 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                     ],
                   ),
                   subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 6.0, left: 20.0), // Aligns with text, ignoring dot
+                    padding: const EdgeInsets.only(
+                      top: 6.0,
+                      left: 20.0,
+                    ), // Aligns with text, ignoring dot
                     child: Text(
                       "Cycle: $cLen days  •  Period: $pLen days",
                       style: TextStyle(color: subTextColor, fontSize: 13),
                     ),
                   ),
                   trailing: Icon(
-                    isSelected ? CupertinoIcons.chevron_up : CupertinoIcons.chevron_down,
-                    color: isSelected ? pinkColor : subTextColor.withOpacity(0.5),
+                    isSelected
+                        ? CupertinoIcons.chevron_up
+                        : CupertinoIcons.chevron_down,
+                    color: isSelected
+                        ? pinkColor
+                        : subTextColor.withOpacity(0.5),
                     size: 18,
                   ),
                 ),
-                
+
                 // Expanded Details Section
                 AnimatedSize(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOutCubic,
                   child: isSelected
                       ? Padding(
-                          padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+                          padding: const EdgeInsets.only(
+                            left: 20,
+                            right: 20,
+                            bottom: 20,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Divider(color: isDark ? Colors.white12 : Colors.black12, height: 1),
+                              Divider(
+                                color: isDark ? Colors.white12 : Colors.black12,
+                                height: 1,
+                              ),
                               const SizedBox(height: 16),
-                              
+
                               // Extended Cycle Info
                               Row(
                                 children: [
-                                  Icon(CupertinoIcons.calendar, size: 16, color: statusColor),
+                                  Icon(
+                                    CupertinoIcons.calendar,
+                                    size: 16,
+                                    color: statusColor,
+                                  ),
                                   const SizedBox(width: 10),
                                   Text(
-                                    "$statusText ($cLen days)", 
-                                    style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w600)
+                                    "$statusText ($cLen days)",
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              
+
                               // Extended Period Info
                               Row(
                                 children: [
-                                  const Icon(CupertinoIcons.drop_fill, size: 16, color: Color(0xFFEC548A)),
+                                  const Icon(
+                                    CupertinoIcons.drop_fill,
+                                    size: 16,
+                                    color: Color(0xFFEC548A),
+                                  ),
                                   const SizedBox(width: 10),
                                   Text(
-                                    "$pLen day period", 
-                                    style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w600)
+                                    "$pLen day period",
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              
+
                               // Top Symptoms
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Icon(CupertinoIcons.heart_circle_fill, size: 16, color: subTextColor),
+                                  Icon(
+                                    CupertinoIcons.heart_circle_fill,
+                                    size: 16,
+                                    color: subTextColor,
+                                  ),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
-                                      "Top Symptoms: $symText", 
-                                      style: TextStyle(color: subTextColor, fontSize: 14, height: 1.3)
+                                      "Top Symptoms: $symText",
+                                      style: TextStyle(
+                                        color: subTextColor,
+                                        fontSize: 14,
+                                        height: 1.3,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -564,11 +742,7 @@ class DashedLinePainter extends CustomPainter {
     double startX = 0;
 
     while (startX < size.width) {
-      canvas.drawLine(
-        Offset(startX, 0),
-        Offset(startX + dashWidth, 0),
-        paint,
-      );
+      canvas.drawLine(Offset(startX, 0), Offset(startX + dashWidth, 0), paint);
       startX += dashWidth + dashSpace;
     }
   }

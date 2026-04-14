@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
+import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 
 class QuestionnaireDisclaimerModal extends StatelessWidget {
   const QuestionnaireDisclaimerModal({super.key});
@@ -43,11 +45,8 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
                   ),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: CNButton.icon(
-                      icon: const CNSymbol('xmark'),
-                      style: CNButtonStyle.glass,
+                    child: UniversalCloseButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
                         Navigator.of(context).pop(false);
                       },
                     ),
@@ -140,21 +139,12 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
             // Bottom button
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 10, 24, 40),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: CNButton(
-                    label: 'Start Test',
-                    style: CNButtonStyle.prominentGlass,
-                    tint: tealColor,
-                    onPressed: () {
-                      HapticFeedback.mediumImpact();
-                      Navigator.of(context).pop(true);
-                    },
-                  ),
-                ),
+              child: UniversalButton(
+                text: 'Start Test',
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  Navigator.of(context).pop(true);
+                },
               ),
             ),
           ],

@@ -11,6 +11,9 @@ import 'package:synthese/ui/components/questionnaire_disclaimer_modal.dart';
 import '../ui/components/morning_readiness_modal.dart';
 import 'package:synthese/mindfulness/questionnaire_screen.dart';
 import 'package:synthese/mindfulness/questionnaire_results_screen.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/universalbackbutton.dart';
+import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
 
 class MindfulnessPage extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -580,22 +583,8 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Color(0xFF33BEBE),
-                            Color(0xFF2A9D9D),
-                          ],
-                        ),
+                        color: const Color(0xFF33BEBE),
                         shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF33BEBE).withOpacity(0.4),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
                       ),
                       child: const Icon(
                         CupertinoIcons.sun_max_fill,
@@ -703,33 +692,22 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                         ),
                       ),
                     )
-                  : Container(
-                      key: const ValueKey('button'),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Color(0xFF33BEBE),
-                            Color(0xFF2A9D9D),
-                          ],
+                  : GestureDetector(
+                      onTap: () => _showMoodModal(context),
+                      child: Container(
+                        key: const ValueKey('button'),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF33BEBE),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF33BEBE).withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                        child: const Text(
+                          'Log',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
-                        ],
-                      ),
-                      child: const Text(
-                        'Log',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -794,22 +772,8 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
               width: 48,
               height: 48,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF33BEBE),
-                    Color(0xFF2A9D9D),
-                  ],
-                ),
+                color: const Color(0xFF33BEBE),
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF33BEBE).withOpacity(0.4),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
               child: const Icon(
                 CupertinoIcons.wind,
@@ -863,17 +827,9 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
           ),
           const SizedBox(height: 16),
           if (!_isModalOpen) ...[
-            SizedBox(
-              height: 44,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(22),
-                child: CNButton(
-                  label: 'Start Assessment',
-                  style: CNButtonStyle.prominentGlass,
-                  tint: const Color(0xFF33BEBE),
-                  onPressed: () => _showDisclaimerModal(context),
-                ),
-              ),
+            UniversalButton(
+              text: 'Start Assessment',
+              onPressed: () => _showDisclaimerModal(context),
             ),
           ],
         ],

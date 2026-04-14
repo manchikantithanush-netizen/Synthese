@@ -15,7 +15,7 @@ class UniversalButton extends StatelessWidget {
     required this.onPressed,
     this.isLoading = false,
     this.color,
-    this.height = 60,
+    this.height = 48,
     this.borderRadius = 50,
   });
 
@@ -44,6 +44,7 @@ class UniversalButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
           ),
+          side: BorderSide.none,
         ),
         child: isLoading
             ? SizedBox(

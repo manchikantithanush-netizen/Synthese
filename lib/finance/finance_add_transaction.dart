@@ -9,6 +9,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/services/finance_service.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
 
 class AddTransactionModal extends StatefulWidget {
   const AddTransactionModal({super.key});
@@ -255,62 +257,29 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
   }
 
   void _showDatePicker() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showCupertinoModalPopup(
+    showDatePicker(
       context: context,
-      builder: (context) => Container(
-        height: 300,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF252528) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Cancel',
-                      style: TextStyle(
-                        color: isDark ? Colors.white70 : Colors.black54,
-                      ),
-                    ),
-                  ),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Done',
-                      style: TextStyle(
-                        color: _activeColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.fromSwatch(
+              primarySwatch: Colors.teal,
+              brightness: isDark ? Brightness.dark : Brightness.light,
             ),
-            Expanded(
-              child: CupertinoDatePicker(
-                mode: CupertinoDatePickerMode.date,
-                initialDateTime: _selectedDate,
-                maximumDate: DateTime.now(),
-                onDateTimeChanged: (date) {
-                  setState(() => _selectedDate = date);
-                  HapticFeedback.selectionClick();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+          ),
+          child: child!,
+        );
+      },
+    ).then((date) {
+      if (date != null) {
+        setState(() => _selectedDate = date);
+        HapticFeedback.selectionClick();
+      }
+    });
   }
 
   @override
@@ -357,11 +326,8 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                   ),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: CNButton.icon(
-                      icon: const CNSymbol('xmark'),
-                      style: CNButtonStyle.glass,
+                    child: UniversalCloseButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
                         Navigator.pop(context);
                       },
                     ),
@@ -478,10 +444,11 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
   }
 
   Widget _buildTransactionTypeToggle(bool isDark, Color cardColor) {
-    return CNSegmentedControl(
+    return UniversalSegmentedControl<int>(
+      items: const [0, 1],
       labels: const ['Expense', 'Income'],
-      selectedIndex: _transactionType,
-      onValueChanged: (value) {
+      selectedItem: _transactionType,
+      onSelectionChanged: (value) {
         HapticFeedback.selectionClick();
         setState(() {
           _transactionType = value;
@@ -789,18 +756,13 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
         ),
         if (_isRecurring) ...[
           const SizedBox(height: 12),
-          CNSegmentedControl(
+          UniversalSegmentedControl<String>(
+            items: const ['daily', 'weekly', 'monthly'],
             labels: const ['Daily', 'Weekly', 'Monthly'],
-            selectedIndex: _recurrenceType == 'daily'
-                ? 0
-                : (_recurrenceType == 'weekly' ? 1 : 2),
-            onValueChanged: (value) {
+            selectedItem: _recurrenceType,
+            onSelectionChanged: (value) {
               HapticFeedback.selectionClick();
-              setState(() {
-                _recurrenceType = value == 0
-                    ? 'daily'
-                    : (value == 1 ? 'weekly' : 'monthly');
-              });
+              setState(() => _recurrenceType = value);
             },
           ),
         ],

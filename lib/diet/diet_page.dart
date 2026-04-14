@@ -12,6 +12,8 @@ import 'package:intl/intl.dart';
 import 'food_analysis_service.dart';
 import 'diet_onboarding.dart';
 import 'water_tracker_widget.dart';
+import '../ui/components/universalbutton.dart';
+import '../ui/components/universalresetbutton.dart';
 
 class DietPage extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -1257,17 +1259,13 @@ class _DietPageState extends State<DietPage> {
                           Row(
                             children: [
                               Expanded(
-                                child: CNButton(
-                                  label: "Add to Log",
-                                  style: CNButtonStyle.tinted,
-                                  tint: orangeColor,
+                                child: UniversalButton(
+                                  text: "Add to Log",
                                   onPressed: _addToLog,
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              CNButton.icon(
-                                icon: const CNSymbol('arrow.clockwise', size: 20),
-                                style: CNButtonStyle.glass,
+                              UniversalResetButton(
                                 onPressed: _analyzeImage,
                               ),
                             ],
@@ -1311,9 +1309,8 @@ class _DietPageState extends State<DietPage> {
                       ],
                     ],
                     const SizedBox(height: 12),
-                    CNButton(
-                      label: "Choose Different Image",
-                      style: CNButtonStyle.glass,
+                    UniversalButton(
+                      text: "Choose Different Image",
                       onPressed: _showImageSourcePicker,
                     ),
                   ] else ...[

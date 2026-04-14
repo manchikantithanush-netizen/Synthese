@@ -348,47 +348,84 @@ class _CyclesPageState extends State<CyclesPage>
                       duration: const Duration(milliseconds: 150),
                       child: IgnorePointer(
                         ignoring: _isModalOpen,
-                        child: Theme(
-                          data: Theme.of(context).copyWith(
-                            splashFactory: NoSplash.splashFactory,
-                            highlightColor: Colors.transparent,
-                            splashColor: Colors.transparent,
-                          ),
-
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              CNButton.icon(
-                                icon: const CNSymbol(
-                                  'questionmark.circle',
-                                  size: 22,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Help button
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: _showHelpBottomSheet,
+                                customBorder: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                                style: CNButtonStyle.glass,
-                                onPressed: _showHelpBottomSheet,
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: isLightMode ? Colors.black.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.help_outline_rounded,
+                                    size: 20,
+                                    color: isLightMode ? Colors.black : Colors.white,
+                                  ),
+                                ),
                               ),
-                              const SizedBox(width: 10),
-                              CNButton.icon(
-                                icon: const CNSymbol(
-                                  'clock.arrow.circlepath',
-                                  size: 22,
+                            ),
+                            const SizedBox(width: 8),
+                            // History button
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: _showHistoryBottomSheet,
+                                customBorder: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                                style: CNButtonStyle.glass,
-                                onPressed: _showHistoryBottomSheet,
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: isLightMode ? Colors.black.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.history_rounded,
+                                    size: 20,
+                                    color: isLightMode ? Colors.black : Colors.white,
+                                  ),
+                                ),
                               ),
-                              const SizedBox(width: 10),
-                              CNButton.icon(
-                                icon: const CNSymbol(
-                                  'arrow.clockwise',
-                                  size: 22,
-                                ),
-                                style: CNButtonStyle.glass,
-                                onPressed: () {
+                            ),
+                            const SizedBox(width: 8),
+                            // Reset button
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
                                   HapticFeedback.lightImpact();
                                   _handleResetCycleData();
                                 },
+                                customBorder: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: isLightMode ? Colors.black.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.refresh_rounded,
+                                    size: 20,
+                                    color: isLightMode ? Colors.black : Colors.white,
+                                  ),
+                                ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

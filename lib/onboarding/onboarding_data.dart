@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'dart:async';
 
 import 'package:synthese/ui/dashboard.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'onboarding_personal.dart';
 import 'onboarding_physical.dart';
 import 'onboarding_athlete.dart';
@@ -355,11 +355,8 @@ class _OnboardingDataState extends State<OnboardingData> {
               padding: const EdgeInsets.fromLTRB(28, 10, 28, 12),
               child: Row(
                 children: [
-                  CNButton.icon(
-                    icon: const CNSymbol('chevron.left'),
-                    style: CNButtonStyle.glass,
+                  UniversalBackButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
                       if (_currentStep > 0) {
                         _pageController.previousPage(
                           duration: const Duration(milliseconds: 500),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:cupertino_native/cupertino_native.dart'; 
 import 'package:file_picker/file_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'package:firebase_auth/firebase_auth.dart';     
@@ -15,6 +14,8 @@ import 'package:synthese/finance/finance.dart';
 import 'package:synthese/mindfulness/mindfulness_page.dart';
 import 'package:synthese/mindfulness/mindfulness_onboarding.dart';
 import 'package:synthese/diet/diet_page.dart';
+import 'package:synthese/ui/components/universalbackbutton.dart';
+import 'package:synthese/ui/components/universalbottomnavbar.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -57,6 +58,7 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     _updateScore();
     _fetchUserGender(); 
+    _fetchMindfulnessOnboarding();
   }
 
   // --- FETCH USER DATA ---
@@ -76,6 +78,24 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     } catch (e) {
       debugPrint("Error fetching user profile: $e");
+    }
+  }
+
+  Future<void> _fetchMindfulnessOnboarding() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        if (doc.exists) {
+          final data = doc.data() as Map<String, dynamic>?;
+          final completed = data?['mindfulnessOnboardingCompleted'] as bool? ?? false;
+          if (mounted && completed) {
+            setState(() => _mindfulnessOnboardingComplete = true);
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching mindfulness onboarding status: $e");
     }
   }
 
@@ -330,9 +350,51 @@ class _DashboardPageState extends State<DashboardPage> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          CNButton.icon(icon: const CNSymbol('arrow.up.circle.fill', size: 28), style: CNButtonStyle.glass, onPressed: _pickTextFile),
-                          const SizedBox(width: 8), 
-                          CNButton.icon(icon: const CNSymbol('person.crop.circle.fill', size: 28), style: CNButtonStyle.glass, onPressed: _showAccountBottomSheet),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: _pickTextFile,
+                              customBorder: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.08),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.cloud_upload_outlined,
+                                  size: 20,
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: _showAccountBottomSheet,
+                              customBorder: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.08),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.person_rounded,
+                                  size: 20,
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -518,8 +580,19 @@ class _DashboardPageState extends State<DashboardPage> {
       } else {
         currentScreen = MindfulnessOnboarding(
           key: const ValueKey('mindfulness_tab'),
-          onContinue: () {
+          onContinue: () async {
             setState(() => _mindfulnessOnboardingComplete = true);
+            // Save to Firestore
+            final uid = FirebaseAuth.instance.currentUser?.uid;
+            if (uid != null) {
+              try {
+                await FirebaseFirestore.instance.collection('users').doc(uid).update({
+                  'mindfulnessOnboardingCompleted': true,
+                });
+              } catch (e) {
+                debugPrint("Error saving mindfulness onboarding status: $e");
+              }
+            }
           },
         );
       }
@@ -541,23 +614,28 @@ class _DashboardPageState extends State<DashboardPage> {
       backgroundColor: bgColor,
       extendBody: true, 
       
-      bottomNavigationBar: _isModalOpen 
-          ? const SizedBox.shrink() 
-          : CNTabBar(
-              items: [
-                const CNTabBarItem(label: 'Home', icon: CNSymbol('house.fill')),
-                const CNTabBarItem(label: 'Diet', icon: CNSymbol('fork.knife')),
-                const CNTabBarItem(label: 'Mindfulness', icon: CNSymbol('figure.mind.and.body')),
-                const CNTabBarItem(label: 'Finance', icon: CNSymbol('dollarsign.circle.fill')),
-                if (_isFemale) 
-                  const CNTabBarItem(label: 'Cycles', icon: CNSymbol('drop.fill')), 
+      bottomNavigationBar: UniversalBottomNavBar(
+        hidden: _isModalOpen,
+        currentIndex: _tabIndex,
+        onTap: (index) {
+          HapticFeedback.selectionClick();
+          setState(() => _tabIndex = index);
+        },
+        items: _isFemale
+            ? [
+                const NavItem(label: 'Home', icon: Icons.home_rounded),
+                const NavItem(label: 'Diet', icon: Icons.restaurant_rounded),
+                const NavItem(label: 'Mindfulness', icon: Icons.self_improvement_rounded),
+                const NavItem(label: 'Finance', icon: Icons.account_balance_wallet_rounded),
+                const NavItem(label: 'Cycles', icon: Icons.water_drop_rounded),
+              ]
+            : [
+                const NavItem(label: 'Home', icon: Icons.home_rounded),
+                const NavItem(label: 'Diet', icon: Icons.restaurant_rounded),
+                const NavItem(label: 'Mindfulness', icon: Icons.self_improvement_rounded),
+                const NavItem(label: 'Finance', icon: Icons.account_balance_wallet_rounded),
               ],
-              currentIndex: _tabIndex,
-              onTap: (i) {
-                HapticFeedback.selectionClick();
-                setState(() => _tabIndex = i); // Changes the state, triggering the AnimatedSwitcher!
-              },
-            ),
+      ),
 
       // --- ANIMATED SWITCHER REPLACES YOUR OLD SINGLE CHILD SCROLL VIEW ---
       body: AnimatedSwitcher(
