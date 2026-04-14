@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:synthese/ui/components/universalbackbutton.dart';
+import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/cycles/articles/cycle_article1.dart';
-import 'package:synthese/cycles/articles/cycle_article2.dart'; 
+import 'package:synthese/cycles/articles/cycle_article2.dart';
 import 'package:synthese/cycles/articles/cycle_article3.dart';
-import 'package:synthese/cycles/articles/cycle_article4.dart'; 
-import 'package:synthese/cycles/articles/cycle_article5.dart'; 
-import 'package:synthese/cycles/articles/cycle_article6.dart'; 
+import 'package:synthese/cycles/articles/cycle_article4.dart';
+import 'package:synthese/cycles/articles/cycle_article5.dart';
+import 'package:synthese/cycles/articles/cycle_article6.dart';
 
 class HelpCyclesPage extends StatefulWidget {
   const HelpCyclesPage({super.key});
@@ -61,10 +63,7 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
         child: PageView(
           controller: _pageController,
           physics: const NeverScrollableScrollPhysics(),
-          children: [
-            _buildMainList(isDark),
-            _buildArticleView(isDark),
-          ],
+          children: [_buildMainList(isDark), _buildArticleView(isDark)],
         ),
       ),
     );
@@ -75,7 +74,9 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
   // ============================================================================
   Widget _buildMainList(bool isDark) {
     final textColor = isDark ? Colors.white : Colors.black;
-    final subtitleColor = isDark ? const Color(0xFF8E8E93) : const Color(0xFF8E8E93);
+    final subtitleColor = isDark
+        ? const Color(0xFF8E8E93)
+        : const Color(0xFF8E8E93);
 
     return Column(
       children: [
@@ -88,16 +89,17 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
                 alignment: Alignment.center,
                 child: Text(
                   "Learn",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
               ),
               Align(
                 alignment: Alignment.centerRight,
-                child: CNButton.icon(
-                  icon: const CNSymbol('xmark'),
-                  style: CNButtonStyle.glass,
+                child: UniversalCloseButton(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
                     Navigator.pop(context);
                   },
                 ),
@@ -109,7 +111,12 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
         Expanded(
           child: ListView.separated(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.only(left: 20, right: 20, bottom: 40, top: 10),
+            padding: const EdgeInsets.only(
+              left: 20,
+              right: 20,
+              bottom: 40,
+              top: 10,
+            ),
             itemCount: _articles.length,
             separatorBuilder: (context, index) => const SizedBox(height: 24),
             itemBuilder: (context, index) {
@@ -153,42 +160,48 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
         decoration: BoxDecoration(
           color: cardBgColor,
           borderRadius: BorderRadius.circular(24),
-          boxShadow: isDark ? [] : [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            )
-          ],
+          boxShadow: isDark
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // --- IMAGE SECTION ---
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
               child: AspectRatio(
-                aspectRatio: 1.8, 
+                aspectRatio: 1.8,
                 child: Image.asset(
                   imagePath,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     // Fallback just in case the image isn't found
                     return Container(
-                      color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+                      color: isDark
+                          ? const Color(0xFF2C2C2E)
+                          : const Color(0xFFE5E5EA),
                       child: Center(
                         child: Icon(
-                          CupertinoIcons.photo, 
-                          color: isDark ? Colors.white30 : Colors.black26, 
-                          size: 40
-                        )
+                          CupertinoIcons.photo,
+                          color: isDark ? Colors.white30 : Colors.black26,
+                          size: 40,
+                        ),
                       ),
                     );
                   },
                 ),
               ),
             ),
-            
+
             // --- TEXT SECTION ---
             Padding(
               padding: const EdgeInsets.all(20.0),
@@ -198,19 +211,19 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
                   Text(
                     title,
                     style: TextStyle(
-                      color: textColor, 
-                      fontSize: 19, 
-                      fontWeight: FontWeight.bold, 
-                      letterSpacing: -0.4
+                      color: textColor,
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.4,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     description,
                     style: TextStyle(
-                      color: subtitleColor, 
-                      fontSize: 15, 
-                      height: 1.35
+                      color: subtitleColor,
+                      fontSize: 15,
+                      height: 1.35,
                     ),
                   ),
                 ],
@@ -259,20 +272,13 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
             children: [
               Align(
                 alignment: Alignment.centerLeft,
-                child: CNButton.icon(
-                  icon: const CNSymbol('chevron.left'), 
-                  style: CNButtonStyle.glass,
-                  onPressed: _slideBack,
-                ),
+                child: UniversalBackButton(onPressed: _slideBack),
               ),
               Align(
                 alignment: Alignment.centerRight,
-                child: CNButton.icon(
-                  icon: const CNSymbol('xmark'),
-                  style: CNButtonStyle.glass,
+                child: UniversalCloseButton(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
-                    Navigator.pop(context); 
+                    Navigator.pop(context);
                   },
                 ),
               ),
@@ -280,9 +286,7 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
           ),
         ),
         const SizedBox(height: 16),
-        Expanded(
-          child: articleContent,
-        ),
+        Expanded(child: articleContent),
       ],
     );
   }
@@ -293,32 +297,38 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
 final List<Map<String, dynamic>> _articles = [
   {
     'title': 'What is a menstrual cycle?',
-    'desc': 'The complete beginner\'s guide to understanding your body and what is actually happening every month.',
+    'desc':
+        'The complete beginner\'s guide to understanding your body and what is actually happening every month.',
     'image': 'assets/image1.jpg',
   },
   {
     'title': 'The four phases of your cycle',
-    'desc': 'Breaking down the menstrual, follicular, ovulation, and luteal phases. What your body is doing and what you might feel.',
+    'desc':
+        'Breaking down the menstrual, follicular, ovulation, and luteal phases. What your body is doing and what you might feel.',
     'image': 'assets/image2.jpg',
   },
   {
     'title': 'Hormones and your cycle',
-    'desc': 'What estrogen, progesterone, LH, and FSH actually do. How hormone levels rise and fall and cause symptoms.',
+    'desc':
+        'What estrogen, progesterone, LH, and FSH actually do. How hormone levels rise and fall and cause symptoms.',
     'image': 'assets/image3.jpg',
   },
   {
     'title': 'What is spotting?',
-    'desc': 'The difference between spotting and a period. Common causes like ovulation and stress, and when to mention it.',
+    'desc':
+        'The difference between spotting and a period. Common causes like ovulation and stress, and when to mention it.',
     'image': 'assets/image4.jpg',
   },
   {
     'title': 'Things that affect your cycle',
-    'desc': 'Stress, sleep, exercise, diet, and travel. Why your cycle is a reflection of your overall health.',
+    'desc':
+        'Stress, sleep, exercise, diet, and travel. Why your cycle is a reflection of your overall health.',
     'image': 'assets/image5.jpg',
   },
   {
     'title': 'Why cycle tracking matters',
-    'desc': 'What tracking tells you beyond predicting your period. How to use your logs to understand your baseline.',
+    'desc':
+        'What tracking tells you beyond predicting your period. How to use your logs to understand your baseline.',
     'image': 'assets/image6.jpg',
   },
 ];

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/universalbackbutton.dart';
 
 class OnboardingFinance extends StatefulWidget {
   final VoidCallback onContinue;
@@ -455,14 +455,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          CNButton.icon(
-            icon: const CNSymbol('chevron.left'),
-            style: CNButtonStyle.glass,
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              _previousPage();
-            },
-          ),
+          UniversalBackButton(onPressed: _previousPage),
           const SizedBox(height: 24),
           Text(
             "Set up your accounts",
@@ -524,14 +517,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          CNButton.icon(
-            icon: const CNSymbol('chevron.left'),
-            style: CNButtonStyle.glass,
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              _previousPage();
-            },
-          ),
+          UniversalBackButton(onPressed: _previousPage),
           const SizedBox(height: 24),
           Text(
             "Set your monthly budget",

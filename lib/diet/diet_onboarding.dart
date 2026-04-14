@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/universalbackbutton.dart';
 
 class DietOnboarding extends StatefulWidget {
   final VoidCallback onContinue;
@@ -263,14 +263,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
-              CNButton.icon(
-                icon: const CNSymbol('chevron.left'),
-                style: CNButtonStyle.glass,
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                  _previousPage();
-                },
-              ),
+              UniversalBackButton(onPressed: _previousPage),
               const SizedBox(height: 24),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -370,14 +363,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          CNButton.icon(
-            icon: const CNSymbol('chevron.left'),
-            style: CNButtonStyle.glass,
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              _previousPage();
-            },
-          ),
+          UniversalBackButton(onPressed: _previousPage),
           const SizedBox(height: 24),
           Text(
             "What's your daily calorie goal?",
@@ -437,14 +423,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          CNButton.icon(
-            icon: const CNSymbol('chevron.left'),
-            style: CNButtonStyle.glass,
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              _previousPage();
-            },
-          ),
+          UniversalBackButton(onPressed: _previousPage),
           const SizedBox(height: 24),
           Text(
             "Water Intake Goal",

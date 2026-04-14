@@ -8,6 +8,8 @@ import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 
 import 'package:synthese/main.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/universalbackbutton.dart';
+import 'package:synthese/ui/components/universalclosebutton.dart';
 
 class AccountPageModal extends StatefulWidget {
   const AccountPageModal({super.key});
@@ -180,11 +182,8 @@ class _AccountPageModalState extends State<AccountPageModal> {
           children: [
             Align(
               alignment: Alignment.centerRight,
-              child: CNButton.icon(
-                icon: const CNSymbol('xmark'),
-                style: CNButtonStyle.glass,
+              child: UniversalCloseButton(
                 onPressed: () {
-                  HapticFeedback.lightImpact();
                   Navigator.pop(context);
                 },
               ),
@@ -457,14 +456,7 @@ class _DetailLayout extends StatelessWidget {
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: CNButton.icon(
-                    icon: const CNSymbol('chevron.left'),
-                    style: CNButtonStyle.glass,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      onBack();
-                    },
-                  ),
+                  child: UniversalBackButton(onPressed: onBack),
                 ),
                 Text(
                   title,

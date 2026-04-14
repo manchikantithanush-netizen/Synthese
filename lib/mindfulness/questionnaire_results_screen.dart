@@ -4,16 +4,15 @@ import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:synthese/mindfulness/questionnaire_data.dart';
 import 'package:synthese/mindfulness/questionnaire_screen.dart';
+import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 
 const Color tealColor = Color(0xFF33BEBE);
 
 class QuestionnaireResultsScreen extends StatelessWidget {
   final Map<int, int> answers; // questionId -> optionIndex
 
-  const QuestionnaireResultsScreen({
-    super.key, 
-    required this.answers,
-  });
+  const QuestionnaireResultsScreen({super.key, required this.answers});
 
   /// Show the results as a 93% height modal bottom sheet
   static Future<void> show(BuildContext context, Map<int, int> answers) {
@@ -83,13 +82,12 @@ class QuestionnaireResultsScreen extends StatelessWidget {
                   ),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: CNButton.icon(
-                      icon: const CNSymbol('xmark'),
-                      style: CNButtonStyle.glass,
+                    child: UniversalCloseButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
                         // Close all modals and go back to mindfulness page
-                        Navigator.of(context).popUntil((route) => route.isFirst);
+                        Navigator.of(
+                          context,
+                        ).popUntil((route) => route.isFirst);
                       },
                     ),
                   ),
@@ -100,95 +98,83 @@ class QuestionnaireResultsScreen extends StatelessWidget {
             // Scrollable content
             Expanded(
               child: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Text(
-              'Your Wellbeing Snapshot',
-              style: TextStyle(
-                color: textColor,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                letterSpacing: -0.5,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Based on your responses, here\'s a breakdown across eight dimensions of mental health.',
-              style: TextStyle(
-                color: subTextColor,
-                fontSize: 15,
-              ),
-            ),
-            const SizedBox(height: 24),
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Text(
+                      'Your Wellbeing Snapshot',
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Based on your responses, here\'s a breakdown across eight dimensions of mental health.',
+                      style: TextStyle(color: subTextColor, fontSize: 15),
+                    ),
+                    const SizedBox(height: 24),
 
-            // Insight Card
-            _buildInsightCard(
-              context,
-              hasCrisis: hasCrisis,
-              highRisk: highRisk,
-              moderateRisk: moderateRisk,
-              cardColor: cardColor,
-              textColor: textColor,
-            ),
-            const SizedBox(height: 24),
+                    // Insight Card
+                    _buildInsightCard(
+                      context,
+                      hasCrisis: hasCrisis,
+                      highRisk: highRisk,
+                      moderateRisk: moderateRisk,
+                      cardColor: cardColor,
+                      textColor: textColor,
+                    ),
+                    const SizedBox(height: 24),
 
-            // Risk Dimension Cards
-            ...sortedDimensions.map((entry) {
-              final dimension = getDimensionById(entry.key);
-              if (dimension == null) return const SizedBox.shrink();
-              return _buildDimensionCard(
-                context,
-                dimension: dimension,
-                score: entry.value,
-                cardColor: cardColor,
-                textColor: textColor,
-                subTextColor: subTextColor,
-                isDark: isDark,
-              );
-            }),
+                    // Risk Dimension Cards
+                    ...sortedDimensions.map((entry) {
+                      final dimension = getDimensionById(entry.key);
+                      if (dimension == null) return const SizedBox.shrink();
+                      return _buildDimensionCard(
+                        context,
+                        dimension: dimension,
+                        score: entry.value,
+                        cardColor: cardColor,
+                        textColor: textColor,
+                        subTextColor: subTextColor,
+                        isDark: isDark,
+                      );
+                    }),
 
-            // Disclaimer footer
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Text(
-                'This assessment is for personal reflection only and does not constitute a clinical diagnosis. If you are experiencing distress, please speak with a qualified mental health professional.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: subTextColor,
-                  fontSize: 12,
-                  height: 1.5,
+                    // Disclaimer footer
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Text(
+                        'This assessment is for personal reflection only and does not constitute a clinical diagnosis. If you are experiencing distress, please speak with a qualified mental health professional.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: subTextColor,
+                          fontSize: 12,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+
+                    // Retake button
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 40),
+                      child: UniversalButton(
+                        text: 'Retake Assessment',
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          // Close results modal and show questionnaire modal
+                          Navigator.of(context).pop();
+                          QuestionnaireScreen.show(context);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-
-            // Retake button
-            Padding(
-              padding: const EdgeInsets.only(bottom: 40),
-              child: SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(28),
-                  child: CNButton(
-                    label: 'Retake Assessment',
-                    style: CNButtonStyle.prominentGlass,
-                    tint: tealColor,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      // Close results modal and show questionnaire modal
-                      Navigator.of(context).pop();
-                      QuestionnaireScreen.show(context);
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
               ),
             ),
           ],
@@ -275,11 +261,7 @@ class QuestionnaireResultsScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             insightBody,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 15,
-              height: 1.5,
-            ),
+            style: TextStyle(color: textColor, fontSize: 15, height: 1.5),
           ),
         ],
       ),

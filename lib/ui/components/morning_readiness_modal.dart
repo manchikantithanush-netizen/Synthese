@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 
 class MorningReadinessModal extends StatefulWidget {
   const MorningReadinessModal({super.key});
@@ -71,9 +73,12 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
     super.dispose();
   }
 
-  String _getSleepLabel() => _sleepLabels[(_sleepQuality.round() - 1).clamp(0, 4)];
-  String _getEnergyLabel() => _energyLabels[(_energyLevel.round() - 1).clamp(0, 4)];
-  String _getStressLabel() => _stressLabels[(_academicStress.round() - 1).clamp(0, 4)];
+  String _getSleepLabel() =>
+      _sleepLabels[(_sleepQuality.round() - 1).clamp(0, 4)];
+  String _getEnergyLabel() =>
+      _energyLabels[(_energyLevel.round() - 1).clamp(0, 4)];
+  String _getStressLabel() =>
+      _stressLabels[(_academicStress.round() - 1).clamp(0, 4)];
 
   // Sleep Quality: tired orange/red to restful blue/purple
   Color _getSleepColor() {
@@ -122,11 +127,11 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
           .collection('morning_readiness')
           .doc(dateKey)
           .set({
-        'sleepQuality': _sleepQuality.round(),
-        'energyLevel': _energyLevel.round(),
-        'academicStress': _academicStress.round(),
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+            'sleepQuality': _sleepQuality.round(),
+            'energyLevel': _energyLevel.round(),
+            'academicStress': _academicStress.round(),
+            'timestamp': FieldValue.serverTimestamp(),
+          });
 
       if (mounted) {
         HapticFeedback.mediumImpact();
@@ -150,7 +155,9 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF2A2A2E) : const Color(0xFFF5EDE6);
     final textColor = isDark ? Colors.white : Colors.black;
-    final cardColor = isDark ? const Color(0xFF252528) : const Color(0xFFE5E5E7);
+    final cardColor = isDark
+        ? const Color(0xFF252528)
+        : const Color(0xFFE5E5E7);
 
     return FractionallySizedBox(
       heightFactor: 0.93,
@@ -159,7 +166,9 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
           Container(
             decoration: BoxDecoration(
               color: bgColor,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(38)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(38),
+              ),
             ),
             child: Column(
               children: [
@@ -179,11 +188,8 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
                       ),
                       Align(
                         alignment: Alignment.centerRight,
-                        child: CNButton.icon(
-                          icon: const CNSymbol('xmark'),
-                          style: CNButtonStyle.glass,
+                        child: UniversalCloseButton(
                           onPressed: () {
-                            HapticFeedback.lightImpact();
                             Navigator.of(context).pop();
                           },
                         ),
@@ -276,18 +282,10 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
                 // Save button
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: CNButton(
-                        label: _isSaving ? 'Saving...' : 'Save',
-                        style: CNButtonStyle.prominentGlass,
-                        tint: tealColor,
-                        onPressed: _isSaving ? null : _saveReadiness,
-                      ),
-                    ),
+                  child: UniversalButton(
+                    text: _isSaving ? 'Saving...' : 'Save',
+                    isLoading: _isSaving,
+                    onPressed: _isSaving ? () {} : _saveReadiness,
                   ),
                 ),
               ],
@@ -299,7 +297,9 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
             Container(
               decoration: BoxDecoration(
                 color: bgColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(38)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(38),
+                ),
               ),
               child: Center(
                 child: Column(
@@ -361,10 +361,7 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 2,
-        ),
+        border: Border.all(color: color.withOpacity(0.3), width: 2),
       ),
       child: Column(
         children: [
@@ -376,11 +373,7 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
               color: color.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+            child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 8),
           // Title
@@ -401,8 +394,8 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
             child: _buildVerticalPillSlider(
               value: value,
               color: color,
-              trackColor: isDark 
-                  ? Colors.white.withOpacity(0.1) 
+              trackColor: isDark
+                  ? Colors.white.withOpacity(0.1)
                   : Colors.black.withOpacity(0.08),
               onChanged: onChanged,
             ),
@@ -466,13 +459,15 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
         return GestureDetector(
           onVerticalDragUpdate: (details) {
             final newY = details.localPosition.dy - (thumbSize / 2);
-            final newNormalized = 1 - ((newY - padding) / usableHeight).clamp(0.0, 1.0);
+            final newNormalized =
+                1 - ((newY - padding) / usableHeight).clamp(0.0, 1.0);
             final newValue = 1 + (newNormalized * 4); // Convert 0-1 back to 1-5
             onChanged(newValue.clamp(1.0, 5.0));
           },
           onTapDown: (details) {
             final newY = details.localPosition.dy - (thumbSize / 2);
-            final newNormalized = 1 - ((newY - padding) / usableHeight).clamp(0.0, 1.0);
+            final newNormalized =
+                1 - ((newY - padding) / usableHeight).clamp(0.0, 1.0);
             final newValue = 1 + (newNormalized * 4);
             onChanged(newValue.clamp(1.0, 5.0));
           },

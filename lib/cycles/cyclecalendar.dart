@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:synthese/ui/components/universalbackbutton.dart';
 
 enum DayStatus { none, period, predictedPeriod, ovulation, fertile }
 
@@ -44,7 +45,8 @@ class _CycleCalendarState extends State<CycleCalendar> {
     }
   }
 
-  DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+  DateTime _dateOnly(DateTime date) =>
+      DateTime(date.year, date.month, date.day);
 
   DateTime _getStartOfWeek(DateTime date) {
     int daysToSubtract = date.weekday == 7 ? 0 : date.weekday;
@@ -66,35 +68,42 @@ class _CycleCalendarState extends State<CycleCalendar> {
     // 1. Check EXACT past logged cycles (Reality Check)
     for (var cycle in widget.recentCycles) {
       if (cycle['startDate'] == null || cycle['startDate'] == '') continue;
-      
+
       DateTime start = _dateOnly((cycle['startDate'] as Timestamp).toDate());
       int pLen = cycle['periodLength'] ?? widget.avgPeriodLength;
       DateTime end = start.add(Duration(days: pLen));
-      
-      if ((target.isAtSameMomentAs(start) || target.isAfter(start)) && target.isBefore(end)) {
-        return target.isAfter(today) ? DayStatus.predictedPeriod : DayStatus.period;
+
+      if ((target.isAtSameMomentAs(start) || target.isAfter(start)) &&
+          target.isBefore(end)) {
+        return target.isAfter(today)
+            ? DayStatus.predictedPeriod
+            : DayStatus.period;
       }
     }
 
     // 2. Extrapolate using the main Engine's logic
     DateTime baseDate = _dateOnly(widget.lastPeriodStart);
-    
+
     // Find how many cycles have theoretically passed since the last real period
     int diffDays = target.difference(baseDate).inDays;
     int cyclesPassed = (diffDays / widget.avgCycleLength).floor();
-    
+
     // Calculate the start date of the cycle this date belongs to
-    DateTime theoreticalCycleStart = baseDate.add(Duration(days: cyclesPassed * widget.avgCycleLength));
-    
+    DateTime theoreticalCycleStart = baseDate.add(
+      Duration(days: cyclesPassed * widget.avgCycleLength),
+    );
+
     // EXTACT MATCH to engine's: cycleDayToday = dateOnly(simulatedToday).difference(dateOnly(lastPeriodStart)).inDays + 1;
     int cycleDay = target.difference(theoreticalCycleStart).inDays + 1;
 
     // EXACT MATCH to engine's: int estimatedOvulationDay = avgCycleLength - 14;
-    int ovulationDay = widget.avgCycleLength - 14; 
+    int ovulationDay = widget.avgCycleLength - 14;
 
     // Apply the engine's rules to the calendar days
     if (cycleDay <= widget.avgPeriodLength) {
-      return target.isAfter(today) ? DayStatus.predictedPeriod : DayStatus.period;
+      return target.isAfter(today)
+          ? DayStatus.predictedPeriod
+          : DayStatus.period;
     } else if (cycleDay == ovulationDay) {
       return DayStatus.ovulation;
     } else if (cycleDay >= ovulationDay - 4 && cycleDay <= ovulationDay + 1) {
@@ -107,7 +116,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     final bgColor = isDark ? const Color(0xFF151515) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final mutedTextColor = isDark ? Colors.white54 : Colors.black54;
@@ -115,10 +124,16 @@ class _CycleCalendarState extends State<CycleCalendar> {
 
     const periodColor = Color(0xFFEC548A);
     const ovulationColor = Color(0xFFFF2D55);
-    final fertileBgColor = isDark ? const Color(0xFF2C1924) : const Color(0xFFFFF0F5);
-    final fertileBorderColor = isDark ? const Color(0xFF8B2954) : const Color(0xFFFFB3D1);
-    
-    final subtleHighlight = isDark ? const Color(0xFF2A2A2C) : const Color(0xFFF0F0F0);
+    final fertileBgColor = isDark
+        ? const Color(0xFF2C1924)
+        : const Color(0xFFFFF0F5);
+    final fertileBorderColor = isDark
+        ? const Color(0xFF8B2954)
+        : const Color(0xFFFFB3D1);
+
+    final subtleHighlight = isDark
+        ? const Color(0xFF2A2A2C)
+        : const Color(0xFFF0F0F0);
 
     DateTime thursday = _currentWeekStart.add(const Duration(days: 4));
     String monthYearStr = DateFormat('MMMM yyyy').format(thursday);
@@ -131,26 +146,29 @@ class _CycleCalendarState extends State<CycleCalendar> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              CNButton.icon(
-                icon: const CNSymbol('chevron.left'),
-                style: CNButtonStyle.plain, 
-                tint: arrowTint,
+              UniversalBackButton(
+                size: 34,
+                iconColor: arrowTint,
                 onPressed: () => _shiftWeek(-7),
               ),
               Text(
                 monthYearStr,
-                style: TextStyle(color: textColor, fontSize: 17, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              CNButton.icon(
-                icon: const CNSymbol('chevron.right'),
-                style: CNButtonStyle.plain, 
-                tint: arrowTint,
+              UniversalBackButton(
+                size: 34,
+                iconColor: arrowTint,
                 onPressed: () => _shiftWeek(7),
+                isForwardArrow: true,
               ),
             ],
           ),
         ),
-        
+
         const SizedBox(height: 12),
 
         Container(
@@ -164,10 +182,12 @@ class _CycleCalendarState extends State<CycleCalendar> {
             children: List.generate(7, (index) {
               DateTime cellDate = _currentWeekStart.add(Duration(days: index));
               DayStatus status = _getDayStatus(cellDate);
-              
-              bool isSimulatedToday = _dateOnly(cellDate).isAtSameMomentAs(_dateOnly(widget.simulatedToday));
-              String dayName = DateFormat('E').format(cellDate).toUpperCase(); 
-              String dayNum = DateFormat('d').format(cellDate); 
+
+              bool isSimulatedToday = _dateOnly(
+                cellDate,
+              ).isAtSameMomentAs(_dateOnly(widget.simulatedToday));
+              String dayName = DateFormat('E').format(cellDate).toUpperCase();
+              String dayNum = DateFormat('d').format(cellDate);
 
               BoxDecoration? decoration;
               CustomPainter? painter;
@@ -176,12 +196,18 @@ class _CycleCalendarState extends State<CycleCalendar> {
 
               switch (status) {
                 case DayStatus.period:
-                  decoration = BoxDecoration(color: periodColor, borderRadius: BorderRadius.circular(16));
+                  decoration = BoxDecoration(
+                    color: periodColor,
+                    borderRadius: BorderRadius.circular(16),
+                  );
                   currentTextColor = Colors.white;
                   currentDayNameColor = Colors.white70;
                   break;
                 case DayStatus.ovulation:
-                  decoration = BoxDecoration(color: ovulationColor, borderRadius: BorderRadius.circular(16));
+                  decoration = BoxDecoration(
+                    color: ovulationColor,
+                    borderRadius: BorderRadius.circular(16),
+                  );
                   currentTextColor = Colors.white;
                   currentDayNameColor = Colors.white70;
                   break;
@@ -193,33 +219,49 @@ class _CycleCalendarState extends State<CycleCalendar> {
                   );
                   break;
                 case DayStatus.predictedPeriod:
-                  painter = DashedBorderPainter(color: periodColor, borderRadius: 16);
+                  painter = DashedBorderPainter(
+                    color: periodColor,
+                    borderRadius: 16,
+                  );
                   currentTextColor = periodColor;
                   break;
                 case DayStatus.none:
                 default:
                   if (isSimulatedToday) {
-                    decoration = BoxDecoration(color: subtleHighlight, borderRadius: BorderRadius.circular(16));
+                    decoration = BoxDecoration(
+                      color: subtleHighlight,
+                      borderRadius: BorderRadius.circular(16),
+                    );
                   }
                   break;
               }
 
               Widget cellContent = Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 8,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       dayName,
-                      style: TextStyle(color: currentDayNameColor, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 0.5),
+                      style: TextStyle(
+                        color: currentDayNameColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       dayNum,
                       style: TextStyle(
-                        color: currentTextColor, 
-                        fontSize: 18, 
-                        fontWeight: isSimulatedToday ? FontWeight.w800 : FontWeight.w600
+                        color: currentTextColor,
+                        fontSize: 18,
+                        fontWeight: isSimulatedToday
+                            ? FontWeight.w800
+                            : FontWeight.w600,
                       ),
                     ),
                   ],
@@ -238,9 +280,9 @@ class _CycleCalendarState extends State<CycleCalendar> {
             }),
           ),
         ),
-        
+
         const SizedBox(height: 24),
-        
+
         // --- REDESIGNED ULTRA-SIMPLE LEGEND ---
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -250,22 +292,44 @@ class _CycleCalendarState extends State<CycleCalendar> {
             alignment: WrapAlignment.center,
             children: [
               _buildLegendItem(
-                "Period", 
-                Container(width: 10, height: 10, decoration: const BoxDecoration(color: periodColor, shape: BoxShape.circle)),
-              ),
-              _buildLegendItem(
-                "Predicted", 
-                CustomPaint(size: const Size(10, 10), painter: DashedCirclePainter(color: periodColor)),
-              ),
-              _buildLegendItem(
-                "Ovulation", 
-                Container(width: 10, height: 10, decoration: const BoxDecoration(color: ovulationColor, shape: BoxShape.circle)),
-              ),
-              _buildLegendItem(
-                "Fertile", 
+                "Period",
                 Container(
-                  width: 10, height: 10, 
-                  decoration: BoxDecoration(color: fertileBgColor, border: Border.all(color: fertileBorderColor, width: 1.5), shape: BoxShape.circle)
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    color: periodColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              _buildLegendItem(
+                "Predicted",
+                CustomPaint(
+                  size: const Size(10, 10),
+                  painter: DashedCirclePainter(color: periodColor),
+                ),
+              ),
+              _buildLegendItem(
+                "Ovulation",
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    color: ovulationColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+              _buildLegendItem(
+                "Fertile",
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: fertileBgColor,
+                    border: Border.all(color: fertileBorderColor, width: 1.5),
+                    shape: BoxShape.circle,
+                  ),
                 ),
               ),
             ],
@@ -286,7 +350,14 @@ class _CycleCalendarState extends State<CycleCalendar> {
       children: [
         icon,
         const SizedBox(width: 6),
-        Text(label, style: TextStyle(color: legendTextColor, fontSize: 12, fontWeight: FontWeight.w500)),
+        Text(
+          label,
+          style: TextStyle(
+            color: legendTextColor,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
@@ -320,13 +391,16 @@ class DashedBorderPainter extends CustomPainter {
       Rect.fromLTWH(0, 0, size.width, size.height),
       Radius.circular(borderRadius),
     );
-    
+
     final Path path = Path()..addRRect(rrect);
     for (var pathMetric in path.computeMetrics()) {
       double distance = 0.0;
       while (distance < pathMetric.length) {
         final extractLength = dashWidth;
-        canvas.drawPath(pathMetric.extractPath(distance, distance + extractLength), paint);
+        canvas.drawPath(
+          pathMetric.extractPath(distance, distance + extractLength),
+          paint,
+        );
         distance += dashWidth + dashSpace;
       }
     }
@@ -358,11 +432,15 @@ class DashedCirclePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    final Path path = Path()..addOval(Rect.fromLTWH(0, 0, size.width, size.height));
+    final Path path = Path()
+      ..addOval(Rect.fromLTWH(0, 0, size.width, size.height));
     for (var pathMetric in path.computeMetrics()) {
       double distance = 0.0;
       while (distance < pathMetric.length) {
-        canvas.drawPath(pathMetric.extractPath(distance, distance + dashWidth), paint);
+        canvas.drawPath(
+          pathMetric.extractPath(distance, distance + dashWidth),
+          paint,
+        );
         distance += dashWidth + dashSpace;
       }
     }

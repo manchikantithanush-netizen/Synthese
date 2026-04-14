@@ -9,6 +9,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/services/finance_service.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
 
 class AddDebtModal extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -280,66 +282,29 @@ class _AddDebtModalState extends State<AddDebtModal> {
   }
 
   void _showDueDatePicker() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showCupertinoModalPopup(
+    showDatePicker(
       context: context,
-      builder: (context) => Container(
-        height: 300,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF252528) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      setState(() => _dueDate = null);
-                      Navigator.pop(context);
-                    },
-                    child: Text(
-                      'Clear',
-                      style: TextStyle(
-                        color: isDark ? Colors.white70 : Colors.black54,
-                      ),
-                    ),
-                  ),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Done',
-                      style: TextStyle(
-                        color: _activeColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      initialDate: _dueDate ?? DateTime.now().add(const Duration(days: 30)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
+      builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.fromSwatch(
+              primarySwatch: Colors.teal,
+              brightness: isDark ? Brightness.dark : Brightness.light,
             ),
-            Expanded(
-              child: CupertinoDatePicker(
-                mode: CupertinoDatePickerMode.date,
-                initialDateTime:
-                    _dueDate ?? DateTime.now().add(const Duration(days: 30)),
-                minimumDate: DateTime.now(),
-                onDateTimeChanged: (date) {
-                  setState(() => _dueDate = date);
-                  HapticFeedback.selectionClick();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+          ),
+          child: child!,
+        );
+      },
+    ).then((date) {
+      if (date != null) {
+        setState(() => _dueDate = date);
+        HapticFeedback.selectionClick();
+      }
+    });
   }
 
   @override
@@ -347,12 +312,10 @@ class _AddDebtModalState extends State<AddDebtModal> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final bgColor = isDark
-        ? const Color(0xFF19191A)
-        : const Color(0xFFF0F0F6); // Unified modal background
+        ? const Color.fromARGB(255, 26, 26, 28)
+        : const Color.fromARGB(255, 245, 245, 245);
 
-    final cardColor = isDark
-        ? const Color(0xFF19191A)
-        : const Color(0xFFF0F0F6);
+    final cardColor = isDark ? const Color(0xFF252528) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtextColor = isDark ? Colors.white54 : Colors.black54;
 
@@ -399,11 +362,8 @@ class _AddDebtModalState extends State<AddDebtModal> {
                   ),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: CNButton.icon(
-                      icon: const CNSymbol('xmark'),
-                      style: CNButtonStyle.glass,
+                    child: UniversalCloseButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
                         Navigator.pop(context);
                       },
                     ),
@@ -546,7 +506,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: TextField(
         controller: _titleController,
         style: TextStyle(fontSize: 16, color: textColor),
@@ -554,6 +514,8 @@ class _AddDebtModalState extends State<AddDebtModal> {
           hintText: 'e.g., Car Loan, Credit Card Balance...',
           hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
           border: InputBorder.none,
+          contentPadding: EdgeInsets.zero,
+          isDense: true,
         ),
         maxLines: 1,
         textCapitalization: TextCapitalization.sentences,
@@ -562,10 +524,11 @@ class _AddDebtModalState extends State<AddDebtModal> {
   }
 
   Widget _buildDebtTypeToggle(bool isDark, Color cardColor) {
-    return CNSegmentedControl(
+    return UniversalSegmentedControl<int>(
+      items: const [0, 1],
       labels: const ['I Owe', 'Owe Me'],
-      selectedIndex: _debtType,
-      onValueChanged: (value) {
+      selectedItem: _debtType,
+      onSelectionChanged: (value) {
         HapticFeedback.selectionClick();
         setState(() => _debtType = value);
       },
@@ -934,7 +897,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: TextField(
         controller: _notesController,
         style: TextStyle(fontSize: 16, color: textColor),
@@ -942,18 +905,8 @@ class _AddDebtModalState extends State<AddDebtModal> {
           hintText: 'Add notes...',
           hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
           border: InputBorder.none,
-          prefixIcon: Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Icon(
-              CupertinoIcons.pencil_outline,
-              color: isDark ? Colors.white38 : Colors.black38,
-              size: 20,
-            ),
-          ),
-          prefixIconConstraints: const BoxConstraints(
-            minWidth: 0,
-            minHeight: 0,
-          ),
+          contentPadding: EdgeInsets.zero,
+          isDense: true,
         ),
         maxLines: 3,
         minLines: 1,

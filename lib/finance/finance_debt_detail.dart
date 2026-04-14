@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/services/finance_service.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/universalclosebutton.dart';
 
 /// Model for debt payment history
 class DebtPayment {
@@ -861,11 +862,8 @@ class _DebtDetailModalState extends State<DebtDetailModal>
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
             child: Center(
-              child: CNButton.icon(
-                icon: const CNSymbol('xmark'),
-                style: CNButtonStyle.glass,
+              child: UniversalCloseButton(
                 onPressed: () {
-                  HapticFeedback.lightImpact();
                   Navigator.pop(context);
                 },
               ),

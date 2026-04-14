@@ -11,6 +11,8 @@ import 'package:synthese/finance/services/finance_service.dart';
 import 'package:synthese/finance/finance_add_debt.dart';
 import 'package:synthese/finance/finance_debt_detail.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
 
 class DebtsListScreen extends StatefulWidget {
   const DebtsListScreen({super.key});
@@ -232,11 +234,8 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
                 ),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: CNButton.icon(
-                    icon: const CNSymbol('xmark'),
-                    style: CNButtonStyle.glass,
+                  child: UniversalCloseButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
                       Navigator.pop(context);
                     },
                   ),
@@ -276,10 +275,11 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
   }
 
   Widget _buildTabSelector(bool isDark, Color cardColor) {
-    return CNSegmentedControl(
+    return UniversalSegmentedControl<int>(
+      items: const [0, 1],
       labels: const ['I Owe', 'Owe Me'],
-      selectedIndex: _selectedTab,
-      onValueChanged: (value) {
+      selectedItem: _selectedTab,
+      onSelectionChanged: (value) {
         HapticFeedback.selectionClick();
         setState(() => _selectedTab = value);
       },

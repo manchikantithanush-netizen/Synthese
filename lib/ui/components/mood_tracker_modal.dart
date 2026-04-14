@@ -4,6 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:synthese/ui/components/universalbackbutton.dart';
+import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 
 class MoodOption {
   final double value;
@@ -28,13 +31,14 @@ class MoodTrackerModal extends StatefulWidget {
   State<MoodTrackerModal> createState() => _MoodTrackerModalState();
 }
 
-class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerProviderStateMixin {
+class _MoodTrackerModalState extends State<MoodTrackerModal>
+    with SingleTickerProviderStateMixin {
   double _moodValue = 0.5;
   bool _isSaving = false;
   bool _isOnSecondPage = false;
   Set<String> _selectedSubFeelings = {};
   bool _showLoggedOverlay = false;
-  
+
   late AnimationController _checkmarkController;
   late Animation<double> _checkmarkAnimation;
 
@@ -43,77 +47,150 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
       value: 0.0,
       label: 'Very Unpleasant',
       color: Color.fromRGBO(211, 80, 42, 1),
-      description: "It's rough right now. Give yourself grace — you're doing what you can.",
+      description:
+          "It's rough right now. Give yourself grace — you're doing what you can.",
       subFeelings: [
-        'Angry', 'Anxious', 'Scared', 'Overwhelmed', 'Ashamed',
-        'Devastated', 'Panicked', 'Hopeless', 'Furious', 'Terrified',
-        'Disgusted', 'Resentful', 'Miserable',
+        'Angry',
+        'Anxious',
+        'Scared',
+        'Overwhelmed',
+        'Ashamed',
+        'Devastated',
+        'Panicked',
+        'Hopeless',
+        'Furious',
+        'Terrified',
+        'Disgusted',
+        'Resentful',
+        'Miserable',
       ],
     ),
     MoodOption(
-      value: 1/6,
+      value: 1 / 6,
       label: 'Unpleasant',
       color: Color.fromRGBO(177, 106, 23, 1),
       description: "Things feel heavy. Take it one step at a time.",
       subFeelings: [
-        'Frustrated', 'Worried', 'Sad', 'Stressed', 'Lonely',
-        'Disappointed', 'Insecure', 'Irritated', 'Guilty', 'Hurt',
-        'Nervous', 'Jealous', 'Embarrassed',
+        'Frustrated',
+        'Worried',
+        'Sad',
+        'Stressed',
+        'Lonely',
+        'Disappointed',
+        'Insecure',
+        'Irritated',
+        'Guilty',
+        'Hurt',
+        'Nervous',
+        'Jealous',
+        'Embarrassed',
       ],
     ),
     MoodOption(
-      value: 2/6,
+      value: 2 / 6,
       label: 'Slightly Unpleasant',
       color: Color.fromRGBO(194, 150, 40, 1),
-      description: "A little off-track. Not great, but you're hanging in there.",
+      description:
+          "A little off-track. Not great, but you're hanging in there.",
       subFeelings: [
-        'Tired', 'Bored', 'Uneasy', 'Distracted', 'Restless',
-        'Apathetic', 'Drained', 'Impatient', 'Disconnected', 'Sluggish',
-        'Uncertain', 'Unfocused', 'Melancholic',
+        'Tired',
+        'Bored',
+        'Uneasy',
+        'Distracted',
+        'Restless',
+        'Apathetic',
+        'Drained',
+        'Impatient',
+        'Disconnected',
+        'Sluggish',
+        'Uncertain',
+        'Unfocused',
+        'Melancholic',
       ],
     ),
     MoodOption(
-      value: 3/6,
+      value: 3 / 6,
       label: 'Neutral',
       color: Color.fromRGBO(48, 127, 216, 1),
       description: "Balanced and centered. Ready for what's next.",
       subFeelings: [
-        'Content', 'Calm', 'Peaceful', 'Indifferent', 'Steady',
-        'Balanced', 'Accepting', 'Present', 'Mellow', 'Composed',
-        'Grounded', 'Reserved', 'Thoughtful',
+        'Content',
+        'Calm',
+        'Peaceful',
+        'Indifferent',
+        'Steady',
+        'Balanced',
+        'Accepting',
+        'Present',
+        'Mellow',
+        'Composed',
+        'Grounded',
+        'Reserved',
+        'Thoughtful',
       ],
     ),
     MoodOption(
-      value: 4/6,
+      value: 4 / 6,
       label: 'Slightly Pleasant',
       color: Color.fromRGBO(82, 145, 50, 1),
       description: "Doing alright! A steady, positive energy is building.",
       subFeelings: [
-        'Hopeful', 'Relaxed', 'Focused', 'Grateful', 'Optimistic',
-        'Curious', 'Refreshed', 'Relieved', 'Comfortable', 'Open',
-        'Encouraged', 'Interested', 'Serene',
+        'Hopeful',
+        'Relaxed',
+        'Focused',
+        'Grateful',
+        'Optimistic',
+        'Curious',
+        'Refreshed',
+        'Relieved',
+        'Comfortable',
+        'Open',
+        'Encouraged',
+        'Interested',
+        'Serene',
       ],
     ),
     MoodOption(
-      value: 5/6,
+      value: 5 / 6,
       label: 'Pleasant',
       color: Color.fromRGBO(52, 98, 18, 1),
       description: "Feeling solid and on track. You've got a good flow going.",
       subFeelings: [
-        'Happy', 'Confident', 'Energized', 'Motivated', 'Joyful',
-        'Proud', 'Fulfilled', 'Cheerful', 'Playful', 'Empowered',
-        'Creative', 'Appreciated', 'Loving',
+        'Happy',
+        'Confident',
+        'Energized',
+        'Motivated',
+        'Joyful',
+        'Proud',
+        'Fulfilled',
+        'Cheerful',
+        'Playful',
+        'Empowered',
+        'Creative',
+        'Appreciated',
+        'Loving',
       ],
     ),
     MoodOption(
       value: 1.0,
       label: 'Very Pleasant',
       color: Color.fromRGBO(17, 99, 76, 1),
-      description: "Absolutely great! You're in peak form and feeling energized.",
+      description:
+          "Absolutely great! You're in peak form and feeling energized.",
       subFeelings: [
-        'Amazed', 'Excited', 'Surprised', 'Passionate', 'Inspired',
-        'Euphoric', 'Thrilled', 'Elated', 'Ecstatic', 'Blissful',
-        'Radiant', 'Alive', 'Grateful',
+        'Amazed',
+        'Excited',
+        'Surprised',
+        'Passionate',
+        'Inspired',
+        'Euphoric',
+        'Thrilled',
+        'Elated',
+        'Ecstatic',
+        'Blissful',
+        'Radiant',
+        'Alive',
+        'Grateful',
       ],
     ),
   ];
@@ -138,12 +215,12 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
   }
 
   int get _selectedIndex {
-    if (_moodValue <= 1/7) return 0;
-    if (_moodValue <= 2/7) return 1;
-    if (_moodValue <= 3/7) return 2;
-    if (_moodValue <= 4/7) return 3;
-    if (_moodValue <= 5/7) return 4;
-    if (_moodValue <= 6/7) return 5;
+    if (_moodValue <= 1 / 7) return 0;
+    if (_moodValue <= 2 / 7) return 1;
+    if (_moodValue <= 3 / 7) return 2;
+    if (_moodValue <= 4 / 7) return 3;
+    if (_moodValue <= 5 / 7) return 4;
+    if (_moodValue <= 6 / 7) return 5;
     return 6;
   }
 
@@ -152,21 +229,23 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
   Color _getInterpolatedColor() {
     if (_moodValue <= 0.0) return _moodOptions[0].color;
     if (_moodValue >= 1.0) return _moodOptions[6].color;
-    
+
     final segment = _moodValue * 6;
     final lowerIndex = segment.floor().clamp(0, 5);
     final upperIndex = (lowerIndex + 1).clamp(0, 6);
     final t = segment - lowerIndex;
-    
+
     return Color.lerp(
       _moodOptions[lowerIndex].color,
       _moodOptions[upperIndex].color,
       t,
     )!;
   }
-  
+
   Color _getModalBackground(bool isDark) {
-    final baseColor = isDark ? const Color(0xFF252528) : const Color(0xFFE5E5E7);
+    final baseColor = isDark
+        ? const Color(0xFF252528)
+        : const Color(0xFFE5E5E7);
     final tint = _getInterpolatedColor();
     return Color.lerp(baseColor, tint, 0.08) ?? baseColor;
   }
@@ -195,7 +274,8 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
 
     try {
       final today = DateTime.now();
-      final dateKey = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+      final dateKey =
+          '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
 
       await FirebaseFirestore.instance
           .collection('users')
@@ -203,11 +283,11 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
           .collection('mood_logs')
           .doc(dateKey)
           .set({
-        'mood_value': _moodValue,
-        'mood_label': _selectedMood.label,
-        'sub_feelings': _selectedSubFeelings.toList(),
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+            'mood_value': _moodValue,
+            'mood_label': _selectedMood.label,
+            'sub_feelings': _selectedSubFeelings.toList(),
+            'timestamp': FieldValue.serverTimestamp(),
+          });
 
       if (mounted) {
         HapticFeedback.mediumImpact();
@@ -216,7 +296,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
           _isSaving = false;
         });
         _checkmarkController.forward();
-        
+
         // Wait and then close
         await Future.delayed(const Duration(milliseconds: 1500));
         if (mounted) Navigator.of(context).pop();
@@ -233,10 +313,14 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = textColor.withOpacity(0.5);
     final currentColor = _getInterpolatedColor();
-    final trackColor = isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.08);
-    
+    final trackColor = isDark
+        ? Colors.white.withOpacity(0.1)
+        : Colors.black.withOpacity(0.08);
+
     final now = DateTime.now();
-    final hour = now.hour > 12 ? now.hour - 12 : (now.hour == 0 ? 12 : now.hour);
+    final hour = now.hour > 12
+        ? now.hour - 12
+        : (now.hour == 0 ? 12 : now.hour);
     final minute = now.minute.toString().padLeft(2, '0');
     final amPm = now.hour >= 12 ? 'PM' : 'AM';
     final timeString = '$hour:$minute $amPm';
@@ -249,22 +333,38 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
             duration: const Duration(milliseconds: 400),
             decoration: BoxDecoration(
               color: _getModalBackground(isDark),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(38)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(38),
+              ),
             ),
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
-              child: _isOnSecondPage 
-                  ? _buildSecondPage(isDark, textColor, subTextColor, currentColor)
-                  : _buildFirstPage(isDark, textColor, subTextColor, currentColor, trackColor, timeString),
+              child: _isOnSecondPage
+                  ? _buildSecondPage(
+                      isDark,
+                      textColor,
+                      subTextColor,
+                      currentColor,
+                    )
+                  : _buildFirstPage(
+                      isDark,
+                      textColor,
+                      subTextColor,
+                      currentColor,
+                      trackColor,
+                      timeString,
+                    ),
             ),
           ),
-          
+
           // Logged overlay with checkmark animation
           if (_showLoggedOverlay)
             Container(
               decoration: BoxDecoration(
                 color: _getModalBackground(isDark),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(38)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(38),
+                ),
               ),
               child: Center(
                 child: Column(
@@ -309,7 +409,14 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
     );
   }
 
-  Widget _buildFirstPage(bool isDark, Color textColor, Color subTextColor, Color currentColor, Color trackColor, String timeString) {
+  Widget _buildFirstPage(
+    bool isDark,
+    Color textColor,
+    Color subTextColor,
+    Color currentColor,
+    Color trackColor,
+    String timeString,
+  ) {
     return Column(
       key: const ValueKey('first'),
       children: [
@@ -329,11 +436,8 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
               ),
               Align(
                 alignment: Alignment.centerRight,
-                child: CNButton.icon(
-                  icon: const CNSymbol('xmark'),
-                  style: CNButtonStyle.glass,
+                child: UniversalCloseButton(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
                     Navigator.of(context).pop();
                   },
                 ),
@@ -341,9 +445,9 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
             ],
           ),
         ),
-        
+
         const SizedBox(height: 20),
-        
+
         // Time pill badge
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
@@ -351,10 +455,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
           decoration: BoxDecoration(
             color: currentColor.withOpacity(0.15),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: currentColor.withOpacity(0.3),
-              width: 1,
-            ),
+            border: Border.all(color: currentColor.withOpacity(0.3), width: 1),
           ),
           child: Text(
             'Log for $timeString',
@@ -381,9 +482,9 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
                       fontWeight: FontWeight.w400,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 8),
-                  
+
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
                     child: Text(
@@ -399,9 +500,9 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
                     child: Text(
@@ -416,9 +517,9 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 40),
-                  
+
                   // Mood indicator dots
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -431,25 +532,31 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
                         height: isSelected ? 12 : 8,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: isSelected 
-                              ? _moodOptions[index].color 
+                          color: isSelected
+                              ? _moodOptions[index].color
                               : _moodOptions[index].color.withOpacity(0.3),
                         ),
                       );
                     }),
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   _buildPillSlider(trackColor, currentColor),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Unpleasant', style: TextStyle(color: subTextColor, fontSize: 12)),
-                      Text('Pleasant', style: TextStyle(color: subTextColor, fontSize: 12)),
+                      Text(
+                        'Unpleasant',
+                        style: TextStyle(color: subTextColor, fontSize: 12),
+                      ),
+                      Text(
+                        'Pleasant',
+                        style: TextStyle(color: subTextColor, fontSize: 12),
+                      ),
                     ],
                   ),
                 ],
@@ -457,7 +564,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
             ),
           ),
         ),
-        
+
         // Date info
         Padding(
           padding: const EdgeInsets.only(bottom: 12),
@@ -474,25 +581,21 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
         // Next Button
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(50),
-            child: SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: CNButton(
-                label: 'Next',
-                style: CNButtonStyle.prominentGlass,
-                tint: currentColor,
-                onPressed: _goToSecondPage,
-              ),
-            ),
+          child: UniversalButton(
+            text: 'Next',
+            onPressed: _goToSecondPage,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSecondPage(bool isDark, Color textColor, Color subTextColor, Color currentColor) {
+  Widget _buildSecondPage(
+    bool isDark,
+    Color textColor,
+    Color subTextColor,
+    Color currentColor,
+  ) {
     return Column(
       key: const ValueKey('second'),
       children: [
@@ -504,11 +607,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
             children: [
               Align(
                 alignment: Alignment.centerLeft,
-                child: CNButton.icon(
-                  icon: const CNSymbol('chevron.left'),
-                  style: CNButtonStyle.glass,
-                  onPressed: _goBack,
-                ),
+                child: UniversalBackButton(onPressed: _goBack),
               ),
               Text(
                 'Describe your feeling',
@@ -520,11 +619,8 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
               ),
               Align(
                 alignment: Alignment.centerRight,
-                child: CNButton.icon(
-                  icon: const CNSymbol('xmark'),
-                  style: CNButtonStyle.glass,
+                child: UniversalCloseButton(
                   onPressed: () {
-                    HapticFeedback.lightImpact();
                     Navigator.of(context).pop();
                   },
                 ),
@@ -532,9 +628,9 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
             ],
           ),
         ),
-        
+
         const SizedBox(height: 32),
-        
+
         // Selected feeling pill at top
         AnimatedContainer(
           duration: const Duration(milliseconds: 300),
@@ -572,9 +668,9 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Sub-feeling pills
                 Wrap(
                   spacing: 12,
@@ -595,15 +691,18 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
-                          color: isSelected 
-                              ? currentColor 
+                          color: isSelected
+                              ? currentColor
                               : currentColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
-                            color: isSelected 
-                                ? currentColor 
+                            color: isSelected
+                                ? currentColor
                                 : currentColor.withOpacity(0.3),
                             width: 1.5,
                           ),
@@ -611,9 +710,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
                         child: Text(
                           feeling,
                           style: TextStyle(
-                            color: isSelected 
-                                ? Colors.white 
-                                : currentColor,
+                            color: isSelected ? Colors.white : currentColor,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -630,28 +727,41 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
         // Finish Button
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(50),
-            child: SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: CNButton(
-                label: _isSaving ? 'Saving...' : 'Finish',
-                style: CNButtonStyle.prominentGlass,
-                tint: currentColor,
-                onPressed: _isSaving ? () {} : _saveMood,
-              ),
-            ),
+          child: UniversalButton(
+            text: _isSaving ? 'Saving...' : 'Finish',
+            isLoading: _isSaving,
+            onPressed: _isSaving ? () {} : _saveMood,
           ),
         ),
       ],
     );
   }
-  
+
   String _getFormattedDate() {
     final now = DateTime.now();
-    final weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    final months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    final weekdays = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ];
+    final months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
     return '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
   }
 
@@ -659,13 +769,13 @@ class _MoodTrackerModalState extends State<MoodTrackerModal> with SingleTickerPr
     const double trackHeight = 40.0;
     const double thumbSize = 32.0;
     const double padding = 4.0;
-    
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final trackWidth = constraints.maxWidth;
         final usableWidth = trackWidth - thumbSize - (padding * 2);
         final thumbX = padding + (_moodValue * usableWidth);
-        
+
         return GestureDetector(
           onHorizontalDragUpdate: (details) {
             final newX = details.localPosition.dx - (thumbSize / 2);

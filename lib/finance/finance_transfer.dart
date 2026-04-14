@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/services/finance_service.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/universalclosebutton.dart';
 
 class TransferModal extends StatefulWidget {
   const TransferModal({super.key});
@@ -266,11 +267,8 @@ class _TransferModalState extends State<TransferModal> {
                   ),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: CNButton.icon(
-                      icon: const CNSymbol('xmark'),
-                      style: CNButtonStyle.glass,
+                    child: UniversalCloseButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
                         Navigator.pop(context);
                       },
                     ),
@@ -570,30 +568,15 @@ class _TransferModalState extends State<TransferModal> {
                     ),
                   ),
                   const Spacer(),
-                  GestureDetector(
-                    onTap: () {
+                  UniversalCloseButton(
+                    onPressed: () {
                       HapticFeedback.lightImpact();
                       Navigator.pop(context);
                     },
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.white12
-                            : Colors.black.withOpacity(0.05),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        CupertinoIcons.xmark,
-                        size: 16,
-                        color: isDark ? Colors.white54 : Colors.black54,
-                      ),
-                    ),
                   ),
                 ],
               ),
             ),
-            const Divider(height: 1),
             // Account list
             Flexible(
               child: ListView.builder(

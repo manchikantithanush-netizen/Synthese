@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
+import 'dart:ui';
 import 'package:synthese/mindfulness/questionnaire_data.dart';
 import 'package:synthese/mindfulness/questionnaire_results_screen.dart';
+import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/universalbackbutton.dart';
 
 class QuestionnaireScreen extends StatefulWidget {
   const QuestionnaireScreen({super.key});
@@ -103,11 +107,8 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                   ),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: CNButton.icon(
-                      icon: const CNSymbol('xmark'),
-                      style: CNButtonStyle.glass,
+                    child: UniversalCloseButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
                         Navigator.of(context).pop();
                       },
                     ),
@@ -228,7 +229,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                     color: Colors.black.withOpacity(0.04),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ],
         ),
         child: Row(
@@ -251,10 +252,17 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
               transitionBuilder: (child, animation) =>
                   ScaleTransition(scale: animation, child: child),
               child: isSelected
-                  ? const Icon(Icons.check_circle,
-                      color: tealColor, size: 24, key: ValueKey('checked'))
+                  ? const Icon(
+                      Icons.check_circle,
+                      color: tealColor,
+                      size: 24,
+                      key: ValueKey('checked'),
+                    )
                   : const SizedBox(
-                      width: 24, height: 24, key: ValueKey('unchecked')),
+                      width: 24,
+                      height: 24,
+                      key: ValueKey('unchecked'),
+                    ),
             ),
           ],
         ),
@@ -262,53 +270,87 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     );
   }
 
-  Widget _buildBottomNavigation(bool isDark, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Back button (hidden on page 0)
-          AnimatedOpacity(
-            opacity: _currentPage > 0 ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 200),
-            child: IgnorePointer(
-              ignoring: _currentPage == 0,
-              child: SizedBox(
-                height: 40,
-                width: 95,
-                child: ClipRRect(
+  Widget _liquidGlassPillButton({
+    required String label,
+    required VoidCallback? onPressed,
+    required bool isDark,
+    Color? accentColor,
+  }) {
+    final isEnabled = onPressed != null;
+    final background = accentColor != null
+        ? accentColor.withValues(alpha: isEnabled ? 0.26 : 0.16)
+        : (isDark ? Colors.white : Colors.black).withValues(
+            alpha: isEnabled ? 0.16 : 0.1,
+          );
+    final border = accentColor != null
+        ? accentColor.withValues(alpha: isEnabled ? 0.5 : 0.25)
+        : (isDark ? Colors.white : Colors.black).withValues(
+            alpha: isEnabled ? 0.35 : 0.2,
+          );
+    final textColor = accentColor ?? (isDark ? Colors.white : Colors.black);
+
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(50),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Material(
+            color: background,
+            child: InkWell(
+              onTap: onPressed,
+              borderRadius: BorderRadius.circular(50),
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(50),
-                  child: Transform.scale(
-                    scale: 1.1,
-                    child: CNButton(
-                      label: "Back",
-                      style: CNButtonStyle.glass,
-                      onPressed: _prevPage,
-                    ),
+                  border: Border.all(color: border, width: 1.1),
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
 
-          // Spacer (no indicators - question counter shown at top)
-          const Spacer(),
-
+  Widget _buildBottomNavigation(bool isDark, Color textColor) {
+    final tealColor = isDark ? const Color(0xFF33BEBE) : const Color(0xFF0A9B9B);
+    
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           // Next/View Results button
-          SizedBox(
-            height: 40,
-            width: _currentPage == 14 ? 130 : 95,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(50),
-              child: Transform.scale(
-                scale: 1.1,
-                child: CNButton(
-                  label: _currentPage == 14 ? "View Results" : "Next",
-                  style: CNButtonStyle.prominentGlass,
-                  tint: tealColor,
-                  onPressed: _nextPage,
-                ),
+          _liquidGlassPillButton(
+            label: _currentPage == 14 ? "View Results" : "Next",
+            onPressed: _nextPage,
+            isDark: isDark,
+            accentColor: tealColor,
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Back button
+          AnimatedOpacity(
+            opacity: _currentPage > 0 ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 200),
+            child: IgnorePointer(
+              ignoring: _currentPage == 0,
+              child: _liquidGlassPillButton(
+                label: 'Back',
+                onPressed: _currentPage > 0 ? _prevPage : null,
+                isDark: isDark,
               ),
             ),
           ),
@@ -316,4 +358,5 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       ),
     );
   }
+
 }

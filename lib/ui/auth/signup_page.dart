@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'dart:async';
 import 'login_page.dart';
 import 'verification_page.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/universalbackbutton.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -133,14 +133,7 @@ class _SignupPageState extends State<SignupPage> {
               // Back button row
               Row(
                 children: [
-                  CNButton.icon(
-                    icon: const CNSymbol('chevron.left'),
-                    style: CNButtonStyle.glass,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      Navigator.pop(context);
-                    },
-                  ),
+                  UniversalBackButton(onPressed: () => Navigator.pop(context)),
                   const Spacer(),
                   Text(
                     'Synthese',
