@@ -12,10 +12,12 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isCompact = mediaQuery.size.height < 760;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF252528) : const Color(0xFFE5E5E7);
     final textColor = isDark ? Colors.white : Colors.black;
-    final subTextColor = textColor.withOpacity(0.6);
+    final subTextColor = textColor.withValues(alpha: 0.6);
 
     return FractionallySizedBox(
       heightFactor: 0.93,
@@ -28,28 +30,31 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
           children: [
             // Header
             Padding(
-              padding: const EdgeInsets.only(top: 24, left: 20, right: 20),
-              child: Stack(
-                alignment: Alignment.center,
+              padding: EdgeInsets.only(
+                top: isCompact ? 16 : 24,
+                left: 20,
+                right: 20,
+              ),
+              child: Row(
                 children: [
-                  Align(
-                    alignment: Alignment.center,
+                  const SizedBox(width: 40),
+                  Expanded(
                     child: Text(
                       'Before You Begin',
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: textColor,
-                        fontSize: 18,
+                        fontSize: isCompact ? 17 : 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: UniversalCloseButton(
-                      onPressed: () {
-                        Navigator.of(context).pop(false);
-                      },
-                    ),
+                  UniversalCloseButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(false);
+                    },
                   ),
                 ],
               ),
@@ -62,7 +67,7 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
-                    const SizedBox(height: 24),
+                    SizedBox(height: isCompact ? 16 : 24),
 
                     // Icon
                     Container(
@@ -81,7 +86,7 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: isCompact ? 16 : 24),
 
                     // Disclaimer text
                     Text(
@@ -89,12 +94,12 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: textColor,
-                        fontSize: 15,
+                        fontSize: isCompact ? 14 : 15,
                         height: 1.5,
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    SizedBox(height: isCompact ? 14 : 20),
 
                     // Credits section
                     Text(
@@ -102,35 +107,37 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: subTextColor,
-                        fontSize: 13,
+                        fontSize: isCompact ? 12 : 13,
                         height: 1.5,
                       ),
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: isCompact ? 12 : 16),
 
                     // Duration note
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Icon(
                           CupertinoIcons.clock,
-                          size: 16,
+                          size: isCompact ? 14 : 16,
                           color: subTextColor,
                         ),
-                        const SizedBox(width: 6),
+                        SizedBox(width: isCompact ? 4 : 6),
                         Text(
                           'Takes about 3-5 minutes to complete.',
+                          textAlign: TextAlign.center,
                           style: TextStyle(
                             color: subTextColor,
-                            fontSize: 13,
+                            fontSize: isCompact ? 12 : 13,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: isCompact ? 16 : 24),
                   ],
                 ),
               ),
@@ -138,7 +145,12 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
 
             // Bottom button
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 10, 24, 40),
+              padding: EdgeInsets.fromLTRB(
+                24,
+                10,
+                24,
+                mediaQuery.padding.bottom + (isCompact ? 12 : 24),
+              ),
               child: UniversalButton(
                 text: 'Start Test',
                 onPressed: () {

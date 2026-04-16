@@ -1,8 +1,6 @@
-import 'package:flutter/cupertino.dart'; // REQUIRED for CupertinoTheme
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/auth/login_page.dart';
@@ -102,8 +100,15 @@ class _StartPageState extends State<StartPage> {
     }
   }
 
-  List<InlineSpan> _buildTextSpans() {
+  List<InlineSpan> _buildTextSpans(double scale) {
     final textColor = Theme.of(context).colorScheme.onSurface;
+    final introSize = (40 * scale).clamp(32.0, 52.0);
+    final wordSize = (34 * scale).clamp(26.0, 44.0);
+    final pronSize = (18 * scale).clamp(14.0, 24.0);
+    final posSize = (16 * scale).clamp(13.0, 21.0);
+    final meaningSize = (18 * scale).clamp(14.0, 23.0);
+    final originSize = (14 * scale).clamp(12.0, 18.0);
+    final cursorSize = (18 * scale).clamp(14.0, 24.0);
 
     if (_phase < 2) {
       return [
@@ -111,7 +116,7 @@ class _StartPageState extends State<StartPage> {
           text: _displayedText,
           style: TextStyle(
             color: textColor,
-            fontSize: 40,
+            fontSize: introSize,
             fontWeight: FontWeight.w900,
             letterSpacing: -1.2,
             height: 1.1,
@@ -121,7 +126,7 @@ class _StartPageState extends State<StartPage> {
           text: '|',
           style: TextStyle(
             color: textColor,
-            fontSize: 40,
+            fontSize: introSize,
             fontWeight: FontWeight.w300,
           ),
         ),
@@ -148,7 +153,7 @@ class _StartPageState extends State<StartPage> {
         _defWord,
         TextStyle(
           color: textColor,
-          fontSize: 34,
+          fontSize: wordSize,
           fontWeight: FontWeight.bold,
           letterSpacing: -0.5,
         ),
@@ -157,7 +162,7 @@ class _StartPageState extends State<StartPage> {
         _defPron,
         TextStyle(
           color: textColor.withOpacity(0.7),
-          fontSize: 18,
+          fontSize: pronSize,
           fontStyle: FontStyle.italic,
         ),
       );
@@ -165,7 +170,7 @@ class _StartPageState extends State<StartPage> {
         _defPos,
         TextStyle(
           color: textColor.withOpacity(0.5),
-          fontSize: 16,
+          fontSize: posSize,
           fontStyle: FontStyle.italic,
         ),
       );
@@ -173,7 +178,7 @@ class _StartPageState extends State<StartPage> {
         _defMeaning,
         TextStyle(
           color: textColor.withOpacity(0.95),
-          fontSize: 18,
+          fontSize: meaningSize,
           height: 1.5,
           fontWeight: FontWeight.w400,
         ),
@@ -182,7 +187,7 @@ class _StartPageState extends State<StartPage> {
         _defOrigin,
         TextStyle(
           color: textColor.withOpacity(0.5),
-          fontSize: 14,
+          fontSize: originSize,
           height: 1.4,
           fontStyle: FontStyle.italic,
         ),
@@ -193,7 +198,7 @@ class _StartPageState extends State<StartPage> {
           text: '|',
           style: TextStyle(
             color: textColor,
-            fontSize: 18,
+            fontSize: cursorSize,
             fontWeight: FontWeight.w300,
           ),
         ),
@@ -220,109 +225,127 @@ class _StartPageState extends State<StartPage> {
 
   @override
   Widget build(BuildContext context) {
-    // DEFINED isDark here so the CupertinoTheme knows what color to use
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).colorScheme.onSurface;
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28.0),
-          child: Column(
-            children: [
-              Expanded(
-                child: Center(
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Text.rich(
-                      TextSpan(children: _buildTextSpans()),
-                      textAlign: _phase < 2 ? TextAlign.center : TextAlign.left,
-                    ),
-                  ),
-                ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final widthScale = (constraints.maxWidth / 390).clamp(0.9, 1.2);
+            final heightScale = (constraints.maxHeight / 800).clamp(0.85, 1.15);
+            final textScale = ((widthScale + heightScale) / 2).toDouble();
+            final horizontalPadding = constraints.maxWidth < 360 ? 20.0 : 28.0;
+            final topSpacing = constraints.maxHeight < 700 ? 8.0 : 18.0;
+            final animationVPadding = constraints.maxHeight < 700 ? 8.0 : 20.0;
+            final privacyBottomSpacing = constraints.maxHeight < 700
+                ? 10.0
+                : 24.0;
+
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                topSpacing,
+                horizontalPadding,
+                0,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: Column(
                 children: [
-                  // Continue with Sign In Button
-                  // Continue with Sign In Button
-                  // Continue with Sign In Button
-                  // Sign In Button
-                  PremiumButton(
-                    text: 'Continue with Sign In',
-                    onPressed: () {
-                      Navigator.push(context, _fadeRoute(const LoginPage()));
-                    },
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          vertical: animationVPadding,
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: Text.rich(
+                            TextSpan(children: _buildTextSpans(textScale)),
+                            textAlign: _phase < 2
+                                ? TextAlign.center
+                                : TextAlign.left,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-
-                  const SizedBox(height: 14),
-
-                  // Sign Up Button
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: SizedBox(
-                      height: 56,
-                      width: double.infinity,
-                      child: Theme(
-                        data: Theme.of(context).copyWith(
-                          colorScheme: Theme.of(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      PremiumButton(
+                        text: 'Continue with Sign In',
+                        onPressed: () {
+                          Navigator.push(
                             context,
-                          ).colorScheme.copyWith(primary: Colors.green),
-                        ),
-                        child: CNButton(
-                          label: 'Continue with Sign Up',
-                          style: CNButtonStyle.bordered,
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            Navigator.push(
-                              context,
-                              _fadeRoute(const SignupPage()),
-                            );
-                          },
-                        ),
+                            _fadeRoute(const LoginPage()),
+                          );
+                        },
                       ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      style: TextStyle(
-                        color: textColor.withOpacity(0.54),
-                        fontSize: 12,
-                        height: 1.6,
-                        letterSpacing: 0.2,
-                      ),
-                      children: [
-                        const TextSpan(
-                          text: 'By pressing Continue you agree with our\n',
-                        ),
-                        TextSpan(
-                          text: 'privacy policy',
-                          style: TextStyle(
-                            color: textColor,
-                            fontWeight: FontWeight.bold,
+                      const SizedBox(height: 14),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(50),
+                        child: SizedBox(
+                          height: 56,
+                          width: double.infinity,
+                          child: Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: Theme.of(
+                                context,
+                              ).colorScheme.copyWith(primary: Colors.green),
+                            ),
+                            child: CNButton(
+                              label: 'Continue with Sign Up',
+                              style: CNButtonStyle.bordered,
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                Navigator.push(
+                                  context,
+                                  _fadeRoute(const SignupPage()),
+                                );
+                              },
+                            ),
                           ),
                         ),
-                        const TextSpan(text: ' and '),
-                        TextSpan(
-                          text: 'terms and conditions',
+                      ),
+                      const SizedBox(height: 24),
+                      RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
                           style: TextStyle(
-                            color: textColor,
-                            fontWeight: FontWeight.bold,
+                            color: textColor.withOpacity(0.54),
+                            fontSize: 12,
+                            height: 1.6,
+                            letterSpacing: 0.2,
                           ),
+                          children: [
+                            const TextSpan(
+                              text: 'By pressing Continue you agree with our\n',
+                            ),
+                            TextSpan(
+                              text: 'privacy policy',
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const TextSpan(text: ' and '),
+                            TextSpan(
+                              text: 'terms and conditions',
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const TextSpan(text: '.'),
+                          ],
                         ),
-                        const TextSpan(text: '.'),
-                      ],
-                    ),
+                      ),
+                      SizedBox(height: privacyBottomSpacing),
+                    ],
                   ),
-                  const SizedBox(height: 32),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

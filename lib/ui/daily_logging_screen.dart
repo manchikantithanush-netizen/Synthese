@@ -36,7 +36,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
     super.initState();
     // Locks in the date passed to the screen, defaults to today
     _logDate = widget.selectedDate ?? DateTime.now();
-    
+
     // Initialize animation controller
     _checkmarkController = AnimationController(
       vsync: this,
@@ -336,7 +336,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
       }
 
       if (userUpdates.isNotEmpty) await userRef.update(userUpdates);
-      
+
       if (mounted) {
         HapticFeedback.mediumImpact();
         setState(() {
@@ -441,6 +441,10 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isNarrow = screenWidth < 390;
+    final navButtonWidth = isNarrow ? 70.0 : 95.0;
+    final dashWidth = isNarrow ? 14.0 : 24.0;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenBgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final textColor = isDark ? Colors.white : Colors.black;
@@ -514,170 +518,179 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
               ),
             )
           : Column(
-            children: [
-              // --- BOLD FIXED DATE HEADER ---
-              Padding(
-                padding: const EdgeInsets.only(top: 10, bottom: 20),
-                child: Text(
-                  _formattedHeaderDate,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-              ),
-
-              // --- THE CAROUSEL ---
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const BouncingScrollPhysics(),
-                  onPageChanged: (index) {
-                    setState(() => _currentPage = index);
-                    HapticFeedback.selectionClick();
-                  },
-                  children: [
-                    _buildCarouselSlide(
-                      title: "FLOW LEVEL",
-                      isDark: isDark,
-                      options: _flowOptions,
-                      isMultiSelect: false,
-                      selectedSingle: _flow,
-                      onSelect: (val) => setState(() => _flow = val),
-                    ),
-                    _buildCarouselSlide(
-                      title: "SYMPTOMS",
-                      isDark: isDark,
-                      options: _symptomOptions,
-                      isMultiSelect: true,
-                      selectedList: _selectedSymptoms,
-                      onSelect: (val) {
-                        setState(() {
-                          if (_selectedSymptoms.contains(val))
-                            _selectedSymptoms.remove(val);
-                          else
-                            _selectedSymptoms.add(val);
-                        });
-                      },
-                    ),
-                    _buildCarouselSlide(
-                      title: "MOOD",
-                      isDark: isDark,
-                      options: _moodOptions,
-                      isMultiSelect: true,
-                      selectedList: _selectedMoods,
-                      onSelect: (val) {
-                        setState(() {
-                          if (_selectedMoods.contains(val))
-                            _selectedMoods.remove(val);
-                          else
-                            _selectedMoods.add(val);
-                        });
-                      },
-                    ),
-                    _buildCarouselSlide(
-                      title: "CERVICAL MUCUS",
-                      isDark: isDark,
-                      options: _mucusOptions,
-                      isMultiSelect: false,
-                      selectedSingle: _cervicalMucus,
-                      onSelect: (val) => setState(
-                        () => _cervicalMucus = (_cervicalMucus == val) ? null : val,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // --- BOTTOM NAVIGATION CONTROLS ---
-          Container(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // --- LIQUID GLASS BACK BUTTON (FIXED BOUNCE & SIZE) ---
-                AnimatedOpacity(
-                  opacity: _currentPage > 0 ? 1.0 : 0.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: IgnorePointer(
-                    ignoring: _currentPage == 0,
-                    child: SizedBox(
-                      height: 40,
-                      width: 95,
-                      child: _liquidGlassPillButton(
-                        label: "Back",
-                        onPressed: _prevPage,
-                        isDark: isDark,
-                      ),
+                // --- BOLD FIXED DATE HEADER ---
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, bottom: 20),
+                  child: Text(
+                    _formattedHeaderDate,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
                     ),
                   ),
                 ),
 
-                // FLAT DASH INDICATORS
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(4, (index) {
-                    bool isActive = _currentPage == index;
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      height: 4,
-                      width: 24,
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? (isDark ? Colors.white : Colors.black)
-                            : (isDark ? Colors.white24 : Colors.black12),
-                        borderRadius: BorderRadius.circular(2),
+                // --- THE CAROUSEL ---
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const BouncingScrollPhysics(),
+                    onPageChanged: (index) {
+                      setState(() => _currentPage = index);
+                      HapticFeedback.selectionClick();
+                    },
+                    children: [
+                      _buildCarouselSlide(
+                        title: "FLOW LEVEL",
+                        isDark: isDark,
+                        options: _flowOptions,
+                        isMultiSelect: false,
+                        selectedSingle: _flow,
+                        onSelect: (val) => setState(() => _flow = val),
                       ),
-                    );
-                  }),
+                      _buildCarouselSlide(
+                        title: "SYMPTOMS",
+                        isDark: isDark,
+                        options: _symptomOptions,
+                        isMultiSelect: true,
+                        selectedList: _selectedSymptoms,
+                        onSelect: (val) {
+                          setState(() {
+                            if (_selectedSymptoms.contains(val))
+                              _selectedSymptoms.remove(val);
+                            else
+                              _selectedSymptoms.add(val);
+                          });
+                        },
+                      ),
+                      _buildCarouselSlide(
+                        title: "MOOD",
+                        isDark: isDark,
+                        options: _moodOptions,
+                        isMultiSelect: true,
+                        selectedList: _selectedMoods,
+                        onSelect: (val) {
+                          setState(() {
+                            if (_selectedMoods.contains(val))
+                              _selectedMoods.remove(val);
+                            else
+                              _selectedMoods.add(val);
+                          });
+                        },
+                      ),
+                      _buildCarouselSlide(
+                        title: "CERVICAL MUCUS",
+                        isDark: isDark,
+                        options: _mucusOptions,
+                        isMultiSelect: false,
+                        selectedSingle: _cervicalMucus,
+                        onSelect: (val) => setState(
+                          () => _cervicalMucus = (_cervicalMucus == val)
+                              ? null
+                              : val,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
-                // --- PROMINENT GLASS NEXT/SAVE BUTTON (FIXED BOUNCE & SIZE) ---
-                SizedBox(
-                  height: 40,
-                  width: 95,
-                  child: _isSaving
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(50),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: pinkColor.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(50),
-                                border: Border.all(
-                                  color: pinkColor.withValues(alpha: 0.45),
-                                  width: 1.1,
-                                ),
-                              ),
-                              child: Center(
-                                child: SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child: CircularProgressIndicator(
-                                    color: pinkColor,
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                              ),
+                // --- BOTTOM NAVIGATION CONTROLS ---
+                Container(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // --- LIQUID GLASS BACK BUTTON (FIXED BOUNCE & SIZE) ---
+                      AnimatedOpacity(
+                        opacity: _currentPage > 0 ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: IgnorePointer(
+                          ignoring: _currentPage == 0,
+                          child: SizedBox(
+                            height: 40,
+                            width: navButtonWidth,
+                            child: _liquidGlassPillButton(
+                              label: "Back",
+                              onPressed: _prevPage,
+                              isDark: isDark,
                             ),
                           ),
-                        )
-                      : _liquidGlassPillButton(
-                          label: _currentPage == 3 ? "Save" : "Next",
-                          onPressed: _nextPage,
-                          isDark: isDark,
-                          accentColor: pinkColor,
                         ),
+                      ),
+
+                      // FLAT DASH INDICATORS
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(4, (index) {
+                          bool isActive = _currentPage == index;
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            margin: EdgeInsets.symmetric(
+                              horizontal: isNarrow ? 2 : 4,
+                            ),
+                            height: 4,
+                            width: dashWidth,
+                            decoration: BoxDecoration(
+                              color: isActive
+                                  ? (isDark ? Colors.white : Colors.black)
+                                  : (isDark ? Colors.white24 : Colors.black12),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          );
+                        }),
+                      ),
+
+                      // --- PROMINENT GLASS NEXT/SAVE BUTTON (FIXED BOUNCE & SIZE) ---
+                      SizedBox(
+                        height: 40,
+                        width: navButtonWidth,
+                        child: _isSaving
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(50),
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(
+                                    sigmaX: 10,
+                                    sigmaY: 10,
+                                  ),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: pinkColor.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(50),
+                                      border: Border.all(
+                                        color: pinkColor.withValues(
+                                          alpha: 0.45,
+                                        ),
+                                        width: 1.1,
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: SizedBox(
+                                        height: 18,
+                                        width: 18,
+                                        child: CircularProgressIndicator(
+                                          color: pinkColor,
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : _liquidGlassPillButton(
+                                label: _currentPage == 3 ? "Save" : "Next",
+                                onPressed: _nextPage,
+                                isDark: isDark,
+                                accentColor: pinkColor,
+                              ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 

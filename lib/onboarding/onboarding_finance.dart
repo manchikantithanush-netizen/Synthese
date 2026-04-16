@@ -216,6 +216,8 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final clampedTextScale = mediaQuery.textScaler.scale(1.0).clamp(0.9, 1.0);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
     final textColor = isDark ? Colors.white : Colors.black;
@@ -225,14 +227,19 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
       width: double.infinity,
       height: double.infinity,
       child: SafeArea(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 500),
-          switchInCurve: Curves.easeInOut,
-          switchOutCurve: Curves.easeInOut,
-          transitionBuilder: (Widget child, Animation<double> animation) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          child: _buildCurrentPage(isDark, textColor),
+        child: MediaQuery(
+          data: mediaQuery.copyWith(
+            textScaler: TextScaler.linear(clampedTextScale.toDouble()),
+          ),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            switchInCurve: Curves.easeInOut,
+            switchOutCurve: Curves.easeInOut,
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            child: _buildCurrentPage(isDark, textColor),
+          ),
         ),
       ),
     );
@@ -251,7 +258,48 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
     }
   }
 
+  Widget _buildScrollablePage({
+    required Key key,
+    required Widget child,
+    EdgeInsetsGeometry? padding,
+  }) {
+    return KeyedSubtree(
+      key: key,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isCompact = constraints.maxHeight < 760;
+          final horizontalPadding = constraints.maxWidth < 370 ? 20.0 : 28.0;
+          final mediaQuery = MediaQuery.of(context);
+          final bottomSpacing =
+              mediaQuery.viewInsets.bottom + (isCompact ? 12 : 24);
+          final resolvedPadding =
+              padding ??
+              EdgeInsets.fromLTRB(
+                horizontalPadding,
+                isCompact ? 8 : 12,
+                horizontalPadding,
+                bottomSpacing,
+              );
+          final verticalPadding = resolvedPadding.vertical;
+          return Padding(
+            padding: resolvedPadding,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: (constraints.maxHeight - verticalPadding).clamp(
+                  0,
+                  double.infinity,
+                ),
+              ),
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildWelcomePage(bool isDark, Color textColor) {
+    final isCompact = MediaQuery.of(context).size.height < 760;
     Widget buildFeature(
       String title,
       String desc,
@@ -259,18 +307,22 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
       Color iconColor,
     ) {
       return Padding(
-        padding: const EdgeInsets.only(bottom: 32.0),
+        padding: EdgeInsets.only(bottom: isCompact ? 18 : 28),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: 56,
+              width: isCompact ? 48 : 56,
               child: Padding(
                 padding: const EdgeInsets.only(top: 2.0),
-                child: Icon(iconData, color: iconColor, size: 35),
+                child: Icon(
+                  iconData,
+                  color: iconColor,
+                  size: isCompact ? 30 : 35,
+                ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: isCompact ? 6 : 8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,17 +331,17 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
                     title,
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 17,
+                      fontSize: isCompact ? 16 : 17,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -0.4,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: isCompact ? 2 : 4),
                   Text(
                     desc,
                     style: TextStyle(
                       color: textColor.withOpacity(0.6),
-                      fontSize: 15,
+                      fontSize: isCompact ? 14 : 15,
                       height: 1.3,
                     ),
                   ),
@@ -301,18 +353,17 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
       );
     }
 
-    return Padding(
+    return _buildScrollablePage(
       key: const ValueKey('welcome'),
-      padding: const EdgeInsets.symmetric(horizontal: 28.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 60),
+          SizedBox(height: isCompact ? 14 : 32),
           Text(
             "Welcome to\nFinance Tracker",
             style: TextStyle(
               color: textColor,
-              fontSize: 34,
+              fontSize: isCompact ? 30 : 34,
               fontWeight: FontWeight.w700,
               height: 1.15,
               letterSpacing: -1.0,
@@ -323,19 +374,19 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
             "Track expenses",
             "Log every transaction and see where your money goes. Categorize spending to understand your habits.",
             CupertinoIcons.money_dollar_circle_fill,
-            const Color(0xFF34C759), // Green
+            const Color(0xFF34C759),
           ),
           buildFeature(
             "Set budgets",
             "Set monthly spending limits and get alerts when you're close to reaching them.",
             CupertinoIcons.chart_pie_fill,
-            const Color(0xFF5E5CE6), // Indigo
+            const Color(0xFF5E5CE6),
           ),
           buildFeature(
             "Privacy first",
             "Your financial data stays on your device and is never shared with third parties.",
             CupertinoIcons.lock_shield_fill,
-            const Color(0xFFFF9F0A), // Orange
+            const Color(0xFFFF9F0A),
           ),
           const Spacer(),
           Container(
@@ -364,7 +415,6 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
             onPressed: _nextPage,
             color: greenColor,
           ),
-          const SizedBox(height: 40),
         ],
       ),
     );
@@ -403,6 +453,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
               child: nameController != null
                   ? TextField(
                       controller: nameController,
+                      textInputAction: TextInputAction.done,
                       style: TextStyle(
                         color: textColor,
                         fontSize: 16,
@@ -411,7 +462,9 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: title,
-                        hintStyle: TextStyle(color: textColor.withOpacity(0.5)),
+                        hintStyle: TextStyle(
+                          color: textColor.withValues(alpha: 0.5),
+                        ),
                       ),
                     )
                   : Text(
@@ -448,20 +501,20 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
   }
 
   Widget _buildAccountSetupPage(bool isDark, Color textColor) {
-    return Padding(
+    final isCompact = MediaQuery.of(context).size.height < 760;
+    return _buildScrollablePage(
       key: const ValueKey('accounts'),
-      padding: const EdgeInsets.symmetric(horizontal: 28.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           UniversalBackButton(onPressed: _previousPage),
           const SizedBox(height: 24),
           Text(
             "Set up your accounts",
             style: TextStyle(
               color: textColor,
-              fontSize: 32,
+              fontSize: isCompact ? 28 : 32,
               fontWeight: FontWeight.bold,
               height: 1.2,
               letterSpacing: -1,
@@ -471,8 +524,8 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           Text(
             "Choose which accounts you want to track. You can rename them or add more later.",
             style: TextStyle(
-              color: textColor.withOpacity(0.6),
-              fontSize: 16,
+              color: textColor.withValues(alpha: 0.6),
+              fontSize: isCompact ? 15 : 16,
               height: 1.4,
             ),
           ),
@@ -503,27 +556,26 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
                 : () {},
             color: greenColor,
           ),
-          const SizedBox(height: 40),
         ],
       ),
     );
   }
 
   Widget _buildBudgetPage(bool isDark, Color textColor) {
-    return Padding(
+    final isCompact = MediaQuery.of(context).size.height < 760;
+    return _buildScrollablePage(
       key: const ValueKey('budget'),
-      padding: const EdgeInsets.symmetric(horizontal: 28.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           UniversalBackButton(onPressed: _previousPage),
           const SizedBox(height: 24),
           Text(
             "Set your monthly budget",
             style: TextStyle(
               color: textColor,
-              fontSize: 32,
+              fontSize: isCompact ? 28 : 32,
               fontWeight: FontWeight.bold,
               height: 1.2,
               letterSpacing: -1,
@@ -533,8 +585,8 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           Text(
             "How much do you want to spend each month? We'll help you stay on track.",
             style: TextStyle(
-              color: textColor.withOpacity(0.6),
-              fontSize: 16,
+              color: textColor.withValues(alpha: 0.6),
+              fontSize: isCompact ? 15 : 16,
               height: 1.4,
             ),
           ),
@@ -543,8 +595,8 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.black.withOpacity(0.03),
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.03),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
@@ -554,7 +606,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
                   _currencySymbol,
                   style: TextStyle(
                     color: greenColor,
-                    fontSize: 48,
+                    fontSize: isCompact ? 40 : 48,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -568,12 +620,14 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 48,
+                      fontSize: isCompact ? 40 : 48,
                       fontWeight: FontWeight.w700,
                     ),
                     decoration: InputDecoration(
                       hintText: '0',
-                      hintStyle: TextStyle(color: textColor.withOpacity(0.3)),
+                      hintStyle: TextStyle(
+                        color: textColor.withValues(alpha: 0.3),
+                      ),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.zero,
                     ),
@@ -592,7 +646,6 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
             onPressed: _isSaving ? () {} : _saveData,
             color: greenColor,
           ),
-          const SizedBox(height: 40),
         ],
       ),
     );

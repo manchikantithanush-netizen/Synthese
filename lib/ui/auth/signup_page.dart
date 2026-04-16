@@ -125,141 +125,158 @@ class _SignupPageState extends State<SignupPage> {
 
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Back button row
-              Row(
-                children: [
-                  UniversalBackButton(onPressed: () => Navigator.pop(context)),
-                  const Spacer(),
-                  Text(
-                    'Synthese',
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  const SizedBox(width: 44),
-                ],
-              ),
-
-              const SizedBox(height: 40),
-
-              Text(
-                'Sign Up',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 42,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -1.0,
-                ),
-              ),
-
-              // Inline error notification
-              AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-                child: _errorMessage != null
-                    ? Padding(
-                        padding: const EdgeInsets.only(top: 20.0),
-                        child: Text(
-                          _errorMessage!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Color(0xFFFF3B30),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final mediaQuery = MediaQuery.of(context);
+            final bottomSpacing =
+                mediaQuery.padding.bottom + mediaQuery.viewInsets.bottom + 24;
+            return SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(28, 12, 28, bottomSpacing),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 8),
+                    // Back button row
+                    Row(
+                      children: [
+                        UniversalBackButton(
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const Spacer(),
+                        Text(
+                          'Synthese',
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      )
-                    : const SizedBox(height: 20),
-              ),
-
-              const SizedBox(height: 28),
-
-              TextField(
-                controller: emailController,
-                style: TextStyle(color: textColor),
-                decoration: _iosInputDecoration(
-                  context,
-                  'Email',
-                  Icons.mail_outline,
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              TextField(
-                controller: passwordController,
-                focusNode: _passwordFocusNode,
-                obscureText: true,
-                style: TextStyle(color: textColor),
-                decoration: _iosInputDecoration(
-                  context,
-                  'Password',
-                  Icons.lock_outline,
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              TextField(
-                controller: confirmPasswordController,
-                obscureText: true,
-                style: TextStyle(color: textColor),
-                decoration: _iosInputDecoration(
-                  context,
-                  'Confirm Password',
-                  Icons.lock_outline,
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : PremiumButton(text: 'Create Account', onPressed: signUp),
-
-              const SizedBox(height: 32),
-
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  Navigator.pushReplacement(
-                    context,
-                    _fadeRoute(const LoginPage()),
-                  );
-                },
-                child: RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    style: TextStyle(
-                      color: textColor.withOpacity(0.54),
-                      fontSize: 14,
+                        const Spacer(),
+                        const SizedBox(width: 44),
+                      ],
                     ),
-                    children: [
-                      const TextSpan(text: 'Already have an account? '),
-                      TextSpan(
-                        text: 'Login',
-                        style: TextStyle(
-                          color: textColor,
-                          fontWeight: FontWeight.bold,
+
+                    const SizedBox(height: 32),
+
+                    Text(
+                      'Sign Up',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 42,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -1.0,
+                      ),
+                    ),
+
+                    // Inline error notification
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                      child: _errorMessage != null
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 20.0),
+                              child: Text(
+                                _errorMessage!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Color(0xFFFF3B30),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            )
+                          : const SizedBox(height: 20),
+                    ),
+
+                    const SizedBox(height: 28),
+
+                    TextField(
+                      controller: emailController,
+                      style: TextStyle(color: textColor),
+                      decoration: _iosInputDecoration(
+                        context,
+                        'Email',
+                        Icons.mail_outline,
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    TextField(
+                      controller: passwordController,
+                      focusNode: _passwordFocusNode,
+                      obscureText: true,
+                      style: TextStyle(color: textColor),
+                      decoration: _iosInputDecoration(
+                        context,
+                        'Password',
+                        Icons.lock_outline,
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    TextField(
+                      controller: confirmPasswordController,
+                      obscureText: true,
+                      style: TextStyle(color: textColor),
+                      decoration: _iosInputDecoration(
+                        context,
+                        'Confirm Password',
+                        Icons.lock_outline,
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : PremiumButton(
+                            text: 'Create Account',
+                            onPressed: signUp,
+                          ),
+
+                    const SizedBox(height: 32),
+
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        Navigator.pushReplacement(
+                          context,
+                          _fadeRoute(const LoginPage()),
+                        );
+                      },
+                      child: RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          style: TextStyle(
+                            color: textColor.withOpacity(0.54),
+                            fontSize: 14,
+                          ),
+                          children: [
+                            const TextSpan(text: 'Already have an account? '),
+                            TextSpan(
+                              text: 'Login',
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 32),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

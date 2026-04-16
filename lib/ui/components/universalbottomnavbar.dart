@@ -18,7 +18,7 @@ class UniversalBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF1A1A1C) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF4F4F6);
     final inactiveColor = isDark ? Colors.white38 : Colors.black38;
     final activeColor = isDark ? Colors.white : Colors.black;
 
@@ -34,6 +34,12 @@ class UniversalBottomNavBar extends StatelessWidget {
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.08),
+              width: 1,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
@@ -55,7 +61,10 @@ class UniversalBottomNavBar extends StatelessWidget {
                 },
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 8,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -74,7 +83,9 @@ class UniversalBottomNavBar extends StatelessWidget {
                         style: TextStyle(
                           color: isActive ? activeColor : inactiveColor,
                           fontSize: isActive ? 12 : 11,
-                          fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                          fontWeight: isActive
+                              ? FontWeight.w600
+                              : FontWeight.w500,
                         ),
                         child: Text(item.label),
                       ),
