@@ -116,6 +116,8 @@ class _CycleCalendarState extends State<CycleCalendar> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isNarrow = screenWidth < 390;
 
     final bgColor = isDark ? const Color(0xFF151515) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
@@ -172,7 +174,10 @@ class _CycleCalendarState extends State<CycleCalendar> {
         const SizedBox(height: 12),
 
         Container(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+          padding: EdgeInsets.symmetric(
+            vertical: isNarrow ? 12 : 16,
+            horizontal: isNarrow ? 4 : 8,
+          ),
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(24),
@@ -237,9 +242,9 @@ class _CycleCalendarState extends State<CycleCalendar> {
               }
 
               Widget cellContent = Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 8,
+                padding: EdgeInsets.symmetric(
+                  vertical: isNarrow ? 10 : 12,
+                  horizontal: isNarrow ? 5 : 8,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -248,17 +253,17 @@ class _CycleCalendarState extends State<CycleCalendar> {
                       dayName,
                       style: TextStyle(
                         color: currentDayNameColor,
-                        fontSize: 11,
+                        fontSize: isNarrow ? 10 : 11,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.5,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: isNarrow ? 6 : 8),
                     Text(
                       dayNum,
                       style: TextStyle(
                         color: currentTextColor,
-                        fontSize: 18,
+                        fontSize: isNarrow ? 16 : 18,
                         fontWeight: isSimulatedToday
                             ? FontWeight.w800
                             : FontWeight.w600,
@@ -270,7 +275,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
 
               return Expanded(
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  margin: EdgeInsets.symmetric(horizontal: isNarrow ? 1 : 2),
                   decoration: decoration,
                   child: painter != null
                       ? CustomPaint(painter: painter, child: cellContent)
@@ -285,10 +290,10 @@ class _CycleCalendarState extends State<CycleCalendar> {
 
         // --- REDESIGNED ULTRA-SIMPLE LEGEND ---
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          padding: EdgeInsets.symmetric(horizontal: isNarrow ? 8.0 : 12.0),
           child: Wrap(
-            spacing: 24, // Wider spacing for a cleaner, breathable look
-            runSpacing: 12,
+            spacing: isNarrow ? 14 : 24,
+            runSpacing: isNarrow ? 10 : 12,
             alignment: WrapAlignment.center,
             children: [
               _buildLegendItem(

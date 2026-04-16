@@ -581,10 +581,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
         // Next Button
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
-          child: UniversalButton(
-            text: 'Next',
-            onPressed: _goToSecondPage,
-          ),
+          child: UniversalButton(text: 'Next', onPressed: _goToSecondPage),
         ),
       ],
     );
@@ -596,6 +593,8 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
     Color subTextColor,
     Color currentColor,
   ) {
+    final mediaQuery = MediaQuery.of(context);
+    final isCompact = mediaQuery.size.height < 760;
     return Column(
       key: const ValueKey('second'),
       children: [
@@ -629,7 +628,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
           ),
         ),
 
-        const SizedBox(height: 32),
+        SizedBox(height: isCompact ? 16 : 32),
 
         // Selected feeling pill at top
         AnimatedContainer(
@@ -647,34 +646,31 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
             _selectedMood.label,
             style: TextStyle(
               color: currentColor,
-              fontSize: 18,
+              fontSize: isCompact ? 16 : 18,
               fontWeight: FontWeight.w700,
             ),
           ),
         ),
 
         Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   'What best describes this feeling?',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: textColor.withOpacity(0.7),
-                    fontSize: 17,
+                    color: textColor.withValues(alpha: 0.7),
+                    fontSize: isCompact ? 15 : 17,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-
-                const SizedBox(height: 32),
-
-                // Sub-feeling pills
+                SizedBox(height: isCompact ? 18 : 32),
                 Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
+                  spacing: isCompact ? 8 : 12,
+                  runSpacing: isCompact ? 8 : 12,
                   alignment: WrapAlignment.center,
                   children: _selectedMood.subFeelings.map((feeling) {
                     final isSelected = _selectedSubFeelings.contains(feeling);
@@ -691,19 +687,19 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isCompact ? 14 : 20,
+                          vertical: isCompact ? 9 : 12,
                         ),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? currentColor
-                              : currentColor.withOpacity(0.1),
+                              : currentColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
                             color: isSelected
                                 ? currentColor
-                                : currentColor.withOpacity(0.3),
+                                : currentColor.withValues(alpha: 0.3),
                             width: 1.5,
                           ),
                         ),
@@ -711,7 +707,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
                           feeling,
                           style: TextStyle(
                             color: isSelected ? Colors.white : currentColor,
-                            fontSize: 16,
+                            fontSize: isCompact ? 14 : 16,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

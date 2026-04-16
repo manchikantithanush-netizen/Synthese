@@ -199,158 +199,172 @@ class _LoginPageState extends State<LoginPage> {
 
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 28.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Back button row
-              Row(
-                children: [
-                  UniversalBackButton(onPressed: () => Navigator.pop(context)),
-                  const Spacer(),
-                  Text(
-                    'Synthese',
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  const SizedBox(width: 44),
-                ],
-              ),
-
-              const SizedBox(height: 40),
-
-              Text(
-                'Sign In',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 42,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -1.0,
-                ),
-              ),
-
-              // Inline notification area
-              AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                child: _errorMessage != null
-                    ? Padding(
-                        padding: const EdgeInsets.only(top: 20.0),
-                        child: Text(
-                          _errorMessage!,
-                          textAlign: TextAlign.center,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final mediaQuery = MediaQuery.of(context);
+            final bottomSpacing =
+                mediaQuery.padding.bottom + mediaQuery.viewInsets.bottom + 24;
+            return SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.fromLTRB(28, 12, 28, bottomSpacing),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 8),
+                    // Back button row
+                    Row(
+                      children: [
+                        UniversalBackButton(
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const Spacer(),
+                        Text(
+                          'Synthese',
                           style: TextStyle(
-                            color: _errorMessage!.contains('sent')
-                                ? const Color(0xFF4CD964)
-                                : const Color(0xFFFF3B30),
+                            color: textColor,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Spacer(),
+                        const SizedBox(width: 44),
+                      ],
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    Text(
+                      'Sign In',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 42,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -1.0,
+                      ),
+                    ),
+
+                    // Inline notification area
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 300),
+                      child: _errorMessage != null
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 20.0),
+                              child: Text(
+                                _errorMessage!,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: _errorMessage!.contains('sent')
+                                      ? const Color(0xFF4CD964)
+                                      : const Color(0xFFFF3B30),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            )
+                          : const SizedBox(height: 20),
+                    ),
+
+                    const SizedBox(height: 28),
+
+                    TextField(
+                      controller: emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      style: TextStyle(color: textColor),
+                      decoration: _iosInputDecoration(
+                        context,
+                        'Email',
+                        Icons.mail_outline,
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    TextField(
+                      controller: passwordController,
+                      obscureText: true,
+                      style: TextStyle(color: textColor),
+                      decoration: _iosInputDecoration(
+                        context,
+                        'Password',
+                        Icons.lock_outline,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: GestureDetector(
+                        onTap: resetPassword,
+                        child: Text(
+                          'Forgot password?',
+                          style: TextStyle(
+                            color: textColor.withOpacity(0.54),
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                      )
-                    : const SizedBox(height: 20),
-              ),
-
-              const SizedBox(height: 28),
-
-              TextField(
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                style: TextStyle(color: textColor),
-                decoration: _iosInputDecoration(
-                  context,
-                  'Email',
-                  Icons.mail_outline,
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                style: TextStyle(color: textColor),
-                decoration: _iosInputDecoration(
-                  context,
-                  'Password',
-                  Icons.lock_outline,
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: resetPassword,
-                  child: Text(
-                    'Forgot password?',
-                    style: TextStyle(
-                      color: textColor.withOpacity(0.54),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : Column(
-                      children: [
-                        PremiumButton(
-                          text: 'Login',
-                          onPressed: signInWithEmail,
-                        ),
-                        const SizedBox(height: 14),
-                        PremiumButton(
-                          text: 'Continue with Google',
-                          onPressed: signInWithGoogle,
-                        ),
-                      ],
+                      ),
                     ),
 
-              const SizedBox(height: 32),
+                    const SizedBox(height: 32),
 
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  Navigator.pushReplacement(
-                    context,
-                    _fadeRoute(const SignupPage()),
-                  );
-                },
-                child: RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    style: TextStyle(
-                      color: textColor.withOpacity(0.54),
-                      fontSize: 14,
-                    ),
-                    children: [
-                      const TextSpan(text: "Don't have an account? "),
-                      TextSpan(
-                        text: 'Sign up',
-                        style: TextStyle(
-                          color: textColor,
-                          fontWeight: FontWeight.bold,
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : Column(
+                            children: [
+                              PremiumButton(
+                                text: 'Login',
+                                onPressed: signInWithEmail,
+                              ),
+                              const SizedBox(height: 14),
+                              PremiumButton(
+                                text: 'Continue with Google',
+                                onPressed: signInWithGoogle,
+                              ),
+                            ],
+                          ),
+
+                    const SizedBox(height: 32),
+
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        Navigator.pushReplacement(
+                          context,
+                          _fadeRoute(const SignupPage()),
+                        );
+                      },
+                      child: RichText(
+                        textAlign: TextAlign.center,
+                        text: TextSpan(
+                          style: TextStyle(
+                            color: textColor.withOpacity(0.54),
+                            fontSize: 14,
+                          ),
+                          children: [
+                            const TextSpan(text: "Don't have an account? "),
+                            TextSpan(
+                              text: 'Sign up',
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 32),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

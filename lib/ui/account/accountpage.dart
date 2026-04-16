@@ -106,16 +106,25 @@ class _AccountPageModalState extends State<AccountPageModal> {
 
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+      if (user == null) {
+        setState(() => _isDeletingAccount = false);
+        return;
+      }
 
-      // Delete user data from Firestore
+      // Delete user data from Firestore first
       await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
           .delete();
 
       // Delete the Firebase Auth account
-      await user.delete();
+      try {
+        await user.delete();
+      } catch (authError) {
+        // If auth delete fails (e.g., needs reauthentication), 
+        // user data is already deleted, proceed to logout
+        await FirebaseAuth.instance.signOut();
+      }
 
       // Navigate to root/onboarding
       if (context.mounted) {
@@ -128,7 +137,7 @@ class _AccountPageModalState extends State<AccountPageModal> {
       setState(() => _isDeletingAccount = false);
       if (context.mounted) {
         // Show error dialog
-        AdaptiveAlertDialog.show(
+        await AdaptiveAlertDialog.show(
           context: context,
           title: 'Error',
           message:

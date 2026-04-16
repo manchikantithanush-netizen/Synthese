@@ -62,46 +62,58 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final clampedTextScale = mediaQuery.textScaler.scale(1.0).clamp(0.9, 1.0);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
     final textColor = isDark ? Colors.white : Colors.black;
+    final isCompact = mediaQuery.size.height < 760;
 
     return Container(
       color: bgColor,
       width: double.infinity,
       height: double.infinity,
       child: SafeArea(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 500),
-          switchInCurve: Curves.easeInOut,
-          switchOutCurve: Curves.easeInOut,
-          transitionBuilder: (Widget child, Animation<double> animation) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          child: _buildCurrentPage(isDark, textColor),
+        child: MediaQuery(
+          data: mediaQuery.copyWith(
+            textScaler: TextScaler.linear(clampedTextScale.toDouble()),
+          ),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            switchInCurve: Curves.easeInOut,
+            switchOutCurve: Curves.easeInOut,
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            child: _buildCurrentPage(isDark, textColor, isCompact),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildCurrentPage(bool isDark, Color textColor) {
+  Widget _buildCurrentPage(bool isDark, Color textColor, bool isCompact) {
     switch (_currentPage) {
       case 0:
-        return _buildIntroPage(isDark, textColor);
+        return _buildIntroPage(isDark, textColor, isCompact);
       case 1:
-        return _buildWarningPage(isDark, textColor); // --- NEW WARNING PAGE ---
+        return _buildWarningPage(
+          isDark,
+          textColor,
+          isCompact,
+        ); // --- NEW WARNING PAGE ---
       case 2:
-        return _buildCalendarPage(isDark, textColor);
+        return _buildCalendarPage(isDark, textColor, isCompact);
       case 3:
-        return _buildPeriodLengthPage(isDark, textColor);
+        return _buildPeriodLengthPage(isDark, textColor, isCompact);
       case 4:
-        return _buildCycleLengthPage(isDark, textColor);
+        return _buildCycleLengthPage(isDark, textColor, isCompact);
       default:
         return const SizedBox.shrink();
     }
   }
 
-  Widget _buildIntroPage(bool isDark, Color textColor) {
+  Widget _buildIntroPage(bool isDark, Color textColor, bool isCompact) {
     Widget buildFeature(
       String title,
       String desc,
@@ -109,18 +121,22 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
       Color iconColor,
     ) {
       return Padding(
-        padding: const EdgeInsets.only(bottom: 32.0),
+        padding: EdgeInsets.only(bottom: isCompact ? 18.0 : 28.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: 56,
+              width: isCompact ? 48 : 56,
               child: Padding(
                 padding: const EdgeInsets.only(top: 2.0),
-                child: Icon(iconData, color: iconColor, size: 35),
+                child: Icon(
+                  iconData,
+                  color: iconColor,
+                  size: isCompact ? 30 : 35,
+                ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: isCompact ? 6 : 8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,17 +145,17 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
                     title,
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 17,
+                      fontSize: isCompact ? 16 : 17,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -0.4,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: isCompact ? 2 : 4),
                   Text(
                     desc,
                     style: TextStyle(
-                      color: textColor.withOpacity(0.6),
-                      fontSize: 15,
+                      color: textColor.withValues(alpha: 0.6),
+                      fontSize: isCompact ? 14 : 15,
                       height: 1.3,
                     ),
                   ),
@@ -153,64 +169,73 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
 
     return Padding(
       key: const ValueKey('intro'),
-      padding: const EdgeInsets.symmetric(horizontal: 28.0),
+      padding: EdgeInsets.symmetric(horizontal: isCompact ? 20.0 : 28.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 60),
+          SizedBox(height: isCompact ? 20 : 48),
           Text(
             "Welcome to\nMenstrual Cycle Tracker",
             style: TextStyle(
               color: textColor,
-              fontSize: 34,
+              fontSize: isCompact ? 30 : 34,
               fontWeight: FontWeight.w700,
               height: 1.15,
               letterSpacing: -1.0,
             ),
           ),
-          const Spacer(),
-          buildFeature(
-            "Smart predictions",
-            "Knows when your next period is coming and gets more accurate the more you log.",
-            CupertinoIcons.calendar,
-            const Color(0xFF5E5CE6), // Indigo
+          SizedBox(height: isCompact ? 12 : 20),
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                children: [
+                  buildFeature(
+                    "Smart predictions",
+                    "Knows when your next period is coming and gets more accurate the more you log.",
+                    CupertinoIcons.calendar,
+                    const Color(0xFF5E5CE6), // Indigo
+                  ),
+                  buildFeature(
+                    "Daily logging",
+                    "Track your flow, mood, symptoms and more. Takes less than a minute each day",
+                    CupertinoIcons.square_pencil,
+                    const Color(0xFFFF9F0A), // Orange
+                  ),
+                  buildFeature(
+                    "Health alerts",
+                    "Get notified when something unusual happens in your cycle so you're never caught off guard.",
+                    CupertinoIcons.bell_fill,
+                    const Color(0xFFFF453A), // Red
+                  ),
+                  buildFeature(
+                    "Cycle history",
+                    "See patterns across your past cycles and understand what's normal for your body.",
+                    Icons.history,
+                    const Color(0xFF32ADE6), // Light Blue
+                  ),
+                ],
+              ),
+            ),
           ),
-          buildFeature(
-            "Daily logging",
-            "Track your flow, mood, symptoms and more. Takes less than a minute each day",
-            CupertinoIcons.square_pencil,
-            const Color(0xFFFF9F0A), // Orange
-          ),
-          buildFeature(
-            "Health alerts",
-            "Get notified when something unusual happens in your cycle so you're never caught off guard.",
-            CupertinoIcons.bell_fill,
-            const Color(0xFFFF453A), // Red
-          ),
-          buildFeature(
-            "Cycle history",
-            "See patterns across your past cycles and understand what's normal for your body.",
-            Icons.history,
-            const Color(0xFF32ADE6), // Light Blue
-          ),
-          const Spacer(),
+          SizedBox(height: isCompact ? 8 : 12),
           PremiumButton(text: "Next", onPressed: _nextPage, color: pinkColor),
-          const SizedBox(height: 40),
+          SizedBox(height: isCompact ? 16 : 40),
         ],
       ),
     );
   }
 
   // --- NEW MEDICAL DISCLAIMER / WARNING PAGE ---
-  Widget _buildWarningPage(bool isDark, Color textColor) {
+  Widget _buildWarningPage(bool isDark, Color textColor, bool isCompact) {
     Widget buildWarningParagraph(String text, {bool isBold = false}) {
       return Padding(
-        padding: const EdgeInsets.only(bottom: 24.0),
+        padding: EdgeInsets.only(bottom: isCompact ? 16.0 : 24.0),
         child: Text(
           text,
           style: TextStyle(
-            color: textColor.withOpacity(0.85),
-            fontSize: 16,
+            color: textColor.withValues(alpha: 0.85),
+            fontSize: isCompact ? 15 : 16,
             height: 1.5,
             fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
           ),
@@ -220,13 +245,13 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
 
     return Padding(
       key: const ValueKey('warning'),
-      padding: const EdgeInsets.symmetric(horizontal: 28.0),
+      padding: EdgeInsets.symmetric(horizontal: isCompact ? 20.0 : 28.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
           UniversalBackButton(onPressed: _previousPage),
-          const SizedBox(height: 24),
+          SizedBox(height: isCompact ? 16 : 24),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -241,7 +266,7 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
                   "Important Notice",
                   style: TextStyle(
                     color: textColor,
-                    fontSize: 32,
+                    fontSize: isCompact ? 28 : 32,
                     fontWeight: FontWeight.bold,
                     height: 1.2,
                     letterSpacing: -1,
@@ -250,7 +275,7 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
               ),
             ],
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: isCompact ? 20 : 32),
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -276,8 +301,8 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.black.withOpacity(0.03),
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.03),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isDark ? Colors.white12 : Colors.black12,
@@ -303,27 +328,27 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
             onPressed: _nextPage,
             color: pinkColor,
           ),
-          const SizedBox(height: 40),
+          SizedBox(height: isCompact ? 16 : 40),
         ],
       ),
     );
   }
 
-  Widget _buildCalendarPage(bool isDark, Color textColor) {
+  Widget _buildCalendarPage(bool isDark, Color textColor, bool isCompact) {
     return Padding(
       key: const ValueKey('calendar'),
-      padding: const EdgeInsets.symmetric(horizontal: 28.0),
+      padding: EdgeInsets.symmetric(horizontal: isCompact ? 20.0 : 28.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
           UniversalBackButton(onPressed: _previousPage),
-          const SizedBox(height: 24),
+          SizedBox(height: isCompact ? 16 : 24),
           Text(
             "When did your last period start?",
             style: TextStyle(
               color: textColor,
-              fontSize: 32,
+              fontSize: isCompact ? 28 : 32,
               fontWeight: FontWeight.bold,
               height: 1.2,
               letterSpacing: -1,
@@ -339,7 +364,9 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
                       surface: Colors.black,
                       onSurface: Colors.white,
                     ),
-                    dialogBackgroundColor: Colors.black,
+                    dialogTheme: const DialogThemeData(
+                      backgroundColor: Colors.black,
+                    ),
                   )
                 : ThemeData.light().copyWith(
                     colorScheme: ColorScheme.light(
@@ -348,7 +375,9 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
                       surface: Colors.white,
                       onSurface: Colors.black,
                     ),
-                    dialogBackgroundColor: Colors.white,
+                    dialogTheme: const DialogThemeData(
+                      backgroundColor: Colors.white,
+                    ),
                   ),
             child: CalendarDatePicker(
               initialDate: _selectedDate,
@@ -360,27 +389,27 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
           ),
           const Spacer(),
           PremiumButton(text: "Next", onPressed: _nextPage, color: pinkColor),
-          const SizedBox(height: 40),
+          SizedBox(height: isCompact ? 16 : 40),
         ],
       ),
     );
   }
 
-  Widget _buildPeriodLengthPage(bool isDark, Color textColor) {
+  Widget _buildPeriodLengthPage(bool isDark, Color textColor, bool isCompact) {
     return Padding(
       key: const ValueKey('period'),
-      padding: const EdgeInsets.symmetric(horizontal: 28.0),
+      padding: EdgeInsets.symmetric(horizontal: isCompact ? 20.0 : 28.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
           UniversalBackButton(onPressed: _previousPage),
-          const SizedBox(height: 24),
+          SizedBox(height: isCompact ? 16 : 24),
           Text(
             "How long does your period usually last?",
             style: TextStyle(
               color: textColor,
-              fontSize: 32,
+              fontSize: isCompact ? 28 : 32,
               fontWeight: FontWeight.bold,
               height: 1.2,
               letterSpacing: -1,
@@ -388,16 +417,16 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
           ),
           const Spacer(),
           SizedBox(
-            height: 250,
+            height: isCompact ? 220 : 250,
             child: CupertinoPicker(
-              itemExtent: 60,
+              itemExtent: isCompact ? 52 : 60,
               diameterRatio: 1.5,
               squeeze: 1.2,
               scrollController: FixedExtentScrollController(
                 initialItem: _periodLength - 1,
               ),
               selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-                background: pinkColor.withOpacity(0.15),
+                background: pinkColor.withValues(alpha: 0.15),
               ),
               onSelectedItemChanged: (int index) {
                 setState(() => _periodLength = index + 1);
@@ -410,7 +439,7 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
                     "${index + 1} days",
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 26,
+                      fontSize: isCompact ? 22 : 26,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -420,27 +449,27 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
           ),
           const Spacer(),
           PremiumButton(text: "Next", onPressed: _nextPage, color: pinkColor),
-          const SizedBox(height: 40),
+          SizedBox(height: isCompact ? 16 : 40),
         ],
       ),
     );
   }
 
-  Widget _buildCycleLengthPage(bool isDark, Color textColor) {
+  Widget _buildCycleLengthPage(bool isDark, Color textColor, bool isCompact) {
     return Padding(
       key: const ValueKey('cycle'),
-      padding: const EdgeInsets.symmetric(horizontal: 28.0),
+      padding: EdgeInsets.symmetric(horizontal: isCompact ? 20.0 : 28.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
           UniversalBackButton(onPressed: _previousPage),
-          const SizedBox(height: 24),
+          SizedBox(height: isCompact ? 16 : 24),
           Text(
             "How long is your typical cycle?",
             style: TextStyle(
               color: textColor,
-              fontSize: 32,
+              fontSize: isCompact ? 28 : 32,
               fontWeight: FontWeight.bold,
               height: 1.2,
               letterSpacing: -1,
@@ -448,16 +477,16 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
           ),
           const Spacer(),
           SizedBox(
-            height: 250,
+            height: isCompact ? 220 : 250,
             child: CupertinoPicker(
-              itemExtent: 60,
+              itemExtent: isCompact ? 52 : 60,
               diameterRatio: 1.5,
               squeeze: 1.2,
               scrollController: FixedExtentScrollController(
                 initialItem: _cycleLength - 1,
               ),
               selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-                background: pinkColor.withOpacity(0.15),
+                background: pinkColor.withValues(alpha: 0.15),
               ),
               onSelectedItemChanged: (int index) {
                 setState(() => _cycleLength = index + 1);
@@ -470,7 +499,7 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
                     "${index + 1} days",
                     style: TextStyle(
                       color: textColor,
-                      fontSize: 26,
+                      fontSize: isCompact ? 22 : 26,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -485,7 +514,7 @@ class _OnboardingCyclesState extends State<OnboardingCycles> {
             onPressed: _isSaving ? () {} : _saveData,
             color: pinkColor,
           ),
-          const SizedBox(height: 40),
+          SizedBox(height: isCompact ? 16 : 40),
         ],
       ),
     );

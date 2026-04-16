@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'dart:ui';
 import 'package:synthese/mindfulness/questionnaire_data.dart';
-import 'package:synthese/mindfulness/questionnaire_results_screen.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
-import 'package:synthese/ui/components/universalbutton.dart';
-import 'package:synthese/ui/components/universalbackbutton.dart';
 
 class QuestionnaireScreen extends StatefulWidget {
   const QuestionnaireScreen({super.key});
@@ -75,6 +71,8 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isCompact = mediaQuery.size.height < 760;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF252528) : const Color(0xFFE5E5E7);
     final textColor = isDark ? Colors.white : Colors.black;
@@ -90,28 +88,31 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
           children: [
             // Header with close button
             Padding(
-              padding: const EdgeInsets.only(top: 24, left: 20, right: 20),
-              child: Stack(
-                alignment: Alignment.center,
+              padding: EdgeInsets.only(
+                top: isCompact ? 16 : 24,
+                left: 20,
+                right: 20,
+              ),
+              child: Row(
                 children: [
-                  Align(
-                    alignment: Alignment.center,
+                  const SizedBox(width: 40),
+                  Expanded(
                     child: Text(
                       'Mental Health Assessment',
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: textColor,
-                        fontSize: 18,
+                        fontSize: isCompact ? 17 : 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: UniversalCloseButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
+                  UniversalCloseButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
                   ),
                 ],
               ),
@@ -128,7 +129,12 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                   HapticFeedback.selectionClick();
                 },
                 itemBuilder: (context, index) {
-                  return _buildQuestionPage(index, isDark, textColor);
+                  return _buildQuestionPage(
+                    index,
+                    isDark,
+                    textColor,
+                    isCompact,
+                  );
                 },
               ),
             ),
@@ -141,57 +147,57 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     );
   }
 
-  Widget _buildQuestionPage(int index, bool isDark, Color textColor) {
+  Widget _buildQuestionPage(
+    int index,
+    bool isDark,
+    Color textColor,
+    bool isCompact,
+  ) {
     final question = questions[index];
     final pillBgColor = isDark ? const Color(0xFF252528) : Colors.white;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Question number label
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-          child: Text(
-            'QUESTION ${index + 1} OF 15',
-            style: TextStyle(
-              color: textColor.withOpacity(0.5),
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: isCompact ? 20 : 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: isCompact ? 8 : 12),
+            child: Text(
+              'QUESTION ${index + 1} OF 15',
+              style: TextStyle(
+                color: textColor.withValues(alpha: 0.5),
+                fontSize: isCompact ? 13 : 14,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.1,
+              ),
             ),
           ),
-        ),
-        // Question text
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          child: Text(
+          Text(
             question.text,
             style: TextStyle(
               color: textColor,
-              fontSize: 20,
+              fontSize: isCompact ? 17 : 20,
               fontWeight: FontWeight.w600,
             ),
           ),
-        ),
-        const SizedBox(height: 24),
-        // Options list
-        Expanded(
-          child: ListView.builder(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-            itemCount: question.options.length,
-            itemBuilder: (context, optionIndex) {
-              return _buildOptionItem(
-                question: question,
-                optionIndex: optionIndex,
-                isDark: isDark,
-                textColor: textColor,
-                pillBgColor: pillBgColor,
-              );
-            },
+          SizedBox(height: isCompact ? 12 : 24),
+          Expanded(
+            child: Column(
+              children: List.generate(question.options.length, (optionIndex) {
+                return _buildOptionItem(
+                  question: question,
+                  optionIndex: optionIndex,
+                  isDark: isDark,
+                  textColor: textColor,
+                  pillBgColor: pillBgColor,
+                  compact: isCompact,
+                );
+              }),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -201,6 +207,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     required bool isDark,
     required Color textColor,
     required Color pillBgColor,
+    required bool compact,
   }) {
     final option = question.options[optionIndex];
     final isSelected = _answers[question.id] == optionIndex;
@@ -213,8 +220,11 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+        margin: EdgeInsets.only(bottom: compact ? 8 : 12),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 18 : 24,
+          vertical: compact ? 11 : 18,
+        ),
         decoration: BoxDecoration(
           color: pillBgColor,
           borderRadius: BorderRadius.circular(50),
@@ -240,7 +250,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                 option,
                 style: TextStyle(
                   color: textColor,
-                  fontSize: 16,
+                  fontSize: compact ? 14 : 16,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
               ),
@@ -252,15 +262,15 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
               transitionBuilder: (child, animation) =>
                   ScaleTransition(scale: animation, child: child),
               child: isSelected
-                  ? const Icon(
+                  ? Icon(
                       Icons.check_circle,
                       color: tealColor,
-                      size: 24,
-                      key: ValueKey('checked'),
+                      size: compact ? 20 : 24,
+                      key: const ValueKey('checked'),
                     )
-                  : const SizedBox(
-                      width: 24,
-                      height: 24,
+                  : SizedBox(
+                      width: compact ? 20 : 24,
+                      height: compact ? 20 : 24,
                       key: ValueKey('unchecked'),
                     ),
             ),
@@ -324,10 +334,19 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
   }
 
   Widget _buildBottomNavigation(bool isDark, Color textColor) {
-    final tealColor = isDark ? const Color(0xFF33BEBE) : const Color(0xFF0A9B9B);
-    
+    final tealColor = isDark
+        ? const Color(0xFF33BEBE)
+        : const Color(0xFF0A9B9B);
+    final mediaQuery = MediaQuery.of(context);
+    final isCompact = mediaQuery.size.height < 760;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
+      padding: EdgeInsets.fromLTRB(
+        24,
+        isCompact ? 12 : 20,
+        24,
+        mediaQuery.padding.bottom + (isCompact ? 12 : 24),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -338,9 +357,9 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
             isDark: isDark,
             accentColor: tealColor,
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Back button
           AnimatedOpacity(
             opacity: _currentPage > 0 ? 1.0 : 0.0,
@@ -358,5 +377,4 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
       ),
     );
   }
-
 }

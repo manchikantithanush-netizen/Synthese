@@ -309,6 +309,8 @@ class _AddDebtModalState extends State<AddDebtModal> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isCompact = mediaQuery.size.height < 760;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final bgColor = isDark
@@ -318,6 +320,11 @@ class _AddDebtModalState extends State<AddDebtModal> {
     final cardColor = isDark ? const Color(0xFF252528) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtextColor = isDark ? Colors.white54 : Colors.black54;
+
+    final bottomActionPadding =
+        mediaQuery.viewInsets.bottom +
+        mediaQuery.padding.bottom +
+        (isCompact ? 10.0 : 16.0);
 
     return FractionallySizedBox(
       heightFactor: 0.93,
@@ -393,7 +400,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
                   : const SizedBox.shrink(),
             ),
 
-            const SizedBox(height: 20),
+            SizedBox(height: isCompact ? 14 : 20),
 
             // --- CONTENT ---
             Expanded(
@@ -408,6 +415,8 @@ class _AddDebtModalState extends State<AddDebtModal> {
                     )
                   : SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -475,7 +484,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
 
             // --- SAVE BUTTON ---
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
+              padding: EdgeInsets.fromLTRB(20, 10, 20, bottomActionPadding),
               child: PremiumButton(
                 text: 'Add Debt',
                 isLoading: _isSaving,
@@ -604,7 +613,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
     }
 
     return SizedBox(
-      height: 70,
+      height: 66,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -621,7 +630,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
                 color: isSelected ? _activeColor.withOpacity(0.15) : cardColor,
                 borderRadius: BorderRadius.circular(16),
