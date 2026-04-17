@@ -770,6 +770,42 @@ class _WorkoutPageState extends State<WorkoutPage> {
     );
   }
 
+  Widget _buildHeaderCircleButton({
+    required bool isDark,
+    required bool isNarrowLayout,
+    required IconData icon,
+    required VoidCallback onTap,
+    String? tooltip,
+  }) {
+    final circleSize = isNarrowLayout ? 40.0 : 42.0;
+    final iconSize = isNarrowLayout ? 20.0 : 22.0;
+    return Tooltip(
+      message: tooltip ?? '',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: Container(
+            width: circleSize,
+            height: circleSize,
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.black.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: iconSize,
+              color: isDark ? Colors.white : Colors.black,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _pauseTracking() {
     if (!_isTracking || _isPaused) {
       return;
@@ -963,23 +999,28 @@ class _WorkoutPageState extends State<WorkoutPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Workout',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: isNarrowLayout ? 28 : 32,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -1,
-                    ),
-                  ),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      IconButton.filledTonal(
-                        onPressed: _openHistoryScreen,
-                        icon: const Icon(Icons.history_rounded),
+                      Expanded(
+                        child: Text(
+                          'Workout',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: isNarrowLayout ? 28 : 32,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -1,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      _buildHeaderCircleButton(
+                        isDark: isDark,
+                        isNarrowLayout: isNarrowLayout,
+                        icon: Icons.history_rounded,
+                        onTap: _openHistoryScreen,
                         tooltip: 'History',
                       ),
                     ],
@@ -1238,23 +1279,25 @@ class _WorkoutPageState extends State<WorkoutPage> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      IconButton.filledTonal(
-                        onPressed: _openHistoryScreen,
-                        icon: const Icon(Icons.history_rounded),
+                      _buildHeaderCircleButton(
+                        isDark: isDark,
+                        isNarrowLayout: isNarrowLayout,
+                        icon: Icons.history_rounded,
+                        onTap: _openHistoryScreen,
                         tooltip: 'History',
                       ),
                       const SizedBox(width: 8),
-                      IconButton.filledTonal(
-                        onPressed: () {
+                      _buildHeaderCircleButton(
+                        isDark: isDark,
+                        isNarrowLayout: isNarrowLayout,
+                        icon: _hideTrackingUi
+                            ? Icons.visibility_off_rounded
+                            : Icons.visibility_rounded,
+                        onTap: () {
                           setState(() {
                             _hideTrackingUi = !_hideTrackingUi;
                           });
                         },
-                        icon: Icon(
-                          _hideTrackingUi
-                              ? Icons.visibility_off_rounded
-                              : Icons.visibility_rounded,
-                        ),
                         tooltip: _hideTrackingUi ? 'Show UI' : 'Hide UI',
                       ),
                       if (_showMetricsFullscreen) ...[
@@ -1636,6 +1679,53 @@ class WorkoutHistoryPage extends StatelessWidget {
     }
   }
 
+  Future<bool> _showDeleteConfirmation(BuildContext context) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogBg = isDark ? const Color(0xFF252528) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final mutedText = isDark ? Colors.white70 : Colors.black54;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: dialogBg,
+        title: Text('Delete workout?', style: TextStyle(color: textColor)),
+        content: Text(
+          'This workout session will be removed from your history.',
+          style: TextStyle(color: mutedText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: TextStyle(color: textColor)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    return confirm == true;
+  }
+
+  Future<void> _deleteWorkoutSession({
+    required String uid,
+    required String sessionId,
+  }) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('workout_sessions')
+        .doc(sessionId)
+        .delete();
+  }
+
   @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -1694,6 +1784,7 @@ class WorkoutHistoryPage extends StatelessWidget {
             itemCount: docs.length,
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
+              final sessionId = docs[index].id;
               final data = docs[index].data();
               final mode = (data['mode'] as String?) ?? 'outdoorWalking';
               final startedAt = (data['startedAt'] as Timestamp?)?.toDate();
@@ -1719,136 +1810,172 @@ class WorkoutHistoryPage extends StatelessWidget {
               final subtitle =
                   '${_formatDateTime(startedAt ?? DateTime.now())} - ${_formatDateTime(endedAt ?? DateTime.now())}';
 
-              return Container(
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : Colors.black.withValues(alpha: 0.08),
+              return Dismissible(
+                key: Key(sessionId),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF3B30),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: const Icon(
+                    Icons.delete_rounded,
+                    color: Colors.white,
+                    size: 24,
                   ),
                 ),
-                child: Theme(
-                  data: Theme.of(context).copyWith(
-                    dividerColor: Colors.transparent,
+                confirmDismiss: (_) => _showDeleteConfirmation(context),
+                onDismissed: (_) {
+                  _deleteWorkoutSession(uid: uid, sessionId: sessionId);
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.08),
+                    ),
                   ),
-                  child: ExpansionTile(
-                    tilePadding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 6,
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      dividerColor: Colors.transparent,
+                      splashFactory: NoSplash.splashFactory,
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
                     ),
-                    childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-                    title: Text(
-                      _modeLabel(mode),
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
+                    child: Material(
+                      color: Colors.transparent,
+                      clipBehavior: Clip.antiAlias,
+                      borderRadius: BorderRadius.circular(18),
+                      child: ExpansionTile(
+                      tilePadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 6,
                       ),
-                    ),
-                    subtitle: Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: textColor.withValues(alpha: 0.6),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
                       ),
-                    ),
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _HistoryMetricChip(
-                              label: 'Distance',
-                              value: '${(distanceMeters / 1000).toStringAsFixed(2)} km',
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _HistoryMetricChip(
-                              label: 'Duration',
-                              value: _formatDuration(duration),
-                            ),
-                          ),
-                        ],
+                      collapsedShape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
                       ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _HistoryMetricChip(
-                              label: 'Calories',
-                              value: '$calories kcal',
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _HistoryMetricChip(
-                              label: 'Active',
-                              value: '$activeMinutes min',
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (routePoints.length >= 2) ...[
-                        const SizedBox(height: 12),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: SizedBox(
-                            height: 220,
-                            child: FlutterMap(
-                              options: MapOptions(
-                                initialCenter: routePoints.first,
-                                initialZoom: 14,
-                              ),
-                              children: [
-                                TileLayer(
-                                  urlTemplate:
-                                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                  userAgentPackageName: 'com.example.synthese',
-                                ),
-                                PolylineLayer(
-                                  polylines: [
-                                    Polyline(
-                                      points: routePoints,
-                                      strokeWidth: 4,
-                                      color: Colors.blueAccent,
-                                    ),
-                                  ],
-                                ),
-                                MarkerLayer(
-                                  markers: [
-                                    Marker(
-                                      point: routePoints.first,
-                                      width: 42,
-                                      height: 42,
-                                      child: const Icon(
-                                        Icons.play_circle_fill_rounded,
-                                        color: Colors.green,
-                                        size: 30,
-                                      ),
-                                    ),
-                                    Marker(
-                                      point: routePoints.last,
-                                      width: 42,
-                                      height: 42,
-                                      child: const Icon(
-                                        Icons.flag_circle_rounded,
-                                        color: Colors.redAccent,
-                                        size: 30,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
+                      childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                      title: Text(
+                        _modeLabel(mode),
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
                         ),
+                      ),
+                      subtitle: Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: textColor.withValues(alpha: 0.6),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _HistoryMetricChip(
+                                label: 'Distance',
+                                value: '${(distanceMeters / 1000).toStringAsFixed(2)} km',
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _HistoryMetricChip(
+                                label: 'Duration',
+                                value: _formatDuration(duration),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _HistoryMetricChip(
+                                label: 'Calories',
+                                value: '$calories kcal',
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _HistoryMetricChip(
+                                label: 'Active',
+                                value: '$activeMinutes min',
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (routePoints.length >= 2) ...[
+                          const SizedBox(height: 12),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: SizedBox(
+                              height: 220,
+                              child: FlutterMap(
+                                options: MapOptions(
+                                  initialCenter: routePoints.first,
+                                  initialZoom: 14,
+                                ),
+                                children: [
+                                  TileLayer(
+                                    urlTemplate:
+                                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                    userAgentPackageName: 'com.example.synthese',
+                                  ),
+                                  PolylineLayer(
+                                    polylines: [
+                                      Polyline(
+                                        points: routePoints,
+                                        strokeWidth: 4,
+                                        color: Colors.blueAccent,
+                                      ),
+                                    ],
+                                  ),
+                                  MarkerLayer(
+                                    markers: [
+                                      Marker(
+                                        point: routePoints.first,
+                                        width: 42,
+                                        height: 42,
+                                        child: const Icon(
+                                          Icons.play_circle_fill_rounded,
+                                          color: Colors.green,
+                                          size: 30,
+                                        ),
+                                      ),
+                                      Marker(
+                                        point: routePoints.last,
+                                        width: 42,
+                                        height: 42,
+                                        child: const Icon(
+                                          Icons.flag_circle_rounded,
+                                          color: Colors.redAccent,
+                                          size: 30,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
+              ),
               );
             },
           );
