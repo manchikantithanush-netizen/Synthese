@@ -1049,6 +1049,26 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                   fontFamily: 'Helvetica',
                                 ),
                               ),
+                              const SizedBox(height: 20),
+                              Text(
+                                '$displayedCalories kcal',
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: isNarrowLayout ? 40 : 48,
+                                  fontWeight: FontWeight.w800,
+                                  fontFamily: 'Helvetica',
+                                  height: 1.0,
+                                ),
+                              ),
+                              Text(
+                                'Calories',
+                                style: TextStyle(
+                                  color: textColor.withValues(alpha: 0.6),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Helvetica',
+                                ),
+                              ),
                             ],
                           ),
                         )
@@ -1298,15 +1318,16 @@ class _WorkoutPageState extends State<WorkoutPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              'Calories: $displayedCalories kcal',
-                              style: TextStyle(
-                                color: textColor,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                fontFamily: 'Helvetica',
+                            if (!_showMetricsFullscreen)
+                              Text(
+                                'Calories: $displayedCalories kcal',
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  fontFamily: 'Helvetica',
+                                ),
                               ),
-                            ),
                             if (_statusMessage != null) ...[
                               const SizedBox(height: 8),
                               Text(
