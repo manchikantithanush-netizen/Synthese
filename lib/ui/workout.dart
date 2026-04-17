@@ -36,11 +36,12 @@ class _WorkoutPageState extends State<WorkoutPage> {
   WorkoutMode? _selectedMode;
   final MapController _mapController = MapController();
   StreamSubscription<Position>? _positionSubscription;
+  StreamSubscription<Position>? _previewPositionSubscription;
   Timer? _durationTicker;
   Timer? _countdownTimer;
+  Timer? _positionFallbackTimer;
 
   bool _isTracking = false;
-  bool _isAutoPaused = false;
   bool _isManuallyPaused = false;
   bool _showMetricsFullscreen = false;
   bool _hideTrackingUi = false;
@@ -66,7 +67,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         DateTime.now().difference(_trackingStartAt!);
   }
 
-  bool get _isPaused => _isAutoPaused || _isManuallyPaused;
+  bool get _isPaused => _isManuallyPaused;
   bool get _isLocationReady =>
       _currentPosition != null && !_isPreparingLocation;
 
@@ -79,17 +80,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
       case WorkoutMode.outdoorWalking:
       case null:
         return 3.5;
-    }
-  }
-
-  double get _autoPauseSpeedThreshold {
-    switch (_selectedMode) {
-      case WorkoutMode.cycling:
-        return 1.0;
-      case WorkoutMode.running:
-      case WorkoutMode.outdoorWalking:
-      case null:
-        return 0.2;
     }
   }
 
@@ -132,7 +122,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
   void dispose() {
     _durationTicker?.cancel();
     _positionSubscription?.cancel();
+    _previewPositionSubscription?.cancel();
     _countdownTimer?.cancel();
+    _positionFallbackTimer?.cancel();
     if (_isTracking) {
       unawaited(_cancelTrackingNotification());
     }
@@ -374,6 +366,47 @@ class _WorkoutPageState extends State<WorkoutPage> {
       }
     });
     _mapController.move(point, 17);
+    await _startPreviewLocationUpdates();
+  }
+
+  Future<void> _startPreviewLocationUpdates() async {
+    if (_isTracking) {
+      return;
+    }
+
+    final previewSettings = Platform.isAndroid
+        ? AndroidSettings(
+            accuracy: LocationAccuracy.best,
+            distanceFilter: 0,
+            intervalDuration: const Duration(seconds: 1),
+            forceLocationManager: true,
+          )
+        : Platform.isIOS
+        ? AppleSettings(
+            accuracy: LocationAccuracy.bestForNavigation,
+            distanceFilter: 0,
+            activityType: ActivityType.fitness,
+            pauseLocationUpdatesAutomatically: false,
+          )
+        : const LocationSettings(
+            accuracy: LocationAccuracy.best,
+            distanceFilter: 0,
+          );
+
+    await _previewPositionSubscription?.cancel();
+    _previewPositionSubscription = Geolocator.getPositionStream(
+      locationSettings: previewSettings,
+    ).listen((position) {
+      if (!mounted || _isTracking) {
+        return;
+      }
+      final nextPoint = LatLng(position.latitude, position.longitude);
+      setState(() {
+        _currentPosition = nextPoint;
+        _statusMessage = 'Live location ready.';
+      });
+      _mapController.move(nextPoint, 17);
+    });
   }
 
   Future<void> _startTracking() async {
@@ -386,7 +419,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
       final locationSettings = Platform.isAndroid
           ? AndroidSettings(
               accuracy: LocationAccuracy.high,
-              distanceFilter: 5,
+              distanceFilter: 0,
+              intervalDuration: const Duration(seconds: 1),
+              forceLocationManager: true,
               foregroundNotificationConfig: ForegroundNotificationConfig(
                 notificationTitle: 'Synthese workout tracking',
                 notificationText:
@@ -398,14 +433,14 @@ class _WorkoutPageState extends State<WorkoutPage> {
           : Platform.isIOS
           ? AppleSettings(
               accuracy: LocationAccuracy.bestForNavigation,
-              distanceFilter: 5,
+              distanceFilter: 0,
               activityType: ActivityType.fitness,
               pauseLocationUpdatesAutomatically: false,
               showBackgroundLocationIndicator: true,
             )
           : const LocationSettings(
               accuracy: LocationAccuracy.high,
-              distanceFilter: 5,
+              distanceFilter: 0,
             );
 
       if (_currentPosition == null) {
@@ -415,6 +450,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
         }
       }
 
+      await _previewPositionSubscription?.cancel();
+      _previewPositionSubscription = null;
       _positionSubscription?.cancel();
       _positionSubscription =
           Geolocator.getPositionStream(
@@ -438,13 +475,27 @@ class _WorkoutPageState extends State<WorkoutPage> {
             },
           );
 
+      // Some devices/emulators intermittently stop emitting stream updates.
+      // Polling current position keeps map + metrics progressing as a fallback.
+      _positionFallbackTimer?.cancel();
+      _positionFallbackTimer = Timer.periodic(const Duration(seconds: 2), (_) async {
+        if (!_isTracking || _isManuallyPaused) {
+          return;
+        }
+        final position = await _fetchCurrentPosition();
+        if (position != null && mounted && _isTracking) {
+          _onPositionUpdate(position, clearStatus: false);
+        }
+      });
+
       setState(() {
         _isTracking = true;
-        _isAutoPaused = false;
         _isManuallyPaused = false;
-        _statusMessage =
-            'Tracking started. Move at least 5 meters to record route.';
+        _statusMessage = 'Tracking started.';
         _trackingStartAt = DateTime.now();
+        if (_currentPosition != null) {
+          _routePoints.add(_currentPosition!);
+        }
       });
       _notifyMetricsChangedIfNeeded();
       unawaited(_updateTrackingNotification());
@@ -606,12 +657,13 @@ class _WorkoutPageState extends State<WorkoutPage> {
     _cancelCountdown();
     _positionSubscription?.cancel();
     _positionSubscription = null;
+    _positionFallbackTimer?.cancel();
+    _positionFallbackTimer = null;
     _durationTicker?.cancel();
     _durationTicker = null;
 
     setState(() {
       _isTracking = false;
-      _isAutoPaused = false;
       _isManuallyPaused = false;
       if (_trackingStartAt != null) {
         _elapsedBeforeCurrentRun += DateTime.now().difference(
@@ -622,6 +674,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     });
     _notifyMetricsChangedIfNeeded();
     unawaited(_cancelTrackingNotification());
+    unawaited(_startPreviewLocationUpdates());
   }
 
   void _resetRoute() {
@@ -632,7 +685,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
       _trackingStartAt = null;
       _elapsedBeforeCurrentRun = Duration.zero;
       _totalDistanceMeters = 0;
-      _isAutoPaused = false;
       _isManuallyPaused = false;
       _statusMessage = null;
     });
@@ -665,7 +717,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
     setState(() {
       _isManuallyPaused = false;
-      _isAutoPaused = false;
       _trackingStartAt ??= DateTime.now();
       _statusMessage = 'Tracking resumed.';
     });
@@ -685,36 +736,13 @@ class _WorkoutPageState extends State<WorkoutPage> {
         nextPoint.longitude,
       );
     }
-    final shouldAutoPause =
-        previousPoint != null &&
-        !_isManuallyPaused &&
-        position.speed < _autoPauseSpeedThreshold &&
-        distanceToAdd < 1.5;
-    final shouldAutoResume =
-        previousPoint != null &&
-        _isAutoPaused &&
-        !_isManuallyPaused &&
-        (position.speed >= _autoPauseSpeedThreshold || distanceToAdd >= 3.0);
 
     if (!mounted) {
       return;
     }
 
     setState(() {
-      if (shouldAutoPause && _trackingStartAt != null) {
-        _elapsedBeforeCurrentRun += DateTime.now().difference(
-          _trackingStartAt!,
-        );
-        _trackingStartAt = null;
-        _isAutoPaused = true;
-      } else if (shouldAutoResume &&
-          _trackingStartAt == null &&
-          _isAutoPaused) {
-        _trackingStartAt = DateTime.now();
-        _isAutoPaused = false;
-      }
-
-      if (!_isManuallyPaused && !_isAutoPaused) {
+      if (!_isManuallyPaused) {
         _routePoints.add(nextPoint);
         _currentPosition = nextPoint;
         _totalDistanceMeters += distanceToAdd;
@@ -724,9 +752,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
       if (_isManuallyPaused) {
         _statusMessage = 'Paused. Tap Resume to continue.';
-      } else if (_isAutoPaused) {
-        _statusMessage =
-            'Auto-paused (speed under ${_autoPauseSpeedThreshold.toStringAsFixed(1)} m/s).';
       } else if (clearStatus) {
         _statusMessage = null;
       }
@@ -797,6 +822,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
   void _backToModeSelection() {
     _resetRoute();
+    _previewPositionSubscription?.cancel();
+    _previewPositionSubscription = null;
     setState(() {
       _selectedMode = null;
       _showMetricsFullscreen = false;
