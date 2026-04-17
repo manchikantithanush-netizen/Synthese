@@ -48,6 +48,8 @@ class _DashboardPageState extends State<DashboardPage> {
   List<int> _sleepData = [0, 0, 0, 0, 0, 0, 0];
   int _lastWorkoutCaloriesReported = 0;
   int _lastWorkoutMinutesReported = 0;
+  bool _keepWorkoutAlive = false;
+  late final WorkoutPage _workoutPage;
 
   // Previous values (for comparisons)
   int? _prevActiveCalories;
@@ -59,6 +61,7 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
+    _workoutPage = WorkoutPage(onMetricsChanged: _handleWorkoutMetricsChanged);
     _updateScore();
     _fetchUserGender();
     _fetchMindfulnessOnboarding();
@@ -374,6 +377,9 @@ class _DashboardPageState extends State<DashboardPage> {
   void _setBottomTab(int index) {
     setState(() {
       _tabIndex = index;
+      if (index == 2) {
+        _keepWorkoutAlive = true;
+      }
     });
   }
 
@@ -897,10 +903,8 @@ class _DashboardPageState extends State<DashboardPage> {
       // More Tab - Show More options
       currentScreen = MorePage(isFemale: _isFemale, onSelectTab: _setBottomTab);
     } else if (_tabIndex == 2) {
-      // Workout Tab
-      currentScreen = WorkoutPage(
-        onMetricsChanged: _handleWorkoutMetricsChanged,
-      );
+      // Workout tab is rendered in an offstage stack to keep tracking alive.
+      currentScreen = const SizedBox.shrink();
     } else if (_tabIndex == 1) {
       // Diet Tab - Food Tracker with AI
       currentScreen = DietPage(
@@ -988,20 +992,47 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
 
-        // --- ANIMATED SWITCHER REPLACES YOUR OLD SINGLE CHILD SCROLL VIEW ---
-        body: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 150),
-          layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
-            return Stack(
-              alignment: Alignment.topCenter,
-              children: <Widget>[
-                ...previousChildren,
-                if (currentChild != null) currentChild,
-              ],
-            );
-          },
-          child: currentScreen,
-        ),
+        body: _keepWorkoutAlive
+            ? Stack(
+                children: [
+                  Offstage(
+                    offstage: _tabIndex != 2,
+                    child: _workoutPage,
+                  ),
+                  if (_tabIndex != 2)
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 150),
+                      layoutBuilder:
+                          (
+                            Widget? currentChild,
+                            List<Widget> previousChildren,
+                          ) {
+                            return Stack(
+                              alignment: Alignment.topCenter,
+                              children: <Widget>[
+                                ...previousChildren,
+                                if (currentChild != null) currentChild,
+                              ],
+                            );
+                          },
+                      child: currentScreen,
+                    ),
+                ],
+              )
+            : AnimatedSwitcher(
+                duration: const Duration(milliseconds: 150),
+                layoutBuilder:
+                    (Widget? currentChild, List<Widget> previousChildren) {
+                      return Stack(
+                        alignment: Alignment.topCenter,
+                        children: <Widget>[
+                          ...previousChildren,
+                          if (currentChild != null) currentChild,
+                        ],
+                      );
+                    },
+                child: currentScreen,
+              ),
       ),
     );
   }

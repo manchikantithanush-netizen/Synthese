@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -22,6 +24,14 @@ class WorkoutPage extends StatefulWidget {
 
 class _WorkoutPageState extends State<WorkoutPage> {
   static const LatLng _defaultStart = LatLng(25.2048, 55.2708);
+  static const int _trackingNotificationId = 4501;
+  static const String _trackingChannelId = 'workout_tracking_channel';
+  static const String _trackingChannelName = 'Workout tracking';
+  static const String _trackingChannelDescription =
+      'Shows active workout stats while tracking.';
+  static final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+  static bool _notificationsInitialized = false;
 
   WorkoutMode? _selectedMode;
   final MapController _mapController = MapController();
@@ -122,7 +132,74 @@ class _WorkoutPageState extends State<WorkoutPage> {
     _durationTicker?.cancel();
     _positionSubscription?.cancel();
     _countdownTimer?.cancel();
+    if (_isTracking) {
+      unawaited(_cancelTrackingNotification());
+    }
     super.dispose();
+  }
+
+  Future<void> _ensureNotificationsInitialized() async {
+    if (_notificationsInitialized || !Platform.isAndroid) {
+      return;
+    }
+
+    const settings = InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    );
+
+    await _notificationsPlugin.initialize(settings);
+
+    final androidPlugin = _notificationsPlugin.resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin
+    >();
+    await androidPlugin?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        _trackingChannelId,
+        _trackingChannelName,
+        description: _trackingChannelDescription,
+        importance: Importance.low,
+      ),
+    );
+    await androidPlugin?.requestNotificationsPermission();
+    _notificationsInitialized = true;
+  }
+
+  Future<void> _updateTrackingNotification() async {
+    if (!_isTracking || !Platform.isAndroid) {
+      return;
+    }
+    await _ensureNotificationsInitialized();
+
+    final notificationTitle =
+        '${_modeLabel(_selectedMode ?? WorkoutMode.outdoorWalking)} in progress';
+    final notificationBody =
+        '${_formatDistanceMeters(_totalDistanceMeters)} | ${_formatDuration(_elapsed)} | $_estimatedCalories kcal | $_speedText';
+
+    await _notificationsPlugin.show(
+      _trackingNotificationId,
+      notificationTitle,
+      notificationBody,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          _trackingChannelId,
+          _trackingChannelName,
+          channelDescription: _trackingChannelDescription,
+          importance: Importance.low,
+          priority: Priority.low,
+          ongoing: true,
+          onlyAlertOnce: true,
+          showWhen: false,
+          category: AndroidNotificationCategory.workout,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _cancelTrackingNotification() async {
+    if (!Platform.isAndroid) {
+      return;
+    }
+    await _notificationsPlugin.cancel(_trackingNotificationId);
   }
 
   Future<void> _loadUserWeight() async {
@@ -305,10 +382,30 @@ class _WorkoutPageState extends State<WorkoutPage> {
         return;
       }
 
-      final locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 5,
-      );
+      final locationSettings = Platform.isAndroid
+          ? AndroidSettings(
+              accuracy: LocationAccuracy.high,
+              distanceFilter: 5,
+              foregroundNotificationConfig: ForegroundNotificationConfig(
+                notificationTitle: 'Synthese workout tracking',
+                notificationText:
+                    'Tracking your ${_modeLabel(_selectedMode ?? WorkoutMode.outdoorWalking)} in background',
+                enableWakeLock: true,
+                setOngoing: true,
+              ),
+            )
+          : Platform.isIOS
+          ? AppleSettings(
+              accuracy: LocationAccuracy.bestForNavigation,
+              distanceFilter: 5,
+              activityType: ActivityType.fitness,
+              pauseLocationUpdatesAutomatically: false,
+              showBackgroundLocationIndicator: true,
+            )
+          : const LocationSettings(
+              accuracy: LocationAccuracy.high,
+              distanceFilter: 5,
+            );
 
       if (_currentPosition == null) {
         await _primeLiveLocation();
@@ -349,6 +446,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         _trackingStartAt = DateTime.now();
       });
       _notifyMetricsChangedIfNeeded();
+      unawaited(_updateTrackingNotification());
 
       _durationTicker?.cancel();
       _durationTicker = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -357,6 +455,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         }
         setState(() {});
         _notifyMetricsChangedIfNeeded();
+        unawaited(_updateTrackingNotification());
       });
     } on MissingPluginException {
       if (!mounted) {
@@ -522,6 +621,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       }
     });
     _notifyMetricsChangedIfNeeded();
+    unawaited(_cancelTrackingNotification());
   }
 
   void _resetRoute() {
@@ -537,6 +637,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       _statusMessage = null;
     });
     _notifyMetricsChangedIfNeeded();
+    unawaited(_updateTrackingNotification());
   }
 
   void _pauseTracking() {
