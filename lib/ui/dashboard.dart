@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:io';
 import 'dart:convert';
@@ -383,6 +384,37 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
+  void _adjustActiveCalories(int delta) {
+    setState(() {
+      _activeCalories = (_activeCalories + delta).clamp(0, 1000000).toInt();
+      _hasUploadedOnce = true;
+      _updateScore();
+    });
+  }
+
+  void _adjustHeartRate(int delta) {
+    setState(() {
+      _heartRate = (_heartRate + delta).clamp(0, 250).toInt();
+      _hasUploadedOnce = true;
+    });
+  }
+
+  void _adjustSteps(int delta) {
+    setState(() {
+      _steps = (_steps + delta).clamp(0, 1000000).toInt();
+      _hasUploadedOnce = true;
+      _updateScore();
+    });
+  }
+
+  void _adjustExerciseMinutes(int delta) {
+    setState(() {
+      _exerciseMinutes = (_exerciseMinutes + delta).clamp(0, 1000000).toInt();
+      _hasUploadedOnce = true;
+      _updateScore();
+    });
+  }
+
   void _handleWorkoutMetricsChanged(int calories, int activeMinutes) {
     final calorieDelta = math.max(0, calories - _lastWorkoutCaloriesReported);
     final minuteDelta = math.max(
@@ -396,7 +428,7 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     setState(() {
-      _activeCalories = (_activeCalories + calorieDelta)
+      _activeCalories = (_activeCalories - calorieDelta)
           .clamp(0, 1000000)
           .toInt();
       _exerciseMinutes = (_exerciseMinutes + minuteDelta)
@@ -643,6 +675,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       value: _formatNumber(_activeCalories),
                       unit: "kcal",
                       compact: true,
+                      onIncrement: () => _adjustActiveCalories(10),
+                      onDecrement: () => _adjustActiveCalories(-10),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -661,6 +695,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       unit: "AVG",
                       valueInlineUnit: true,
                       compact: true,
+                      onIncrement: () => _adjustHeartRate(1),
+                      onDecrement: () => _adjustHeartRate(-1),
                     ),
                   ),
                 ],
@@ -681,6 +717,8 @@ class _DashboardPageState extends State<DashboardPage> {
                         title: "Active",
                         value: _formatNumber(_activeCalories),
                         unit: "kcal",
+                        onIncrement: () => _adjustActiveCalories(10),
+                        onDecrement: () => _adjustActiveCalories(-10),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -697,6 +735,8 @@ class _DashboardPageState extends State<DashboardPage> {
                         value: _heartRate.toString(),
                         unit: "AVG",
                         valueInlineUnit: true,
+                        onIncrement: () => _adjustHeartRate(1),
+                        onDecrement: () => _adjustHeartRate(-1),
                       ),
                     ),
                   ],
@@ -724,6 +764,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       unit: "steps",
                       valueInlineUnit: true,
                       compact: true,
+                      onIncrement: () => _adjustSteps(100),
+                      onDecrement: () => _adjustSteps(-100),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -742,6 +784,8 @@ class _DashboardPageState extends State<DashboardPage> {
                       unit: "AVG",
                       valueInlineUnit: false,
                       compact: true,
+                      onIncrement: () => _adjustExerciseMinutes(1),
+                      onDecrement: () => _adjustExerciseMinutes(-1),
                     ),
                   ),
                 ],
@@ -763,6 +807,8 @@ class _DashboardPageState extends State<DashboardPage> {
                         value: _formatNumber(_steps),
                         unit: "steps",
                         valueInlineUnit: true,
+                        onIncrement: () => _adjustSteps(100),
+                        onDecrement: () => _adjustSteps(-100),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -779,6 +825,8 @@ class _DashboardPageState extends State<DashboardPage> {
                         value: _formatMinutes(_exerciseMinutes),
                         unit: "AVG",
                         valueInlineUnit: false,
+                        onIncrement: () => _adjustExerciseMinutes(1),
+                        onDecrement: () => _adjustExerciseMinutes(-1),
                       ),
                     ),
                   ],
@@ -1048,6 +1096,8 @@ class MetricCard extends StatelessWidget {
   final String trendText, title, value, unit;
   final bool valueInlineUnit;
   final bool compact;
+  final VoidCallback? onIncrement;
+  final VoidCallback? onDecrement;
 
   const MetricCard({
     super.key,
@@ -1063,6 +1113,8 @@ class MetricCard extends StatelessWidget {
     required this.unit,
     this.valueInlineUnit = false,
     this.compact = false,
+    this.onIncrement,
+    this.onDecrement,
   });
 
   @override
@@ -1168,7 +1220,100 @@ class MetricCard extends StatelessWidget {
                 ),
               ],
             ),
+          const Spacer(),
+          if (onIncrement != null && onDecrement != null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                _RepeatActionIconButton(
+                  icon: Icons.remove_rounded,
+                  onPressed: onDecrement!,
+                ),
+                const SizedBox(width: 8),
+                _RepeatActionIconButton(
+                  icon: Icons.add_rounded,
+                  onPressed: onIncrement!,
+                ),
+              ],
+            ),
         ],
+      ),
+    );
+  }
+}
+
+class _RepeatActionIconButton extends StatefulWidget {
+  const _RepeatActionIconButton({
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  State<_RepeatActionIconButton> createState() => _RepeatActionIconButtonState();
+}
+
+class _RepeatActionIconButtonState extends State<_RepeatActionIconButton> {
+  Timer? _timer;
+  int _repeatTicks = 0;
+
+  void _runAction() {
+    final multiplier = _repeatTicks >= 16
+        ? 4
+        : _repeatTicks >= 8
+        ? 2
+        : 1;
+    for (var i = 0; i < multiplier; i++) {
+      widget.onPressed();
+    }
+  }
+
+  void _startRepeating() {
+    _stopRepeating();
+    _repeatTicks = 0;
+    _runAction();
+    _timer = Timer.periodic(const Duration(milliseconds: 120), (_) {
+      _repeatTicks += 1;
+      _runAction();
+    });
+  }
+
+  void _stopRepeating() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  @override
+  void dispose() {
+    _stopRepeating();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => _startRepeating(),
+      onTapUp: (_) => _stopRepeating(),
+      onTapCancel: _stopRepeating,
+      child: Container(
+        width: 34,
+        height: 34,
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          widget.icon,
+          size: 20,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+        ),
       ),
     );
   }
