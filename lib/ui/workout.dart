@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
 enum WorkoutMode { running, outdoorWalking, cycling }
@@ -55,6 +56,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   double _userWeightKg = 60;
   int _lastReportedCalories = -1;
   int _lastReportedActiveMinutes = -1;
+  DateTime? _sessionStartedAt;
 
   final List<LatLng> _routePoints = <LatLng>[];
   LatLng? _currentPosition;
@@ -70,6 +72,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
   bool get _isPaused => _isManuallyPaused;
   bool get _isLocationReady =>
       _currentPosition != null && !_isPreparingLocation;
+  bool get _canResetRoute =>
+      (_routePoints.isNotEmpty || _isTracking) && (!_isTracking || _isPaused);
 
   double get _currentMetValue {
     switch (_selectedMode) {
@@ -492,6 +496,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         _isTracking = true;
         _isManuallyPaused = false;
         _statusMessage = 'Tracking started.';
+        _sessionStartedAt = DateTime.now();
         _trackingStartAt = DateTime.now();
         if (_currentPosition != null) {
           _routePoints.add(_currentPosition!);
@@ -653,7 +658,15 @@ class _WorkoutPageState extends State<WorkoutPage> {
     }
   }
 
-  void _stopTracking() {
+  void _stopTracking({bool saveSession = true}) {
+    final routeSnapshot = List<LatLng>.from(_routePoints);
+    final startedAt = _sessionStartedAt;
+    final endedAt = DateTime.now();
+    final durationSnapshot = _elapsed;
+    final distanceSnapshot = _totalDistanceMeters;
+    final caloriesSnapshot = _estimatedCalories;
+    final modeSnapshot = _selectedMode;
+
     _cancelCountdown();
     _positionSubscription?.cancel();
     _positionSubscription = null;
@@ -665,6 +678,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     setState(() {
       _isTracking = false;
       _isManuallyPaused = false;
+      _sessionStartedAt = null;
       if (_trackingStartAt != null) {
         _elapsedBeforeCurrentRun += DateTime.now().difference(
           _trackingStartAt!,
@@ -675,10 +689,27 @@ class _WorkoutPageState extends State<WorkoutPage> {
     _notifyMetricsChangedIfNeeded();
     unawaited(_cancelTrackingNotification());
     unawaited(_startPreviewLocationUpdates());
+    if (saveSession &&
+        modeSnapshot != null &&
+        startedAt != null &&
+        routeSnapshot.length >= 2 &&
+        durationSnapshot.inSeconds > 0) {
+      unawaited(
+        _saveWorkoutSession(
+          mode: modeSnapshot,
+          startedAt: startedAt,
+          endedAt: endedAt,
+          distanceMeters: distanceSnapshot,
+          calories: caloriesSnapshot,
+          activeMinutes: durationSnapshot.inMinutes,
+          routePoints: routeSnapshot,
+        ),
+      );
+    }
   }
 
   void _resetRoute() {
-    _stopTracking();
+    _stopTracking(saveSession: false);
     setState(() {
       _routePoints.clear();
       _currentPosition = null;
@@ -690,6 +721,53 @@ class _WorkoutPageState extends State<WorkoutPage> {
     });
     _notifyMetricsChangedIfNeeded();
     unawaited(_updateTrackingNotification());
+  }
+
+  Future<void> _saveWorkoutSession({
+    required WorkoutMode mode,
+    required DateTime startedAt,
+    required DateTime endedAt,
+    required double distanceMeters,
+    required int calories,
+    required int activeMinutes,
+    required List<LatLng> routePoints,
+  }) async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) {
+        return;
+      }
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('workout_sessions')
+          .add({
+            'mode': mode.name,
+            'startedAt': Timestamp.fromDate(startedAt),
+            'endedAt': Timestamp.fromDate(endedAt),
+            'distanceMeters': distanceMeters,
+            'calories': calories,
+            'activeMinutes': activeMinutes,
+            'routePoints': routePoints
+                .map(
+                  (point) => {
+                    'lat': point.latitude,
+                    'lng': point.longitude,
+                  },
+                )
+                .toList(),
+          });
+    } catch (error) {
+      debugPrint('Failed to save workout session: $error');
+    }
+  }
+
+  void _openHistoryScreen() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const WorkoutHistoryPage(),
+      ),
+    );
   }
 
   void _pauseTracking() {
@@ -895,6 +973,16 @@ class _WorkoutPageState extends State<WorkoutPage> {
                       fontWeight: FontWeight.bold,
                       letterSpacing: -1,
                     ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton.filledTonal(
+                        onPressed: _openHistoryScreen,
+                        icon: const Icon(Icons.history_rounded),
+                        tooltip: 'History',
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 20),
                   Text(
@@ -1151,6 +1239,12 @@ class _WorkoutPageState extends State<WorkoutPage> {
                       ),
                       const SizedBox(width: 8),
                       IconButton.filledTonal(
+                        onPressed: _openHistoryScreen,
+                        icon: const Icon(Icons.history_rounded),
+                        tooltip: 'History',
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton.filledTonal(
                         onPressed: () {
                           setState(() {
                             _hideTrackingUi = !_hideTrackingUi;
@@ -1402,9 +1496,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                 ),
                                 OutlinedButton.icon(
                                   onPressed:
-                                      _routePoints.isEmpty && !_isTracking
-                                      ? null
-                                      : _resetRoute,
+                                      _canResetRoute ? _resetRoute : null,
                                   icon: const Icon(Icons.replay),
                                   label: const Text('Reset'),
                                 ),
@@ -1512,6 +1604,303 @@ class _WorkoutPageState extends State<WorkoutPage> {
                   ),
               ],
             ),
+    );
+  }
+}
+
+class WorkoutHistoryPage extends StatelessWidget {
+  const WorkoutHistoryPage({super.key});
+
+  String _formatDateTime(DateTime value) {
+    return DateFormat('MMM d, yyyy  h:mm a').format(value);
+  }
+
+  String _formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+    return '${hours.toString().padLeft(2, '0')}:'
+        '${minutes.toString().padLeft(2, '0')}:'
+        '${seconds.toString().padLeft(2, '0')}';
+  }
+
+  String _modeLabel(String mode) {
+    switch (mode) {
+      case 'running':
+        return 'Running';
+      case 'cycling':
+        return 'Cycling';
+      case 'outdoorWalking':
+      default:
+        return 'Outdoor Walking';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? Colors.black : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final cardColor = isDark ? const Color(0xFF1F1F1F) : Colors.white;
+    final safePadding = MediaQuery.of(context).padding;
+
+    if (uid == null) {
+      return Scaffold(
+        backgroundColor: bgColor,
+        appBar: AppBar(title: const Text('Workout History')),
+        body: const Center(child: Text('Please sign in to view history.')),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: bgColor,
+      appBar: AppBar(
+        title: const Text('Workout History'),
+      ),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .collection('workout_sessions')
+            .orderBy('endedAt', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+          }
+
+          final docs = snapshot.data?.docs ?? [];
+          if (docs.isEmpty) {
+            return Center(
+              child: Text(
+                'No workout history yet.',
+                style: TextStyle(
+                  color: textColor.withValues(alpha: 0.7),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+          }
+
+          return ListView.separated(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              safePadding.top + 12,
+              16,
+              safePadding.bottom + 24,
+            ),
+            itemCount: docs.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final data = docs[index].data();
+              final mode = (data['mode'] as String?) ?? 'outdoorWalking';
+              final startedAt = (data['startedAt'] as Timestamp?)?.toDate();
+              final endedAt = (data['endedAt'] as Timestamp?)?.toDate();
+              final distanceMeters =
+                  (data['distanceMeters'] as num?)?.toDouble() ?? 0.0;
+              final calories = (data['calories'] as num?)?.toInt() ?? 0;
+              final activeMinutes = (data['activeMinutes'] as num?)?.toInt() ?? 0;
+              final routeRaw = (data['routePoints'] as List<dynamic>? ?? const []);
+              final routePoints = routeRaw
+                  .map((entry) => entry as Map<String, dynamic>)
+                  .map(
+                    (entry) => LatLng(
+                      (entry['lat'] as num?)?.toDouble() ?? 0,
+                      (entry['lng'] as num?)?.toDouble() ?? 0,
+                    ),
+                  )
+                  .toList();
+
+              final duration = startedAt != null && endedAt != null
+                  ? endedAt.difference(startedAt)
+                  : Duration(minutes: activeMinutes);
+              final subtitle =
+                  '${_formatDateTime(startedAt ?? DateTime.now())} - ${_formatDateTime(endedAt ?? DateTime.now())}';
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.black.withValues(alpha: 0.08),
+                  ),
+                ),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    dividerColor: Colors.transparent,
+                  ),
+                  child: ExpansionTile(
+                    tilePadding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
+                    childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                    title: Text(
+                      _modeLabel(mode),
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    subtitle: Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: textColor.withValues(alpha: 0.6),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _HistoryMetricChip(
+                              label: 'Distance',
+                              value: '${(distanceMeters / 1000).toStringAsFixed(2)} km',
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _HistoryMetricChip(
+                              label: 'Duration',
+                              value: _formatDuration(duration),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _HistoryMetricChip(
+                              label: 'Calories',
+                              value: '$calories kcal',
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _HistoryMetricChip(
+                              label: 'Active',
+                              value: '$activeMinutes min',
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (routePoints.length >= 2) ...[
+                        const SizedBox(height: 12),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: SizedBox(
+                            height: 220,
+                            child: FlutterMap(
+                              options: MapOptions(
+                                initialCenter: routePoints.first,
+                                initialZoom: 14,
+                              ),
+                              children: [
+                                TileLayer(
+                                  urlTemplate:
+                                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                  userAgentPackageName: 'com.example.synthese',
+                                ),
+                                PolylineLayer(
+                                  polylines: [
+                                    Polyline(
+                                      points: routePoints,
+                                      strokeWidth: 4,
+                                      color: Colors.blueAccent,
+                                    ),
+                                  ],
+                                ),
+                                MarkerLayer(
+                                  markers: [
+                                    Marker(
+                                      point: routePoints.first,
+                                      width: 42,
+                                      height: 42,
+                                      child: const Icon(
+                                        Icons.play_circle_fill_rounded,
+                                        color: Colors.green,
+                                        size: 30,
+                                      ),
+                                    ),
+                                    Marker(
+                                      point: routePoints.last,
+                                      width: 42,
+                                      height: 42,
+                                      child: const Icon(
+                                        Icons.flag_circle_rounded,
+                                        color: Colors.redAccent,
+                                        size: 30,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _HistoryMetricChip extends StatelessWidget {
+  const _HistoryMetricChip({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.06)
+            : Colors.black.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: textColor.withValues(alpha: 0.6),
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
