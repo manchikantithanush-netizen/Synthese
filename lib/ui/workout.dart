@@ -490,7 +490,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
     setState(() {
       _isCountdownActive = true;
       _countdownValue = 3;
-      _showMetricsFullscreen = false;
     });
 
     _countdownTimer?.cancel();
