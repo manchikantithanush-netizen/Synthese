@@ -43,6 +43,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   bool _isAutoPaused = false;
   bool _isManuallyPaused = false;
   bool _showMetricsFullscreen = false;
+  bool _hideTrackingUi = false;
   bool _isPreparingLocation = false;
   bool _isCountdownActive = false;
   int _countdownValue = 3;
@@ -1102,6 +1103,20 @@ class _WorkoutPageState extends State<WorkoutPage> {
                           ),
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      IconButton.filledTonal(
+                        onPressed: () {
+                          setState(() {
+                            _hideTrackingUi = !_hideTrackingUi;
+                          });
+                        },
+                        icon: Icon(
+                          _hideTrackingUi
+                              ? Icons.visibility_off_rounded
+                              : Icons.visibility_rounded,
+                        ),
+                        tooltip: _hideTrackingUi ? 'Show UI' : 'Hide UI',
+                      ),
                       if (_showMetricsFullscreen) ...[
                         const SizedBox(width: 8),
                         IconButton.filledTonal(
@@ -1116,7 +1131,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                     ],
                   ),
                 ),
-                if (!_isCountdownActive)
+                if (!_isCountdownActive && !_hideTrackingUi)
                   Positioned(
                     left: isNarrowLayout ? 12 : 16,
                     right: isNarrowLayout ? 12 : 16,
