@@ -12,7 +12,50 @@ import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
-enum WorkoutMode { running, outdoorWalking, cycling }
+enum WorkoutMode {
+  running,
+  trailRun,
+  outdoorWalking,
+  cycling,
+  mountainBikeRide,
+  eBikeRide,
+  swimming,
+}
+
+WorkoutMode? _workoutModeFromName(String? raw) {
+  if (raw == null || raw.isEmpty) {
+    return null;
+  }
+  for (final v in WorkoutMode.values) {
+    if (v.name == raw) {
+      return v;
+    }
+  }
+  return null;
+}
+
+String formatWorkoutDistance(WorkoutMode? mode, double meters) {
+  switch (mode) {
+    case WorkoutMode.swimming:
+      if (meters < 1) {
+        return '0 m';
+      }
+      if (meters < 1000) {
+        return '${meters.round()} m';
+      }
+      final km = meters / 1000;
+      return '${km.toStringAsFixed(2)} km';
+    case WorkoutMode.running:
+    case WorkoutMode.trailRun:
+    case WorkoutMode.outdoorWalking:
+    case WorkoutMode.cycling:
+    case WorkoutMode.mountainBikeRide:
+    case WorkoutMode.eBikeRide:
+    case null:
+      final km = meters / 1000;
+      return '${km.toStringAsFixed(2)} km';
+  }
+}
 
 class WorkoutPage extends StatefulWidget {
   const WorkoutPage({super.key, this.onMetricsChanged});
@@ -79,8 +122,16 @@ class _WorkoutPageState extends State<WorkoutPage> {
     switch (_selectedMode) {
       case WorkoutMode.running:
         return 8.0;
+      case WorkoutMode.trailRun:
+        return 9.0;
       case WorkoutMode.cycling:
         return 7.5;
+      case WorkoutMode.mountainBikeRide:
+        return 8.5;
+      case WorkoutMode.eBikeRide:
+        return 4.5;
+      case WorkoutMode.swimming:
+        return 7.0;
       case WorkoutMode.outdoorWalking:
       case null:
         return 3.5;
@@ -89,31 +140,101 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
   int get _activeMinutes => _elapsed.inMinutes;
 
+  bool get _caloriesFromElapsedOnly =>
+      _selectedMode == WorkoutMode.swimming;
+
   int get _estimatedCalories {
+    final hours = _elapsed.inSeconds / 3600.0;
+    if (!hours.isFinite || hours <= 0) {
+      return 0;
+    }
+    if (_caloriesFromElapsedOnly) {
+      return (_currentMetValue * _userWeightKg * hours).round();
+    }
     if (_routePoints.length < 2 || _totalDistanceMeters < 1) {
       return 0;
     }
-    final hours = _elapsed.inSeconds / 3600.0;
     return (_currentMetValue * _userWeightKg * hours).round();
   }
 
-  String get _speedText {
+  double? get _avgSpeedKmPerHour {
     if (_totalDistanceMeters <= 0) {
-      return '-- km/h';
+      return null;
     }
-
-    final distanceKm = _totalDistanceMeters / 1000.0;
     final totalHours = _elapsed.inSeconds / 3600.0;
     if (!totalHours.isFinite || totalHours <= 0) {
-      return '-- km/h';
+      return null;
     }
-
+    final distanceKm = _totalDistanceMeters / 1000.0;
     final speedKmPerHour = distanceKm / totalHours;
     if (!speedKmPerHour.isFinite || speedKmPerHour <= 0) {
-      return '-- km/h';
+      return null;
     }
+    return speedKmPerHour;
+  }
 
-    return '${speedKmPerHour.toStringAsFixed(2)} km/h';
+  String get _paceOrSpeedLabel {
+    switch (_selectedMode) {
+      case WorkoutMode.swimming:
+      case WorkoutMode.trailRun:
+        return 'Pace';
+      case WorkoutMode.running:
+      case WorkoutMode.cycling:
+      case WorkoutMode.mountainBikeRide:
+      case WorkoutMode.eBikeRide:
+      case WorkoutMode.outdoorWalking:
+      case null:
+        return 'Speed';
+    }
+  }
+
+  String get _paceOrSpeedValueText {
+    switch (_selectedMode) {
+      case WorkoutMode.swimming:
+        return _formatSwimPacePer100m();
+      case WorkoutMode.trailRun:
+        return _formatRunPaceMinPerKm(_avgSpeedKmPerHour);
+      case WorkoutMode.running:
+      case WorkoutMode.cycling:
+      case WorkoutMode.mountainBikeRide:
+      case WorkoutMode.eBikeRide:
+      case WorkoutMode.outdoorWalking:
+      case null:
+        final kmh = _avgSpeedKmPerHour;
+        if (kmh == null) {
+          return '-- km/h';
+        }
+        return '${kmh.toStringAsFixed(2)} km/h';
+    }
+  }
+
+  String _formatRunPaceMinPerKm(double? kmh) {
+    if (kmh == null || kmh <= 0) {
+      return '-- min/km';
+    }
+    final minPerKm = 60.0 / kmh;
+    final m = minPerKm.floor();
+    final s = ((minPerKm - m) * 60).round().clamp(0, 59);
+    return '$m:${s.toString().padLeft(2, '0')} min/km';
+  }
+
+  String _formatSwimPacePer100m() {
+    if (_totalDistanceMeters < 50) {
+      return '-- /100m';
+    }
+    final totalSec = _elapsed.inMilliseconds / 1000.0;
+    if (totalSec <= 0) {
+      return '-- /100m';
+    }
+    final hundreds = _totalDistanceMeters / 100.0;
+    if (hundreds <= 0) {
+      return '-- /100m';
+    }
+    final secPer100 = totalSec / hundreds;
+    final whole = secPer100.floor();
+    final ss = (whole % 60).toString().padLeft(2, '0');
+    final mm = (whole ~/ 60).toString();
+    return '$mm:$ss /100m';
   }
 
   @override
@@ -170,7 +291,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     final notificationTitle =
         '${_modeLabel(_selectedMode ?? WorkoutMode.outdoorWalking)} in progress';
     final notificationBody =
-        '${_formatDistanceMeters(_totalDistanceMeters)} | ${_formatDuration(_elapsed)} | $_estimatedCalories kcal | $_speedText';
+        '${formatWorkoutDistance(_selectedMode, _totalDistanceMeters)} | ${_formatDuration(_elapsed)} | $_estimatedCalories kcal | $_paceOrSpeedValueText';
 
     await _notificationsPlugin.show(
       _trackingNotificationId,
@@ -689,11 +810,14 @@ class _WorkoutPageState extends State<WorkoutPage> {
     _notifyMetricsChangedIfNeeded();
     unawaited(_cancelTrackingNotification());
     unawaited(_startPreviewLocationUpdates());
-    if (saveSession &&
-        modeSnapshot != null &&
+    final canSaveSession = modeSnapshot != null &&
         startedAt != null &&
-        routeSnapshot.length >= 2 &&
-        durationSnapshot.inSeconds > 0) {
+        durationSnapshot.inSeconds > 0 &&
+        (routeSnapshot.length >= 2 ||
+            (modeSnapshot == WorkoutMode.swimming &&
+                routeSnapshot.isNotEmpty &&
+                durationSnapshot.inSeconds >= 30));
+    if (saveSession && canSaveSession) {
       unawaited(
         _saveWorkoutSession(
           mode: modeSnapshot,
@@ -885,41 +1009,58 @@ class _WorkoutPageState extends State<WorkoutPage> {
         '${seconds.toString().padLeft(2, '0')}';
   }
 
-  String _formatDistanceMeters(double meters) {
-    final km = meters / 1000;
-    return '${km.toStringAsFixed(2)} km';
-  }
-
   String _modeLabel(WorkoutMode mode) {
     switch (mode) {
       case WorkoutMode.running:
         return 'Running';
+      case WorkoutMode.trailRun:
+        return 'Trail Run';
       case WorkoutMode.outdoorWalking:
         return 'Outdoor Walking';
       case WorkoutMode.cycling:
         return 'Cycling';
+      case WorkoutMode.mountainBikeRide:
+        return 'Mountain Bike Ride';
+      case WorkoutMode.eBikeRide:
+        return 'E-Bike Ride';
+      case WorkoutMode.swimming:
+        return 'Swimming';
     }
   }
 
   IconData _modeIcon(WorkoutMode mode) {
     switch (mode) {
       case WorkoutMode.running:
+      case WorkoutMode.trailRun:
         return Icons.directions_run_rounded;
       case WorkoutMode.outdoorWalking:
         return Icons.directions_walk_rounded;
       case WorkoutMode.cycling:
-        return Icons.directions_bike_rounded;
+      case WorkoutMode.mountainBikeRide:
+        return Icons.pedal_bike_rounded;
+      case WorkoutMode.eBikeRide:
+        return Icons.electric_bike_rounded;
+      case WorkoutMode.swimming:
+        return Icons.pool_rounded;
     }
   }
 
   String _modeSubtitle(WorkoutMode mode) {
     switch (mode) {
       case WorkoutMode.running:
-        return 'Track route, speed, calories, and active time for your run.';
+        return 'GPS route, speed (km/h), calories, and active time.';
+      case WorkoutMode.trailRun:
+        return 'Trail run with GPS, pace (min/km), and higher-intensity calorie estimate.';
       case WorkoutMode.outdoorWalking:
-        return 'Track your outdoor walk with live GPS route and pace stats.';
+        return 'Outdoor walk with live GPS route and speed.';
       case WorkoutMode.cycling:
-        return 'Track your cycling route with live GPS speed and calorie stats.';
+        return 'Ride with GPS speed (km/h), distance, and calorie estimate.';
+      case WorkoutMode.mountainBikeRide:
+        return 'Off-road ride with GPS; calories tuned for higher MTB effort.';
+      case WorkoutMode.eBikeRide:
+        return 'Assisted ride with GPS; calories reflect lighter effort vs. standard cycling.';
+      case WorkoutMode.swimming:
+        return 'Open-water or pool-side GPS; distance in meters, swim pace (/100m), time-based calories.';
     }
   }
 
@@ -953,7 +1094,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
     final cardColor = isDark ? const Color(0xFF1F1F1F) : Colors.white;
     final safePadding = mediaQuery.padding;
     final isNarrowLayout = mediaQuery.size.width < 390;
-    final displayedDistance = _formatDistanceMeters(_totalDistanceMeters);
+    final displayedDistance =
+        formatWorkoutDistance(_selectedMode, _totalDistanceMeters);
     final displayedDuration = _formatDuration(_elapsed);
     final displayedCalories = _estimatedCalories;
     final initialTarget =
@@ -1187,7 +1329,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                               ),
                               const SizedBox(height: 20),
                               Text(
-                                _speedText,
+                                _paceOrSpeedValueText,
                                 style: TextStyle(
                                   color: textColor,
                                   fontSize: isNarrowLayout ? 40 : 48,
@@ -1197,7 +1339,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                 ),
                               ),
                               Text(
-                                'Speed',
+                                _paceOrSpeedLabel,
                                 style: TextStyle(
                                   color: textColor.withValues(alpha: 0.6),
                                   fontSize: 14,
@@ -1418,7 +1560,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'Speed',
+                                            _paceOrSpeedLabel,
                                             style: TextStyle(
                                               color: textColor.withValues(
                                                 alpha: 0.6,
@@ -1430,7 +1572,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
-                                            _speedText,
+                                            _paceOrSpeedValueText,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
@@ -1671,8 +1813,16 @@ class WorkoutHistoryPage extends StatelessWidget {
     switch (mode) {
       case 'running':
         return 'Running';
+      case 'trailRun':
+        return 'Trail Run';
       case 'cycling':
         return 'Cycling';
+      case 'mountainBikeRide':
+        return 'Mountain Bike Ride';
+      case 'eBikeRide':
+        return 'E-Bike Ride';
+      case 'swimming':
+        return 'Swimming';
       case 'outdoorWalking':
       default:
         return 'Outdoor Walking';
@@ -1787,6 +1937,7 @@ class WorkoutHistoryPage extends StatelessWidget {
               final sessionId = docs[index].id;
               final data = docs[index].data();
               final mode = (data['mode'] as String?) ?? 'outdoorWalking';
+              final modeEnum = _workoutModeFromName(mode);
               final startedAt = (data['startedAt'] as Timestamp?)?.toDate();
               final endedAt = (data['endedAt'] as Timestamp?)?.toDate();
               final distanceMeters =
@@ -1886,7 +2037,10 @@ class WorkoutHistoryPage extends StatelessWidget {
                             Expanded(
                               child: _HistoryMetricChip(
                                 label: 'Distance',
-                                value: '${(distanceMeters / 1000).toStringAsFixed(2)} km',
+                                value: formatWorkoutDistance(
+                                  modeEnum,
+                                  distanceMeters,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
