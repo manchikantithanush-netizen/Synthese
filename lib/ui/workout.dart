@@ -104,6 +104,10 @@ class _WorkoutPageState extends State<WorkoutPage> {
   final List<LatLng> _routePoints = <LatLng>[];
   LatLng? _currentPosition;
 
+  /// When true, GPS updates recenter the map. User pan/zoom sets this false until
+  /// they use the recenter control or reset the workout.
+  bool _mapFollowsUserLocation = true;
+
   Duration get _elapsed {
     if (_trackingStartAt == null) {
       return _elapsedBeforeCurrentRun;
@@ -494,6 +498,74 @@ class _WorkoutPageState extends State<WorkoutPage> {
     await _startPreviewLocationUpdates();
   }
 
+  bool _mapEventDisablesLocationFollow(MapEventSource source) {
+    return source != MapEventSource.mapController &&
+        source != MapEventSource.nonRotatedSizeChange &&
+        source != MapEventSource.interactiveFlagsChanged;
+  }
+
+  void _onWorkoutMapEvent(MapEvent event) {
+    if (!_mapEventDisablesLocationFollow(event.source)) {
+      return;
+    }
+    if (!_mapFollowsUserLocation || !mounted) {
+      return;
+    }
+    setState(() {
+      _mapFollowsUserLocation = false;
+    });
+  }
+
+  void _followMapCameraToUser(LatLng target) {
+    if (!_mapFollowsUserLocation) {
+      return;
+    }
+    final zoom = _mapController.camera.zoom;
+    _mapController.move(target, zoom);
+  }
+
+  void _recenterMapOnUser() {
+    final point = _currentPosition;
+    if (point == null) {
+      return;
+    }
+    setState(() {
+      _mapFollowsUserLocation = true;
+    });
+    _mapController.move(point, 17);
+  }
+
+  Widget _buildRecenterMapChip({
+    required Color textColor,
+    required Color cardColor,
+  }) {
+    return Tooltip(
+      message: _mapFollowsUserLocation
+          ? 'Map follows your location (pan map to explore freely)'
+          : 'Recenter map on your location',
+      child: Material(
+        elevation: 2,
+        shadowColor: Colors.black26,
+        borderRadius: BorderRadius.circular(10),
+        color: cardColor.withValues(alpha: 0.96),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: _recenterMapOnUser,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+            child: Icon(
+              Icons.my_location_rounded,
+              size: 18,
+              color: _mapFollowsUserLocation
+                  ? Colors.blueAccent
+                  : textColor.withValues(alpha: 0.5),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _startPreviewLocationUpdates() async {
     if (_isTracking) {
       return;
@@ -530,7 +602,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         _currentPosition = nextPoint;
         _statusMessage = 'Live location ready.';
       });
-      _mapController.move(nextPoint, 17);
+      _followMapCameraToUser(nextPoint);
     });
   }
 
@@ -842,6 +914,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       _totalDistanceMeters = 0;
       _isManuallyPaused = false;
       _statusMessage = null;
+      _mapFollowsUserLocation = true;
     });
     _notifyMetricsChangedIfNeeded();
     unawaited(_updateTrackingNotification());
@@ -995,7 +1068,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       }
     });
 
-    _mapController.move(nextPoint, 17);
+    _followMapCameraToUser(nextPoint);
     _notifyMetricsChangedIfNeeded();
   }
 
@@ -1375,6 +1448,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                           options: MapOptions(
                             initialCenter: initialTarget,
                             initialZoom: _currentPosition == null ? 13 : 17,
+                            onMapEvent: _onWorkoutMapEvent,
                           ),
                           children: [
                             TileLayer(
@@ -1456,6 +1530,18 @@ class _WorkoutPageState extends State<WorkoutPage> {
                     ],
                   ),
                 ),
+                if (_hideTrackingUi &&
+                    _currentPosition != null &&
+                    !_showMetricsFullscreen &&
+                    !_isCountdownActive)
+                  Positioned(
+                    top: safePadding.top + 56,
+                    right: isNarrowLayout ? 12 : 16,
+                    child: _buildRecenterMapChip(
+                      textColor: textColor,
+                      cardColor: cardColor,
+                    ),
+                  ),
                 if (!_isCountdownActive && !_hideTrackingUi)
                   Positioned(
                     left: isNarrowLayout ? 12 : 16,
@@ -1465,6 +1551,16 @@ class _WorkoutPageState extends State<WorkoutPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (!_showMetricsFullscreen) ...[
+                        if (_currentPosition != null)
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: _buildRecenterMapChip(
+                              textColor: textColor,
+                              cardColor: cardColor,
+                            ),
+                          ),
+                        if (_currentPosition != null)
+                          const SizedBox(height: 6),
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(
