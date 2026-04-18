@@ -18,6 +18,8 @@ import 'package:synthese/diet/diet_page.dart';
 import 'package:synthese/ui/workout.dart';
 import 'package:synthese/ui/more.dart';
 import 'package:synthese/ui/components/universalbottomnavbar.dart';
+import 'package:synthese/services/health_connect_service.dart';
+import 'package:health/health.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -26,7 +28,8 @@ class DashboardPage extends StatefulWidget {
   State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> {
+class _DashboardPageState extends State<DashboardPage>
+    with WidgetsBindingObserver {
   // --- STATE VARIABLES ---
   late int _score;
   int _tabIndex = 0;
@@ -51,6 +54,10 @@ class _DashboardPageState extends State<DashboardPage> {
   int _lastWorkoutMinutesReported = 0;
   bool _keepWorkoutAlive = false;
   late final WorkoutPage _workoutPage;
+  final HealthConnectService _healthConnectService = HealthConnectService();
+  bool _hasAttemptedHealthConnect = false;
+  DateTime? _lastHealthConnectRefreshAt;
+  Timer? _metricsPersistDebounce;
 
   // Previous values (for comparisons)
   int? _prevActiveCalories;
@@ -62,10 +69,257 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _workoutPage = WorkoutPage(onMetricsChanged: _handleWorkoutMetricsChanged);
     _updateScore();
+    unawaited(_loadPersistedDashboardMetrics());
     _fetchUserGender();
     _fetchMindfulnessOnboarding();
+    unawaited(_refreshMetricsFromHealthConnect());
+  }
+
+  @override
+  void dispose() {
+    _metricsPersistDebounce?.cancel();
+    unawaited(_persistDashboardMetricsNow());
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_refreshMetricsFromHealthConnect(force: true));
+    } else if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden) {
+      unawaited(_persistDashboardMetricsNow());
+    }
+  }
+
+  DateTime _midnight(DateTime value) =>
+      DateTime(value.year, value.month, value.day);
+
+  String _dateKey(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
+  }
+
+  Future<void> _loadPersistedDashboardMetrics() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    try {
+      final dayKey = _dateKey(DateTime.now());
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('dashboardDaily')
+          .doc(dayKey)
+          .get();
+
+      final data = doc.data();
+      if (data == null || !mounted) return;
+
+      final loadedSleep = (data['sleepData'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList();
+
+      setState(() {
+        _activeCalories = (data['activeCalories'] as num?)?.toInt() ?? _activeCalories;
+        _heartRate = (data['heartRate'] as num?)?.toInt() ?? _heartRate;
+        _steps = (data['steps'] as num?)?.toInt() ?? _steps;
+        _exerciseMinutes =
+            (data['exerciseMinutes'] as num?)?.toInt() ?? _exerciseMinutes;
+        if (loadedSleep != null && loadedSleep.length == 7) {
+          _sleepData = loadedSleep;
+        }
+        _hasUploadedOnce = (data['hasUploadedOnce'] as bool?) ?? _hasUploadedOnce;
+        _lastWorkoutCaloriesReported =
+            (data['lastWorkoutCaloriesReported'] as num?)?.toInt() ??
+            _lastWorkoutCaloriesReported;
+        _lastWorkoutMinutesReported =
+            (data['lastWorkoutMinutesReported'] as num?)?.toInt() ??
+            _lastWorkoutMinutesReported;
+        _updateScore();
+      });
+    } catch (e) {
+      debugPrint('Error loading persisted dashboard metrics: $e');
+    }
+  }
+
+  void _schedulePersistDashboardMetrics() {
+    _metricsPersistDebounce?.cancel();
+    _metricsPersistDebounce = Timer(const Duration(milliseconds: 600), () {
+      unawaited(_persistDashboardMetricsNow());
+    });
+  }
+
+  Future<void> _persistDashboardMetricsNow() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    try {
+      final dayKey = _dateKey(DateTime.now());
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('dashboardDaily')
+          .doc(dayKey)
+          .set({
+            'activeCalories': _activeCalories,
+            'heartRate': _heartRate,
+            'steps': _steps,
+            'exerciseMinutes': _exerciseMinutes,
+            'sleepData': _sleepData,
+            'hasUploadedOnce': _hasUploadedOnce,
+            'lastWorkoutCaloriesReported': _lastWorkoutCaloriesReported,
+            'lastWorkoutMinutesReported': _lastWorkoutMinutesReported,
+            'updatedAt': FieldValue.serverTimestamp(),
+            'dateKey': dayKey,
+          }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('Error persisting dashboard metrics: $e');
+    }
+  }
+
+  int _minutesBetween(DateTime from, DateTime to) =>
+      to.difference(from).inMinutes.clamp(0, 1000000);
+
+  int _asInt(HealthValue value) {
+    if (value is NumericHealthValue) {
+      return value.numericValue.round();
+    }
+    return 0;
+  }
+
+  Future<void> _refreshMetricsFromHealthConnect({bool force = false}) async {
+    final now = DateTime.now();
+    final last = _lastHealthConnectRefreshAt;
+    if (last != null && now.difference(last) < const Duration(seconds: 2)) {
+      return;
+    }
+    _lastHealthConnectRefreshAt = now;
+
+    if (_hasAttemptedHealthConnect && !force) {
+      return;
+    }
+    _hasAttemptedHealthConnect = true;
+
+    final status =
+        await _healthConnectService.initializeAndEnsureReadPermissions();
+    if (status != HealthConnectStatus.ready) {
+      // No UI here (by request). Just leave existing metrics as-is.
+      debugPrint('Health Connect not ready: $status');
+      return;
+    }
+
+    final todayStart = _midnight(now);
+    final rollingSleepStart = todayStart.subtract(const Duration(days: 6));
+    final fetch = await _healthConnectService.fetchPast7Days();
+    if (!fetch.ok) {
+      debugPrint('Health Connect fetch failed: ${fetch.status} ${fetch.error}');
+      return;
+    }
+
+    final points = fetch.points;
+
+    // Steps today (matches what users expect from Toolbox testing).
+    final int stepsToday = points
+        .where((p) => p.type == HealthDataType.STEPS)
+        .where((p) => !p.dateTo.isBefore(todayStart) && !p.dateFrom.isAfter(now))
+        .fold<int>(0, (acc, p) => acc + _asInt(p.value));
+
+    // Latest heart rate sample (today).
+    final hrPoints = points
+        .where((p) => p.type == HealthDataType.HEART_RATE)
+        .where((p) => !p.dateTo.isBefore(todayStart) && !p.dateFrom.isAfter(now))
+        .toList()
+      ..sort((a, b) => a.dateTo.compareTo(b.dateTo));
+    final int latestHr = hrPoints.isEmpty ? 0 : _asInt(hrPoints.last.value);
+
+    // Active calories today.
+    final int activeCaloriesToday = points
+        .where((p) => p.type == HealthDataType.ACTIVE_ENERGY_BURNED)
+        .where((p) => !p.dateTo.isBefore(todayStart) && !p.dateFrom.isAfter(now))
+        .fold<int>(0, (acc, p) => acc + _asInt(p.value));
+
+    // Workout minutes today.
+    final int workoutMinutesToday = points
+        .where((p) => p.type == HealthDataType.WORKOUT)
+        .where((p) => !p.dateTo.isBefore(todayStart) && !p.dateFrom.isAfter(now))
+        .fold<int>(0, (acc, p) => acc + _minutesBetween(p.dateFrom, p.dateTo));
+
+    // Sleep minutes per day for the last 7 calendar days (Mon..Sun slots).
+    final List<int> sleepByWeekday = List<int>.filled(7, 0);
+    final Map<DateTime, int> sleepByDate = <DateTime, int>{};
+    for (var i = 0; i < 7; i++) {
+      final day = _midnight(rollingSleepStart.add(Duration(days: i)));
+      sleepByDate[day] = 0;
+    }
+
+    for (final p in points.where((p) => p.type == HealthDataType.SLEEP_SESSION)) {
+      var segmentStart = p.dateFrom;
+      var segmentEnd = p.dateTo;
+      if (segmentEnd.isBefore(rollingSleepStart) || segmentStart.isAfter(now)) {
+        continue;
+      }
+      if (segmentStart.isBefore(rollingSleepStart)) {
+        segmentStart = rollingSleepStart;
+      }
+      if (segmentEnd.isAfter(now)) {
+        segmentEnd = now;
+      }
+      if (!segmentEnd.isAfter(segmentStart)) {
+        continue;
+      }
+
+      var cursor = segmentStart;
+      while (cursor.isBefore(segmentEnd)) {
+        final dayStart = _midnight(cursor);
+        final dayEnd = dayStart.add(const Duration(days: 1));
+        final chunkEnd = segmentEnd.isBefore(dayEnd) ? segmentEnd : dayEnd;
+        final chunkMinutes = chunkEnd.difference(cursor).inMinutes;
+        if (chunkMinutes > 0 && sleepByDate.containsKey(dayStart)) {
+          sleepByDate[dayStart] = (sleepByDate[dayStart] ?? 0) + chunkMinutes;
+        }
+        cursor = chunkEnd;
+      }
+    }
+
+    for (final entry in sleepByDate.entries) {
+      final idx = (entry.key.weekday - 1).clamp(0, 6);
+      sleepByWeekday[idx] = entry.value;
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      // Preserve trend history if user already had data.
+      if (_hasUploadedOnce) {
+        _prevActiveCalories = _activeCalories;
+        _prevHeartRate = _heartRate;
+        _prevSteps = _steps;
+        _prevExerciseMinutes = _exerciseMinutes;
+        _prevSleepData = List<int>.from(_sleepData);
+      } else {
+        _hasUploadedOnce = true;
+      }
+
+      _steps = math.max(_steps, stepsToday);
+      _heartRate = latestHr;
+      _activeCalories = math.max(_activeCalories, activeCaloriesToday);
+      _exerciseMinutes = math.max(_exerciseMinutes, workoutMinutesToday);
+      _sleepData = List<int>.generate(
+        7,
+        (i) => math.max(_sleepData[i], sleepByWeekday[i]),
+      );
+      _updateScore();
+    });
+    _schedulePersistDashboardMetrics();
   }
 
   // --- FETCH USER DATA ---
@@ -78,7 +332,7 @@ class _DashboardPageState extends State<DashboardPage> {
             .doc(uid)
             .get();
         if (doc.exists) {
-          final data = doc.data() as Map<String, dynamic>?;
+          final data = doc.data();
           if (data != null && data['gender'] == 'Female') {
             if (mounted) {
               setState(() => _isFemale = true);
@@ -100,7 +354,7 @@ class _DashboardPageState extends State<DashboardPage> {
             .doc(uid)
             .get();
         if (doc.exists) {
-          final data = doc.data() as Map<String, dynamic>?;
+          final data = doc.data();
           final completed =
               data?['mindfulnessOnboardingCompleted'] as bool? ?? false;
           if (mounted && completed) {
@@ -352,6 +606,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
       _updateScore();
     });
+    _schedulePersistDashboardMetrics();
   }
 
   void _showAccountBottomSheet() async {
@@ -390,6 +645,7 @@ class _DashboardPageState extends State<DashboardPage> {
       _hasUploadedOnce = true;
       _updateScore();
     });
+    _schedulePersistDashboardMetrics();
   }
 
   void _adjustHeartRate(int delta) {
@@ -397,6 +653,7 @@ class _DashboardPageState extends State<DashboardPage> {
       _heartRate = (_heartRate + delta).clamp(0, 250).toInt();
       _hasUploadedOnce = true;
     });
+    _schedulePersistDashboardMetrics();
   }
 
   void _adjustSteps(int delta) {
@@ -405,6 +662,7 @@ class _DashboardPageState extends State<DashboardPage> {
       _hasUploadedOnce = true;
       _updateScore();
     });
+    _schedulePersistDashboardMetrics();
   }
 
   void _adjustExerciseMinutes(int delta) {
@@ -413,6 +671,7 @@ class _DashboardPageState extends State<DashboardPage> {
       _hasUploadedOnce = true;
       _updateScore();
     });
+    _schedulePersistDashboardMetrics();
   }
 
   void _handleWorkoutMetricsChanged(int calories, int activeMinutes) {
@@ -428,7 +687,7 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     setState(() {
-      _activeCalories = (_activeCalories - calorieDelta)
+      _activeCalories = (_activeCalories + calorieDelta)
           .clamp(0, 1000000)
           .toInt();
       _exerciseMinutes = (_exerciseMinutes + minuteDelta)
@@ -438,6 +697,7 @@ class _DashboardPageState extends State<DashboardPage> {
       _lastWorkoutMinutesReported = activeMinutes;
       _updateScore();
     });
+    _schedulePersistDashboardMetrics();
   }
 
   @override

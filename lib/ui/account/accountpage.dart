@@ -111,11 +111,8 @@ class _AccountPageModalState extends State<AccountPageModal> {
         return;
       }
 
-      // Delete user data from Firestore first
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .delete();
+      // Delete all app data from Firestore first (root fields + subcollections).
+      await _deleteAllUserFirestoreData(user.uid);
 
       // Delete the Firebase Auth account
       try {
@@ -153,6 +150,57 @@ class _AccountPageModalState extends State<AccountPageModal> {
         );
       }
     }
+  }
+
+  Future<void> _deleteCollectionDocs({
+    required CollectionReference<Map<String, dynamic>> collection,
+    int batchSize = 400,
+  }) async {
+    while (true) {
+      final snapshot = await collection.limit(batchSize).get();
+      if (snapshot.docs.isEmpty) {
+        break;
+      }
+      final batch = FirebaseFirestore.instance.batch();
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    }
+  }
+
+  Future<void> _deleteAllUserFirestoreData(String uid) async {
+    final userRef = FirebaseFirestore.instance.collection('users').doc(uid);
+
+    // Delete nested debt payments first.
+    final debtSnap = await userRef.collection('finance_debts').get();
+    for (final debtDoc in debtSnap.docs) {
+      await _deleteCollectionDocs(
+        collection: debtDoc.reference.collection('payments'),
+      );
+    }
+
+    // Delete all known user subcollections used by the app.
+    await _deleteCollectionDocs(collection: userRef.collection('foodLogs'));
+    await _deleteCollectionDocs(collection: userRef.collection('waterDaily'));
+    await _deleteCollectionDocs(collection: userRef.collection('workout_sessions'));
+    await _deleteCollectionDocs(collection: userRef.collection('mood_logs'));
+    await _deleteCollectionDocs(
+      collection: userRef.collection('morning_readiness'),
+    );
+    await _deleteCollectionDocs(collection: userRef.collection('cycles'));
+    await _deleteCollectionDocs(collection: userRef.collection('dashboardDaily'));
+    await _deleteCollectionDocs(collection: userRef.collection('finance_accounts'));
+    await _deleteCollectionDocs(
+      collection: userRef.collection('finance_categories'),
+    );
+    await _deleteCollectionDocs(
+      collection: userRef.collection('finance_transactions'),
+    );
+    await _deleteCollectionDocs(collection: userRef.collection('finance_debts'));
+
+    // Finally delete the root user document.
+    await userRef.delete();
   }
 
   @override
