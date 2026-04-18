@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -1889,8 +1890,21 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 }
 
-class WorkoutHistoryPage extends StatelessWidget {
+class WorkoutHistoryPage extends StatefulWidget {
   const WorkoutHistoryPage({super.key});
+
+  @override
+  State<WorkoutHistoryPage> createState() => _WorkoutHistoryPageState();
+}
+
+class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   String _formatDateTime(DateTime value) {
     return DateFormat('MMM d, yyyy  h:mm a').format(value);
@@ -1923,6 +1937,103 @@ class WorkoutHistoryPage extends StatelessWidget {
       default:
         return 'Outdoor Walking';
     }
+  }
+
+  bool _sessionMatchesSearch(
+    QueryDocumentSnapshot<Map<String, dynamic>> doc,
+    String query,
+  ) {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) {
+      return true;
+    }
+    final data = doc.data();
+    final mode = (data['mode'] as String?) ?? 'outdoorWalking';
+    final modeLc = mode.toLowerCase();
+    if (modeLc.contains(q)) {
+      return true;
+    }
+    final label = _modeLabel(mode).toLowerCase();
+    if (label.contains(q)) {
+      return true;
+    }
+    for (final word in label.split(RegExp(r'\s+'))) {
+      if (word.isNotEmpty && word.contains(q)) {
+        return true;
+      }
+    }
+
+    final startedAt = (data['startedAt'] as Timestamp?)?.toDate();
+    final endedAt = (data['endedAt'] as Timestamp?)?.toDate();
+    final calories = (data['calories'] as num?)?.toInt() ?? 0;
+    final activeMinutes = (data['activeMinutes'] as num?)?.toInt() ?? 0;
+    final distanceMeters = (data['distanceMeters'] as num?)?.toDouble() ?? 0.0;
+    final modeEnum = _workoutModeFromName(mode);
+    final distanceFormatted =
+        formatWorkoutDistance(modeEnum, distanceMeters).toLowerCase();
+
+    final buffer = StringBuffer()
+      ..write(label)
+      ..write(' ')
+      ..write(calories)
+      ..write(' ')
+      ..write(activeMinutes)
+      ..write(' ')
+      ..write(distanceFormatted)
+      ..write(' ')
+      ..write(distanceMeters);
+    if (startedAt != null) {
+      buffer.write(' ${_formatDateTime(startedAt)}');
+    }
+    if (endedAt != null) {
+      buffer.write(' ${_formatDateTime(endedAt)}');
+    }
+    return buffer.toString().toLowerCase().contains(q);
+  }
+
+  Widget _buildSearchBar({
+    required Color cardColor,
+    required Color textColor,
+    required Color subTextColor,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (_) => setState(() {}),
+        style: TextStyle(color: textColor, fontSize: 16),
+        decoration: InputDecoration(
+          hintText: 'Search workouts...',
+          hintStyle: TextStyle(color: subTextColor, fontSize: 16),
+          prefixIcon: Icon(
+            CupertinoIcons.search,
+            color: subTextColor,
+            size: 20,
+          ),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? GestureDetector(
+                  onTap: () {
+                    _searchController.clear();
+                    setState(() {});
+                  },
+                  child: Icon(
+                    CupertinoIcons.clear_circled_solid,
+                    color: subTextColor,
+                    size: 18,
+                  ),
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+        ),
+      ),
+    );
   }
 
   Future<bool> _showDeleteConfirmation(BuildContext context) async {
@@ -1979,6 +2090,7 @@ class WorkoutHistoryPage extends StatelessWidget {
     final bgColor = isDark ? Colors.black : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final cardColor = isDark ? const Color(0xFF1F1F1F) : Colors.white;
+    final subTextColor = isDark ? Colors.white54 : Colors.black54;
     final safePadding = MediaQuery.of(context).padding;
 
     if (uid == null) {
@@ -1994,44 +2106,82 @@ class WorkoutHistoryPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Workout History'),
       ),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .collection('workout_sessions')
-            .orderBy('endedAt', descending: true)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(strokeWidth: 2));
-          }
-
-          final docs = snapshot.data?.docs ?? [];
-          if (docs.isEmpty) {
-            return Center(
-              child: Text(
-                'No workout history yet.',
-                style: TextStyle(
-                  color: textColor.withValues(alpha: 0.7),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            );
-          }
-
-          return ListView.separated(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
             padding: EdgeInsets.fromLTRB(
               16,
               safePadding.top + 12,
               16,
+              0,
+            ),
+            child: _buildSearchBar(
+              cardColor: cardColor,
+              textColor: textColor,
+              subTextColor: subTextColor,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(uid)
+                  .collection('workout_sessions')
+                  .orderBy('endedAt', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  );
+                }
+
+                final docs = snapshot.data?.docs ?? [];
+                if (docs.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No workout history yet.',
+                      style: TextStyle(
+                        color: textColor.withValues(alpha: 0.7),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                }
+
+                final query = _searchController.text;
+                final filteredDocs = docs
+                    .where((d) => _sessionMatchesSearch(d, query))
+                    .toList();
+
+                if (filteredDocs.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No workouts match your search.',
+                      style: TextStyle(
+                        color: textColor.withValues(alpha: 0.7),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.separated(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              0,
+              16,
               safePadding.bottom + 24,
             ),
-            itemCount: docs.length,
+            itemCount: filteredDocs.length,
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              final sessionId = docs[index].id;
-              final data = docs[index].data();
+              final sessionId = filteredDocs[index].id;
+              final data = filteredDocs[index].data();
               final mode = (data['mode'] as String?) ?? 'outdoorWalking';
               final modeEnum = _workoutModeFromName(mode);
               final startedAt = (data['startedAt'] as Timestamp?)?.toDate();
@@ -2229,7 +2379,10 @@ class WorkoutHistoryPage extends StatelessWidget {
               );
             },
           );
-        },
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
