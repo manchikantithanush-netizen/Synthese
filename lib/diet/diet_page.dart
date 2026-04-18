@@ -31,6 +31,7 @@ class _DietPageState extends State<DietPage> {
   File? _selectedImage;
   FoodAnalysisResult? _analysisResult;
   bool _isAnalyzing = false;
+  String? _lastTypedFood;
   final List<FoodLogEntry> _foodLog = [];
 
   // Water tracking state
@@ -342,6 +343,7 @@ class _DietPageState extends State<DietPage> {
         HapticFeedback.mediumImpact();
         setState(() {
           _selectedImage = File(image.path);
+          _lastTypedFood = null;
           _analysisResult = null;
         });
 
@@ -375,6 +377,34 @@ class _DietPageState extends State<DietPage> {
     }
   }
 
+  Future<void> _analyzeTypedFood(String foodText) async {
+    final trimmed = foodText.trim();
+    if (trimmed.isEmpty) return;
+
+    setState(() {
+      _selectedImage = null;
+      _lastTypedFood = trimmed;
+      _isAnalyzing = true;
+      _analysisResult = null;
+    });
+    HapticFeedback.selectionClick();
+
+    final result = await _foodService.analyzeFoodText(trimmed);
+
+    if (mounted) {
+      setState(() {
+        _analysisResult = result;
+        _isAnalyzing = false;
+      });
+
+      if (result.success) {
+        HapticFeedback.mediumImpact();
+      } else {
+        HapticFeedback.lightImpact();
+      }
+    }
+  }
+
   void _addToLog() async {
     if (_analysisResult == null || !_analysisResult!.success) return;
 
@@ -394,6 +424,7 @@ class _DietPageState extends State<DietPage> {
     setState(() {
       _foodLog.insert(0, newEntry);
       _selectedImage = null;
+      _lastTypedFood = null;
       _analysisResult = null;
     });
 
@@ -513,6 +544,63 @@ class _DietPageState extends State<DietPage> {
           child: const Text('Cancel'),
         ),
       ),
+    );
+  }
+
+  void _showTextFoodInputDialog() {
+    final controller = TextEditingController();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final cardColor = isDark ? const Color(0xFF1F1F1F) : Colors.white;
+    final hintColor = isDark ? Colors.white54 : Colors.black45;
+
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: cardColor,
+          title: Text(
+            'Type your meal',
+            style: TextStyle(color: textColor),
+          ),
+          content: TextField(
+            controller: controller,
+            maxLines: 4,
+            minLines: 3,
+            textInputAction: TextInputAction.done,
+            style: TextStyle(color: textColor),
+            decoration: InputDecoration(
+              hintText:
+                  'Example: 2 eggs, 2 slices toast with butter, and a banana',
+              hintStyle: TextStyle(color: hintColor),
+              filled: true,
+              fillColor: isDark
+                  ? Colors.white.withValues(alpha: 0.06)
+                  : Colors.black.withValues(alpha: 0.04),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                final value = controller.text.trim();
+                Navigator.of(context).pop();
+                if (value.isNotEmpty) {
+                  _analyzeTypedFood(value);
+                }
+              },
+              child: const Text('Analyze'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -1380,6 +1468,248 @@ class _DietPageState extends State<DietPage> {
                         onPressed: _showImageSourcePicker,
                       ),
                     ] else ...[
+                      if (_isAnalyzing) ...[
+                        Center(
+                          child: Column(
+                            children: [
+                              const CupertinoActivityIndicator(),
+                              const SizedBox(height: 12),
+                              Text(
+                                _lastTypedFood != null
+                                    ? "Analyzing your meal text..."
+                                    : "Analyzing your food...",
+                                style: TextStyle(
+                                  color: subTextColor,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ] else if (_analysisResult != null) ...[
+                        if (_analysisResult!.success) ...[
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 400),
+                            transitionBuilder: (child, animation) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: SlideTransition(
+                                  position: Tween<Offset>(
+                                    begin: const Offset(0, 0.1),
+                                    end: Offset.zero,
+                                  ).animate(
+                                    CurvedAnimation(
+                                      parent: animation,
+                                      curve: Curves.easeOutCubic,
+                                    ),
+                                  ),
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: Column(
+                              key: ValueKey(
+                                '${_analysisResult!.foodName}_${_analysisResult!.estimatedCalories}',
+                              ),
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? Colors.white.withOpacity(0.05)
+                                        : Colors.black.withOpacity(0.03),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: orangeColor.withOpacity(0.3),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            CupertinoIcons.checkmark_circle_fill,
+                                            color: orangeColor,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              _analysisResult!.foodName,
+                                              style: TextStyle(
+                                                color: textColor,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      if (_lastTypedFood != null) ...[
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          _lastTypedFood!,
+                                          style: TextStyle(
+                                            color: subTextColor,
+                                            fontSize: 12,
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                        ),
+                                      ],
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        "AI-Estimated Nutritional Info",
+                                        style: TextStyle(
+                                          color: subTextColor,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            CupertinoIcons.flame_fill,
+                                            color: orangeColor,
+                                            size: 24,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            "${_analysisResult!.estimatedCalories}",
+                                            style: TextStyle(
+                                              color: textColor,
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            "kcal",
+                                            style: TextStyle(
+                                              color: subTextColor,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: _buildMacroCard(
+                                              'Protein',
+                                              '${_analysisResult!.protein}g',
+                                              const Color(0xFF30D158),
+                                              isDark,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: _buildMacroCard(
+                                              'Carbs',
+                                              '${_analysisResult!.carbs}g',
+                                              const Color(0xFF32ADE6),
+                                              isDark,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: _buildMacroCard(
+                                              'Fats',
+                                              '${_analysisResult!.fats}g',
+                                              const Color(0xFFFFCC00),
+                                              isDark,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        _analysisResult!.description,
+                                        style: TextStyle(
+                                          color: subTextColor,
+                                          fontSize: 14,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: UniversalButton(
+                                        text: "Add to Log",
+                                        onPressed: _addToLog,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    UniversalResetButton(
+                                      onPressed: () {
+                                        if (_lastTypedFood != null) {
+                                          _analyzeTypedFood(_lastTypedFood!);
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                UniversalButton(
+                                  text: "Type Another Meal",
+                                  onPressed: _showTextFoodInputDialog,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ] else ...[
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  CupertinoIcons.exclamationmark_circle_fill,
+                                  color: Colors.red,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    _analysisResult!.errorMessage ??
+                                        'Analysis failed',
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CNButton(
+                                  label: "Try Again",
+                                  style: CNButtonStyle.glass,
+                                  onPressed: _showTextFoodInputDialog,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        const SizedBox(height: 12),
+                      ],
+
                       // Empty state - upload button
                       GestureDetector(
                         onTap: _showImageSourcePicker,
@@ -1427,6 +1757,11 @@ class _DietPageState extends State<DietPage> {
                             ],
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 12),
+                      UniversalButton(
+                        text: "Type Food Instead",
+                        onPressed: _showTextFoodInputDialog,
                       ),
                     ],
                   ],

@@ -112,6 +112,62 @@ Be realistic with estimates. If you cannot identify the food or it's not food, r
     }
   }
 
+  Future<FoodAnalysisResult> analyzeFoodText(String foodText) async {
+    final trimmed = foodText.trim();
+    if (trimmed.isEmpty) {
+      return FoodAnalysisResult.error('Please enter what you ate.');
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {
+          'Authorization': 'Bearer $_token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.github+json',
+        },
+        body: jsonEncode({
+          'model': _model,
+          'messages': [
+            {
+              'role': 'user',
+              'content':
+                  '''Analyze this meal description and provide:
+1. The most likely food/dish name
+2. Estimated calorie count (number only)
+3. Estimated protein in grams (number only)
+4. Estimated carbohydrates in grams (number only)
+5. Estimated fats in grams (number only)
+6. A brief description (1-2 sentences)
+
+Meal description:
+"$trimmed"
+
+Respond ONLY in this exact JSON format:
+{"food_name": "...", "calories": 123, "protein": 25, "carbs": 30, "fats": 10, "description": "..."}
+
+If too vague or not food, respond with:
+{"food_name": "Unknown", "calories": 0, "protein": 0, "carbs": 0, "fats": 0, "description": "Could not estimate from the provided text."}''',
+            },
+          ],
+          'max_completion_tokens': 300,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final content = data['choices'][0]['message']['content'] as String;
+        return _parseResponse(content);
+      } else {
+        debugPrint('API Error (text): ${response.statusCode} - ${response.body}');
+        return FoodAnalysisResult.error('Failed to analyze text. Please try again.');
+      }
+    } catch (e) {
+      debugPrint('Error analyzing food text: $e');
+      return FoodAnalysisResult.error('An error occurred. Please check your connection.');
+    }
+  }
+
   FoodAnalysisResult _parseResponse(String content) {
     try {
       String jsonStr = content.trim();
