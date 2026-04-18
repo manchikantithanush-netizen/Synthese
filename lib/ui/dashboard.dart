@@ -19,6 +19,7 @@ import 'package:synthese/ui/workout.dart';
 import 'package:synthese/ui/more.dart';
 import 'package:synthese/ui/components/universalbottomnavbar.dart';
 import 'package:synthese/services/health_connect_service.dart';
+import 'package:synthese/services/first_launch_permissions_service.dart';
 import 'package:health/health.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -55,6 +56,8 @@ class _DashboardPageState extends State<DashboardPage>
   bool _keepWorkoutAlive = false;
   late final WorkoutPage _workoutPage;
   final HealthConnectService _healthConnectService = HealthConnectService();
+  final FirstLaunchPermissionsService _firstLaunchPermissionsService =
+      FirstLaunchPermissionsService();
   bool _hasAttemptedHealthConnect = false;
   DateTime? _lastHealthConnectRefreshAt;
   Timer? _metricsPersistDebounce;
@@ -72,10 +75,56 @@ class _DashboardPageState extends State<DashboardPage>
     WidgetsBinding.instance.addObserver(this);
     _workoutPage = WorkoutPage(onMetricsChanged: _handleWorkoutMetricsChanged);
     _updateScore();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_showFirstLaunchHealthConnectWarningIfNeeded());
+    });
     unawaited(_loadPersistedDashboardMetrics());
     _fetchUserGender();
     _fetchMindfulnessOnboarding();
+    unawaited(_firstLaunchPermissionsService.requestAllPermissionsIfFirstLaunch());
     unawaited(_refreshMetricsFromHealthConnect());
+  }
+
+  Future<void> _showFirstLaunchHealthConnectWarningIfNeeded() async {
+    if (!Platform.isAndroid) {
+      return;
+    }
+
+    final shouldShow =
+        await _firstLaunchPermissionsService.shouldShowHealthConnectWarning();
+    if (!shouldShow || !mounted) {
+      return;
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogBg = isDark ? const Color(0xFF252528) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final mutedText = isDark ? Colors.white70 : Colors.black54;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: dialogBg,
+        title: Text(
+          'Health Connect Required for Wearables',
+          style: TextStyle(color: textColor),
+        ),
+        content: Text(
+          'To sync metrics from devices like Samsung Band/Galaxy Watch, this app needs Google Health Connect. '
+          'If Health Connect is not installed or not permitted, wearable health metrics will not sync.',
+          style: TextStyle(color: mutedText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+
+    await _firstLaunchPermissionsService.markHealthConnectWarningShown();
   }
 
   @override
