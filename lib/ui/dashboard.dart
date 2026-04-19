@@ -90,16 +90,26 @@ class _DashboardPageState extends State<DashboardPage>
       end: Offset.zero,
     ).animate(_workoutTabEnterOpacity);
     WidgetsBinding.instance.addObserver(this);
-    _workoutPage = WorkoutPage(onMetricsChanged: _handleWorkoutMetricsChanged);
+    _workoutPage = WorkoutPage(
+      onMetricsChanged: _handleWorkoutMetricsChanged,
+      onTrackingBaselineCleared: _handleWorkoutTrackingBaselineCleared,
+    );
     _updateScore();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_showFirstLaunchHealthConnectWarningIfNeeded());
     });
-    unawaited(_loadPersistedDashboardMetrics());
+    unawaited(_bootstrapDashboardMetrics());
     _fetchUserGender();
     _fetchMindfulnessOnboarding();
     unawaited(_firstLaunchPermissionsService.requestAllPermissionsIfFirstLaunch());
-    unawaited(_refreshMetricsFromHealthConnect());
+  }
+
+  /// Loads saved daily totals first, then merges Health Connect so in-app
+  /// workout calories are not overwritten by a racing HC refresh.
+  Future<void> _bootstrapDashboardMetrics() async {
+    await _loadPersistedDashboardMetrics();
+    if (!mounted) return;
+    await _refreshMetricsFromHealthConnect();
   }
 
   Future<void> _showFirstLaunchHealthConnectWarningIfNeeded() async {
@@ -796,8 +806,9 @@ class _DashboardPageState extends State<DashboardPage>
       activeMinutes - _lastWorkoutMinutesReported,
     );
     if (calorieDelta == 0 && minuteDelta == 0) {
-      _lastWorkoutCaloriesReported = calories;
-      _lastWorkoutMinutesReported = activeMinutes;
+      // Do not regress the dashboard baseline when the workout tile reports
+      // stable zeros (e.g. after hot restart / widget rebuild). Route reset
+      // uses [onTrackingBaselineCleared] instead.
       return;
     }
 
@@ -811,6 +822,14 @@ class _DashboardPageState extends State<DashboardPage>
       _lastWorkoutCaloriesReported = calories;
       _lastWorkoutMinutesReported = activeMinutes;
       _updateScore();
+    });
+    _schedulePersistDashboardMetrics();
+  }
+
+  void _handleWorkoutTrackingBaselineCleared() {
+    setState(() {
+      _lastWorkoutCaloriesReported = 0;
+      _lastWorkoutMinutesReported = 0;
     });
     _schedulePersistDashboardMetrics();
   }

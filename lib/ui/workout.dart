@@ -84,9 +84,17 @@ String formatWorkoutDistance(WorkoutMode? mode, double meters) {
 }
 
 class WorkoutPage extends StatefulWidget {
-  const WorkoutPage({super.key, this.onMetricsChanged});
+  const WorkoutPage({
+    super.key,
+    this.onMetricsChanged,
+    this.onTrackingBaselineCleared,
+  });
 
   final void Function(int calories, int activeMinutes)? onMetricsChanged;
+
+  /// Called after the user clears the route/session so the dashboard can reset
+  /// its workout delta baseline without changing today's cumulative calories.
+  final VoidCallback? onTrackingBaselineCleared;
 
   @override
   State<WorkoutPage> createState() => _WorkoutPageState();
@@ -990,6 +998,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       _statusMessage = null;
       _mapFollowsUserLocation = true;
     });
+    widget.onTrackingBaselineCleared?.call();
     _notifyMetricsChangedIfNeeded();
     unawaited(_updateTrackingNotification());
   }
