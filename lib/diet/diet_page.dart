@@ -34,6 +34,8 @@ class _DietPageState extends State<DietPage> {
   bool _isAnalyzing = false;
   String? _lastTypedFood;
   final List<FoodLogEntry> _foodLog = [];
+  final List<FrequentFoodItem> _frequentFoods = [];
+  bool _isLoadingFrequentFoods = false;
 
   // Water tracking state
   int _waterGlasses = 0;
@@ -56,6 +58,7 @@ class _DietPageState extends State<DietPage> {
     _foodService = FoodAnalysisService();
     _checkDietSetup();
     _loadFoodLogs();
+    _loadFrequentFoods();
     _loadTodayWaterIntake();
     _loadWaterHistory();
   }
@@ -233,6 +236,81 @@ class _DietPageState extends State<DietPage> {
     }
   }
 
+  Future<void> _loadFrequentFoods() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    setState(() => _isLoadingFrequentFoods = true);
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('foodLogs')
+          .orderBy('timestamp', descending: true)
+          .limit(80)
+          .get();
+
+      final Map<String, FrequentFoodItem> grouped = {};
+
+      for (final doc in snapshot.docs) {
+        final data = doc.data();
+        final rawName = (data['foodName'] as String?)?.trim() ?? '';
+        if (rawName.isEmpty) continue;
+        final normalized = rawName.toLowerCase();
+        final timestamp =
+            (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now();
+        final calories = (data['calories'] as num?)?.toInt() ?? 0;
+        final protein = (data['protein'] as num?)?.toInt() ?? 0;
+        final carbs = (data['carbs'] as num?)?.toInt() ?? 0;
+        final fats = (data['fats'] as num?)?.toInt() ?? 0;
+        final description = (data['description'] as String?) ?? '';
+
+        if (!grouped.containsKey(normalized)) {
+          grouped[normalized] = FrequentFoodItem(
+            foodName: rawName,
+            calories: calories,
+            protein: protein,
+            carbs: carbs,
+            fats: fats,
+            description: description,
+            frequency: 1,
+            lastEaten: timestamp,
+          );
+          continue;
+        }
+
+        final existing = grouped[normalized]!;
+        grouped[normalized] = existing.copyWith(
+          frequency: existing.frequency + 1,
+          lastEaten: timestamp.isAfter(existing.lastEaten)
+              ? timestamp
+              : existing.lastEaten,
+        );
+      }
+
+      final foods = grouped.values.toList()
+        ..sort((a, b) {
+          final frequencyCompare = b.frequency.compareTo(a.frequency);
+          if (frequencyCompare != 0) return frequencyCompare;
+          return b.lastEaten.compareTo(a.lastEaten);
+        });
+
+      if (mounted) {
+        setState(() {
+          _frequentFoods
+            ..clear()
+            ..addAll(foods.where((food) => food.frequency >= 3).take(6));
+          _isLoadingFrequentFoods = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading frequent foods: $e');
+      if (mounted) {
+        setState(() => _isLoadingFrequentFoods = false);
+      }
+    }
+  }
+
   Future<String?> _saveFoodLog(FoodLogEntry entry) async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return null;
@@ -317,6 +395,8 @@ class _DietPageState extends State<DietPage> {
             _activeWaterDayKey = _waterDayKey(DateTime.now());
             _weeklyWaterIntakeLitres = List.filled(7, 0.0);
             _foodLog.clear();
+            _frequentFoods.clear();
+            _isLoadingFrequentFoods = false;
             _selectedImage = null;
             _analysisResult = null;
           });
@@ -454,6 +534,46 @@ class _DietPageState extends State<DietPage> {
     Future.delayed(const Duration(milliseconds: 200), () {
       HapticFeedback.lightImpact();
     });
+
+    _loadFrequentFoods();
+  }
+
+  Future<void> _quickRelogFrequentFood(FrequentFoodItem item) async {
+    HapticFeedback.mediumImpact();
+    final quickEntry = FoodLogEntry(
+      foodName: item.foodName,
+      calories: item.calories,
+      description: item.description,
+      timestamp: DateTime.now(),
+      protein: item.protein,
+      carbs: item.carbs,
+      fats: item.fats,
+    );
+
+    setState(() {
+      _foodLog.insert(0, quickEntry);
+    });
+
+    final docId = await _saveFoodLog(quickEntry);
+    if (docId != null && mounted) {
+      final index = _foodLog.indexOf(quickEntry);
+      if (index >= 0) {
+        setState(() {
+          _foodLog[index] = FoodLogEntry(
+            foodName: quickEntry.foodName,
+            calories: quickEntry.calories,
+            description: quickEntry.description,
+            timestamp: quickEntry.timestamp,
+            protein: quickEntry.protein,
+            carbs: quickEntry.carbs,
+            fats: quickEntry.fats,
+            firestoreId: docId,
+          );
+        });
+      }
+    }
+
+    _loadFrequentFoods();
   }
 
   Future<bool> _showDeleteConfirmation(
@@ -512,6 +632,8 @@ class _DietPageState extends State<DietPage> {
           }
         }
       }
+
+      _loadFrequentFoods();
     }
   }
 
@@ -1202,6 +1324,90 @@ class _DietPageState extends State<DietPage> {
                 ),
               ),
               const SizedBox(height: 24),
+
+              if (_frequentFoods.isNotEmpty) ...[
+                Text(
+                  "Frequent Foods",
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  "Tap to quickly re-log recent meals",
+                  style: TextStyle(
+                    color: subTextColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: isNarrow ? 40 : 44,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _frequentFoods.length,
+                    separatorBuilder: (_, __) => SizedBox(width: isNarrow ? 8 : 10),
+                    itemBuilder: (context, index) {
+                      final item = _frequentFoods[index];
+                      return ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: mediaQuery.size.width * (isNarrow ? 0.62 : 0.56),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(22),
+                            onTap: () => _quickRelogFrequentFood(item),
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isNarrow ? 10 : 14,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.08)
+                                    : Colors.black.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(22),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.white.withOpacity(0.12)
+                                      : Colors.black.withOpacity(0.1),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    CupertinoIcons.plus_circle_fill,
+                                    size: isNarrow ? 14 : 16,
+                                    color: orangeColor,
+                                  ),
+                                  SizedBox(width: isNarrow ? 6 : 8),
+                                  Flexible(
+                                    child: Text(
+                                      item.foodName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: textColor,
+                                        fontSize: isNarrow ? 12 : 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
 
               // Upload Section
               Container(
@@ -2067,4 +2273,42 @@ class FoodLogEntry {
     this.fats = 0,
     this.firestoreId,
   });
+}
+
+class FrequentFoodItem {
+  final String foodName;
+  final int calories;
+  final int protein;
+  final int carbs;
+  final int fats;
+  final String description;
+  final int frequency;
+  final DateTime lastEaten;
+
+  FrequentFoodItem({
+    required this.foodName,
+    required this.calories,
+    required this.protein,
+    required this.carbs,
+    required this.fats,
+    required this.description,
+    required this.frequency,
+    required this.lastEaten,
+  });
+
+  FrequentFoodItem copyWith({
+    int? frequency,
+    DateTime? lastEaten,
+  }) {
+    return FrequentFoodItem(
+      foodName: foodName,
+      calories: calories,
+      protein: protein,
+      carbs: carbs,
+      fats: fats,
+      description: description,
+      frequency: frequency ?? this.frequency,
+      lastEaten: lastEaten ?? this.lastEaten,
+    );
+  }
 }
