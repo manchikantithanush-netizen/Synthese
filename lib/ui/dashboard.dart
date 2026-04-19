@@ -30,7 +30,12 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, TickerProviderStateMixin {
+  static const Duration _kTabSwitchDuration = Duration(milliseconds: 320);
+
+  late final AnimationController _workoutTabEnterController;
+  late final Animation<double> _workoutTabEnterOpacity;
+  late final Animation<Offset> _workoutTabEnterSlide;
   // --- STATE VARIABLES ---
   late int _score;
   int _tabIndex = 0;
@@ -72,6 +77,18 @@ class _DashboardPageState extends State<DashboardPage>
   @override
   void initState() {
     super.initState();
+    _workoutTabEnterController = AnimationController(
+      vsync: this,
+      duration: _kTabSwitchDuration,
+    );
+    _workoutTabEnterOpacity = CurvedAnimation(
+      parent: _workoutTabEnterController,
+      curve: Curves.easeOutCubic,
+    );
+    _workoutTabEnterSlide = Tween<Offset>(
+      begin: const Offset(0, 0.035),
+      end: Offset.zero,
+    ).animate(_workoutTabEnterOpacity);
     WidgetsBinding.instance.addObserver(this);
     _workoutPage = WorkoutPage(onMetricsChanged: _handleWorkoutMetricsChanged);
     _updateScore();
@@ -129,6 +146,7 @@ class _DashboardPageState extends State<DashboardPage>
 
   @override
   void dispose() {
+    _workoutTabEnterController.dispose();
     _metricsPersistDebounce?.cancel();
     unawaited(_persistDashboardMetricsNow());
     WidgetsBinding.instance.removeObserver(this);
@@ -680,12 +698,60 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   void _setBottomTab(int index) {
+    final wasWorkout = _tabIndex == 2;
+    final isWorkout = index == 2;
     setState(() {
       _tabIndex = index;
       if (index == 2) {
         _keepWorkoutAlive = true;
       }
     });
+    if (isWorkout && !wasWorkout) {
+      _workoutTabEnterController.stop();
+      _workoutTabEnterController.reset();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _tabIndex == 2) {
+          _workoutTabEnterController.forward();
+        }
+      });
+    } else if (!isWorkout && wasWorkout) {
+      _workoutTabEnterController.stop();
+      _workoutTabEnterController.reset();
+    }
+  }
+
+  Widget _buildNonWorkoutTabSwitcher(Widget currentScreen) {
+    return AnimatedSwitcher(
+      duration: _kTabSwitchDuration,
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
+        return Stack(
+          alignment: Alignment.topCenter,
+          children: <Widget>[
+            ...previousChildren,
+            if (currentChild != null) currentChild,
+          ],
+        );
+      },
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.035),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          ),
+        );
+      },
+      child: currentScreen,
+    );
   }
 
   void _adjustActiveCalories(int delta) {
@@ -1258,7 +1324,11 @@ class _DashboardPageState extends State<DashboardPage>
       );
     } else if (_tabIndex == 3) {
       // More Tab - Show More options
-      currentScreen = MorePage(isFemale: _isFemale, onSelectTab: _setBottomTab);
+      currentScreen = MorePage(
+        key: const ValueKey('more_tab'),
+        isFemale: _isFemale,
+        onSelectTab: _setBottomTab,
+      );
     } else if (_tabIndex == 2) {
       // Workout tab is rendered in an offstage stack to keep tracking alive.
       currentScreen = const SizedBox.shrink();
@@ -1354,42 +1424,19 @@ class _DashboardPageState extends State<DashboardPage>
                 children: [
                   Offstage(
                     offstage: _tabIndex != 2,
-                    child: _workoutPage,
+                    child: FadeTransition(
+                      opacity: _workoutTabEnterOpacity,
+                      child: SlideTransition(
+                        position: _workoutTabEnterSlide,
+                        child: _workoutPage,
+                      ),
+                    ),
                   ),
                   if (_tabIndex != 2)
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 150),
-                      layoutBuilder:
-                          (
-                            Widget? currentChild,
-                            List<Widget> previousChildren,
-                          ) {
-                            return Stack(
-                              alignment: Alignment.topCenter,
-                              children: <Widget>[
-                                ...previousChildren,
-                                if (currentChild != null) currentChild,
-                              ],
-                            );
-                          },
-                      child: currentScreen,
-                    ),
+                    _buildNonWorkoutTabSwitcher(currentScreen),
                 ],
               )
-            : AnimatedSwitcher(
-                duration: const Duration(milliseconds: 150),
-                layoutBuilder:
-                    (Widget? currentChild, List<Widget> previousChildren) {
-                      return Stack(
-                        alignment: Alignment.topCenter,
-                        children: <Widget>[
-                          ...previousChildren,
-                          if (currentChild != null) currentChild,
-                        ],
-                      );
-                    },
-                child: currentScreen,
-              ),
+            : _buildNonWorkoutTabSwitcher(currentScreen),
       ),
     );
   }
