@@ -4,12 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_card_background"
-    android:gravity="center_vertical"
     android:orientation="vertical"
-    android:paddingLeft="12dp"
-    android:paddingTop="10dp"
-    android:paddingRight="12dp"
-    android:paddingBottom="10dp">
+    android:padding="10dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -27,7 +23,7 @@
             android:text="SYNTHESE"
             android:textAllCaps="true"
             android:textColor="@color/widget_text_primary"
-            android:textSize="11sp"
+            android:textSize="10sp"
             android:textStyle="bold" />
 
         <TextView
@@ -43,30 +39,33 @@
             android:paddingBottom="3dp"
             android:text="Steps"
             android:textColor="@color/widget_accent"
-            android:textSize="9sp"
+            android:textSize="10sp"
             android:textStyle="bold" />
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
 
     <TextView
         android:id="@+id/steps_value"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:text="0"
         android:textColor="@color/widget_text_primary"
-        android:textSize="26sp"
+        android:textSize="34sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/steps_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
         android:ellipsize="end"
         android:maxLines="1"
-        android:text="Today's step count"
+        android:text="Today's steps"
         android:textColor="@color/widget_text_secondary"
-        android:textSize="10sp" />
+        android:textSize="12sp" />
 </LinearLayout>
