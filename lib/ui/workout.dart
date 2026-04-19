@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,11 +9,34 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:latlong2/latlong.dart';
+
+LatLngBounds _boundsForRoutePoints(List<LatLng> points) {
+  double minLat = points.first.latitude;
+  double maxLat = points.first.latitude;
+  double minLng = points.first.longitude;
+  double maxLng = points.first.longitude;
+  for (final p in points) {
+    minLat = math.min(minLat, p.latitude);
+    maxLat = math.max(maxLat, p.latitude);
+    minLng = math.min(minLng, p.longitude);
+    maxLng = math.max(maxLng, p.longitude);
+  }
+  if (minLat == maxLat && minLng == maxLng) {
+    const pad = 0.002;
+    return LatLngBounds(
+      southwest: LatLng(minLat - pad, minLng - pad),
+      northeast: LatLng(maxLat + pad, maxLng + pad),
+    );
+  }
+  return LatLngBounds(
+    southwest: LatLng(minLat, minLng),
+    northeast: LatLng(maxLat, maxLng),
+  );
+}
 
 enum WorkoutMode {
   running,
@@ -80,7 +104,11 @@ class _WorkoutPageState extends State<WorkoutPage> {
   static bool _notificationsInitialized = false;
 
   WorkoutMode? _selectedMode;
-  final MapController _mapController = MapController();
+  GoogleMapController? _workoutMapController;
+  LatLng? _pendingMapCameraTarget;
+  double? _pendingMapCameraZoom;
+  bool _programmaticCameraMove = false;
+  double _mapCameraZoom = 17;
   StreamSubscription<Position>? _positionSubscription;
   StreamSubscription<Position>? _previewPositionSubscription;
   Timer? _durationTicker;
@@ -249,8 +277,16 @@ class _WorkoutPageState extends State<WorkoutPage> {
     _loadUserWeight();
   }
 
+  void _forgetWorkoutMapController() {
+    _workoutMapController = null;
+    _pendingMapCameraTarget = null;
+    _pendingMapCameraZoom = null;
+  }
+
   @override
   void dispose() {
+    _workoutMapController?.dispose();
+    _workoutMapController = null;
     _durationTicker?.cancel();
     _positionSubscription?.cancel();
     _previewPositionSubscription?.cancel();
@@ -496,18 +532,55 @@ class _WorkoutPageState extends State<WorkoutPage> {
         _statusMessage = 'Live location ready.';
       }
     });
-    _mapController.move(point, 17);
+    unawaited(_moveWorkoutMapCamera(point, 17));
     await _startPreviewLocationUpdates();
   }
 
-  bool _mapEventDisablesLocationFollow(MapEventSource source) {
-    return source != MapEventSource.mapController &&
-        source != MapEventSource.nonRotatedSizeChange &&
-        source != MapEventSource.interactiveFlagsChanged;
+  Future<void> _animateWorkoutMapCamera(LatLng target, double zoom) async {
+    final controller = _workoutMapController;
+    if (controller == null) {
+      return;
+    }
+    _programmaticCameraMove = true;
+    try {
+      await controller.animateCamera(
+        CameraUpdate.newLatLngZoom(target, zoom),
+      );
+    } finally {
+      _programmaticCameraMove = false;
+    }
   }
 
-  void _onWorkoutMapEvent(MapEvent event) {
-    if (!_mapEventDisablesLocationFollow(event.source)) {
+  Future<void> _moveWorkoutMapCamera(LatLng target, double zoom) async {
+    if (_showMetricsFullscreen) {
+      return;
+    }
+    if (_workoutMapController == null) {
+      _pendingMapCameraTarget = target;
+      _pendingMapCameraZoom = zoom;
+      return;
+    }
+    await _animateWorkoutMapCamera(target, zoom);
+  }
+
+  void _flushPendingWorkoutMapCamera() {
+    final target = _pendingMapCameraTarget;
+    final zoom = _pendingMapCameraZoom;
+    if (target == null || _workoutMapController == null) {
+      return;
+    }
+    _pendingMapCameraTarget = null;
+    _pendingMapCameraZoom = null;
+    unawaited(_animateWorkoutMapCamera(target, zoom ?? 17));
+  }
+
+  void _onWorkoutMapCreated(GoogleMapController controller) {
+    _workoutMapController = controller;
+    _flushPendingWorkoutMapCamera();
+  }
+
+  void _onWorkoutCameraMoveStarted() {
+    if (_programmaticCameraMove) {
       return;
     }
     if (!_mapFollowsUserLocation || !mounted) {
@@ -519,11 +592,10 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 
   void _followMapCameraToUser(LatLng target) {
-    if (!_mapFollowsUserLocation) {
+    if (!_mapFollowsUserLocation || _showMetricsFullscreen) {
       return;
     }
-    final zoom = _mapController.camera.zoom;
-    _mapController.move(target, zoom);
+    unawaited(_moveWorkoutMapCamera(target, _mapCameraZoom));
   }
 
   void _recenterMapOnUser() {
@@ -534,7 +606,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     setState(() {
       _mapFollowsUserLocation = true;
     });
-    _mapController.move(point, 17);
+    unawaited(_moveWorkoutMapCamera(point, 17));
   }
 
   Widget _buildRecenterMapChip({
@@ -1151,6 +1223,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 
   void _backToModeSelection() {
+    _forgetWorkoutMapController();
     _resetRoute();
     _previewPositionSubscription?.cancel();
     _previewPositionSubscription = null;
@@ -1176,29 +1249,30 @@ class _WorkoutPageState extends State<WorkoutPage> {
     final initialTarget =
         _currentPosition ??
         (_routePoints.isNotEmpty ? _routePoints.last : _defaultStart);
-    final mapMarkers = _currentPosition == null
-        ? const <Marker>[]
-        : <Marker>[
-            Marker(
-              point: _currentPosition!,
-              width: 44,
-              height: 44,
-              child: Icon(
-                Icons.my_location,
-                color: isDark ? Colors.lightBlueAccent : Colors.blueAccent,
-                size: 30,
-              ),
-            ),
-          ];
-    final mapPolylines = _routePoints.length < 2
-        ? const <Polyline>[]
-        : <Polyline>[
-            Polyline(
-              points: List<LatLng>.from(_routePoints),
-              strokeWidth: 5,
-              color: Colors.blueAccent,
-            ),
-          ];
+    final mapMarkers = <Marker>{};
+    if (_currentPosition != null) {
+      mapMarkers.add(
+        Marker(
+          markerId: const MarkerId('workout_user'),
+          position: _currentPosition!,
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueAzure,
+          ),
+          anchor: const Offset(0.5, 1),
+        ),
+      );
+    }
+    final mapPolylines = <Polyline>{};
+    if (_routePoints.length >= 2) {
+      mapPolylines.add(
+        Polyline(
+          polylineId: const PolylineId('workout_route'),
+          points: List<LatLng>.from(_routePoints),
+          width: 5,
+          color: Colors.blueAccent,
+        ),
+      );
+    }
 
     return MediaQuery(
       data: mediaQuery.copyWith(
@@ -1445,22 +1519,21 @@ class _WorkoutPageState extends State<WorkoutPage> {
                             ],
                           ),
                         )
-                      : FlutterMap(
-                          mapController: _mapController,
-                          options: MapOptions(
-                            initialCenter: initialTarget,
-                            initialZoom: _currentPosition == null ? 13 : 17,
-                            onMapEvent: _onWorkoutMapEvent,
+                      : GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: initialTarget,
+                            zoom: _currentPosition == null ? 13 : 17,
                           ),
-                          children: [
-                            TileLayer(
-                              urlTemplate:
-                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'com.example.synthese',
-                            ),
-                            PolylineLayer(polylines: mapPolylines),
-                            MarkerLayer(markers: mapMarkers),
-                          ],
+                          markers: mapMarkers,
+                          polylines: mapPolylines,
+                          myLocationButtonEnabled: false,
+                          mapToolbarEnabled: false,
+                          compassEnabled: true,
+                          onMapCreated: _onWorkoutMapCreated,
+                          onCameraMoveStarted: _onWorkoutCameraMoveStarted,
+                          onCameraMove: (position) {
+                            _mapCameraZoom = position.zoom;
+                          },
                         ),
                 ),
                 Positioned(
@@ -1693,6 +1766,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                 right: -6,
                                 child: IconButton(
                                   onPressed: () {
+                                    _forgetWorkoutMapController();
                                     setState(() {
                                       _showMetricsFullscreen = true;
                                     });
@@ -2091,6 +2165,9 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
     final bgColor = isDark ? Colors.black : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final cardColor = isDark ? const Color(0xFF1F1F1F) : Colors.white;
+    // Match finance page search field in light mode (finance.dart cardColor).
+    final searchBarFillColor =
+        isDark ? cardColor : const Color(0xFFE5E5E7);
     final subTextColor = isDark ? Colors.white54 : Colors.black54;
     final safePadding = MediaQuery.of(context).padding;
 
@@ -2118,7 +2195,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
               0,
             ),
             child: _buildSearchBar(
-              cardColor: cardColor,
+              cardColor: searchBarFillColor,
               textColor: textColor,
               subTextColor: subTextColor,
             ),
@@ -2323,51 +2400,56 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                             borderRadius: BorderRadius.circular(14),
                             child: SizedBox(
                               height: 220,
-                              child: FlutterMap(
-                                options: MapOptions(
-                                  initialCenter: routePoints.first,
-                                  initialZoom: 14,
+                              child: GoogleMap(
+                                initialCameraPosition: CameraPosition(
+                                  target: routePoints.first,
+                                  zoom: 14,
                                 ),
-                                children: [
-                                  TileLayer(
-                                    urlTemplate:
-                                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                    userAgentPackageName: 'com.example.synthese',
+                                markers: {
+                                  Marker(
+                                    markerId: const MarkerId('history_start'),
+                                    position: routePoints.first,
+                                    icon: BitmapDescriptor.defaultMarkerWithHue(
+                                      BitmapDescriptor.hueGreen,
+                                    ),
+                                    anchor: const Offset(0.5, 1),
                                   ),
-                                  PolylineLayer(
-                                    polylines: [
-                                      Polyline(
-                                        points: routePoints,
-                                        strokeWidth: 4,
-                                        color: Colors.blueAccent,
-                                      ),
-                                    ],
+                                  Marker(
+                                    markerId: const MarkerId('history_end'),
+                                    position: routePoints.last,
+                                    icon: BitmapDescriptor.defaultMarkerWithHue(
+                                      BitmapDescriptor.hueRed,
+                                    ),
+                                    anchor: const Offset(0.5, 1),
                                   ),
-                                  MarkerLayer(
-                                    markers: [
-                                      Marker(
-                                        point: routePoints.first,
-                                        width: 42,
-                                        height: 42,
-                                        child: const Icon(
-                                          Icons.play_circle_fill_rounded,
-                                          color: Colors.green,
-                                          size: 30,
+                                },
+                                polylines: {
+                                  Polyline(
+                                    polylineId: const PolylineId('history_route'),
+                                    points: routePoints,
+                                    width: 4,
+                                    color: Colors.blueAccent,
+                                  ),
+                                },
+                                myLocationButtonEnabled: false,
+                                mapToolbarEnabled: false,
+                                zoomControlsEnabled: false,
+                                onMapCreated: (controller) {
+                                  WidgetsBinding.instance.addPostFrameCallback((
+                                    _,
+                                  ) async {
+                                    try {
+                                      await controller.animateCamera(
+                                        CameraUpdate.newLatLngBounds(
+                                          _boundsForRoutePoints(routePoints),
+                                          36,
                                         ),
-                                      ),
-                                      Marker(
-                                        point: routePoints.last,
-                                        width: 42,
-                                        height: 42,
-                                        child: const Icon(
-                                          Icons.flag_circle_rounded,
-                                          color: Colors.redAccent,
-                                          size: 30,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                      );
+                                    } catch (_) {
+                                      // Ignore invalid bounds (e.g. degenerate route).
+                                    }
+                                  });
+                                },
                               ),
                             ),
                           ),
