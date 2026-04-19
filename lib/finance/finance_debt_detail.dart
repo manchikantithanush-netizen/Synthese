@@ -9,6 +9,7 @@ import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/services/finance_service.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 /// Model for debt payment history
 class DebtPayment {
@@ -727,7 +728,9 @@ class _DebtDetailModalState extends State<DebtDetailModal>
             _buildHeader(isDark, textColor, category),
 
             if (_isLoading)
-              const Expanded(child: Center(child: CupertinoActivityIndicator()))
+              const Expanded(
+                child: Center(child: BouncingDotsLoader()),
+              )
             else ...[
               // Content
               Expanded(

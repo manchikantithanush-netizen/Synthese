@@ -13,6 +13,7 @@ import 'package:synthese/finance/finance_debt_detail.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class DebtsListScreen extends StatefulWidget {
   const DebtsListScreen({super.key});
@@ -316,7 +317,7 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
             child: const Center(
               child: Padding(
                 padding: EdgeInsets.all(40),
-                child: CircularProgressIndicator(color: Color(0xFFEC548A)),
+                child: BouncingDotsLoader(color: Color(0xFFEC548A)),
               ),
             ),
           );

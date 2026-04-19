@@ -11,6 +11,7 @@ import 'package:synthese/finance/services/finance_service.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class AddTransactionModal extends StatefulWidget {
   const AddTransactionModal({super.key});
@@ -370,7 +371,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
             Expanded(
               child: _isLoading
                   ? Center(
-                      child: CircularProgressIndicator(color: _activeColor),
+                      child: BouncingDotsLoader(color: _activeColor),
                     )
                   : SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),

@@ -10,6 +10,7 @@ import 'package:synthese/finance/services/finance_service.dart';
 import 'package:synthese/finance/finance_add_transaction.dart';
 import 'package:synthese/finance/finance_transfer.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/onboarding/onboarding_finance.dart';
 import 'package:synthese/finance/finance_insights.dart';
 import 'package:synthese/finance/finance_debts.dart';
@@ -419,7 +420,7 @@ class _FinancePageState extends State<FinancePage> {
     if (_financeSetupCompleted == null) {
       return Container(
         color: bgColor,
-        child: const Center(child: CircularProgressIndicator()),
+        child: const Center(child: BouncingDotsLoader()),
       );
     }
 
@@ -865,7 +866,7 @@ class _FinancePageState extends State<FinancePage> {
               return const Center(
                 child: Padding(
                   padding: EdgeInsets.all(40),
-                  child: CircularProgressIndicator(color: Color(0xFFEC548A)),
+                  child: BouncingDotsLoader(color: Color(0xFFEC548A)),
                 ),
               );
             }

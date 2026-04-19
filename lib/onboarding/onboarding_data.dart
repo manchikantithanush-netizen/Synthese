@@ -8,6 +8,7 @@ import 'dart:async';
 import 'package:synthese/ui/dashboard.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'onboarding_personal.dart';
 import 'onboarding_physical.dart';
 import 'onboarding_athlete.dart';
@@ -339,7 +340,7 @@ class _OnboardingDataState extends State<OnboardingData> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        body: Center(child: BouncingDotsLoader()),
       );
     }
 

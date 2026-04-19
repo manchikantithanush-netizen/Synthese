@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class DailyLoggingScreen extends StatefulWidget {
   final DateTime? selectedDate;
@@ -668,11 +669,10 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                                     ),
                                     child: Center(
                                       child: SizedBox(
-                                        height: 18,
-                                        width: 18,
-                                        child: CircularProgressIndicator(
+                                        height: 22,
+                                        width: 44,
+                                        child: BouncingDotsLoader.compact(
                                           color: pinkColor,
-                                          strokeWidth: 2,
                                         ),
                                       ),
                                     ),

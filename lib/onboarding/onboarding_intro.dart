@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 // 1. IMPORT DASHBOARD INSTEAD OF MAIN
 import 'package:synthese/ui/dashboard.dart';
 import 'onboarding_data.dart';
@@ -76,7 +77,7 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
 
     if (_isLoading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        body: Center(child: BouncingDotsLoader()),
       );
     }
 

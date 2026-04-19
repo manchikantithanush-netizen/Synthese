@@ -14,6 +14,7 @@ import 'package:synthese/mindfulness/questionnaire_results_screen.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class MindfulnessPage extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -230,7 +231,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(
-          child: CircularProgressIndicator(color: Color(0xFF33BEBE)),
+          child: BouncingDotsLoader(color: Color(0xFF33BEBE)),
         ),
       );
 

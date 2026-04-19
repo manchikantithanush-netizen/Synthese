@@ -9,6 +9,7 @@ import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/services/finance_service.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class TransferModal extends StatefulWidget {
   const TransferModal({super.key});
@@ -304,7 +305,7 @@ class _TransferModalState extends State<TransferModal> {
             Expanded(
               child: _isLoading
                   ? Center(
-                      child: CircularProgressIndicator(color: transferColor),
+                      child: BouncingDotsLoader(color: transferColor),
                     )
                   : SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 import 'login_page.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class VerificationPage extends StatefulWidget {
   const VerificationPage({super.key});
@@ -208,11 +209,10 @@ class _VerificationPageState extends State<VerificationPage>
               mainAxisAlignment: MainAxisAlignment.center,
               children:[
                 SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(
-                    color: textColor.withOpacity(0.54), // DYNAMIC
-                    strokeWidth: 2,
+                  width: 44,
+                  height: 22,
+                  child: BouncingDotsLoader.compact(
+                    color: textColor.withOpacity(0.54),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -231,9 +231,8 @@ class _VerificationPageState extends State<VerificationPage>
           const SizedBox(height: 48),
 
           // --- PREMIUM RESEND BUTTON (No Ripple) ---
-          _isResending 
-              // DYNAMIC: default circular progress adapts to theme automatically
-              ? const Center(child: CircularProgressIndicator()) 
+          _isResending
+              ? const Center(child: BouncingDotsLoader())
               : _PremiumButton(
                   text: 'Resend Email',
                   isSecondary: true,

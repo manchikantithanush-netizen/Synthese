@@ -6,6 +6,7 @@ import 'login_page.dart';
 import 'verification_page.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -235,7 +236,7 @@ class _SignupPageState extends State<SignupPage> {
                     const SizedBox(height: 32),
 
                     _isLoading
-                        ? const Center(child: CircularProgressIndicator())
+                        ? const Center(child: BouncingDotsLoader())
                         : PremiumButton(
                             text: 'Create Account',
                             onPressed: signUp,

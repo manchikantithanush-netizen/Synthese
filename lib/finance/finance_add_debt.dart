@@ -11,6 +11,7 @@ import 'package:synthese/finance/services/finance_service.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class AddDebtModal extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -410,7 +411,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
                       width: double.infinity,
                       height: double.infinity,
                       child: Center(
-                        child: CircularProgressIndicator(color: _activeColor),
+                        child: BouncingDotsLoader(color: _activeColor),
                       ),
                     )
                   : SingleChildScrollView(

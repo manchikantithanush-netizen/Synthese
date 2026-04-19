@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+
 class UniversalButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
@@ -48,12 +50,9 @@ class UniversalButton extends StatelessWidget {
         ),
         child: isLoading
             ? SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: foregroundColor,
-                ),
+                height: 22,
+                width: 44,
+                child: BouncingDotsLoader.compact(color: foregroundColor),
               )
             : Text(
                 text,

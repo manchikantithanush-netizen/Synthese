@@ -9,6 +9,7 @@ import 'signup_page.dart';
 import 'package:synthese/onboarding/onboarding_intro.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -314,7 +315,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 32),
 
                     _isLoading
-                        ? const Center(child: CircularProgressIndicator())
+                        ? const Center(child: BouncingDotsLoader())
                         : Column(
                             children: [
                               PremiumButton(

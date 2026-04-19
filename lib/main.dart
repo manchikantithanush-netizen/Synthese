@@ -9,6 +9,7 @@ import 'package:synthese/ui/start_page.dart';
 import 'package:synthese/onboarding/onboarding_intro.dart';
 import 'package:synthese/theme/app_theme.dart';
 import 'package:synthese/ui/dashboard.dart'; // <-- IMPORT YOUR NEW DASHBOARD FILE
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,9 +82,9 @@ class LoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
-        child: CircularProgressIndicator(strokeWidth: 2)
+        child: BouncingDotsLoader(),
       ),
     );
   }

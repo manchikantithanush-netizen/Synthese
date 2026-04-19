@@ -14,6 +14,7 @@ import 'history_cycles.dart';
 import 'cycle_energy.dart';
 import 'cyclecalendar.dart';
 import 'help_cycles.dart'; // <--- ADD THIS IMPORT
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class CyclesPage extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -122,7 +123,7 @@ class _CyclesPageState extends State<CyclesPage>
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(
-          child: CircularProgressIndicator(color: Color(0xFFEC548A)),
+          child: BouncingDotsLoader(color: Color(0xFFEC548A)),
         ),
       );
 
@@ -189,7 +190,7 @@ class _CyclesPageState extends State<CyclesPage>
           return Scaffold(
             backgroundColor: bgColor,
             body: const Center(
-              child: CircularProgressIndicator(color: Color(0xFFEC548A)),
+              child: BouncingDotsLoader(color: Color(0xFFEC548A)),
             ),
           );
         }
@@ -857,12 +858,9 @@ class PremiumButton extends StatelessWidget {
                 ),
                 child: const Center(
                   child: SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      color: buttonColor,
-                      strokeWidth: 2,
-                    ),
+                    height: 22,
+                    width: 44,
+                    child: BouncingDotsLoader.compact(color: buttonColor),
                   ),
                 ),
               )

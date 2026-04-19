@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/finance_charts.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 /// Builds the Insights section combining analytics widgets
 Widget buildInsightsSection({
@@ -1068,7 +1069,7 @@ Widget buildNetWorthTracker({
             borderRadius: BorderRadius.circular(20),
           ),
           child: const Center(
-            child: CircularProgressIndicator(color: Color(0xFFEC548A)),
+            child: BouncingDotsLoader(color: Color(0xFFEC548A)),
           ),
         );
       }

@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
 import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class HistoryCyclesModal extends StatefulWidget {
   const HistoryCyclesModal({super.key});
@@ -107,9 +108,7 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                                 ConnectionState.waiting &&
                             !snapshot.hasData) {
                           return const Center(
-                            child: CircularProgressIndicator(
-                              color: Color(0xFFEC548A),
-                            ),
+                            child: BouncingDotsLoader(color: Color(0xFFEC548A)),
                           );
                         }
 

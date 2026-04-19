@@ -14,6 +14,7 @@ import 'diet_onboarding.dart';
 import 'water_tracker_widget.dart';
 import '../ui/components/universalbutton.dart';
 import '../ui/components/universalresetbutton.dart';
+import '../ui/components/bouncing_dots_loader.dart';
 
 class DietPage extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -909,7 +910,9 @@ class _DietPageState extends State<DietPage> {
 
     // Show loading while checking
     if (_dietSetupCompleted == null) {
-      return const Scaffold(body: Center(child: CupertinoActivityIndicator()));
+      return const Scaffold(
+        body: Center(child: BouncingDotsLoader()),
+      );
     }
 
     final mediaQuery = MediaQuery.of(context);
@@ -1250,7 +1253,7 @@ class _DietPageState extends State<DietPage> {
                         Center(
                           child: Column(
                             children: [
-                              const CupertinoActivityIndicator(),
+                              const BouncingDotsLoader(),
                               const SizedBox(height: 12),
                               Text(
                                 "Analyzing your food...",
@@ -1472,7 +1475,7 @@ class _DietPageState extends State<DietPage> {
                         Center(
                           child: Column(
                             children: [
-                              const CupertinoActivityIndicator(),
+                              const BouncingDotsLoader(),
                               const SizedBox(height: 12),
                               Text(
                                 _lastTypedFood != null

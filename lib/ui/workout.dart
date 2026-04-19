@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
@@ -2134,7 +2135,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: BouncingDotsLoader(),
                   );
                 }
 
