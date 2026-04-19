@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/services/home_widget_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -398,6 +399,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   void _notifyMetricsChangedIfNeeded() {
     final calories = _estimatedCalories;
     final activeMinutes = _activeMinutes;
+    _syncWorkoutWidget();
     if (_lastReportedCalories == calories &&
         _lastReportedActiveMinutes == activeMinutes) {
       return;
@@ -405,6 +407,40 @@ class _WorkoutPageState extends State<WorkoutPage> {
     _lastReportedCalories = calories;
     _lastReportedActiveMinutes = activeMinutes;
     widget.onMetricsChanged?.call(calories, activeMinutes);
+  }
+
+  List<Map<String, double>> _sampleRoutePointsForWidget() {
+    if (_routePoints.isEmpty) return const <Map<String, double>>[];
+    const int maxPoints = 48;
+    if (_routePoints.length <= maxPoints) {
+      return _routePoints
+          .map((p) => <String, double>{'lat': p.latitude, 'lng': p.longitude})
+          .toList();
+    }
+
+    final sampled = <Map<String, double>>[];
+    final step = (_routePoints.length - 1) / (maxPoints - 1);
+    for (var i = 0; i < maxPoints; i++) {
+      final idx = (i * step).round().clamp(0, _routePoints.length - 1);
+      final point = _routePoints[idx];
+      sampled.add(<String, double>{'lat': point.latitude, 'lng': point.longitude});
+    }
+    return sampled;
+  }
+
+  void _syncWorkoutWidget() {
+    final mode = _selectedMode == null ? 'Workout' : _modeLabel(_selectedMode!);
+    unawaited(
+      HomeWidgetService.updateWorkoutSummary(
+        mode: mode,
+        distance: formatWorkoutDistance(_selectedMode, _totalDistanceMeters),
+        duration: _formatDuration(_elapsed),
+        calories: _estimatedCalories,
+        paceLabel: _paceOrSpeedLabel,
+        paceValue: _paceOrSpeedValueText,
+        routePoints: _sampleRoutePointsForWidget(),
+      ),
+    );
   }
 
   Future<Position?> _fetchCurrentPosition() async {
@@ -1013,6 +1049,20 @@ class _WorkoutPageState extends State<WorkoutPage> {
     required List<LatLng> routePoints,
   }) async {
     try {
+      unawaited(
+        HomeWidgetService.updateWorkoutSummary(
+          mode: _modeLabel(mode),
+          distance: formatWorkoutDistance(mode, distanceMeters),
+          duration: _formatDuration(Duration(minutes: activeMinutes)),
+          calories: calories,
+          paceLabel: _paceOrSpeedLabel,
+          paceValue: _paceOrSpeedValueText,
+          routePoints: routePoints
+              .map((p) => <String, double>{'lat': p.latitude, 'lng': p.longitude})
+              .toList(),
+        ),
+      );
+
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) {
         return;

@@ -20,6 +20,7 @@ import 'package:synthese/ui/more.dart';
 import 'package:synthese/ui/components/universalbottomnavbar.dart';
 import 'package:synthese/services/health_connect_service.dart';
 import 'package:synthese/services/first_launch_permissions_service.dart';
+import 'package:synthese/services/home_widget_service.dart';
 import 'package:health/health.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -221,6 +222,7 @@ class _DashboardPageState extends State<DashboardPage>
             _lastWorkoutMinutesReported;
         _updateScore();
       });
+      _syncDashboardWidgets();
     } catch (e) {
       debugPrint('Error loading persisted dashboard metrics: $e');
     }
@@ -231,6 +233,17 @@ class _DashboardPageState extends State<DashboardPage>
     _metricsPersistDebounce = Timer(const Duration(milliseconds: 600), () {
       unawaited(_persistDashboardMetricsNow());
     });
+  }
+
+  void _syncDashboardWidgets() {
+    unawaited(
+      HomeWidgetService.updateDashboardMetrics(
+        steps: _steps,
+        heartRate: _heartRate,
+        activeCalories: _activeCalories,
+        exerciseMinutes: _exerciseMinutes,
+      ),
+    );
   }
 
   Future<void> _persistDashboardMetricsNow() async {
@@ -396,6 +409,7 @@ class _DashboardPageState extends State<DashboardPage>
       );
       _updateScore();
     });
+    _syncDashboardWidgets();
     _schedulePersistDashboardMetrics();
   }
 
@@ -683,6 +697,14 @@ class _DashboardPageState extends State<DashboardPage>
 
       _updateScore();
     });
+    unawaited(
+      HomeWidgetService.updateDashboardMetrics(
+        steps: _steps,
+        heartRate: _heartRate,
+        activeCalories: _activeCalories,
+        exerciseMinutes: _exerciseMinutes,
+      ),
+    );
     _schedulePersistDashboardMetrics();
   }
 
@@ -770,6 +792,7 @@ class _DashboardPageState extends State<DashboardPage>
       _hasUploadedOnce = true;
       _updateScore();
     });
+    _syncDashboardWidgets();
     _schedulePersistDashboardMetrics();
   }
 
@@ -778,6 +801,7 @@ class _DashboardPageState extends State<DashboardPage>
       _heartRate = (_heartRate + delta).clamp(0, 250).toInt();
       _hasUploadedOnce = true;
     });
+    _syncDashboardWidgets();
     _schedulePersistDashboardMetrics();
   }
 
@@ -787,6 +811,7 @@ class _DashboardPageState extends State<DashboardPage>
       _hasUploadedOnce = true;
       _updateScore();
     });
+    _syncDashboardWidgets();
     _schedulePersistDashboardMetrics();
   }
 
@@ -796,6 +821,7 @@ class _DashboardPageState extends State<DashboardPage>
       _hasUploadedOnce = true;
       _updateScore();
     });
+    _syncDashboardWidgets();
     _schedulePersistDashboardMetrics();
   }
 
@@ -823,6 +849,7 @@ class _DashboardPageState extends State<DashboardPage>
       _lastWorkoutMinutesReported = activeMinutes;
       _updateScore();
     });
+    _syncDashboardWidgets();
     _schedulePersistDashboardMetrics();
   }
 
@@ -831,6 +858,7 @@ class _DashboardPageState extends State<DashboardPage>
       _lastWorkoutCaloriesReported = 0;
       _lastWorkoutMinutesReported = 0;
     });
+    _syncDashboardWidgets();
     _schedulePersistDashboardMetrics();
   }
 
