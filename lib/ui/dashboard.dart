@@ -67,6 +67,7 @@ class _DashboardPageState extends State<DashboardPage>
   bool _hasAttemptedHealthConnect = false;
   DateTime? _lastHealthConnectRefreshAt;
   Timer? _metricsPersistDebounce;
+  bool _isWorkoutModeOpen = false;
 
   // Previous values (for comparisons)
   int? _prevActiveCalories;
@@ -94,6 +95,12 @@ class _DashboardPageState extends State<DashboardPage>
     _workoutPage = WorkoutPage(
       onMetricsChanged: _handleWorkoutMetricsChanged,
       onTrackingBaselineCleared: _handleWorkoutTrackingBaselineCleared,
+      onWorkoutModeChanged: (isOpen) {
+        if (!mounted) return;
+        setState(() {
+          _isWorkoutModeOpen = isOpen;
+        });
+      },
     );
     _updateScore();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -591,6 +598,7 @@ class _DashboardPageState extends State<DashboardPage>
     return "${mins}m";
   }
 
+
   // --- FILE PARSER ---
   Future<void> _pickTextFile() async {
     HapticFeedback.lightImpact();
@@ -749,6 +757,7 @@ class _DashboardPageState extends State<DashboardPage>
     } else if (!isWorkout && wasWorkout) {
       _workoutTabEnterController.stop();
       _workoutTabEnterController.reset();
+      _isWorkoutModeOpen = false;
     }
   }
 
@@ -1452,7 +1461,7 @@ class _DashboardPageState extends State<DashboardPage>
         extendBody: true,
 
         bottomNavigationBar: UniversalBottomNavBar(
-          hidden: _isModalOpen,
+          hidden: _isModalOpen || (_tabIndex == 2 && _isWorkoutModeOpen),
           currentIndex: _getBottomNavIndex(),
           onTap: (index) {
             HapticFeedback.selectionClick();

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -8,6 +9,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/services/home_widget_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -89,6 +91,7 @@ class WorkoutPage extends StatefulWidget {
     super.key,
     this.onMetricsChanged,
     this.onTrackingBaselineCleared,
+    this.onWorkoutModeChanged,
   });
 
   final void Function(int calories, int activeMinutes)? onMetricsChanged;
@@ -96,6 +99,7 @@ class WorkoutPage extends StatefulWidget {
   /// Called after the user clears the route/session so the dashboard can reset
   /// its workout delta baseline without changing today's cumulative calories.
   final VoidCallback? onTrackingBaselineCleared;
+  final ValueChanged<bool>? onWorkoutModeChanged;
 
   @override
   State<WorkoutPage> createState() => _WorkoutPageState();
@@ -139,6 +143,15 @@ class _WorkoutPageState extends State<WorkoutPage> {
   int _lastReportedCalories = -1;
   int _lastReportedActiveMinutes = -1;
   DateTime? _sessionStartedAt;
+  bool _isWeatherLoading = false;
+  String? _weatherError;
+  String? _weatherCondition;
+  String? _weatherLocationLabel;
+  double? _weatherTempC;
+  double? _weatherFeelsLikeC;
+  int? _weatherHumidity;
+  double? _weatherWindKph;
+  static const String _weatherApiKey = 'bc20032c5de347e092772223262004';
 
   final List<LatLng> _routePoints = <LatLng>[];
   LatLng? _currentPosition;
@@ -393,6 +406,55 @@ class _WorkoutPageState extends State<WorkoutPage> {
       });
     } catch (error) {
       debugPrint('Failed to load user weight: $error');
+    }
+  }
+
+  Future<void> _loadWorkoutWeather() async {
+    final point = _currentPosition;
+    if (point == null || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _isWeatherLoading = true;
+      _weatherError = null;
+    });
+
+    try {
+      final uri = Uri.parse(
+        'https://api.weatherapi.com/v1/current.json?key=$_weatherApiKey&q=${point.latitude},${point.longitude}&aqi=no',
+      );
+      final response = await http.get(uri);
+      if (response.statusCode != 200) {
+        throw Exception('Weather API returned ${response.statusCode}');
+      }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final location = data['location'] as Map<String, dynamic>?;
+      final current = data['current'] as Map<String, dynamic>?;
+      final condition = current?['condition'] as Map<String, dynamic>?;
+
+      if (!mounted) return;
+      setState(() {
+        _weatherCondition = condition?['text']?.toString();
+        _weatherLocationLabel = [
+          location?['name']?.toString(),
+          location?['region']?.toString(),
+          location?['country']?.toString(),
+        ].where((e) => e != null && e.trim().isNotEmpty).join(', ');
+        _weatherTempC = (current?['temp_c'] as num?)?.toDouble();
+        _weatherFeelsLikeC = (current?['feelslike_c'] as num?)?.toDouble();
+        _weatherHumidity = (current?['humidity'] as num?)?.toInt();
+        _weatherWindKph = (current?['wind_kph'] as num?)?.toDouble();
+        _isWeatherLoading = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _isWeatherLoading = false;
+        _weatherError = 'Unable to load weather';
+      });
+      debugPrint('Workout weather load failed: $error');
     }
   }
 
@@ -1276,9 +1338,11 @@ class _WorkoutPageState extends State<WorkoutPage> {
       _selectedMode = mode;
       _showMetricsFullscreen = false;
     });
+    widget.onWorkoutModeChanged?.call(true);
     await _primeLiveLocation(
       loadingMessage: 'Getting your live location for ${_modeLabel(mode)}...',
     );
+    unawaited(_loadWorkoutWeather());
   }
 
   void _backToModeSelection() {
@@ -1290,6 +1354,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       _selectedMode = null;
       _showMetricsFullscreen = false;
     });
+    widget.onWorkoutModeChanged?.call(false);
   }
 
   @override
@@ -1480,99 +1545,241 @@ class _WorkoutPageState extends State<WorkoutPage> {
                             top: safePadding.top + 80,
                             left: isNarrowLayout ? 20 : 28,
                             right: isNarrowLayout ? 20 : 28,
-                            bottom: safePadding.bottom + 180,
+                            bottom: safePadding.bottom + 140,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(
-                                _modeLabel(_selectedMode!),
-                                style: TextStyle(
-                                  color: textColor.withValues(alpha: 0.8),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: 'Helvetica',
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              Text(
-                                displayedDistance,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: isNarrowLayout ? 46 : 56,
-                                  fontWeight: FontWeight.w800,
-                                  fontFamily: 'Helvetica',
-                                  height: 1.0,
-                                ),
-                              ),
-                              Text(
-                                'Distance',
-                                style: TextStyle(
-                                  color: textColor.withValues(alpha: 0.6),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: 'Helvetica',
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Text(
-                                displayedDuration,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: isNarrowLayout ? 40 : 48,
-                                  fontWeight: FontWeight.w800,
-                                  fontFamily: 'Helvetica',
-                                  height: 1.0,
-                                ),
-                              ),
-                              Text(
-                                'Duration',
-                                style: TextStyle(
-                                  color: textColor.withValues(alpha: 0.6),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: 'Helvetica',
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Text(
-                                _paceOrSpeedValueText,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: isNarrowLayout ? 40 : 48,
-                                  fontWeight: FontWeight.w800,
-                                  fontFamily: 'Helvetica',
-                                  height: 1.0,
-                                ),
-                              ),
-                              Text(
-                                _paceOrSpeedLabel,
-                                style: TextStyle(
-                                  color: textColor.withValues(alpha: 0.6),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: 'Helvetica',
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              Text(
-                                '$displayedCalories kcal',
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: isNarrowLayout ? 40 : 48,
-                                  fontWeight: FontWeight.w800,
-                                  fontFamily: 'Helvetica',
-                                  height: 1.0,
-                                ),
-                              ),
-                              Text(
-                                'Calories',
-                                style: TextStyle(
-                                  color: textColor.withValues(alpha: 0.6),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: 'Helvetica',
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _modeLabel(_selectedMode!),
+                                      style: TextStyle(
+                                        color: textColor.withValues(alpha: 0.8),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: 'Helvetica',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Text(
+                                      displayedDistance,
+                                      style: TextStyle(
+                                        color: textColor,
+                                        fontSize: isNarrowLayout ? 46 : 56,
+                                        fontWeight: FontWeight.w800,
+                                        fontFamily: 'Helvetica',
+                                        height: 1.0,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Distance',
+                                      style: TextStyle(
+                                        color: textColor.withValues(alpha: 0.6),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: 'Helvetica',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      displayedDuration,
+                                      style: TextStyle(
+                                        color: textColor,
+                                        fontSize: isNarrowLayout ? 40 : 48,
+                                        fontWeight: FontWeight.w800,
+                                        fontFamily: 'Helvetica',
+                                        height: 1.0,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Duration',
+                                      style: TextStyle(
+                                        color: textColor.withValues(alpha: 0.6),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: 'Helvetica',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      _paceOrSpeedValueText,
+                                      style: TextStyle(
+                                        color: textColor,
+                                        fontSize: isNarrowLayout ? 40 : 48,
+                                        fontWeight: FontWeight.w800,
+                                        fontFamily: 'Helvetica',
+                                        height: 1.0,
+                                      ),
+                                    ),
+                                    Text(
+                                      _paceOrSpeedLabel,
+                                      style: TextStyle(
+                                        color: textColor.withValues(alpha: 0.6),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: 'Helvetica',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      '$displayedCalories kcal',
+                                      style: TextStyle(
+                                        color: textColor,
+                                        fontSize: isNarrowLayout ? 40 : 48,
+                                        fontWeight: FontWeight.w800,
+                                        fontFamily: 'Helvetica',
+                                        height: 1.0,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Calories',
+                                      style: TextStyle(
+                                        color: textColor.withValues(alpha: 0.6),
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: 'Helvetica',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(14),
+                                      decoration: BoxDecoration(
+                                        color: isDark
+                                            ? Colors.white.withValues(alpha: 0.08)
+                                            : Colors.black.withValues(alpha: 0.05),
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: isDark
+                                              ? Colors.white.withValues(alpha: 0.12)
+                                              : Colors.black.withValues(alpha: 0.1),
+                                        ),
+                                      ),
+                                      child: _isWeatherLoading
+                                          ? Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: 18,
+                                                  height: 18,
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2.2,
+                                                    color: textColor.withValues(alpha: 0.75),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                Text(
+                                                  'Loading weather...',
+                                                  style: TextStyle(
+                                                    color: textColor.withValues(alpha: 0.75),
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                          : Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.cloud_outlined,
+                                                      color: textColor.withValues(
+                                                        alpha: 0.85,
+                                                      ),
+                                                      size: 17,
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Expanded(
+                                                      child: Text(
+                                                        _weatherError ??
+                                                            '${_weatherTempC?.toStringAsFixed(1) ?? '--'}°C • ${_weatherCondition ?? 'Unknown'}',
+                                                        maxLines: 1,
+                                                        overflow:
+                                                            TextOverflow.ellipsis,
+                                                        style: TextStyle(
+                                                          color:
+                                                              _weatherError != null
+                                                              ? (isDark
+                                                                    ? Colors
+                                                                          .orange
+                                                                          .shade200
+                                                                    : Colors
+                                                                          .red
+                                                                          .shade700)
+                                                              : textColor,
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    GestureDetector(
+                                                      onTap: _loadWorkoutWeather,
+                                                      child: Icon(
+                                                        Icons.refresh_rounded,
+                                                        size: 18,
+                                                        color: textColor.withValues(
+                                                          alpha: 0.75,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                if (_weatherError == null) ...[
+                                                  const SizedBox(height: 6),
+                                                  Text(
+                                                    _weatherLocationLabel ??
+                                                        'Location unavailable',
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      color: textColor.withValues(
+                                                        alpha: 0.72,
+                                                      ),
+                                                      fontSize: 12.5,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    'Lat ${_currentPosition?.latitude.toStringAsFixed(6) ?? '--'} • Lng ${_currentPosition?.longitude.toStringAsFixed(6) ?? '--'}',
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      color: textColor.withValues(
+                                                        alpha: 0.66,
+                                                      ),
+                                                      fontSize: 11.5,
+                                                      fontWeight: FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 3),
+                                                  Text(
+                                                    'Feels ${_weatherFeelsLikeC?.toStringAsFixed(1) ?? '--'}°C • Humidity ${_weatherHumidity ?? '--'}% • Wind ${_weatherWindKph?.toStringAsFixed(1) ?? '--'} kph',
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      color: textColor.withValues(
+                                                        alpha: 0.62,
+                                                      ),
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -1865,6 +2072,111 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                   fontFamily: 'Helvetica',
                                 ),
                               ),
+                            if (!_showMetricsFullscreen) ...[
+                              const SizedBox(height: 8),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.06)
+                                      : Colors.black.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: _isWeatherLoading
+                                    ? Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 14,
+                                            height: 14,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: textColor.withValues(alpha: 0.7),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Loading weather...',
+                                            style: TextStyle(
+                                              color: textColor.withValues(alpha: 0.7),
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.cloud_outlined,
+                                                size: 14,
+                                                color: textColor.withValues(alpha: 0.8),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Expanded(
+                                                child: Text(
+                                                  _weatherError ??
+                                                      '${_weatherTempC?.round() ?? '--'}°C • ${_weatherCondition ?? 'Unknown'}',
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    color: _weatherError != null
+                                                        ? (isDark
+                                                              ? Colors.orange.shade200
+                                                              : Colors.red.shade700)
+                                                        : textColor,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                              ),
+                                              GestureDetector(
+                                                onTap: _loadWorkoutWeather,
+                                                child: Icon(
+                                                  Icons.refresh_rounded,
+                                                  size: 15,
+                                                  color: textColor.withValues(
+                                                    alpha: 0.75,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          if (_weatherError == null) ...[
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              _weatherLocationLabel ?? 'Location unavailable',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                color: textColor.withValues(alpha: 0.72),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              'Feels ${_weatherFeelsLikeC?.round() ?? '--'}° • Hum ${_weatherHumidity ?? '--'}% • Wind ${_weatherWindKph?.round() ?? '--'} kph',
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                color: textColor.withValues(alpha: 0.6),
+                                                fontSize: 10.5,
+                                                fontWeight: FontWeight.w500,
+                                                height: 1.25,
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                              ),
+                            ],
                             if (_statusMessage != null) ...[
                               const SizedBox(height: 8),
                               Text(
