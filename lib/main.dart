@@ -14,7 +14,14 @@ import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+  
+  // Load .env only if it exists (dev only, not in production builds)
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint('Warning: .env file not found - using defaults');
+  }
+  
   try {
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
