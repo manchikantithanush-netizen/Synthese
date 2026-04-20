@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,6 +16,7 @@ import 'water_tracker_widget.dart';
 import '../ui/components/universalbutton.dart';
 import '../ui/components/universalresetbutton.dart';
 import '../ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/services/notification_rules_engine.dart';
 
 class DietPage extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -61,6 +63,7 @@ class _DietPageState extends State<DietPage> {
     _loadFrequentFoods();
     _loadTodayWaterIntake();
     _loadWaterHistory();
+    unawaited(NotificationRulesEngine.evaluateGlobal());
   }
 
   String _waterDayKey(DateTime date) {
@@ -184,6 +187,7 @@ class _DietPageState extends State<DietPage> {
 
       // Reload water history to update the graph
       await _loadWaterHistory();
+      await NotificationRulesEngine.evaluateGlobal();
     } catch (e) {
       debugPrint("Error saving water intake: $e");
     }
@@ -536,6 +540,7 @@ class _DietPageState extends State<DietPage> {
     });
 
     _loadFrequentFoods();
+    unawaited(NotificationRulesEngine.evaluateGlobal());
   }
 
   Future<void> _quickRelogFrequentFood(FrequentFoodItem item) async {
@@ -574,6 +579,7 @@ class _DietPageState extends State<DietPage> {
     }
 
     _loadFrequentFoods();
+    unawaited(NotificationRulesEngine.evaluateGlobal());
   }
 
   Future<bool> _showDeleteConfirmation(
@@ -634,6 +640,7 @@ class _DietPageState extends State<DietPage> {
       }
 
       _loadFrequentFoods();
+      unawaited(NotificationRulesEngine.evaluateGlobal());
     }
   }
 

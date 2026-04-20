@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:synthese/config/firebase_options.dart';
+import 'package:synthese/services/app_notifications_service.dart';
 
 import 'package:synthese/ui/start_page.dart';
 import 'package:synthese/onboarding/onboarding_intro.dart';
@@ -17,6 +18,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await AppNotificationsService.instance.init();
   runApp(const MyApp());
 }
 

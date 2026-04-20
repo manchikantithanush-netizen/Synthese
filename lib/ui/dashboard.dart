@@ -21,6 +21,7 @@ import 'package:synthese/ui/components/universalbottomnavbar.dart';
 import 'package:synthese/services/health_connect_service.dart';
 import 'package:synthese/services/first_launch_permissions_service.dart';
 import 'package:synthese/services/home_widget_service.dart';
+import 'package:synthese/services/notification_rules_engine.dart';
 import 'package:health/health.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -67,6 +68,7 @@ class _DashboardPageState extends State<DashboardPage>
   bool _hasAttemptedHealthConnect = false;
   DateTime? _lastHealthConnectRefreshAt;
   Timer? _metricsPersistDebounce;
+  Timer? _notificationRulesTimer;
   bool _isWorkoutModeOpen = false;
 
   // Previous values (for comparisons)
@@ -110,6 +112,10 @@ class _DashboardPageState extends State<DashboardPage>
     _fetchUserGender();
     _fetchMindfulnessOnboarding();
     unawaited(_firstLaunchPermissionsService.requestAllPermissionsIfFirstLaunch());
+    unawaited(NotificationRulesEngine.evaluateGlobal());
+    _notificationRulesTimer = Timer.periodic(const Duration(minutes: 45), (_) {
+      unawaited(NotificationRulesEngine.evaluateGlobal());
+    });
   }
 
   /// Loads saved daily totals first, then merges Health Connect so in-app
@@ -166,6 +172,7 @@ class _DashboardPageState extends State<DashboardPage>
   void dispose() {
     _workoutTabEnterController.dispose();
     _metricsPersistDebounce?.cancel();
+    _notificationRulesTimer?.cancel();
     unawaited(_persistDashboardMetricsNow());
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -175,6 +182,7 @@ class _DashboardPageState extends State<DashboardPage>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       unawaited(_refreshMetricsFromHealthConnect(force: true));
+      unawaited(NotificationRulesEngine.evaluateGlobal());
     } else if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {

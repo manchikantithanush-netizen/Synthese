@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/services/app_notifications_service.dart';
 import 'package:synthese/services/home_widget_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
@@ -152,6 +153,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
   int? _weatherHumidity;
   double? _weatherWindKph;
   static const String _weatherApiKey = 'bc20032c5de347e092772223262004';
+  int _lastDistanceMilestoneKm = 0;
+  int _lastDurationMilestoneMinutes = 0;
+  bool _goalReachedNotified = false;
 
   final List<LatLng> _routePoints = <LatLng>[];
   LatLng? _currentPosition;
@@ -448,6 +452,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         _weatherWindKph = (current?['wind_kph'] as num?)?.toDouble();
         _isWeatherLoading = false;
       });
+      await _maybeNotifyWeatherAdvisory();
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -455,6 +460,81 @@ class _WorkoutPageState extends State<WorkoutPage> {
         _weatherError = 'Unable to load weather';
       });
       debugPrint('Workout weather load failed: $error');
+    }
+  }
+
+  Future<void> _notifyWorkoutStarted() async {
+    final mode = _selectedMode ?? WorkoutMode.outdoorWalking;
+    await AppNotificationsService.instance.showWithCooldown(
+      uniqueKey: 'workout_started_${mode.name}',
+      title: 'Workout started',
+      body: '${_modeLabel(mode)} tracking is live. Keep your pace steady.',
+      cooldown: const Duration(minutes: 2),
+    );
+  }
+
+  Future<void> _maybeNotifyWeatherAdvisory() async {
+    if (_weatherError != null) return;
+    final temp = _weatherTempC;
+    final wind = _weatherWindKph;
+    final condition = (_weatherCondition ?? '').toLowerCase();
+    final severeCondition = condition.contains('rain') ||
+        condition.contains('storm') ||
+        condition.contains('thunder') ||
+        condition.contains('snow');
+    final hot = temp != null && temp >= 35;
+    final windy = wind != null && wind >= 30;
+    if (!severeCondition && !hot && !windy) return;
+
+    await AppNotificationsService.instance.showWithCooldown(
+      uniqueKey: 'workout_weather_advisory',
+      title: 'Workout weather advisory',
+      body: hot
+          ? 'High heat detected (${temp!.toStringAsFixed(1)}°C). Hydrate and ease intensity.'
+          : severeCondition
+          ? 'Current weather is ${_weatherCondition ?? 'unfavorable'}. Consider safer indoor training.'
+          : 'Strong wind detected (${wind!.toStringAsFixed(1)} kph). Adjust your route and effort.',
+      cooldown: const Duration(hours: 4),
+    );
+  }
+
+  Future<void> _checkWorkoutMilestoneNotifications() async {
+    if (!_isTracking || _isPaused) return;
+
+    final distanceKm = (_totalDistanceMeters / 1000).floor();
+    if (distanceKm > 0 && distanceKm > _lastDistanceMilestoneKm) {
+      _lastDistanceMilestoneKm = distanceKm;
+      await AppNotificationsService.instance.showWithCooldown(
+        uniqueKey: 'workout_distance_milestone_$distanceKm',
+        title: 'Distance milestone',
+        body: 'Great work! You just crossed ${distanceKm} km.',
+        cooldown: const Duration(minutes: 1),
+      );
+    }
+
+    final minutes = _activeMinutes;
+    final milestoneMinutes = (minutes ~/ 10) * 10;
+    if (milestoneMinutes >= 10 &&
+        milestoneMinutes > _lastDurationMilestoneMinutes) {
+      _lastDurationMilestoneMinutes = milestoneMinutes;
+      await AppNotificationsService.instance.showWithCooldown(
+        uniqueKey: 'workout_time_milestone_$milestoneMinutes',
+        title: 'Time milestone',
+        body: 'You have trained for $milestoneMinutes minutes.',
+        cooldown: const Duration(minutes: 1),
+      );
+    }
+
+    if (!_goalReachedNotified &&
+        (_estimatedCalories >= 300 || _activeMinutes >= 30)) {
+      _goalReachedNotified = true;
+      await AppNotificationsService.instance.showWithCooldown(
+        uniqueKey: 'workout_goal_reached',
+        title: 'Goal reached',
+        body:
+            'Workout goal complete: ${_estimatedCalories} kcal and ${_activeMinutes} min.',
+        cooldown: const Duration(minutes: 5),
+      );
     }
   }
 
@@ -871,12 +951,16 @@ class _WorkoutPageState extends State<WorkoutPage> {
         _statusMessage = 'Tracking started.';
         _sessionStartedAt = DateTime.now();
         _trackingStartAt = DateTime.now();
+        _lastDistanceMilestoneKm = 0;
+        _lastDurationMilestoneMinutes = 0;
+        _goalReachedNotified = false;
         if (_currentPosition != null) {
           _routePoints.add(_currentPosition!);
         }
       });
       _notifyMetricsChangedIfNeeded();
       unawaited(_updateTrackingNotification());
+      unawaited(_notifyWorkoutStarted());
 
       _durationTicker?.cancel();
       _durationTicker = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -886,6 +970,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         setState(() {});
         _notifyMetricsChangedIfNeeded();
         unawaited(_updateTrackingNotification());
+        unawaited(_checkWorkoutMilestoneNotifications());
       });
     } on MissingPluginException {
       if (!mounted) {
@@ -1265,6 +1350,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
     _followMapCameraToUser(nextPoint);
     _notifyMetricsChangedIfNeeded();
+    unawaited(_checkWorkoutMilestoneNotifications());
   }
 
   String _formatDuration(Duration duration) {

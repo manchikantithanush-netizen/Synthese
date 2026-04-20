@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +16,7 @@ import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/services/notification_rules_engine.dart';
 
 class MindfulnessPage extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -75,6 +77,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
   void initState() {
     super.initState();
     _checkTodaysReadiness();
+    unawaited(NotificationRulesEngine.evaluateGlobal());
   }
 
   Future<void> _checkTodaysReadiness() async {
@@ -111,12 +114,14 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
 
     if (result == true) {
       _checkTodaysReadiness();
+      unawaited(NotificationRulesEngine.evaluateGlobal());
     }
 
     if (mounted) {
       setState(() => _isModalOpen = false);
       widget.onModalStateChanged?.call(false);
     }
+    unawaited(NotificationRulesEngine.evaluateGlobal());
   }
 
   void _showMoodModal(BuildContext context) async {
