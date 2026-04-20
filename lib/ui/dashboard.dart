@@ -21,6 +21,7 @@ import 'package:synthese/ui/components/universalbottomnavbar.dart';
 import 'package:synthese/services/health_connect_service.dart';
 import 'package:synthese/services/first_launch_permissions_service.dart';
 import 'package:synthese/services/home_widget_service.dart';
+import 'package:synthese/services/data_aggregation_service.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
 import 'package:health/health.dart';
 
@@ -113,7 +114,7 @@ class _DashboardPageState extends State<DashboardPage>
     _fetchMindfulnessOnboarding();
     unawaited(_firstLaunchPermissionsService.requestAllPermissionsIfFirstLaunch());
     unawaited(NotificationRulesEngine.evaluateGlobal());
-    _notificationRulesTimer = Timer.periodic(const Duration(minutes: 45), (_) {
+    _notificationRulesTimer = Timer.periodic(const Duration(hours: 3), (_) {
       unawaited(NotificationRulesEngine.evaluateGlobal());
     });
   }
@@ -284,6 +285,12 @@ class _DashboardPageState extends State<DashboardPage>
             'updatedAt': FieldValue.serverTimestamp(),
             'dateKey': dayKey,
           }, SetOptions(merge: true));
+      await DataAggregationService.updateDashboardSnapshot(
+        uid: uid,
+        when: DateTime.now(),
+        steps: _steps,
+        activeCalories: _activeCalories,
+      );
     } catch (e) {
       debugPrint('Error persisting dashboard metrics: $e');
     }

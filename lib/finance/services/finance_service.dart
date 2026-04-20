@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:synthese/finance/models/finance_models.dart';
+import 'package:synthese/services/data_aggregation_service.dart';
 
 /// Service class for handling Finance feature Firebase operations
 class FinanceService {
@@ -131,6 +132,13 @@ class FinanceService {
     }
 
     await batch.commit();
+    if (transaction.type == 'expense') {
+      await DataAggregationService.updateFinanceMonthlyExpense(
+        uid: uid,
+        when: transaction.date,
+        amountDelta: transaction.amount,
+      );
+    }
   }
 
   /// Returns a real-time stream of transactions ordered by date descending
@@ -173,6 +181,13 @@ class FinanceService {
     batch.delete(transRef);
 
     await batch.commit();
+    if (transaction.type == 'expense') {
+      await DataAggregationService.updateFinanceMonthlyExpense(
+        uid: uid,
+        when: transaction.date,
+        amountDelta: -transaction.amount,
+      );
+    }
   }
 
   // ============================================================

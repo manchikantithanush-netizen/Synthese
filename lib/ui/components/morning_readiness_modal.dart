@@ -6,6 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/services/data_aggregation_service.dart';
+import 'package:synthese/services/notification_rules_engine.dart';
 
 class MorningReadinessModal extends StatefulWidget {
   const MorningReadinessModal({super.key});
@@ -132,6 +134,8 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
             'academicStress': _academicStress.round(),
             'timestamp': FieldValue.serverTimestamp(),
           });
+      await DataAggregationService.markReadinessLogged(uid: user.uid, when: now);
+      await NotificationRulesEngine.evaluateGlobal();
 
       if (mounted) {
         HapticFeedback.mediumImpact();

@@ -19,6 +19,11 @@ class NotificationRulesEngine {
     return '${date.year}-$month-$day';
   }
 
+  static String _monthKey(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    return '${date.year}-$month';
+  }
+
   static Future<void> evaluateGlobal() async {
     if (_running) return;
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -62,19 +67,11 @@ class NotificationRulesEngine {
     final dailyCalorieGoal =
         (userData['dailyCalorieGoal'] as num?)?.toInt() ?? 2000;
     final waterGoal = (userData['dailyWaterGoalGlasses'] as num?)?.toInt() ?? 8;
-
-    final foodSnap = await userRef
-        .collection('foodLogs')
-        .where(
-          'timestamp',
-          isGreaterThanOrEqualTo: Timestamp.fromDate(todayStart),
-        )
-        .get();
-    final todayCalories = foodSnap.docs.fold<int>(
-      0,
-      (sum, doc) => sum + ((doc.data()['calories'] as num?)?.toInt() ?? 0),
-    );
-    final hasMealToday = foodSnap.docs.isNotEmpty;
+    final dailyAggDoc = await userRef.collection('dailyAgg').doc(todayKey).get();
+    final dailyAgg = dailyAggDoc.data() ?? const <String, dynamic>{};
+    final todayCalories = (dailyAgg['caloriesLogged'] as num?)?.toInt() ?? 0;
+    final waterGlasses = (dailyAgg['waterGlasses'] as num?)?.toInt() ?? 0;
+    final hasMealToday = (dailyAgg['mealLogged'] as bool?) ?? false;
 
     if (!hasMealToday && now.hour >= 20) {
       await AppNotificationsService.instance.showOncePerDay(
@@ -85,8 +82,6 @@ class NotificationRulesEngine {
       );
     }
 
-    final waterDoc = await userRef.collection('waterDaily').doc(todayKey).get();
-    final waterGlasses = (waterDoc.data()?['glasses'] as num?)?.toInt() ?? 0;
     if (waterGlasses < waterGoal && now.hour >= 12 && now.hour <= 21) {
       await AppNotificationsService.instance.showWithCooldown(
         uniqueKey: 'diet_water_behind',
@@ -111,25 +106,19 @@ class NotificationRulesEngine {
       );
     }
 
+    final streakStart = _dateKey(now.subtract(const Duration(days: 13)));
+    final streakAggSnap = await userRef
+        .collection('dailyAgg')
+        .where('dateKey', isGreaterThanOrEqualTo: streakStart)
+        .orderBy('dateKey', descending: true)
+        .get();
+    final byDate = <String, Map<String, dynamic>>{
+      for (final d in streakAggSnap.docs) d.id: d.data(),
+    };
     var streak = 0;
     for (var i = 0; i < 14; i++) {
-      final day = now.subtract(Duration(days: i));
-      final dayStart = _dayStart(day);
-      final snap = await userRef
-          .collection('foodLogs')
-          .where(
-            'timestamp',
-            isGreaterThanOrEqualTo: Timestamp.fromDate(dayStart),
-          )
-          .where(
-            'timestamp',
-            isLessThan: Timestamp.fromDate(dayStart.add(const Duration(days: 1))),
-          )
-          .get();
-      final cal = snap.docs.fold<int>(
-        0,
-        (sum, doc) => sum + ((doc.data()['calories'] as num?)?.toInt() ?? 0),
-      );
+      final key = _dateKey(now.subtract(Duration(days: i)));
+      final cal = (byDate[key]?['caloriesLogged'] as num?)?.toInt() ?? 0;
       if (cal >= dailyCalorieGoal) {
         streak += 1;
       } else {
@@ -153,8 +142,11 @@ class NotificationRulesEngine {
     required DateTime now,
   }) async {
     final todayKey = _dateKey(now);
-    final moodDoc = await userRef.collection('mood_logs').doc(todayKey).get();
-    if (!moodDoc.exists && now.hour >= 19) {
+    final dailyAggDoc = await userRef.collection('dailyAgg').doc(todayKey).get();
+    final dailyAgg = dailyAggDoc.data() ?? const <String, dynamic>{};
+    final moodLogged = (dailyAgg['moodLogged'] as bool?) ?? false;
+    final readinessLogged = (dailyAgg['readinessLogged'] as bool?) ?? false;
+    if (!moodLogged && now.hour >= 19) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'mindfulness_mood_check_$todayKey',
         title: 'Mood check-in',
@@ -163,9 +155,7 @@ class NotificationRulesEngine {
       );
     }
 
-    final readinessDoc =
-        await userRef.collection('morning_readiness').doc(todayKey).get();
-    if (!readinessDoc.exists && now.hour >= 10 && now.hour <= 14) {
+    if (!readinessLogged && now.hour >= 10 && now.hour <= 14) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'mindfulness_readiness_$todayKey',
         title: 'Morning readiness',
@@ -175,7 +165,7 @@ class NotificationRulesEngine {
     }
 
     // Small evening breathing nudge if both entries are missing.
-    if (!moodDoc.exists && !readinessDoc.exists && now.hour >= 21) {
+    if (!moodLogged && !readinessLogged && now.hour >= 21) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'mindfulness_breathe_$todayKey',
         title: 'Take a short breathing break',
@@ -271,8 +261,15 @@ class NotificationRulesEngine {
       );
     }
 
-    final recentCycles = (userData['pastCycles'] as List<dynamic>? ?? const [])
-        .whereType<Map<String, dynamic>>()
+    final recentCyclesSnap = await userRef
+        .collection('cycles')
+        .orderBy('startDate', descending: true)
+        .limit(6)
+        .get();
+    final recentCycles = recentCyclesSnap.docs
+        .map((d) => d.data())
+        .toList()
+        .reversed
         .toList();
     if (recentCycles.length >= 3) {
       final last3 = recentCycles.sublist(recentCycles.length - 3);
@@ -424,6 +421,7 @@ class NotificationRulesEngine {
           isGreaterThanOrEqualTo: Timestamp.fromDate(todayStart),
         )
         .orderBy('date', descending: true)
+        .limit(80)
         .get();
 
     final largeExpenseThreshold =
@@ -436,11 +434,6 @@ class NotificationRulesEngine {
       final tx = txDoc.data();
       final type = (tx['type'] as String?) ?? 'expense';
       final amount = (tx['amount'] as num?)?.toDouble() ?? 0;
-      final date = (tx['date'] as Timestamp?)?.toDate() ?? now;
-      if (date.month == now.month && date.year == now.year && type == 'expense') {
-        monthExpense += amount;
-      }
-
       if (type == 'expense' && amount >= largeExpenseThreshold) {
         final key = 'finance_large_expense_${txDoc.id}';
         final already = await AppNotificationsService.instance.hasMarked(key);
@@ -453,6 +446,34 @@ class NotificationRulesEngine {
           await AppNotificationsService.instance.markOnce(uniqueKey: key);
         }
       }
+    }
+
+    final monthDoc = await userRef
+        .collection('financeMonthly')
+        .doc(_monthKey(now))
+        .get();
+    monthExpense = (monthDoc.data()?['expenseTotal'] as num?)?.toDouble() ?? 0.0;
+    if (!monthDoc.exists) {
+      final startOfMonth = DateTime(now.year, now.month, 1);
+      final fallbackMonthSnap = await userRef
+          .collection('finance_transactions')
+          .where(
+            'date',
+            isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth),
+          )
+          .where(
+            'date',
+            isLessThan: Timestamp.fromDate(
+              DateTime(now.year, now.month + 1, 1),
+            ),
+          )
+          .get();
+      monthExpense = fallbackMonthSnap.docs.fold<double>(0.0, (sum, txDoc) {
+        final tx = txDoc.data();
+        final type = (tx['type'] as String?) ?? 'expense';
+        if (type != 'expense') return sum;
+        return sum + ((tx['amount'] as num?)?.toDouble() ?? 0);
+      });
     }
 
     final daysInMonth = DateUtils.getDaysInMonth(now.year, now.month);
@@ -475,12 +496,14 @@ class NotificationRulesEngine {
     required DateTime now,
   }) async {
     final todayKey = _dateKey(now);
-    final doc = await userRef.collection('dashboardDaily').doc(todayKey).get();
-    final hasUploadedOnce = (doc.data()?['hasUploadedOnce'] as bool?) ?? false;
-    final steps = (doc.data()?['steps'] as num?)?.toInt() ?? 0;
-    final activeCalories = (doc.data()?['activeCalories'] as num?)?.toInt() ?? 0;
+    final aggDoc = await userRef.collection('dailyAgg').doc(todayKey).get();
+    final agg = aggDoc.data() ?? const <String, dynamic>{};
+    final dashboardUpdated = (agg['dashboardUpdated'] as bool?) ?? false;
+    final steps = (agg['dashboardSteps'] as num?)?.toInt() ?? 0;
+    final activeCalories = (agg['dashboardActiveCalories'] as num?)?.toInt() ?? 0;
 
-    if ((!hasUploadedOnce || (steps == 0 && activeCalories == 0)) && now.hour >= 19) {
+    if ((!dashboardUpdated || (steps == 0 && activeCalories == 0)) &&
+        now.hour >= 19) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'dashboard_daily_health_reminder_$todayKey',
         title: 'Daily health score reminder',

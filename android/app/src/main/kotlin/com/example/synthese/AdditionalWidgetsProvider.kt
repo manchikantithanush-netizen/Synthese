@@ -1,4 +1,4 @@
-package com.example.synthese
+package com.thanush.synthese
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider

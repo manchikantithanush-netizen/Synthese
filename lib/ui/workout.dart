@@ -152,7 +152,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   double? _weatherFeelsLikeC;
   int? _weatherHumidity;
   double? _weatherWindKph;
-  static const String _weatherApiKey = 'bc20032c5de347e092772223262004';
+  static const String _weatherApiKey = String.fromEnvironment('WEATHER_API_KEY', defaultValue: '');
   int _lastDistanceMilestoneKm = 0;
   int _lastDurationMilestoneMinutes = 0;
   bool _goalReachedNotified = false;

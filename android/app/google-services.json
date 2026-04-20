@@ -92,6 +92,50 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:118165710666:android:b06bc16f5224a6a17143b3",
+        "android_client_info": {
+          "package_name": "com.thanush.synthese"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "118165710666-hdmdj06hgh3976hv341egu04icram4vp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thanush.synthese",
+            "certificate_hash": "338c8f49acf5309cdd95d21efd8836d8ceb8719f"
+          }
+        },
+        {
+          "client_id": "118165710666-ciqq8gljh5o4ksqu9s8535vjdabpc42g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNd_feB7H21EPCqBAwcXKdBALcpO9xjGI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "118165710666-ciqq8gljh5o4ksqu9s8535vjdabpc42g.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "118165710666-lp7vmtpqgu3mlsi4u1bs5jqsnci41aku.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.synthese"
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

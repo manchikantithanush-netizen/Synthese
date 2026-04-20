@@ -15,9 +15,16 @@ import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+  } catch (e) {
+    // Firebase already initialized - ignore
+    debugPrint('Firebase initialization: $e');
+  }
   await AppNotificationsService.instance.init();
   runApp(const MyApp());
 }

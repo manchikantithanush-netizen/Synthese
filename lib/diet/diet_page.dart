@@ -16,6 +16,7 @@ import 'water_tracker_widget.dart';
 import '../ui/components/universalbutton.dart';
 import '../ui/components/universalresetbutton.dart';
 import '../ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/services/data_aggregation_service.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
 
 class DietPage extends StatefulWidget {
@@ -184,6 +185,11 @@ class _DietPageState extends State<DietPage> {
           _activeWaterDayKey = todayKey;
         });
       }
+      await DataAggregationService.setWaterGlasses(
+        uid: uid,
+        when: now,
+        glasses: glasses,
+      );
 
       // Reload water history to update the graph
       await _loadWaterHistory();
@@ -333,6 +339,11 @@ class _DietPageState extends State<DietPage> {
             'carbs': entry.carbs,
             'fats': entry.fats,
           });
+      await DataAggregationService.updateDietCalories(
+        uid: uid,
+        when: entry.timestamp,
+        deltaCalories: entry.calories,
+      );
       return docRef.id;
     } catch (e) {
       debugPrint('Error saving food log: $e');
@@ -637,6 +648,14 @@ class _DietPageState extends State<DietPage> {
             debugPrint('Error deleting food log from Firestore: $e');
           }
         }
+      }
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        await DataAggregationService.updateDietCalories(
+          uid: uid,
+          when: entry.timestamp,
+          deltaCalories: -entry.calories,
+        );
       }
 
       _loadFrequentFoods();

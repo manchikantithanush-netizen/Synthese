@@ -7,6 +7,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/services/data_aggregation_service.dart';
+import 'package:synthese/services/notification_rules_engine.dart';
 
 class MoodOption {
   final double value;
@@ -288,6 +290,8 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
             'sub_feelings': _selectedSubFeelings.toList(),
             'timestamp': FieldValue.serverTimestamp(),
           });
+      await DataAggregationService.markMoodLogged(uid: uid, when: today);
+      await NotificationRulesEngine.evaluateGlobal();
 
       if (mounted) {
         HapticFeedback.mediumImpact();
