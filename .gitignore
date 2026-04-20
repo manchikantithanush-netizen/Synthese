@@ -4,7 +4,6 @@
 .env.*.local
 
 # Firebase config files with API keys
-lib/config/firebase_options.dart
 ios/Runner/GoogleService-Info.plist
 android/app/google-services.json
 
@@ -53,3 +52,4 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+build.sh
