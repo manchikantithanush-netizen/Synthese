@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -318,7 +317,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
         ? const Color.fromARGB(255, 26, 26, 28)
         : const Color.fromARGB(255, 245, 245, 245);
 
-    final cardColor = isDark ? const Color(0xFF252528) : Colors.white;
+    final cardColor = isDark ? const Color(0xFF151515) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtextColor = isDark ? Colors.white54 : Colors.black54;
 
@@ -762,7 +761,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
         child: Row(
           children: [
             Icon(
-              CupertinoIcons.calendar,
+              Icons.calendar_today,
               color: _dueDate != null
                   ? _activeColor
                   : (isDark ? Colors.white38 : Colors.black38),
@@ -782,7 +781,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
               ),
             ),
             Icon(
-              CupertinoIcons.chevron_right,
+              Icons.chevron_right,
               color: isDark ? Colors.white38 : Colors.black38,
               size: 16,
             ),
@@ -809,7 +808,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
           child: Row(
             children: [
               Icon(
-                CupertinoIcons.repeat,
+                Icons.repeat,
                 color: _hasInstallment
                     ? _activeColor
                     : (isDark ? Colors.white38 : Colors.black38),

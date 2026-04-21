@@ -196,7 +196,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
     if (uid == null) return;
 
     final isLightMode = Theme.of(context).brightness == Brightness.light;
-    final dialogBg = isLightMode ? Colors.white : const Color(0xFF252528);
+    final dialogBg = isLightMode ? Colors.white : const Color(0xFF151515);
     final textColor = isLightMode ? Colors.black : Colors.white;
     final mutedText = isLightMode ? Colors.black54 : Colors.white70;
 
@@ -404,7 +404,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
 
   Widget _buildMoodCalendar(BuildContext context, String? uid) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF252528) : const Color.fromARGB(255, 245, 245, 245);
+    final cardBg = isDark ? const Color(0xFF151515) : const Color.fromARGB(255, 245, 245, 245);
     final textColor = isDark ? Colors.white : Colors.black;
     final now = DateTime.now();
     final isNarrow = MediaQuery.of(context).size.width < 380;
@@ -584,7 +584,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
 
   Widget _buildReadinessCard(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF252528) : const Color.fromARGB(255, 245, 245, 245);
+    final cardBg = isDark ? const Color(0xFF151515) : const Color.fromARGB(255, 245, 245, 245);
 
     return GestureDetector(
       onTap: () => _showReadinessModal(context),
@@ -690,7 +690,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
   Widget _buildMoodCard(BuildContext context, bool hasMoodLogged) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final baseCardBg = isDark
-        ? const Color(0xFF252528)
+        ? const Color(0xFF151515)
         : const Color.fromARGB(255, 245, 245, 245);
 
     Color cardBg = baseCardBg;
@@ -818,7 +818,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
 
   Widget _buildBreathingCard(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF252528) : const Color.fromARGB(255, 245, 245, 245);
+    final cardBg = isDark ? const Color(0xFF151515) : const Color.fromARGB(255, 245, 245, 245);
 
     return GestureDetector(
       onTap: () => _showBreathingModal(context),
@@ -887,7 +887,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
 
   Widget _buildAssessmentCard(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF252528) : const Color.fromARGB(255, 245, 245, 245);
+    final cardBg = isDark ? const Color(0xFF151515) : const Color.fromARGB(255, 245, 245, 245);
     final textColor = isDark ? Colors.white : Colors.black;
 
     return Container(
@@ -937,7 +937,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
 
   Widget _buildMoodInsightsGraph(BuildContext context, String? uid) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF252528) : const Color.fromARGB(255, 245, 245, 245);
+    final cardBg = isDark ? const Color(0xFF151515) : const Color.fromARGB(255, 245, 245, 245);
     final textColor = isDark ? Colors.white : Colors.black;
     final now = DateTime.now();
     const tealColor = Color(0xFF33BEBE);
@@ -1211,7 +1211,7 @@ class _MoodGraphPainter extends CustomPainter {
 
       // White/dark border
       final borderPaint = Paint()
-        ..color = isDark ? const Color(0xFF252528) : const Color.fromARGB(255, 245, 245, 245)
+        ..color = isDark ? const Color(0xFF151515) : const Color.fromARGB(255, 245, 245, 245)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2;
       canvas.drawCircle(Offset(x, y), 5, borderPaint);

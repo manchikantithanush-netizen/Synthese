@@ -74,7 +74,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     final mediaQuery = MediaQuery.of(context);
     final isCompact = mediaQuery.size.height < 760;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF252528) : const Color.fromARGB(255, 245, 245, 245);
+    final bgColor = isDark ? const Color(0xFF151515) : const Color.fromARGB(255, 245, 245, 245);
     final textColor = isDark ? Colors.white : Colors.black;
 
     return FractionallySizedBox(
@@ -154,7 +154,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     bool isCompact,
   ) {
     final question = questions[index];
-    final pillBgColor = isDark ? const Color(0xFF252528) : Colors.white;
+    final pillBgColor = isDark ? const Color(0xFF151515) : Colors.white;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: isCompact ? 20 : 24),

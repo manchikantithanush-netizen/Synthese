@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -410,7 +409,7 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(CupertinoIcons.doc_text, color: subTextColor, size: 40),
+          Icon(Icons.description_outlined, color: subTextColor, size: 40),
           const SizedBox(height: 16),
           Text(
             emptyMessage,
@@ -498,7 +497,7 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
         padding: const EdgeInsets.only(right: 20),
         color: const Color(0xFFFF3B30),
         child: const Icon(
-          CupertinoIcons.trash_fill,
+          Icons.delete,
           color: Colors.white,
           size: 22,
         ),
@@ -522,7 +521,7 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
           ),
           child: Center(
             child: Icon(
-              category?.icon ?? CupertinoIcons.question_circle,
+              category?.icon ?? Icons.help_outline,
               color: isPaidSection
                   ? (category?.color ?? Colors.grey).withOpacity(0.5)
                   : (category?.color ?? Colors.grey),
@@ -558,11 +557,11 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
         ),
         trailing: isPaidSection
             ? Icon(
-                CupertinoIcons.checkmark_circle_fill,
+                Icons.check_circle,
                 color: const Color(0xFF34C759).withOpacity(0.5),
                 size: 20,
               )
-            : Icon(CupertinoIcons.chevron_right, color: subTextColor, size: 18),
+            : Icon(Icons.chevron_right, color: subTextColor, size: 18),
       ),
     );
   }

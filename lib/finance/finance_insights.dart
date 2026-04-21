@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -752,8 +751,8 @@ Widget buildSpendingInsights({
                         if (totalLastMonth > 0) ...[
                           _buildInsightRow(
                             icon: isSpendingUp
-                                ? CupertinoIcons.arrow_up_right
-                                : CupertinoIcons.arrow_down_right,
+                                ? Icons.trending_up
+                                : Icons.trending_down,
                             iconColor: isSpendingUp
                                 ? const Color(0xFFFF3B30)
                                 : const Color(0xFF34C759),
@@ -782,7 +781,7 @@ Widget buildSpendingInsights({
                         // Total Debt Load row
                         if (totalDebtLoad > 0) ...[
                           _buildInsightRow(
-                            icon: CupertinoIcons.creditcard_fill,
+                            icon: Icons.credit_card,
                             iconColor: const Color(0xFFFF3B30),
                             label: "Total Debt Load",
                             value: formatCurrency(totalDebtLoad),
@@ -795,7 +794,7 @@ Widget buildSpendingInsights({
                         // Debt-to-Income Ratio row
                         if (totalDebtLoad > 0 && monthlyIncome > 0) ...[
                           _buildInsightRow(
-                            icon: CupertinoIcons.percent,
+                            icon: Icons.percent,
                             iconColor: debtRatioColor,
                             label: "Debt-to-Income Ratio",
                             value: "${debtToIncomeRatio.toStringAsFixed(1)}%",
@@ -816,7 +815,7 @@ Widget buildSpendingInsights({
                             child: Row(
                               children: [
                                 const Icon(
-                                  CupertinoIcons.checkmark_seal_fill,
+                                  Icons.verified,
                                   color: Color(0xFF34C759),
                                   size: 20,
                                 ),
@@ -846,7 +845,7 @@ Widget buildSpendingInsights({
                             child: Row(
                               children: [
                                 const Icon(
-                                  CupertinoIcons.exclamationmark_triangle_fill,
+                                  Icons.warning_amber_rounded,
                                   color: Color(0xFFFF9500),
                                   size: 20,
                                 ),
@@ -995,7 +994,7 @@ Widget _buildBudgetProgress({
             ),
             child: Center(
               child: Icon(
-                CupertinoIcons.chart_bar_fill,
+                Icons.bar_chart,
                 color: progressColor,
                 size: 20,
               ),
@@ -1099,15 +1098,15 @@ Widget buildNetWorthTracker({
       
       if (healthRatio >= 0.7) {
         trendText = 'Healthy';
-        trendIcon = CupertinoIcons.arrow_up_right;
+        trendIcon = Icons.trending_up;
         trendColor = const Color(0xFF34C759);
       } else if (healthRatio >= 0.4) {
         trendText = 'Stable';
-        trendIcon = CupertinoIcons.minus;
+        trendIcon = Icons.remove;
         trendColor = const Color(0xFFFF9500);
       } else {
         trendText = 'Needs Attention';
-        trendIcon = CupertinoIcons.arrow_down_right;
+        trendIcon = Icons.trending_down;
         trendColor = const Color(0xFFFF3B30);
       }
 

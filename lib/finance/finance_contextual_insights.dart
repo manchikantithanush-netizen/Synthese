@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -216,7 +216,7 @@ List<FinanceInsight> _computeInsights({
         message: 'You spent $increasePercent% more on $categoryName this month compared to last month.',
         severity: InsightSeverity.warning,
         dataHash: hash,
-        icon: CupertinoIcons.arrow_up_right_circle_fill,
+        icon: Icons.trending_up,
       ));
     }
   }
@@ -239,7 +239,7 @@ List<FinanceInsight> _computeInsights({
           message: "You've used ${burnPercent.toStringAsFixed(0)}% of your monthly budget with $daysRemaining days left.",
           severity: InsightSeverity.warning,
           dataHash: hash,
-          icon: CupertinoIcons.flame_fill,
+          icon: Icons.local_fire_department,
         ));
       }
     }
@@ -269,7 +269,7 @@ List<FinanceInsight> _computeInsights({
           message: '$categoryName is your biggest expense this month — $percent% of total spending.',
           severity: InsightSeverity.info,
           dataHash: hash,
-          icon: CupertinoIcons.chart_pie_fill,
+          icon: Icons.pie_chart,
         ));
       }
     }
@@ -288,7 +288,7 @@ List<FinanceInsight> _computeInsights({
           message: 'You spent more than you earned this month. Consider reducing expenses.',
           severity: InsightSeverity.warning,
           dataHash: hash,
-          icon: CupertinoIcons.exclamationmark_triangle_fill,
+          icon: Icons.warning_amber_rounded,
         ));
       }
     } else if (savingsRate >= 20) {
@@ -300,7 +300,7 @@ List<FinanceInsight> _computeInsights({
           message: 'You saved ${savingsRate.toStringAsFixed(0)}% of your income this month — keep it up! 🎉',
           severity: InsightSeverity.positive,
           dataHash: hash,
-          icon: CupertinoIcons.checkmark_seal_fill,
+          icon: Icons.verified,
         ));
       }
     }
@@ -328,7 +328,7 @@ List<FinanceInsight> _computeInsights({
             message: 'Your ${formatCurrency(latestAmount)} $categoryName purchase was ${multiplier}x your usual spending there.',
             severity: InsightSeverity.warning,
             dataHash: hash,
-            icon: CupertinoIcons.bolt_fill,
+            icon: Icons.bolt,
           ));
         }
       }
@@ -348,7 +348,7 @@ List<FinanceInsight> _computeInsights({
         message: 'Your payment for "${debt.title}" was due $daysPastDue days ago.',
         severity: InsightSeverity.warning,
         dataHash: hash,
-        icon: CupertinoIcons.clock_fill,
+        icon: Icons.access_time,
       ));
     }
   }
@@ -368,7 +368,7 @@ List<FinanceInsight> _computeInsights({
           message: 'Your total debt is ${debtRatio.toStringAsFixed(0)}% of your monthly income. Consider paying down debt.',
           severity: severity,
           dataHash: hash,
-          icon: CupertinoIcons.creditcard_fill,
+          icon: Icons.credit_card,
         ));
       }
     }
@@ -385,7 +385,7 @@ List<FinanceInsight> _computeInsights({
         message: "You've stayed under budget for $underBudgetStreak months in a row 🎉",
         severity: InsightSeverity.positive,
         dataHash: hash,
-        icon: CupertinoIcons.flame_fill,
+        icon: Icons.local_fire_department,
       ));
     }
   }
@@ -413,7 +413,7 @@ List<FinanceInsight> _computeInsights({
         message: "You've had $noSpendDays no-spend days this week — nice discipline!",
         severity: InsightSeverity.positive,
         dataHash: hash,
-        icon: CupertinoIcons.hand_thumbsup_fill,
+        icon: Icons.thumb_up,
       ));
     }
   }

@@ -15,7 +15,7 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
     final mediaQuery = MediaQuery.of(context);
     final isCompact = mediaQuery.size.height < 760;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF252528) : const Color(0xFFE5E5E7);
+    final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF5F5F5);
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = textColor.withValues(alpha: 0.6);
 

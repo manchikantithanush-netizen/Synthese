@@ -1,23 +1,33 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-const Map<int, IconData> _cupertinoIconByCodePoint = {
-  0xf4c4: CupertinoIcons.money_dollar_circle_fill,
-  0xf3ef: CupertinoIcons.building_2_fill,
-  0xf3f7: CupertinoIcons.creditcard_fill,
-  0xf3f8: CupertinoIcons.cart_fill,
-  0xf3f2: CupertinoIcons.car_fill,
-  0xf3f0: CupertinoIcons.bag_fill,
-  0xf468: CupertinoIcons.tv_fill,
-  0xf43d: CupertinoIcons.doc_text_fill,
-  0xf46b: CupertinoIcons.heart_fill,
-  0xf473: CupertinoIcons.ellipsis_circle_fill,
-  0xf422: CupertinoIcons.briefcase_fill,
-  0xf463: CupertinoIcons.graph_square_fill,
-  0xf43f: CupertinoIcons.gift_fill,
-  0xf47d: CupertinoIcons.person_fill,
-  0xf46f: CupertinoIcons.house_fill,
-};
+/// Returns a Material icon directly from the well-known id string.
+/// No Firestore lookup needed — ids never change.
+IconData iconForId(String id) {
+  switch (id) {
+    case 'cash':          return Icons.account_balance_wallet;
+    case 'bank':          return Icons.account_balance;
+    case 'card':          return Icons.credit_card;
+    case 'food':          return Icons.shopping_cart;
+    case 'transport':     return Icons.directions_car;
+    case 'shopping':      return Icons.shopping_bag;
+    case 'entertainment': return Icons.tv;
+    case 'bills':         return Icons.description;
+    case 'health':        return Icons.favorite;
+    case 'other_expense': return Icons.more_horiz;
+    case 'salary':        return Icons.account_balance_wallet;
+    case 'freelance':     return Icons.work;
+    case 'investment':    return Icons.show_chart;
+    case 'gift':          return Icons.card_giftcard;
+    case 'other_income':  return Icons.more_horiz;
+    case 'loan':          return Icons.description;
+    case 'credit_card':   return Icons.credit_card;
+    case 'personal':      return Icons.person;
+    case 'mortgage':      return Icons.home;
+    case 'other':         return Icons.more_horiz;
+    default:              return Icons.attach_money;
+  }
+}
 
 /// Represents where money is stored (e.g., Cash, Bank, Card)
 class Account {
@@ -25,39 +35,29 @@ class Account {
   final String name;
   final String type;
   final double balance;
-  final int iconCodePoint;
 
   Account({
     required this.id,
     required this.name,
     required this.type,
     required this.balance,
-    required this.iconCodePoint,
   });
 
-  IconData get icon =>
-      _cupertinoIconByCodePoint[iconCodePoint] ??
-      CupertinoIcons.question_circle_fill;
+  IconData get icon => iconForId(id);
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'type': type,
-      'balance': balance,
-      'iconCodePoint': iconCodePoint,
-    };
-  }
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'name': name,
+    'type': type,
+    'balance': balance,
+  };
 
-  factory Account.fromMap(Map<String, dynamic> map) {
-    return Account(
-      id: map['id'] as String? ?? '',
-      name: map['name'] as String? ?? 'Unknown',
-      type: map['type'] as String? ?? 'other',
-      balance: (map['balance'] as num?)?.toDouble() ?? 0.0,
-      iconCodePoint: map['iconCodePoint'] as int? ?? 0xf3ec,
-    );
-  }
+  factory Account.fromMap(Map<String, dynamic> map) => Account(
+    id: map['id'] as String? ?? '',
+    name: map['name'] as String? ?? 'Unknown',
+    type: map['type'] as String? ?? 'other',
+    balance: (map['balance'] as num?)?.toDouble() ?? 0.0,
+  );
 }
 
 /// Represents transaction categories (expense or income)
@@ -65,41 +65,31 @@ class Category {
   final String id;
   final String name;
   final String type;
-  final int iconCodePoint;
   final Color color;
 
   Category({
     required this.id,
     required this.name,
     required this.type,
-    required this.iconCodePoint,
     required this.color,
   });
 
-  IconData get icon =>
-      _cupertinoIconByCodePoint[iconCodePoint] ??
-      CupertinoIcons.question_circle_fill;
+  IconData get icon => iconForId(id);
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'name': name,
-      'type': type,
-      'iconCodePoint': iconCodePoint,
-      // ignore: deprecated_member_use
-      'color': color.value,
-    };
-  }
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'name': name,
+    'type': type,
+    // ignore: deprecated_member_use
+    'color': color.value,
+  };
 
-  factory Category.fromMap(Map<String, dynamic> map) {
-    return Category(
-      id: map['id'] as String? ?? '',
-      name: map['name'] as String? ?? 'Unknown',
-      type: map['type'] as String? ?? 'expense',
-      iconCodePoint: map['iconCodePoint'] as int? ?? 0xf3ec,
-      color: Color(map['color'] as int? ?? 0xFF8E8E93),
-    );
-  }
+  factory Category.fromMap(Map<String, dynamic> map) => Category(
+    id: map['id'] as String? ?? '',
+    name: map['name'] as String? ?? 'Unknown',
+    type: map['type'] as String? ?? 'expense',
+    color: Color(map['color'] as int? ?? 0xFF8E8E93),
+  );
 }
 
 /// Represents an individual financial transaction
@@ -112,7 +102,7 @@ class FinanceTransaction {
   final String? note;
   final String type;
   final bool isRecurring;
-  final String? recurrenceType; // 'daily', 'weekly', 'monthly'
+  final String? recurrenceType;
 
   FinanceTransaction({
     required this.id,
@@ -126,22 +116,19 @@ class FinanceTransaction {
     this.recurrenceType,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'amount': amount,
-      'accountId': accountId,
-      'categoryId': categoryId,
-      'date': Timestamp.fromDate(date),
-      'note': note,
-      'type': type,
-      'isRecurring': isRecurring,
-      'recurrenceType': recurrenceType,
-    };
-  }
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'amount': amount,
+    'accountId': accountId,
+    'categoryId': categoryId,
+    'date': Timestamp.fromDate(date),
+    'note': note,
+    'type': type,
+    'isRecurring': isRecurring,
+    'recurrenceType': recurrenceType,
+  };
 
   factory FinanceTransaction.fromMap(Map<String, dynamic> map) {
-    // Handle potential null or missing date field
     DateTime date;
     final dateValue = map['date'];
     if (dateValue is Timestamp) {
@@ -151,7 +138,6 @@ class FinanceTransaction {
     } else {
       date = DateTime.now();
     }
-    
     return FinanceTransaction(
       id: map['id'] as String? ?? '',
       amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
@@ -168,92 +154,41 @@ class FinanceTransaction {
 
 // Default Accounts
 final List<Account> defaultAccounts = [
-  Account(
-    id: 'cash',
-    name: 'Cash',
-    type: 'cash',
-    balance: 0.0,
-    iconCodePoint: CupertinoIcons.money_dollar_circle_fill.codePoint,
-  ),
-  Account(
-    id: 'bank',
-    name: 'Bank',
-    type: 'bank',
-    balance: 0.0,
-    iconCodePoint: CupertinoIcons.building_2_fill.codePoint,
-  ),
-  Account(
-    id: 'card',
-    name: 'Card',
-    type: 'card',
-    balance: 0.0,
-    iconCodePoint: CupertinoIcons.creditcard_fill.codePoint,
-  ),
+  Account(id: 'cash', name: 'Cash', type: 'cash', balance: 0.0),
+  Account(id: 'bank', name: 'Bank', type: 'bank', balance: 0.0),
+  Account(id: 'card', name: 'Card', type: 'card', balance: 0.0),
 ];
 
-// Default Expense Categories - using muted iOS-style colors
+// Default Expense Categories
 final List<Category> defaultExpenseCategories = [
-  Category(
-    id: 'food',
-    name: 'Food',
-    type: 'expense',
-    iconCodePoint: CupertinoIcons.cart_fill.codePoint,
-    color: const Color(0xFFFF9500), // iOS Orange
-  ),
-  Category(
-    id: 'transport',
-    name: 'Transport',
-    type: 'expense',
-    iconCodePoint: CupertinoIcons.car_fill.codePoint,
-    color: const Color(0xFF5AC8FA), // iOS Light Blue
-  ),
-  Category(
-    id: 'shopping',
-    name: 'Gear & Shopping',
-    type: 'expense',
-    iconCodePoint: CupertinoIcons.bag_fill.codePoint,
-    color: const Color(0xFFFF6B9D), // Muted Pink
-  ),
-  Category(
-    id: 'entertainment',
-    name: 'Entertainment',
-    type: 'expense',
-    iconCodePoint: CupertinoIcons.tv_fill.codePoint,
-    color: const Color(0xFFAF52DE), // iOS Purple
-  ),
-  Category(
-    id: 'bills',
-    name: 'Bills',
-    type: 'expense',
-    iconCodePoint: CupertinoIcons.doc_text_fill.codePoint,
-    color: const Color(0xFFFF6B6B), // Muted Red
-  ),
-  Category(
-    id: 'health',
-    name: 'Health & Recovery',
-    type: 'expense',
-    iconCodePoint: CupertinoIcons.heart_fill.codePoint,
-    color: const Color(0xFF34C759), // iOS Green
-  ),
-  Category(
-    id: 'other_expense',
-    name: 'Other',
-    type: 'expense',
-    iconCodePoint: CupertinoIcons.ellipsis_circle_fill.codePoint,
-    color: const Color(0xFF8E8E93), // iOS Gray
-  ),
+  Category(id: 'food',          name: 'Food',             type: 'expense', color: const Color(0xFFFF9500)),
+  Category(id: 'transport',     name: 'Transport',        type: 'expense', color: const Color(0xFF5AC8FA)),
+  Category(id: 'shopping',      name: 'Gear & Shopping',  type: 'expense', color: const Color(0xFFFF6B9D)),
+  Category(id: 'entertainment', name: 'Entertainment',    type: 'expense', color: const Color(0xFFAF52DE)),
+  Category(id: 'bills',         name: 'Bills',            type: 'expense', color: const Color(0xFFFF6B6B)),
+  Category(id: 'health',        name: 'Health & Recovery',type: 'expense', color: const Color(0xFF34C759)),
+  Category(id: 'other_expense', name: 'Other',            type: 'expense', color: const Color(0xFF8E8E93)),
+];
+
+// Default Income Categories
+final List<Category> defaultIncomeCategories = [
+  Category(id: 'salary',       name: 'Contract',       type: 'income', color: const Color(0xFF30D158)),
+  Category(id: 'freelance',    name: 'Appearance Fee', type: 'income', color: const Color(0xFF64D2FF)),
+  Category(id: 'investment',   name: 'Sponsorship',    type: 'income', color: const Color(0xFF5E5CE6)),
+  Category(id: 'gift',         name: 'Gift',           type: 'income', color: const Color(0xFFFFD60A)),
+  Category(id: 'other_income', name: 'Other',          type: 'income', color: const Color(0xFF8E8E93)),
 ];
 
 /// Represents a debt (money owed or owed to you)
 class Debt {
   final String id;
   final String title;
-  final String type; // 'owe' or 'owedToMe'
+  final String type;
   final double totalAmount;
   final double remainingAmount;
   final DateTime? dueDate;
   final String linkedAccountId;
-  final String category; // 'loan', 'credit_card', 'personal', 'mortgage', 'other'
+  final String category;
   final String? notes;
   final bool isRecurring;
   final double? installmentAmount;
@@ -276,36 +211,32 @@ class Debt {
     this.isPaid = false,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'title': title,
-      'type': type,
-      'totalAmount': totalAmount,
-      'remainingAmount': remainingAmount,
-      'dueDate': dueDate != null ? Timestamp.fromDate(dueDate!) : null,
-      'linkedAccountId': linkedAccountId,
-      'category': category,
-      'notes': notes,
-      'isRecurring': isRecurring,
-      'installmentAmount': installmentAmount,
-      'createdAt': Timestamp.fromDate(createdAt),
-      'isPaid': isPaid,
-    };
-  }
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'title': title,
+    'type': type,
+    'totalAmount': totalAmount,
+    'remainingAmount': remainingAmount,
+    'dueDate': dueDate != null ? Timestamp.fromDate(dueDate!) : null,
+    'linkedAccountId': linkedAccountId,
+    'category': category,
+    'notes': notes,
+    'isRecurring': isRecurring,
+    'installmentAmount': installmentAmount,
+    'createdAt': Timestamp.fromDate(createdAt),
+    'isPaid': isPaid,
+  };
 
   factory Debt.fromMap(Map<String, dynamic> map) {
-    // Handle potential null or missing createdAt field
     DateTime createdAt;
-    final createdAtValue = map['createdAt'];
-    if (createdAtValue is Timestamp) {
-      createdAt = createdAtValue.toDate();
-    } else if (createdAtValue is DateTime) {
-      createdAt = createdAtValue;
+    final v = map['createdAt'];
+    if (v is Timestamp) {
+      createdAt = v.toDate();
+    } else if (v is DateTime) {
+      createdAt = v;
     } else {
       createdAt = DateTime.now();
     }
-
     return Debt(
       id: map['id'] as String? ?? '',
       title: map['title'] as String? ?? 'Untitled',
@@ -317,8 +248,8 @@ class Debt {
       category: map['category'] as String? ?? 'other',
       notes: map['notes'] as String?,
       isRecurring: map['isRecurring'] as bool? ?? false,
-      installmentAmount: map['installmentAmount'] != null 
-          ? (map['installmentAmount'] as num).toDouble() 
+      installmentAmount: map['installmentAmount'] != null
+          ? (map['installmentAmount'] as num).toDouble()
           : null,
       createdAt: createdAt,
       isPaid: map['isPaid'] as bool? ?? false,
@@ -330,100 +261,28 @@ class Debt {
 class DebtCategory {
   final String id;
   final String name;
-  final int iconCodePoint;
   final Color color;
 
   const DebtCategory({
     required this.id,
     required this.name,
-    required this.iconCodePoint,
     required this.color,
   });
 
-  IconData get icon =>
-      _cupertinoIconByCodePoint[iconCodePoint] ??
-      CupertinoIcons.question_circle_fill;
+  IconData get icon => iconForId(id);
 }
 
-// Default Income Categories - using muted iOS-style colors
-final List<Category> defaultIncomeCategories = [
-  Category(
-    id: 'salary',
-    name: 'Contract',
-    type: 'income',
-    iconCodePoint: CupertinoIcons.money_dollar_circle_fill.codePoint,
-    color: const Color(0xFF30D158), // iOS Green
-  ),
-  Category(
-    id: 'freelance',
-    name: 'Appearance Fee',
-    type: 'income',
-    iconCodePoint: CupertinoIcons.briefcase_fill.codePoint,
-    color: const Color(0xFF64D2FF), // iOS Cyan
-  ),
-  Category(
-    id: 'investment',
-    name: 'Sponsorship',
-    type: 'income',
-    iconCodePoint: CupertinoIcons.graph_square_fill.codePoint,
-    color: const Color(0xFF5E5CE6), // iOS Indigo
-  ),
-  Category(
-    id: 'gift',
-    name: 'Gift',
-    type: 'income',
-    iconCodePoint: CupertinoIcons.gift_fill.codePoint,
-    color: const Color(0xFFFFD60A), // iOS Yellow
-  ),
-  Category(
-    id: 'other_income',
-    name: 'Other',
-    type: 'income',
-    iconCodePoint: CupertinoIcons.ellipsis_circle_fill.codePoint,
-    color: const Color(0xFF8E8E93), // iOS Gray
-  ),
-];
-
-// Default Debt Categories - using muted iOS-style colors
+// Default Debt Categories
 final List<DebtCategory> defaultDebtCategories = [
-  DebtCategory(
-    id: 'loan',
-    name: 'Loan',
-    iconCodePoint: CupertinoIcons.doc_text_fill.codePoint,
-    color: const Color(0xFF5E5CE6), // iOS Indigo
-  ),
-  DebtCategory(
-    id: 'credit_card',
-    name: 'Credit Card',
-    iconCodePoint: CupertinoIcons.creditcard_fill.codePoint,
-    color: const Color(0xFFFF6B6B), // Muted Red
-  ),
-  DebtCategory(
-    id: 'personal',
-    name: 'Personal',
-    iconCodePoint: CupertinoIcons.person_fill.codePoint,
-    color: const Color(0xFF64D2FF), // iOS Cyan
-  ),
-  DebtCategory(
-    id: 'mortgage',
-    name: 'Mortgage',
-    iconCodePoint: CupertinoIcons.house_fill.codePoint,
-    color: const Color(0xFF34C759), // iOS Green
-  ),
-  DebtCategory(
-    id: 'other',
-    name: 'Other',
-    iconCodePoint: CupertinoIcons.ellipsis_circle_fill.codePoint,
-    color: const Color(0xFF8E8E93), // iOS Gray
-  ),
+  DebtCategory(id: 'loan',        name: 'Loan',        color: const Color(0xFF5E5CE6)),
+  DebtCategory(id: 'credit_card', name: 'Credit Card', color: const Color(0xFFFF6B6B)),
+  DebtCategory(id: 'personal',    name: 'Personal',    color: const Color(0xFF64D2FF)),
+  DebtCategory(id: 'mortgage',    name: 'Mortgage',    color: const Color(0xFF34C759)),
+  DebtCategory(id: 'other',       name: 'Other',       color: const Color(0xFF8E8E93)),
 ];
 
 /// Severity levels for financial insights
-enum InsightSeverity {
-  positive, // Green - good news, celebrations
-  warning,  // Amber/Orange - needs attention
-  info,     // Blue - informational, neutral
-}
+enum InsightSeverity { positive, warning, info }
 
 /// Represents a contextual financial insight/tip
 class FinanceInsight {
@@ -431,7 +290,7 @@ class FinanceInsight {
   final String title;
   final String message;
   final InsightSeverity severity;
-  final String dataHash; // Hash of underlying data for change detection
+  final String dataHash;
   final IconData icon;
 
   const FinanceInsight({
@@ -443,63 +302,43 @@ class FinanceInsight {
     required this.icon,
   });
 
-  /// Get colors based on severity (light mode)
   Color get backgroundColor {
     switch (severity) {
-      case InsightSeverity.warning:
-        return const Color(0xFFFFF4E5); // Light amber
-      case InsightSeverity.positive:
-        return const Color(0xFFE8F8EE); // Light green
-      case InsightSeverity.info:
-        return const Color(0xFFE5F1FF); // Light blue
+      case InsightSeverity.warning:  return const Color(0xFFFFF4E5);
+      case InsightSeverity.positive: return const Color(0xFFE8F8EE);
+      case InsightSeverity.info:     return const Color(0xFFE5F1FF);
     }
   }
 
-  /// Get colors based on severity (dark mode)
   Color get backgroundColorDark {
     switch (severity) {
-      case InsightSeverity.warning:
-        return const Color(0xFF2A1F10); // Dark amber
-      case InsightSeverity.positive:
-        return const Color(0xFF1A2F1F); // Dark green
-      case InsightSeverity.info:
-        return const Color(0xFF1A2535); // Dark blue
+      case InsightSeverity.warning:  return const Color(0xFF2A1F10);
+      case InsightSeverity.positive: return const Color(0xFF1A2F1F);
+      case InsightSeverity.info:     return const Color(0xFF1A2535);
     }
   }
 
-  /// Get border color (light mode)
   Color get borderColor {
     switch (severity) {
-      case InsightSeverity.warning:
-        return const Color(0xFFFFD8A8); // Amber border
-      case InsightSeverity.positive:
-        return const Color(0xFFB8E5C8); // Green border
-      case InsightSeverity.info:
-        return const Color(0xFFB8D4F0); // Blue border
+      case InsightSeverity.warning:  return const Color(0xFFFFD8A8);
+      case InsightSeverity.positive: return const Color(0xFFB8E5C8);
+      case InsightSeverity.info:     return const Color(0xFFB8D4F0);
     }
   }
 
-  /// Get border color (dark mode)
   Color get borderColorDark {
     switch (severity) {
-      case InsightSeverity.warning:
-        return const Color(0xFF4A3215); // Dark amber border
-      case InsightSeverity.positive:
-        return const Color(0xFF2A4A35); // Dark green border
-      case InsightSeverity.info:
-        return const Color(0xFF2A3A4A); // Dark blue border
+      case InsightSeverity.warning:  return const Color(0xFF4A3215);
+      case InsightSeverity.positive: return const Color(0xFF2A4A35);
+      case InsightSeverity.info:     return const Color(0xFF2A3A4A);
     }
   }
 
-  /// Get icon color
   Color get iconColor {
     switch (severity) {
-      case InsightSeverity.warning:
-        return const Color(0xFFF57C00); // Amber
-      case InsightSeverity.positive:
-        return const Color(0xFF34C759); // iOS Green
-      case InsightSeverity.info:
-        return const Color(0xFF007AFF); // iOS Blue
+      case InsightSeverity.warning:  return const Color(0xFFF57C00);
+      case InsightSeverity.positive: return const Color(0xFF34C759);
+      case InsightSeverity.info:     return const Color(0xFF007AFF);
     }
   }
 }

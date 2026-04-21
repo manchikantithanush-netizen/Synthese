@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -626,7 +625,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                       hintStyle: TextStyle(color: subtextColor, fontSize: 15),
                       border: InputBorder.none,
                       prefixIcon: Icon(
-                        CupertinoIcons.pencil,
+                        Icons.edit_outlined,
                         color: subtextColor,
                         size: 18,
                       ),
@@ -707,7 +706,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
     final bgColor = isDark
         ? const Color.fromARGB(255, 26, 26, 28)
         : const Color.fromARGB(255, 245, 245, 245);
-    final cardColor = isDark ? const Color(0xFF252528) : Colors.white;
+    final cardColor = isDark ? const Color(0xFF151515) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtextColor = isDark ? Colors.white54 : Colors.black54;
 
@@ -913,8 +912,8 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                 child: Center(
                   child: Icon(
                     _debt.isPaid
-                        ? CupertinoIcons.checkmark_circle_fill
-                        : CupertinoIcons.chart_bar_fill,
+                        ? Icons.check_circle
+                        : Icons.bar_chart,
                     color: progressColor,
                     size: 22,
                   ),
@@ -1010,7 +1009,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
             ),
             child: Center(
               child: Icon(
-                CupertinoIcons.calendar,
+                Icons.calendar_today,
                 color: _isOverdue
                     ? const Color(0xFFFF3B30)
                     : const Color(0xFF007AFF),
@@ -1083,7 +1082,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
             ),
             child: const Center(
               child: Icon(
-                CupertinoIcons.doc_text,
+                Icons.description_outlined,
                 color: Color(0xFF8E8E93),
                 size: 20,
               ),
@@ -1140,7 +1139,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
             child: Center(
               child: Column(
                 children: [
-                  Icon(CupertinoIcons.doc_text, color: subtextColor, size: 32),
+                  Icon(Icons.description_outlined, color: subtextColor, size: 32),
                   const SizedBox(height: 8),
                   Text(
                     'No payments yet',
@@ -1192,7 +1191,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
             ),
             child: const Center(
               child: Icon(
-                CupertinoIcons.checkmark,
+                Icons.check,
                 color: Color(0xFF34C759),
                 size: 18,
               ),
@@ -1299,7 +1298,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                   ),
                   child: const Center(
                     child: Icon(
-                      CupertinoIcons.checkmark_circle_fill,
+                      Icons.check_circle,
                       color: Color(0xFF34C759),
                       size: 60,
                     ),

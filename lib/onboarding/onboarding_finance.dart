@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:synthese/finance/models/finance_models.dart';
@@ -172,7 +171,6 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
               : _cashNameController.text.trim(),
           type: 'cash',
           balance: 0.0,
-          iconCodePoint: CupertinoIcons.money_dollar_circle_fill.codePoint,
         );
         batch.set(accountsRef.doc(account.id), account.toMap());
       }
@@ -185,7 +183,6 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
               : _bankNameController.text.trim(),
           type: 'bank',
           balance: 0.0,
-          iconCodePoint: CupertinoIcons.building_2_fill.codePoint,
         );
         batch.set(accountsRef.doc(account.id), account.toMap());
       }
@@ -198,7 +195,6 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
               : _cardNameController.text.trim(),
           type: 'card',
           balance: 0.0,
-          iconCodePoint: CupertinoIcons.creditcard_fill.codePoint,
         );
         batch.set(accountsRef.doc(account.id), account.toMap());
       }
@@ -373,19 +369,19 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           buildFeature(
             "Track expenses",
             "Log every transaction and see where your money goes. Categorize spending to understand your habits.",
-            CupertinoIcons.money_dollar_circle_fill,
+            Icons.account_balance_wallet,
             const Color(0xFF34C759),
           ),
           buildFeature(
             "Set budgets",
             "Set monthly spending limits and get alerts when you're close to reaching them.",
-            CupertinoIcons.chart_pie_fill,
+            Icons.pie_chart,
             const Color(0xFF5E5CE6),
           ),
           buildFeature(
             "Privacy first",
             "Your financial data stays on your device and is never shared with third parties.",
-            CupertinoIcons.lock_shield_fill,
+            Icons.lock,
             const Color(0xFFFF9F0A),
           ),
           const Spacer(),

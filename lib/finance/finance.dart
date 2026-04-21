@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -382,7 +381,7 @@ class _FinancePageState extends State<FinancePage> {
                         ),
                         const SizedBox(width: 4),
                         Icon(
-                          CupertinoIcons.chevron_right,
+                          Icons.chevron_right,
                           size: 12,
                           color: subTextColor,
                         ),
@@ -411,7 +410,7 @@ class _FinancePageState extends State<FinancePage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? Colors.black : Colors.white;
     final cardColor = isDark
-        ? const Color(0xFF252528)
+        ? const Color(0xFF151515)
         : const Color.fromARGB(255, 245, 245, 245);
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = isDark ? Colors.white54 : Colors.black54;
@@ -476,17 +475,19 @@ class _FinancePageState extends State<FinancePage> {
               duration: const Duration(milliseconds: 150),
               child: Align(
                 alignment: Alignment.centerRight,
-                child: CupertinoButton(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                   ),
                   onPressed: _showTransferModal,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        CupertinoIcons.arrow_right_arrow_left,
+                        Icons.swap_horiz,
                         size: 16,
                         color: const Color(0xFF007AFF),
                       ),
@@ -741,7 +742,7 @@ class _FinancePageState extends State<FinancePage> {
                     child: Column(
                       children: [
                         Icon(
-                          CupertinoIcons.circle,
+                          Icons.circle_outlined,
                           color: subTextColor,
                           size: 24,
                         ),
@@ -904,7 +905,7 @@ class _FinancePageState extends State<FinancePage> {
                 child: Column(
                   children: [
                     Icon(
-                      CupertinoIcons.doc_text,
+                      Icons.description_outlined,
                       color: subTextColor,
                       size: 40,
                     ),
@@ -969,7 +970,7 @@ class _FinancePageState extends State<FinancePage> {
                       padding: const EdgeInsets.only(right: 20),
                       color: const Color(0xFFFF3B30),
                       child: const Icon(
-                        CupertinoIcons.trash_fill,
+                        Icons.delete,
                         color: Colors.white,
                         size: 22,
                       ),
@@ -996,7 +997,7 @@ class _FinancePageState extends State<FinancePage> {
                         ),
                         child: Center(
                           child: Icon(
-                            category?.icon ?? CupertinoIcons.question_circle,
+                            category?.icon ?? Icons.help_outline,
                             color: category?.color ?? Colors.grey,
                             size: 22,
                           ),
@@ -1051,7 +1052,7 @@ class _FinancePageState extends State<FinancePage> {
           hintText: 'Search transactions...',
           hintStyle: TextStyle(color: subTextColor, fontSize: 16),
           prefixIcon: Icon(
-            CupertinoIcons.search,
+            Icons.search,
             color: subTextColor,
             size: 20,
           ),
@@ -1059,7 +1060,7 @@ class _FinancePageState extends State<FinancePage> {
               ? GestureDetector(
                   onTap: () => setState(() => _searchQuery = ''),
                   child: Icon(
-                    CupertinoIcons.clear_circled_solid,
+                    Icons.cancel,
                     color: subTextColor,
                     size: 18,
                   ),
@@ -1113,7 +1114,7 @@ class _FinancePageState extends State<FinancePage> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
-                CupertinoIcons.chevron_left,
+                Icons.chevron_left,
                 color: textColor,
                 size: 18,
               ),
@@ -1146,7 +1147,7 @@ class _FinancePageState extends State<FinancePage> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
-                CupertinoIcons.chevron_right,
+                Icons.chevron_right,
                 color: canGoForward ? textColor : subTextColor.withOpacity(0.3),
                 size: 18,
               ),
@@ -1229,7 +1230,7 @@ class _FinancePageState extends State<FinancePage> {
                   ),
                 ),
                 Icon(
-                  CupertinoIcons.chevron_down,
+                  Icons.keyboard_arrow_down,
                   color: subTextColor,
                   size: 16,
                 ),
@@ -1307,7 +1308,7 @@ class _FinancePageState extends State<FinancePage> {
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            CupertinoIcons.xmark,
+                            Icons.close,
                             size: 16,
                             color: isDark ? Colors.white70 : Colors.black54,
                           ),
@@ -1418,7 +1419,7 @@ class _FinancePageState extends State<FinancePage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  CupertinoIcons.square_grid_2x2,
+                  Icons.grid_view,
                   color: subTextColor,
                   size: 20,
                 ),
@@ -1441,7 +1442,7 @@ class _FinancePageState extends State<FinancePage> {
             ),
             if (isSelected)
               Icon(
-                CupertinoIcons.checkmark_circle_fill,
+                Icons.check_circle,
                 color: const Color(0xFF34C759),
                 size: 24,
               ),

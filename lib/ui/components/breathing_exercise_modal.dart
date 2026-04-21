@@ -304,7 +304,7 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     // Warm, calm background colors
-    final bgColor = isDark ? const Color(0xFF2A2A2E) : const Color(0xFFF5EDE6);
+    final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF5F5F5);
     final textColor = isDark ? Colors.white : Colors.black;
 
     return FractionallySizedBox(

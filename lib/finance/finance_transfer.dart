@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -232,7 +231,7 @@ class _TransferModalState extends State<TransferModal> {
         ? const Color.fromARGB(255, 26, 26, 28)
         : const Color.fromARGB(255, 245, 245, 245);
 
-    final cardColor = isDark ? const Color(0xFF252528) : Colors.white;
+    final cardColor = isDark ? const Color(0xFF151515) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtextColor = isDark ? Colors.white54 : Colors.black54;
 
@@ -510,7 +509,7 @@ class _TransferModalState extends State<TransferModal> {
               ),
             ],
             Icon(
-              CupertinoIcons.chevron_right,
+              Icons.chevron_right,
               color: isDark ? Colors.white38 : Colors.black38,
               size: 18,
             ),
@@ -527,7 +526,7 @@ class _TransferModalState extends State<TransferModal> {
   }) {
     HapticFeedback.lightImpact();
 
-    final bgColor = isDark ? const Color(0xFF252528) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF151515) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
 
     showModalBottomSheet(
@@ -675,7 +674,7 @@ class _TransferModalState extends State<TransferModal> {
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
-                                CupertinoIcons.checkmark,
+                                Icons.check,
                                 color: Colors.white,
                                 size: 14,
                               ),
