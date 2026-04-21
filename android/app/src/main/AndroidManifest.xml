@@ -21,7 +21,8 @@
     <application
         android:label="synthese"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDJf6NaLs1uuR1f6wWzoh2aOuhpSN6nvrc" />

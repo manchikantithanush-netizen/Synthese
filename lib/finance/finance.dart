@@ -412,7 +412,7 @@ class _FinancePageState extends State<FinancePage> {
     final bgColor = isDark ? Colors.black : Colors.white;
     final cardColor = isDark
         ? const Color(0xFF252528)
-        : const Color(0xFFE5E5E7);
+        : const Color.fromARGB(255, 245, 245, 245);
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = isDark ? Colors.white54 : Colors.black54;
     final safePadding = MediaQuery.of(context).padding;

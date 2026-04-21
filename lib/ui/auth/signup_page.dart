@@ -123,6 +123,7 @@ class _SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).colorScheme.onSurface;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: SafeArea(
@@ -148,13 +149,12 @@ class _SignupPageState extends State<SignupPage> {
                           onPressed: () => Navigator.pop(context),
                         ),
                         const Spacer(),
-                        Text(
-                          'Synthese',
-                          style: TextStyle(
-                            color: textColor,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        Image.asset(
+                          isDark
+                              ? 'assets/logotextdarkside.png'
+                              : 'assets/logotextlightside.png',
+                          height: 100,
+                          fit: BoxFit.contain,
                         ),
                         const Spacer(),
                         const SizedBox(width: 44),

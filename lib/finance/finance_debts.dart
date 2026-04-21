@@ -311,7 +311,7 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
           return Container(
             color: isDark
                 ? Colors.black
-                : const Color(0xFFE5E5E7), // Match dashboard background
+                : const Color.fromARGB(255, 245, 245, 245), // Match dashboard background
             width: double.infinity,
             height: double.infinity,
             child: const Center(

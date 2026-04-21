@@ -28,7 +28,7 @@ class QuestionnaireResultsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF252528) : const Color(0xFFE5E5E7);
+    final bgColor = isDark ? const Color(0xFF252528) : const Color.fromARGB(255, 245, 245, 245);
     final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = textColor.withOpacity(0.6);

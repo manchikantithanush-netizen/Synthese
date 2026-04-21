@@ -30,7 +30,9 @@ class _StartPageState extends State<StartPage> {
 
   // --- STATE ---
   String _displayedText = '';
-  int _phase = 0; // 0: Typing Intro, 1: Backspacing Intro, 2: Typing Dictionary
+  int _phase = 0; // 0: Typing Intro, 1: Backspacing Intro, 2: Typing Dictionary, 3: Backspacing Dictionary
+  bool _showLogo = false;
+  bool _logoVisible = false;
 
   ModalRoute<dynamic>? _route;
 
@@ -98,6 +100,22 @@ class _StartPageState extends State<StartPage> {
 
       await Future.delayed(Duration(milliseconds: delay));
     }
+
+    await Future.delayed(const Duration(milliseconds: 700));
+
+    // PHASE 3: Backspace Dictionary
+    _phase = 3;
+    for (int i = _dictText.length; i >= 0; i--) {
+      if (!mounted) return;
+      setState(() => _displayedText = _dictText.substring(0, i));
+      await Future.delayed(const Duration(milliseconds: 10));
+    }
+
+    if (!mounted) return;
+    setState(() => _showLogo = true);
+    await Future.delayed(const Duration(milliseconds: 50));
+    if (!mounted) return;
+    setState(() => _logoVisible = true);
   }
 
   List<InlineSpan> _buildTextSpans(double scale) {
@@ -226,6 +244,7 @@ class _StartPageState extends State<StartPage> {
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).colorScheme.onSurface;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: SafeArea(
@@ -240,6 +259,10 @@ class _StartPageState extends State<StartPage> {
             final privacyBottomSpacing = constraints.maxHeight < 700
                 ? 10.0
                 : 24.0;
+            final logoWidth =
+                (constraints.maxWidth * 0.68).clamp(160.0, 300.0).toDouble();
+            final logoMaxHeight =
+                (constraints.maxHeight * 0.24).clamp(80.0, 170.0).toDouble();
 
             return Padding(
               padding: EdgeInsets.fromLTRB(
@@ -258,12 +281,33 @@ class _StartPageState extends State<StartPage> {
                         ),
                         child: SizedBox(
                           width: double.infinity,
-                          child: Text.rich(
-                            TextSpan(children: _buildTextSpans(textScale)),
-                            textAlign: _phase < 2
-                                ? TextAlign.center
-                                : TextAlign.left,
-                          ),
+                          child: _showLogo
+                              ? AnimatedOpacity(
+                                  opacity: _logoVisible ? 1 : 0,
+                                  duration: const Duration(milliseconds: 550),
+                                  curve: Curves.easeInOut,
+                                  child: Center(
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        maxWidth: logoWidth,
+                                        maxHeight: logoMaxHeight,
+                                      ),
+                                      child: Image.asset(
+                                        isDark
+                                            ? 'assets/logotextdark.png'
+                                            : 'assets/logotextlight.png',
+                                        fit: BoxFit.contain,
+                                        width: logoWidth,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : Text.rich(
+                                  TextSpan(children: _buildTextSpans(textScale)),
+                                  textAlign: _phase < 2
+                                      ? TextAlign.center
+                                      : TextAlign.left,
+                                ),
                         ),
                       ),
                     ),

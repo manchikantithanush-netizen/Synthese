@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -51,7 +52,7 @@ class DefaultFirebaseOptions {
   );
 
   static FirebaseOptions get android => FirebaseOptions(
-    apiKey: const String.fromEnvironment('FIREBASE_ANDROID_API_KEY', defaultValue: ''),
+    apiKey: dotenv.env['FIREBASE_ANDROID_API_KEY'] ?? '',
     appId: '1:118165710666:android:f9e77be691d911db7143b3',
     messagingSenderId: '118165710666',
     projectId: 'synthese-c2958',
@@ -77,7 +78,7 @@ class DefaultFirebaseOptions {
   );
 
   static FirebaseOptions get windows => FirebaseOptions(
-    apiKey: const String.fromEnvironment('FIREBASE_WEB_API_KEY', defaultValue: ''),
+    apiKey: dotenv.env['FIREBASE_WEB_API_KEY'] ?? '',
     appId: '1:118165710666:web:9721809990eb81bc7143b3',
     messagingSenderId: '118165710666',
     projectId: 'synthese-c2958',

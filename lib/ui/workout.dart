@@ -17,6 +17,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 LatLngBounds _boundsForRoutePoints(List<LatLng> points) {
   double minLat = points.first.latitude;
@@ -152,7 +153,11 @@ class _WorkoutPageState extends State<WorkoutPage> {
   double? _weatherFeelsLikeC;
   int? _weatherHumidity;
   double? _weatherWindKph;
-  static const String _weatherApiKey = String.fromEnvironment('WEATHER_API_KEY', defaultValue: '');
+  // Use dotenv for runtime API key loading
+  static String get _weatherApiKey => const String.fromEnvironment('WEATHER_API_KEY', defaultValue: '') != ''
+      ? const String.fromEnvironment('WEATHER_API_KEY', defaultValue: '')
+      : (const bool.hasEnvironment('FLUTTER_TEST') ? '' : (dotenv.env['WEATHER_API_KEY'] ?? ''));
+
   int _lastDistanceMilestoneKm = 0;
   int _lastDurationMilestoneMinutes = 0;
   bool _goalReachedNotified = false;

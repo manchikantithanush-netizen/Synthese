@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class FoodAnalysisResult {
   final int estimatedCalories;
@@ -39,8 +40,8 @@ class FoodAnalysisResult {
 }
 
 class FoodAnalysisService {
-  static const String _token = String.fromEnvironment('GITHUB_TOKEN', defaultValue: '');
-  static const String _model = 'meta/llama-4-scout-17b-16e-instruct';
+  static final String _token = dotenv.env['GITHUB_TOKEN'] ?? '';
+  static const String _model = 'openai/gpt-4o-mini';
   static const String _baseUrl = 'https://models.github.ai/inference/chat/completions';
 
   Future<FoodAnalysisResult> analyzeFood(File imageFile) async {

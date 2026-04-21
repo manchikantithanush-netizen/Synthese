@@ -940,16 +940,12 @@ class _DashboardPageState extends State<DashboardPage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "Synthese",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: isNarrowLayout ? 28 : 32,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: -1,
-                        ),
+                      Image.asset(
+                        isDark
+                            ? 'assets/logotextdarkside.png'
+                            : 'assets/logotextlightside.png',
+                        height: isNarrowLayout ? 36 : 40,
+                        fit: BoxFit.contain,
                       ),
                       const SizedBox(height: 4),
                       Text(

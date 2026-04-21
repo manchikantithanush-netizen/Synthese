@@ -65,6 +65,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -78,12 +79,19 @@ flutter:
   uses-material-design: true
   
   assets:
+    - .env
     - assets/image1.jpg
     - assets/image2.jpg
     - assets/image3.jpg
     - assets/image4.jpg
     - assets/image5.jpg
     - assets/image6.jpg
+    - assets/logowhite.png
+    - assets/logodark.png
+    - assets/logotextlight.png
+    - assets/logotextdark.png
+    - assets/logotextlightside.png
+    - assets/logotextdarkside.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
@@ -115,3 +123,8 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/app_icon.png"
