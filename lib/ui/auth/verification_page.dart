@@ -230,6 +230,36 @@ class _VerificationPageState extends State<VerificationPage>
           
           const SizedBox(height: 48),
 
+          // --- SPAM NOTICE ---
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF3B30).withOpacity(0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFFF3B30).withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded,
+                    color: Color(0xFFFF3B30), size: 20),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'Can\'t find the email? Check your spam or junk folder.',
+                    style: TextStyle(
+                      color: Color(0xFFFF3B30),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
           // --- PREMIUM RESEND BUTTON (No Ripple) ---
           _isResending
               ? const Center(child: BouncingDotsLoader())
@@ -271,12 +301,27 @@ class _VerificationPageState extends State<VerificationPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // REMOVED: backgroundColor: Colors.black,
-      body: SafeArea(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 500),
-          child: _isVerified ? _buildSuccessView() : _buildWaitingView(),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        // Sign out and go back to login — never allow skipping verification
+        _timer?.cancel();
+        await FirebaseAuth.instance.signOut();
+        if (context.mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            _fadeRoute(const LoginPage()),
+            (route) => false,
+          );
+        }
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            child: _isVerified ? _buildSuccessView() : _buildWaitingView(),
+          ),
         ),
       ),
     );

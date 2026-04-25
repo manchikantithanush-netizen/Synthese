@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/ui/components/app_toast.dart';
 import 'package:synthese/services/app_notifications_service.dart';
 import 'package:synthese/services/home_widget_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -966,6 +967,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       _notifyMetricsChangedIfNeeded();
       unawaited(_updateTrackingNotification());
       unawaited(_notifyWorkoutStarted());
+      if (mounted) AppToast.success(context, 'Workout started — let\'s go!', icon: Icons.play_arrow_rounded);
 
       _durationTicker?.cancel();
       _durationTicker = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -1152,6 +1154,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
     _notifyMetricsChangedIfNeeded();
     unawaited(_cancelTrackingNotification());
     unawaited(_startPreviewLocationUpdates());
+    if (saveSession && mounted) {
+      AppToast.success(context, 'Workout saved', icon: Icons.check_circle_outline_rounded);
+    }
     final canSaveSession = modeSnapshot != null &&
         startedAt != null &&
         durationSnapshot.inSeconds > 0 &&
@@ -2766,6 +2771,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                 confirmDismiss: (_) => _showDeleteConfirmation(context),
                 onDismissed: (_) {
                   _deleteWorkoutSession(uid: uid, sessionId: sessionId);
+                  AppToast.info(context, 'Workout deleted', icon: Icons.delete_outline_rounded);
                 },
                 child: Container(
                   decoration: BoxDecoration(

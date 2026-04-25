@@ -54,3 +54,6 @@ app.*.map.json
 /android/app/release
 build.sh
 android/key.properties
+.env
+*.keystore
+key.properties

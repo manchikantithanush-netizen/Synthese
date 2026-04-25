@@ -13,6 +13,7 @@ import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/ui/components/app_toast.dart';
 
 class DebtsListScreen extends StatefulWidget {
   const DebtsListScreen({super.key});
@@ -506,7 +507,10 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
         HapticFeedback.mediumImpact();
         return await _showDeleteConfirmation(context, isDark);
       },
-      onDismissed: (direction) => _deleteDebt(doc.id),
+      onDismissed: (direction) {
+        _deleteDebt(doc.id);
+        AppToast.info(context, 'Debt deleted', icon: Icons.delete_outline_rounded);
+      },
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         onTap: () => _showDebtDetailModal(debt),

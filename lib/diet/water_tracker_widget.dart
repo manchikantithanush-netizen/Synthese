@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:synthese/ui/components/app_toast.dart';
 
 /// Water tracker section with animated water tank
 class WaterTrackerSection extends StatefulWidget {
@@ -208,7 +209,15 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
                                 child: GestureDetector(
                                   onTap: () {
                                     HapticFeedback.mediumImpact();
-                                    widget.onWaterChanged(widget.waterGlasses + 1);
+                                    final newCount = widget.waterGlasses + 1;
+                                    widget.onWaterChanged(newCount);
+                                    if (newCount >= widget.dailyGoal) {
+                                      AppToast.success(
+                                        context,
+                                        'Water goal reached! 💧',
+                                        icon: Icons.water_drop_rounded,
+                                      );
+                                    }
                                   },
                                   child: Container(
                                     decoration: BoxDecoration(

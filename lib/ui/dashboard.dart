@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,6 +11,7 @@ import 'dart:io';
 import 'dart:convert';
 
 import 'package:synthese/ui/account/accountpage.dart';
+import 'package:synthese/ui/components/app_toast.dart';
 import 'package:synthese/cycles/cycles.dart';
 import 'package:synthese/finance/finance.dart';
 import 'package:synthese/mindfulness/mindfulness_page.dart';
@@ -24,6 +26,8 @@ import 'package:synthese/services/home_widget_service.dart';
 import 'package:synthese/services/data_aggregation_service.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
 import 'package:health/health.dart';
+import 'package:synthese/services/accent_color_service.dart';
+import 'package:synthese/services/update_reminder_service.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -52,6 +56,8 @@ class _DashboardPageState extends State<DashboardPage>
 
   // Track if user has uploaded at least once
   bool _hasUploadedOnce = false;
+  // Cached profile photo URL for header avatar
+  String? _profilePhotoUrl;
 
   // Current values - completely zeroed out for new logins
   int _activeCalories = 0;
@@ -59,6 +65,10 @@ class _DashboardPageState extends State<DashboardPage>
   int _steps = 0;
   int _exerciseMinutes = 0;
   List<int> _sleepData = [0, 0, 0, 0, 0, 0, 0];
+  // Heart rate history for the graph — timestamped readings
+  final List<({int bpm, DateTime time})> _hrHistory = [];
+  // Exercise minutes per day for the last 7 days (today = last entry)
+  final List<int> _exHistory = List.filled(7, 0);
   int _lastWorkoutCaloriesReported = 0;
   int _lastWorkoutMinutesReported = 0;
   bool _keepWorkoutAlive = false;
@@ -78,6 +88,10 @@ class _DashboardPageState extends State<DashboardPage>
   int? _prevSteps;
   int? _prevExerciseMinutes;
   List<int>? _prevSleepData;
+
+  // Goal-reached flags — reset when app restarts, not on every metric update
+  bool _stepsGoalToasted = false;
+  bool _caloriesGoalToasted = false;
 
   @override
   void initState() {
@@ -108,9 +122,11 @@ class _DashboardPageState extends State<DashboardPage>
     _updateScore();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_showFirstLaunchHealthConnectWarningIfNeeded());
+      UpdateReminderService.checkAndNotify(context);
     });
     unawaited(_bootstrapDashboardMetrics());
     _fetchUserGender();
+    _fetchUserProfile();
     _fetchMindfulnessOnboarding();
     unawaited(_firstLaunchPermissionsService.requestAllPermissionsIfFirstLaunch());
     unawaited(NotificationRulesEngine.evaluateGlobal());
@@ -220,6 +236,18 @@ class _DashboardPageState extends State<DashboardPage>
           ?.map((e) => (e as num).toInt())
           .toList();
 
+      final loadedExHistory = (data['exHistory'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList();
+
+      final loadedHrHistory = (data['hrHistory'] as List<dynamic>?)
+          ?.map((e) {
+            final bpm = (e['bpm'] as num?)?.toInt() ?? 0;
+            final ts = (e['time'] as Timestamp?)?.toDate() ?? DateTime.now();
+            return (bpm: bpm, time: ts);
+          })
+          .toList();
+
       setState(() {
         _activeCalories = (data['activeCalories'] as num?)?.toInt() ?? _activeCalories;
         _heartRate = (data['heartRate'] as num?)?.toInt() ?? _heartRate;
@@ -228,6 +256,17 @@ class _DashboardPageState extends State<DashboardPage>
             (data['exerciseMinutes'] as num?)?.toInt() ?? _exerciseMinutes;
         if (loadedSleep != null && loadedSleep.length == 7) {
           _sleepData = loadedSleep;
+        }
+        if (loadedExHistory != null && loadedExHistory.length == 7) {
+          _exHistory.setAll(0, loadedExHistory);
+        } else {
+          // Sync today's slot if no history
+          final todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
+          _exHistory[todayIdx] = _exerciseMinutes;
+        }
+        if (loadedHrHistory != null) {
+          _hrHistory.clear();
+          _hrHistory.addAll(loadedHrHistory);
         }
         _hasUploadedOnce = (data['hasUploadedOnce'] as bool?) ?? _hasUploadedOnce;
         _lastWorkoutCaloriesReported =
@@ -279,6 +318,11 @@ class _DashboardPageState extends State<DashboardPage>
             'steps': _steps,
             'exerciseMinutes': _exerciseMinutes,
             'sleepData': _sleepData,
+            'exHistory': _exHistory,
+            'hrHistory': _hrHistory.map((r) => {
+              'bpm': r.bpm,
+              'time': Timestamp.fromDate(r.time),
+            }).toList(),
             'hasUploadedOnce': _hasUploadedOnce,
             'lastWorkoutCaloriesReported': _lastWorkoutCaloriesReported,
             'lastWorkoutMinutesReported': _lastWorkoutMinutesReported,
@@ -423,8 +467,13 @@ class _DashboardPageState extends State<DashboardPage>
 
       _steps = math.max(_steps, stepsToday);
       _heartRate = latestHr;
+      if (latestHr > 0) {
+        _hrHistory.add((bpm: latestHr, time: DateTime.now()));
+      }
       _activeCalories = math.max(_activeCalories, activeCaloriesToday);
       _exerciseMinutes = math.max(_exerciseMinutes, workoutMinutesToday);
+      final todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
+      _exHistory[todayIdx] = _exerciseMinutes;
       _sleepData = List<int>.generate(
         7,
         (i) => math.max(_sleepData[i], sleepByWeekday[i]),
@@ -455,6 +504,30 @@ class _DashboardPageState extends State<DashboardPage>
       }
     } catch (e) {
       debugPrint("Error fetching user profile: $e");
+    }
+  }
+
+  Future<void> _fetchUserProfile() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) {
+        // Fallback to auth profile photo if available
+        final authUrl = FirebaseAuth.instance.currentUser?.photoURL;
+        if (mounted) setState(() => _profilePhotoUrl = authUrl);
+        return;
+      }
+      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (doc.exists && mounted) {
+        final data = doc.data();
+        final photo = data?['photoURL'] as String?;
+        final authUrl = FirebaseAuth.instance.currentUser?.photoURL;
+        if (mounted) setState(() => _profilePhotoUrl = photo ?? authUrl);
+      } else if (mounted) {
+        final authUrl = FirebaseAuth.instance.currentUser?.photoURL;
+        setState(() => _profilePhotoUrl = authUrl);
+      }
+    } catch (e) {
+      debugPrint('Error fetching profile photo: $e');
     }
   }
 
@@ -496,6 +569,18 @@ class _DashboardPageState extends State<DashboardPage>
         (sleepScore * 0.25);
 
     _score = healthScore.round();
+
+    // Goal-reached toasts — fire only once per session per goal
+    if (mounted && context.mounted) {
+      if (!_stepsGoalToasted && _steps >= 10000) {
+        _stepsGoalToasted = true;
+        AppToast.success(context, 'Steps goal reached! 10,000 steps 🎉', icon: Icons.directions_walk_rounded);
+      }
+      if (!_caloriesGoalToasted && _activeCalories >= 500) {
+        _caloriesGoalToasted = true;
+        AppToast.success(context, 'Calories burned goal reached! 500 kcal 🔥', icon: Icons.local_fire_department_rounded);
+      }
+    }
   }
 
   // --- SCORE HELPERS ---
@@ -714,6 +799,9 @@ class _DashboardPageState extends State<DashboardPage>
 
       _activeCalories = tempActive;
       _heartRate = tempHR;
+      if (tempHR > 0) {
+        _hrHistory.add((bpm: tempHR, time: DateTime.now()));
+      }
       _steps = tempSteps;
       _exerciseMinutes = tempExTime;
       _sleepData = [mon, tue, wed, thu, fri, sat, sun];
@@ -743,6 +831,9 @@ class _DashboardPageState extends State<DashboardPage>
       backgroundColor: Colors.transparent,
       builder: (context) => const AccountPageModal(),
     );
+
+    // Refresh header avatar after the account modal may have updated the photo.
+    await _fetchUserProfile();
 
     if (mounted) setState(() => _isModalOpen = false);
   }
@@ -824,6 +915,9 @@ class _DashboardPageState extends State<DashboardPage>
     setState(() {
       _heartRate = (_heartRate + delta).clamp(0, 250).toInt();
       _hasUploadedOnce = true;
+      if (_heartRate > 0) {
+        _hrHistory.add((bpm: _heartRate, time: DateTime.now()));
+      }
     });
     _syncDashboardWidgets();
     _schedulePersistDashboardMetrics();
@@ -839,11 +933,25 @@ class _DashboardPageState extends State<DashboardPage>
     _schedulePersistDashboardMetrics();
   }
 
+  void _adjustSleep(int deltaMinutes) {
+    final todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
+    setState(() {
+      _sleepData[todayIdx] =
+          (_sleepData[todayIdx] + deltaMinutes).clamp(0, 1440);
+      _hasUploadedOnce = true;
+      _updateScore();
+    });
+    _schedulePersistDashboardMetrics();
+  }
+
   void _adjustExerciseMinutes(int delta) {
     setState(() {
       _exerciseMinutes = (_exerciseMinutes + delta).clamp(0, 1000000).toInt();
       _hasUploadedOnce = true;
       _updateScore();
+      // Keep today's slot (index = weekday-1) in sync
+      final todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
+      _exHistory[todayIdx] = _exerciseMinutes;
     });
     _syncDashboardWidgets();
     _schedulePersistDashboardMetrics();
@@ -892,10 +1000,10 @@ class _DashboardPageState extends State<DashboardPage>
     final clampedTextScale = mediaQuery.textScaler.scale(1.0).clamp(0.9, 1.0);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final bgColor = isDark ? Colors.black : Colors.white;
+    final bgColor = isDark ? const Color(0xFF111111) : const Color(0xFFF2F2F7);
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = textColor.withOpacity(0.5);
-    final cardColor = isDark ? const Color(0xFF151515) : Colors.grey.shade100;
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
 
     final safePadding = mediaQuery.padding;
     final isNarrowLayout = mediaQuery.size.width < 390;
@@ -1017,10 +1125,19 @@ class _DashboardPageState extends State<DashboardPage>
                                       : Colors.black.withValues(alpha: 0.08),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(
-                                  Icons.person_rounded,
-                                  size: 20,
-                                  color: isDark ? Colors.white : Colors.black,
+                                child: CircleAvatar(
+                                  radius: 18,
+                                  backgroundColor: Colors.transparent,
+                                  backgroundImage: (_profilePhotoUrl ?? FirebaseAuth.instance.currentUser?.photoURL) != null
+                                      ? NetworkImage((_profilePhotoUrl ?? FirebaseAuth.instance.currentUser?.photoURL)!) as ImageProvider
+                                      : null,
+                                  child: (_profilePhotoUrl ?? FirebaseAuth.instance.currentUser?.photoURL) == null
+                                      ? Icon(
+                                          Icons.person_rounded,
+                                          size: 20,
+                                          color: isDark ? Colors.white : Colors.black,
+                                        )
+                                      : null,
                                 ),
                               ),
                             ),
@@ -1099,292 +1216,95 @@ class _DashboardPageState extends State<DashboardPage>
 
             const SizedBox(height: 40),
 
-            // --- ROW 1: Calories & Heart Rate ---
-            if (isNarrowLayout)
-              Column(
-                children: [
-                  SizedBox(
-                    height: 210,
-                    child: MetricCard(
-                      cardColor: cardColor,
-                      textColor: textColor,
-                      subTextColor: subTextColor,
-                      icon: Icons.local_fire_department,
-                      iconColor: Colors.orange,
-                      trendText: calTrend.text,
-                      trendColor: calTrend.color,
-                      title: "Active",
-                      value: _formatNumber(_activeCalories),
-                      unit: "kcal",
-                      compact: true,
-                      onIncrement: () => _adjustActiveCalories(10),
-                      onDecrement: () => _adjustActiveCalories(-10),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 210,
-                    child: MetricCard(
-                      cardColor: cardColor,
-                      textColor: textColor,
-                      subTextColor: subTextColor,
-                      icon: Icons.favorite_border,
-                      iconColor: Colors.redAccent,
-                      trendText: hrTrend.text,
-                      trendColor: hrTrend.color,
-                      title: "Heart Rate",
-                      value: _heartRate.toString(),
-                      unit: "AVG",
-                      valueInlineUnit: true,
-                      compact: true,
-                      onIncrement: () => _adjustHeartRate(1),
-                      onDecrement: () => _adjustHeartRate(-1),
-                    ),
-                  ),
-                ],
-              )
-            else
-              IntrinsicHeight(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: MetricCard(
-                        cardColor: cardColor,
-                        textColor: textColor,
-                        subTextColor: subTextColor,
-                        icon: Icons.local_fire_department,
-                        iconColor: Colors.orange,
-                        trendText: calTrend.text,
-                        trendColor: calTrend.color,
-                        title: "Active",
-                        value: _formatNumber(_activeCalories),
-                        unit: "kcal",
-                        onIncrement: () => _adjustActiveCalories(10),
-                        onDecrement: () => _adjustActiveCalories(-10),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: MetricCard(
-                        cardColor: cardColor,
-                        textColor: textColor,
-                        subTextColor: subTextColor,
-                        icon: Icons.favorite_border,
-                        iconColor: Colors.redAccent,
-                        trendText: hrTrend.text,
-                        trendColor: hrTrend.color,
-                        title: "Heart Rate",
-                        value: _heartRate.toString(),
-                        unit: "AVG",
-                        valueInlineUnit: true,
-                        onIncrement: () => _adjustHeartRate(1),
-                        onDecrement: () => _adjustHeartRate(-1),
-                      ),
-                    ),
-                  ],
-                ),
+            // --- STEPS ---
+            SizedBox(
+              height: 230,
+              child: MetricCard(
+                cardColor: cardColor,
+                textColor: textColor,
+                subTextColor: subTextColor,
+                icon: Icons.directions_walk_rounded,
+                iconColor: const Color(0xFF6C63FF),
+                trendText: stepTrend.text,
+                trendColor: stepTrend.color,
+                title: "Steps",
+                value: _formatNumber(_steps),
+                unit: "steps",
+                valueInlineUnit: true,
+                compact: false,
+                stepsProgress: _steps / 10000.0,
+                onIncrement: () => _adjustSteps(100),
+                onDecrement: () => _adjustSteps(-100),
               ),
+            ),
 
             const SizedBox(height: 16),
 
-            // --- ROW 2: Steps & Exercise Time ---
-            if (isNarrowLayout)
-              Column(
-                children: [
-                  SizedBox(
-                    height: 210,
-                    child: MetricCard(
-                      cardColor: cardColor,
-                      textColor: textColor,
-                      subTextColor: subTextColor,
-                      icon: Icons.directions_walk_rounded,
-                      iconColor: const Color(0xFF6C63FF),
-                      trendText: stepTrend.text,
-                      trendColor: stepTrend.color,
-                      title: "Steps",
-                      value: _formatNumber(_steps),
-                      unit: "steps",
-                      valueInlineUnit: true,
-                      compact: true,
-                      onIncrement: () => _adjustSteps(100),
-                      onDecrement: () => _adjustSteps(-100),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 210,
-                    child: MetricCard(
-                      cardColor: cardColor,
-                      textColor: textColor,
-                      subTextColor: subTextColor,
-                      icon: Icons.timer,
-                      iconColor: const Color(0xFFFF4B4B),
-                      trendText: exTrend.text,
-                      trendColor: exTrend.color,
-                      title: "Exercise Time",
-                      value: _formatMinutes(_exerciseMinutes),
-                      unit: "AVG",
-                      valueInlineUnit: false,
-                      compact: true,
-                      onIncrement: () => _adjustExerciseMinutes(1),
-                      onDecrement: () => _adjustExerciseMinutes(-1),
-                    ),
-                  ),
-                ],
-              )
-            else
-              IntrinsicHeight(
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: MetricCard(
-                        cardColor: cardColor,
-                        textColor: textColor,
-                        subTextColor: subTextColor,
-                        icon: Icons.directions_walk_rounded,
-                        iconColor: const Color(0xFF6C63FF),
-                        trendText: stepTrend.text,
-                        trendColor: stepTrend.color,
-                        title: "Steps",
-                        value: _formatNumber(_steps),
-                        unit: "steps",
-                        valueInlineUnit: true,
-                        onIncrement: () => _adjustSteps(100),
-                        onDecrement: () => _adjustSteps(-100),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: MetricCard(
-                        cardColor: cardColor,
-                        textColor: textColor,
-                        subTextColor: subTextColor,
-                        icon: Icons.timer,
-                        iconColor: const Color(0xFFFF4B4B),
-                        trendText: exTrend.text,
-                        trendColor: exTrend.color,
-                        title: "Exercise Time",
-                        value: _formatMinutes(_exerciseMinutes),
-                        unit: "AVG",
-                        valueInlineUnit: false,
-                        onIncrement: () => _adjustExerciseMinutes(1),
-                        onDecrement: () => _adjustExerciseMinutes(-1),
-                      ),
-                    ),
-                  ],
-                ),
+            // --- HEART RATE ---
+            SizedBox(
+              height: 210,
+              child: HeartRateCard(
+                cardColor: cardColor,
+                textColor: textColor,
+                subTextColor: subTextColor,
+                heartRate: _heartRate,
+                hrHistory: _hrHistory,
+                trendText: hrTrend.text,
+                trendColor: hrTrend.color,
+                onIncrement: () => _adjustHeartRate(1),
+                onDecrement: () => _adjustHeartRate(-1),
               ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // --- CALORIES ---
+            SizedBox(
+              height: 210,
+              child: CaloriesCard(
+                cardColor: cardColor,
+                textColor: textColor,
+                subTextColor: subTextColor,
+                activeCalories: _activeCalories,
+                trendText: calTrend.text,
+                trendColor: calTrend.color,
+                onIncrement: () => _adjustActiveCalories(10),
+                onDecrement: () => _adjustActiveCalories(-10),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // --- EXERCISE TIME ---
+            SizedBox(
+              height: 210,
+              child: ExerciseTimeCard(
+                cardColor: cardColor,
+                textColor: textColor,
+                subTextColor: subTextColor,
+                exerciseMinutes: _exerciseMinutes,
+                exHistory: _exHistory,
+                trendText: exTrend.text,
+                trendColor: exTrend.color,
+                onIncrement: () => _adjustExerciseMinutes(1),
+                onDecrement: () => _adjustExerciseMinutes(-1),
+              ),
+            ),
 
             const SizedBox(height: 16),
 
             // --- SLEEP ANALYSIS CARD ---
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: cardColor,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Sleep Analysis",
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "Last 7 Nights",
-                            style: TextStyle(color: subTextColor, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            _formatMinutes(avgSleepMinutes),
-                            style: const TextStyle(
-                              color: Color(0xFFB022FF),
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "AVG DURATION",
-                            style: TextStyle(
-                              color: subTextColor,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            sleepTrend.text,
-                            style: TextStyle(
-                              color: sleepTrend.color,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 40),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      BarChartColumn(
-                        label: "M",
-                        heightRatio: _sleepData[0] / maxSleep,
-                        isDark: isDark,
-                      ),
-                      BarChartColumn(
-                        label: "T",
-                        heightRatio: _sleepData[1] / maxSleep,
-                        isDark: isDark,
-                      ),
-                      BarChartColumn(
-                        label: "W",
-                        heightRatio: _sleepData[2] / maxSleep,
-                        isDark: isDark,
-                      ),
-                      BarChartColumn(
-                        label: "T",
-                        heightRatio: _sleepData[3] / maxSleep,
-                        isDark: isDark,
-                      ),
-                      BarChartColumn(
-                        label: "F",
-                        heightRatio: _sleepData[4] / maxSleep,
-                        isDark: isDark,
-                      ),
-                      BarChartColumn(
-                        label: "S",
-                        heightRatio: _sleepData[5] / maxSleep,
-                        isDark: isDark,
-                      ),
-                      BarChartColumn(
-                        label: "S",
-                        heightRatio: _sleepData[6] / maxSleep,
-                        isDark: isDark,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            SleepCard(
+              cardColor: cardColor,
+              textColor: textColor,
+              subTextColor: subTextColor,
+              sleepData: _sleepData,
+              avgSleepMinutes: avgSleepMinutes,
+              trendText: sleepTrend.text,
+              trendColor: sleepTrend.color,
+              isDark: isDark,
+              onIncrement: () => _adjustSleep(30),
+              onDecrement: () => _adjustSleep(-30),
             ),
           ],
         ),
@@ -1463,49 +1383,93 @@ class _DashboardPageState extends State<DashboardPage>
       currentScreen = Container(key: ValueKey('empty_tab_$_tabIndex'));
     }
 
+    final jakartaTheme = Theme.of(context).copyWith(
+      textTheme: GoogleFonts.plusJakartaSansTextTheme(
+        Theme.of(context).textTheme,
+      ),
+    );
+
+    return ValueListenableBuilder<Color>(
+      valueListenable: AccentColor.notifier,
+      builder: (context, accentColor, _) {
     return MediaQuery(
       data: mediaQuery.copyWith(
         textScaler: TextScaler.linear(clampedTextScale.toDouble()),
       ),
-      child: Scaffold(
-        backgroundColor: bgColor,
-        extendBody: true,
-
-        bottomNavigationBar: UniversalBottomNavBar(
-          hidden: _isModalOpen || (_tabIndex == 2 && _isWorkoutModeOpen),
-          currentIndex: _getBottomNavIndex(),
-          onTap: (index) {
-            HapticFeedback.selectionClick();
-            _setBottomTab(index);
-          },
-          items: [
-            const NavItem(label: 'Home', icon: Icons.home_rounded),
-            const NavItem(label: 'Diet', icon: Icons.restaurant_rounded),
-            const NavItem(label: 'Workout', icon: Icons.fitness_center_rounded),
-            const NavItem(label: 'More', icon: Icons.more_horiz_rounded),
-          ],
-        ),
-
-        body: _keepWorkoutAlive
-            ? Stack(
-                children: [
-                  Offstage(
-                    offstage: _tabIndex != 2,
-                    child: FadeTransition(
-                      opacity: _workoutTabEnterOpacity,
-                      child: SlideTransition(
-                        position: _workoutTabEnterSlide,
-                        child: _workoutPage,
+      child: Theme(
+        data: jakartaTheme,
+        child: DefaultTextStyle(
+          style: GoogleFonts.plusJakartaSans(),
+          child: Scaffold(
+            backgroundColor: bgColor,
+            extendBody: true,
+            bottomNavigationBar: UniversalBottomNavBar(
+              hidden: _isModalOpen || (_tabIndex == 2 && _isWorkoutModeOpen),
+              currentIndex: _getBottomNavIndex(),
+              onTap: (index) {
+                HapticFeedback.selectionClick();
+                _setBottomTab(index);
+              },
+              items: [
+                const NavItem(label: 'Home', icon: Icons.home_rounded),
+                const NavItem(label: 'Diet', icon: Icons.restaurant_rounded),
+                const NavItem(label: 'Workout', icon: Icons.fitness_center_rounded),
+                const NavItem(label: 'More', icon: Icons.more_horiz_rounded),
+              ],
+            ),
+            body: Stack(
+              children: [
+                // Accent color wash — bottommost layer, behind all content
+                if (_tabIndex == 0)
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 260,
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              accentColor.withOpacity(isDark ? 0.60 : 0.45),
+                              accentColor.withOpacity(isDark ? 0.32 : 0.22),
+                              accentColor.withOpacity(isDark ? 0.10 : 0.06),
+                              accentColor.withOpacity(0.0),
+                            ],
+                            stops: const [0.0, 0.40, 0.72, 1.0],
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  if (_tabIndex != 2)
-                    _buildNonWorkoutTabSwitcher(currentScreen),
-                ],
-              )
-            : _buildNonWorkoutTabSwitcher(currentScreen),
+                // Main content
+                _keepWorkoutAlive
+                    ? Stack(
+                        children: [
+                          Offstage(
+                            offstage: _tabIndex != 2,
+                            child: FadeTransition(
+                              opacity: _workoutTabEnterOpacity,
+                              child: SlideTransition(
+                                position: _workoutTabEnterSlide,
+                                child: _workoutPage,
+                              ),
+                            ),
+                          ),
+                          if (_tabIndex != 2)
+                            _buildNonWorkoutTabSwitcher(currentScreen),
+                        ],
+                      )
+                    : _buildNonWorkoutTabSwitcher(currentScreen),
+              ],
+            ),
+          ),
+        ),
       ),
     );
+    }); // ValueListenableBuilder
   }
 }
 
@@ -1521,6 +1485,8 @@ class MetricCard extends StatelessWidget {
   final bool compact;
   final VoidCallback? onIncrement;
   final VoidCallback? onDecrement;
+  // Optional pill progress bar (0.0 – 1.0)
+  final double? stepsProgress;
 
   const MetricCard({
     super.key,
@@ -1538,6 +1504,7 @@ class MetricCard extends StatelessWidget {
     this.compact = false,
     this.onIncrement,
     this.onDecrement,
+    this.stepsProgress,
   });
 
   @override
@@ -1585,6 +1552,19 @@ class MetricCard extends StatelessWidget {
                   ),
                 ),
               ),
+              // Steps card: buttons in header
+              if (stepsProgress != null && onIncrement != null && onDecrement != null) ...[
+                const SizedBox(width: 8),
+                _RepeatActionIconButton(
+                  icon: Icons.remove_rounded,
+                  onPressed: onDecrement!,
+                ),
+                const SizedBox(width: 6),
+                _RepeatActionIconButton(
+                  icon: Icons.add_rounded,
+                  onPressed: onIncrement!,
+                ),
+              ],
             ],
           ),
           SizedBox(height: topGap),
@@ -1644,7 +1624,12 @@ class MetricCard extends StatelessWidget {
               ],
             ),
           const Spacer(),
-          if (onIncrement != null && onDecrement != null)
+          if (stepsProgress != null) ...[
+            const SizedBox(height: 8),
+            _StepsPillBar(progress: stepsProgress!.clamp(0.0, 1.0)),
+            const SizedBox(height: 2),
+          ],
+          if (stepsProgress == null && onIncrement != null && onDecrement != null)
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -1661,6 +1646,62 @@ class MetricCard extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+class _StepsPillBar extends StatelessWidget {
+  final double progress; // 0.0 – 1.0
+
+  const _StepsPillBar({required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    final pillColor = AccentColor.notifier.value;
+    const totalPills = 20;    final filledCount = (progress * totalPills).round();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text(
+            'Goal 10,000',
+            style: TextStyle(
+              color: pillColor.withOpacity(0.7),
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            const gap = 3.0;
+            final pillWidth =
+                (constraints.maxWidth - gap * (totalPills - 1)) / totalPills;
+            return Row(
+              children: List.generate(totalPills, (i) {
+                final filled = i < filledCount;
+                return Padding(
+                  padding: EdgeInsets.only(right: i < totalPills - 1 ? gap : 0),
+                  child: Container(
+                    width: pillWidth,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: filled
+                          ? pillColor
+                          : pillColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                );
+              }),
+            );
+          },
+        ),
+      ],
     );
   }
 }
@@ -1799,7 +1840,7 @@ class RingPainter extends CustomPainter {
       ..strokeWidth = strokeWidth;
 
     final progressPaint = Paint()
-      ..color = isDark ? Colors.white : Colors.black
+      ..color = AccentColor.notifier.value
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
@@ -1817,5 +1858,802 @@ class RingPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant RingPainter oldDelegate) {
     return oldDelegate.progress != progress || oldDelegate.isDark != isDark;
+  }
+}
+
+// ============================================================================
+// HEART RATE CARD
+// ============================================================================
+
+// ============================================================================
+// HEART RATE CARD
+// ============================================================================
+
+class HeartRateCard extends StatelessWidget {
+  final Color cardColor, textColor, subTextColor, trendColor;
+  final String trendText;
+  final int heartRate;
+  final List<({int bpm, DateTime time})> hrHistory;
+  final bool compact;
+  final VoidCallback? onIncrement;
+  final VoidCallback? onDecrement;
+
+  const HeartRateCard({
+    super.key,
+    required this.cardColor,
+    required this.textColor,
+    required this.subTextColor,
+    required this.trendColor,
+    required this.trendText,
+    required this.heartRate,
+    required this.hrHistory,
+    this.compact = false,
+    this.onIncrement,
+    this.onDecrement,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final p = compact ? 16.0 : 20.0;
+    final topGap = compact ? 16.0 : 24.0;
+    final valueSize = compact ? 24.0 : 28.0;
+    final trendSize = compact ? 10.0 : 11.0;
+    final iconSize = compact ? 20.0 : 24.0;
+    final iconPad = compact ? 6.0 : 8.0;
+
+    return Container(
+      height: double.infinity,
+      padding: EdgeInsets.all(p),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: EdgeInsets.all(iconPad),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.favorite_border,
+                    color: Colors.redAccent, size: iconSize),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  trendText,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    color: trendColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: trendSize,
+                  ),
+                ),
+              ),
+              if (onIncrement != null && onDecrement != null) ...[
+                const SizedBox(width: 8),
+                _RepeatActionIconButton(
+                  icon: Icons.remove_rounded,
+                  onPressed: onDecrement!,
+                ),
+                const SizedBox(width: 8),
+                _RepeatActionIconButton(
+                  icon: Icons.add_rounded,
+                  onPressed: onIncrement!,
+                ),
+              ],
+            ],
+          ),
+          SizedBox(height: topGap),
+          Text(
+            'Heart Rate',
+            style: TextStyle(
+              color: subTextColor,
+              fontSize: compact ? 13.0 : 14.0,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                heartRate.toString(),
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: valueSize,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  'bpm',
+                  style: TextStyle(
+                    color: subTextColor,
+                    fontSize: compact ? 11.0 : 12.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          SizedBox(
+            height: 36,
+            child: CustomPaint(
+              painter: _HeartWavePainter(
+                color: AccentColor.notifier.value,
+                hrHistory: hrHistory,
+              ),
+              size: const Size(double.infinity, 54),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeartWavePainter extends CustomPainter {
+  final Color color;
+  final List<({int bpm, DateTime time})> hrHistory;
+
+  const _HeartWavePainter({required this.color, required this.hrHistory});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.width == 0) return;
+
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final midY = size.height * 0.5;
+
+    canvas.saveLayer(rect, Paint());
+
+    // Fade mask applied at the end — left edge fades in
+    void applyFade() {
+      canvas.drawRect(
+        rect,
+        Paint()
+          ..shader = LinearGradient(
+            colors: [Colors.transparent, Colors.white],
+            stops: const [0.0, 0.18],
+          ).createShader(rect)
+          ..blendMode = BlendMode.dstIn,
+      );
+    }
+
+    final linePaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    // No data or single zero reading → flat line
+    final validHistory = hrHistory.where((r) => r.bpm > 0).toList();
+    if (validHistory.length < 2) {
+      final y = validHistory.isEmpty
+          ? midY
+          : _bpmToY(validHistory.first.bpm, size.height, validHistory);
+      canvas.drawLine(Offset(0, y), Offset(size.width, y),
+          linePaint..color = color.withOpacity(0.45));
+      applyFade();
+      canvas.restore();
+      return;
+    }
+
+    // Map time range to X axis
+    final tStart = validHistory.first.time.millisecondsSinceEpoch.toDouble();
+    final tEnd = validHistory.last.time.millisecondsSinceEpoch.toDouble();
+    final tRange = (tEnd - tStart).clamp(1.0, double.infinity);
+
+    double xOf(DateTime t) =>
+        (t.millisecondsSinceEpoch - tStart) / tRange * size.width;
+
+    double yOf(int bpm) => _bpmToY(bpm, size.height, validHistory);
+
+    final pts = validHistory
+        .map((r) => Offset(xOf(r.time), yOf(r.bpm)))
+        .toList();
+
+    // Build smooth path
+    final path = Path()..moveTo(pts.first.dx, pts.first.dy);
+    for (int i = 1; i < pts.length; i++) {
+      final prev = pts[i - 1];
+      final curr = pts[i];
+      final cpX = (prev.dx + curr.dx) / 2;
+      path.cubicTo(cpX, prev.dy, cpX, curr.dy, curr.dx, curr.dy);
+    }
+
+    // Fill under the curve
+    final fillPath = Path.from(path)
+      ..lineTo(pts.last.dx, size.height)
+      ..lineTo(pts.first.dx, size.height)
+      ..close();
+
+    canvas.drawPath(
+      fillPath,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [color.withOpacity(0.28), color.withOpacity(0.0)],
+        ).createShader(rect)
+        ..style = PaintingStyle.fill,
+    );
+
+    canvas.drawPath(path, linePaint);
+    applyFade();
+    canvas.restore();
+  }
+
+  // Map BPM to Y: scale within the range of recorded values with padding
+  double _bpmToY(
+    int bpm,
+    double height,
+    List<({int bpm, DateTime time})> history,
+  ) {
+    final minBpm = history.map((r) => r.bpm).reduce(math.min).toDouble();
+    final maxBpm = history.map((r) => r.bpm).reduce(math.max).toDouble();
+    final range = (maxBpm - minBpm).clamp(10.0, double.infinity);
+    final padding = height * 0.15;
+    // Higher BPM = lower Y (top of canvas)
+    return height -
+        padding -
+        ((bpm - minBpm) / range) * (height - padding * 2);
+  }
+
+  @override
+  bool shouldRepaint(covariant _HeartWavePainter old) =>
+      old.hrHistory.length != hrHistory.length ||
+      (hrHistory.isNotEmpty &&
+          old.hrHistory.isNotEmpty &&
+          old.hrHistory.last.bpm != hrHistory.last.bpm);
+}
+
+// ============================================================================
+// EXERCISE TIME CARD
+// ============================================================================
+
+class ExerciseTimeCard extends StatelessWidget {
+  final Color cardColor, textColor, subTextColor, trendColor;
+  final String trendText;
+  final int exerciseMinutes;
+  final List<int> exHistory; // 7 values, Mon–Sun, minutes
+  final bool compact;
+  final VoidCallback? onIncrement;
+  final VoidCallback? onDecrement;
+
+  const ExerciseTimeCard({
+    super.key,
+    required this.cardColor,
+    required this.textColor,
+    required this.subTextColor,
+    required this.trendColor,
+    required this.trendText,
+    required this.exerciseMinutes,
+    required this.exHistory,
+    this.compact = false,
+    this.onIncrement,
+    this.onDecrement,
+  });
+
+  String _fmt(int mins) {
+    final h = mins ~/ 60;
+    final m = mins % 60;
+    if (h > 0) return '${h}h ${m}m';
+    return '${m}m';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final p = compact ? 16.0 : 20.0;
+    final topGap = compact ? 8.0 : 12.0;
+    final valueSize = compact ? 22.0 : 26.0;
+    final trendSize = compact ? 10.0 : 11.0;
+    final iconSize = compact ? 20.0 : 24.0;
+    final iconPad = compact ? 6.0 : 8.0;
+
+    final pillColor = AccentColor.notifier.value;
+    const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
+
+    return Container(
+      height: double.infinity,
+      padding: EdgeInsets.all(p),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: EdgeInsets.all(iconPad),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF4B4B).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.timer,
+                    color: const Color(0xFFFF4B4B), size: iconSize),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  trendText,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    color: trendColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: trendSize,
+                  ),
+                ),
+              ),
+              if (onIncrement != null && onDecrement != null) ...[
+                const SizedBox(width: 8),
+                _RepeatActionIconButton(
+                  icon: Icons.remove_rounded,
+                  onPressed: onDecrement!,
+                ),
+                const SizedBox(width: 6),
+                _RepeatActionIconButton(
+                  icon: Icons.add_rounded,
+                  onPressed: onIncrement!,
+                ),
+              ],
+            ],
+          ),
+          SizedBox(height: topGap),
+          Text(
+            'Exercise Time',
+            style: TextStyle(
+              color: subTextColor,
+              fontSize: compact ? 13.0 : 14.0,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _fmt(exerciseMinutes),
+            style: TextStyle(
+              color: textColor,
+              fontSize: valueSize,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Spacer(),
+          // Vertical pill bar chart — 7 days
+          SizedBox(
+            height: 54,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: List.generate(7, (i) {
+                final val = exHistory[i];
+                // Scale: max of actual data or 60 min so 1 min doesn't fill the bar
+                final maxVal = math.max(exHistory.reduce(math.max), 60);
+                final frac = val / maxVal;
+                final isToday = i == todayIdx;
+                final hasVal = val > 0;
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: compact ? 2.5 : 3.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Flexible(
+                          child: LayoutBuilder(
+                            builder: (ctx, bc) {
+                              const maxH = 46.0;
+                              const minH = 8.0;
+                              final barH = hasVal
+                                  ? (minH + frac * (maxH - minH))
+                                  : minH;
+                              return Align(
+                                alignment: Alignment.bottomCenter,
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 400),
+                                  curve: Curves.easeOutCubic,
+                                  height: barH,
+                                  decoration: BoxDecoration(
+                                    color: isToday
+                                        ? pillColor
+                                        : hasVal
+                                            ? pillColor.withOpacity(0.35)
+                                            : pillColor.withOpacity(0.12),
+                                    // Large radius = fully rounded pill caps
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          days[i],
+                          style: TextStyle(
+                            color: isToday ? pillColor : subTextColor,
+                            fontSize: 9,
+                            fontWeight: isToday
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// CALORIES CARD — fuel gauge bar
+// ============================================================================
+
+class CaloriesCard extends StatelessWidget {
+  final Color cardColor, textColor, subTextColor, trendColor;
+  final String trendText;
+  final int activeCalories;
+  final bool compact;
+  final VoidCallback? onIncrement;
+  final VoidCallback? onDecrement;
+
+  static const int _goal = 5000;
+
+  const CaloriesCard({
+    super.key,
+    required this.cardColor,
+    required this.textColor,
+    required this.subTextColor,
+    required this.trendColor,
+    required this.trendText,
+    required this.activeCalories,
+    this.compact = false,
+    this.onIncrement,
+    this.onDecrement,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final p = compact ? 16.0 : 20.0;
+    final trendSize = compact ? 10.0 : 11.0;
+    final iconSize = compact ? 20.0 : 24.0;
+    final iconPad = compact ? 6.0 : 8.0;
+    final progress = (activeCalories / _goal).clamp(0.0, 1.0);
+
+    return Container(
+      height: double.infinity,
+      padding: EdgeInsets.all(p),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: EdgeInsets.all(iconPad),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.local_fire_department,
+                    color: Colors.orange, size: iconSize),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  trendText,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    color: trendColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: trendSize,
+                  ),
+                ),
+              ),
+              if (onIncrement != null && onDecrement != null) ...[
+                const SizedBox(width: 8),
+                _RepeatActionIconButton(
+                  icon: Icons.remove_rounded,
+                  onPressed: onDecrement!,
+                ),
+                const SizedBox(width: 6),
+                _RepeatActionIconButton(
+                  icon: Icons.add_rounded,
+                  onPressed: onIncrement!,
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Active Cal',
+            style: TextStyle(
+              color: subTextColor,
+              fontSize: compact ? 13.0 : 14.0,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                activeCalories >= 1000
+                    ? '${(activeCalories / 1000).toStringAsFixed(1)}k'
+                    : activeCalories.toString(),
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: compact ? 24.0 : 28.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  'kcal  / 5k',
+                  style: TextStyle(
+                    color: subTextColor,
+                    fontSize: compact ? 11.0 : 12.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          // Segmented fuel-gauge bar
+          _CalFuelBar(progress: progress, compact: compact),
+          const SizedBox(height: 4),
+        ],
+      ),
+    );
+  }
+}
+
+class _CalFuelBar extends StatelessWidget {
+  final double progress; // 0.0–1.0
+  final bool compact;
+
+  const _CalFuelBar({required this.progress, required this.compact});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = AccentColor.notifier.value;
+    const total = 12;
+    final filled = (progress * total).round().clamp(0, total);
+    const heightPattern = [0.45, 0.55, 0.50, 0.65, 0.55, 0.70,
+                           0.60, 0.75, 0.65, 0.80, 0.70, 0.90];
+    final maxH = compact ? 30.0 : 36.0;
+
+    return LayoutBuilder(builder: (context, constraints) {
+      const gap = 4.0;
+      final segW = (constraints.maxWidth - gap * (total - 1)) / total;
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: List.generate(total, (i) {
+          final active = i < filled;
+          final h = maxH * heightPattern[i];
+          return Padding(
+            padding: EdgeInsets.only(right: i < total - 1 ? gap : 0),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 350),
+              curve: Curves.easeOutCubic,
+              width: segW,
+              height: h,
+              decoration: BoxDecoration(
+                color: active ? color : color.withOpacity(0.13),
+                borderRadius: BorderRadius.circular(segW / 2),
+              ),
+            ),
+          );
+        }),
+      );
+    });
+  }
+}
+
+// ============================================================================
+// SLEEP CARD
+// ============================================================================
+
+class SleepCard extends StatelessWidget {
+  final Color cardColor, textColor, subTextColor, trendColor;
+  final String trendText;
+  final List<int> sleepData;
+  final int avgSleepMinutes;
+  final bool isDark;
+  final VoidCallback onIncrement;
+  final VoidCallback onDecrement;
+
+  const SleepCard({
+    super.key,
+    required this.cardColor,
+    required this.textColor,
+    required this.subTextColor,
+    required this.trendColor,
+    required this.trendText,
+    required this.sleepData,
+    required this.avgSleepMinutes,
+    required this.isDark,
+    required this.onIncrement,
+    required this.onDecrement,
+  });
+
+  String _fmt(int mins) {
+    final h = mins ~/ 60;
+    final m = mins % 60;
+    if (h > 0 && m > 0) return '${h}h ${m}m';
+    if (h > 0) return '${h}h';
+    if (m > 0) return '${m}m';
+    return '—';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final color = AccentColor.notifier.value;
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
+    // Max hours to show on the bar = 10h
+    const maxMins = 600.0;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header — two rows so title never squishes
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.bedtime_rounded, color: color, size: 20),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Sleep Analysis',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      color: textColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(width: 8),
+              _RepeatActionIconButton(
+                  icon: Icons.remove_rounded, onPressed: onDecrement),
+              const SizedBox(width: 6),
+              _RepeatActionIconButton(
+                  icon: Icons.add_rounded, onPressed: onIncrement),
+            ],
+          ),
+
+          const SizedBox(height: 6),
+          // Avg line
+          Row(
+            children: [
+              const SizedBox(width: 40),
+              Text('avg  ',
+                  style: TextStyle(color: subTextColor, fontSize: 11)),
+              Text(_fmt(avgSleepMinutes),
+                  style: TextStyle(
+                      color: color,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold)),
+              Text('  / night',
+                  style: TextStyle(color: subTextColor, fontSize: 11)),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          // One row per day: label | filled bar
+          ...List.generate(7, (i) {
+            final mins = sleepData[i];
+            final frac = (mins / maxMins).clamp(0.0, 1.0);
+            final isToday = i == todayIdx;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 7),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 34,
+                    child: Text(
+                      days[i],
+                      style: TextStyle(
+                        color: isToday ? color : subTextColor,
+                        fontSize: 11,
+                        fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: LayoutBuilder(builder: (ctx, bc) {
+                      return Stack(
+                        children: [
+                          // Track
+                          Container(
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: color.withOpacity(0.10),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          // Fill
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 400),
+                            curve: Curves.easeOutCubic,
+                            height: 10,
+                            width: bc.maxWidth * frac,
+                            decoration: BoxDecoration(
+                              color: isToday
+                                  ? color
+                                  : color.withOpacity(mins > 0 ? 0.45 : 0.0),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ],
+                      );
+                    }),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    width: 38,
+                    child: Text(
+                      _fmt(mins),
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        color: isToday ? color : subTextColor,
+                        fontSize: 10,
+                        fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
   }
 }

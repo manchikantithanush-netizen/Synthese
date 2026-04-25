@@ -11,6 +11,7 @@ import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/ui/components/app_toast.dart';
 
 class AddDebtModal extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -260,6 +261,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
       HapticFeedback.mediumImpact();
 
       if (mounted) {
+        AppToast.success(context, 'Debt added', icon: Icons.account_balance_outlined);
         Navigator.pop(context, true);
       }
     } catch (e) {

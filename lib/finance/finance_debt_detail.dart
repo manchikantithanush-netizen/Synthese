@@ -9,6 +9,7 @@ import 'package:synthese/finance/services/finance_service.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/ui/components/app_toast.dart';
 
 /// Model for debt payment history
 class DebtPayment {
@@ -322,6 +323,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
       }
 
       await batch.commit();
+      if (mounted) AppToast.success(context, 'Payment recorded', icon: Icons.payments_outlined);
 
       // Update local state
       setState(() {
@@ -417,6 +419,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
       batch.update(debtRef, {'remainingAmount': 0.0, 'isPaid': true});
 
       await batch.commit();
+      if (mounted) AppToast.success(context, 'Debt marked as complete', icon: Icons.check_circle_outline_rounded);
 
       // Update local state
       setState(() {

@@ -8,6 +8,7 @@ import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/services/data_aggregation_service.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
+import 'package:synthese/ui/components/app_toast.dart';
 
 class MorningReadinessModal extends StatefulWidget {
   const MorningReadinessModal({super.key});
@@ -144,7 +145,7 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
           _isSaving = false;
         });
         _checkmarkController.forward();
-
+        AppToast.success(context, 'Morning readiness logged', icon: Icons.wb_sunny_rounded);
         await Future.delayed(const Duration(milliseconds: 1500));
         if (mounted) Navigator.of(context).pop(true);
       }

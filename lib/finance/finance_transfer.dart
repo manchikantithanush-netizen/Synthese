@@ -9,6 +9,7 @@ import 'package:synthese/finance/services/finance_service.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/ui/components/app_toast.dart';
 
 class TransferModal extends StatefulWidget {
   const TransferModal({super.key});
@@ -202,6 +203,7 @@ class _TransferModalState extends State<TransferModal> {
       HapticFeedback.mediumImpact();
 
       if (mounted) {
+        AppToast.success(context, 'Transfer completed', icon: Icons.swap_horiz_rounded);
         Navigator.pop(context, true);
       }
     } catch (e) {

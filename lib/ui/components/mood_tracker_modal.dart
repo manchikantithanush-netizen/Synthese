@@ -9,6 +9,7 @@ import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/services/data_aggregation_service.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
+import 'package:synthese/ui/components/app_toast.dart';
 
 class MoodOption {
   final double value;
@@ -300,8 +301,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
           _isSaving = false;
         });
         _checkmarkController.forward();
-
-        // Wait and then close
+        AppToast.success(context, 'Mood logged', icon: Icons.mood_rounded);
         await Future.delayed(const Duration(milliseconds: 1500));
         if (mounted) Navigator.of(context).pop();
       }

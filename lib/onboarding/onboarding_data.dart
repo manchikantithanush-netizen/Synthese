@@ -15,7 +15,7 @@ import 'onboarding_athlete.dart';
 import 'onboarding_sports.dart';
 import 'onboarding_training.dart';
 import 'onboarding_lifestyle.dart';
-// NOTE: onboarding_female.dart has been removed!
+import 'onboarding_permissions.dart';
 
 class OnboardingData extends StatefulWidget {
   const OnboardingData({super.key});
@@ -101,8 +101,12 @@ class _OnboardingDataState extends State<OnboardingData> {
           .get();
       if (doc.exists && (doc.data() as Map)['onboardingCompleted'] == true) {
         if (mounted) {
+          final data = doc.data() as Map<String, dynamic>;
+          final dest = data['privacyPolicyAccepted'] == true
+              ? const DashboardPage()
+              : const OnboardingPermissions();
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const DashboardPage()),
+            MaterialPageRoute(builder: (context) => dest),
             (route) => false,
           );
         }
@@ -269,7 +273,7 @@ class _OnboardingDataState extends State<OnboardingData> {
 
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const DashboardPage()),
+          MaterialPageRoute(builder: (context) => const OnboardingPermissions()),
           (Route<dynamic> route) => false,
         );
       }
@@ -280,60 +284,31 @@ class _OnboardingDataState extends State<OnboardingData> {
     }
   }
 
-  void _showDatePicker() {
+  void _showDatePicker() async {
     HapticFeedback.selectionClick();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showCupertinoModalPopup(
-      context: context,
-      builder: (context) => Container(
-        height: 320,
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-        child: Column(
-          children: [
-            Container(
-              height: 50,
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
-                border: Border(
-                  bottom: BorderSide(
-                    color: isDark ? Colors.white12 : Colors.black12,
-                    width: 0.5,
-                  ),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  CupertinoButton(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: const Text(
-                      "Done",
-                      style: TextStyle(
-                        color: Color(0xFF0A84FF),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: CupertinoDatePicker(
-                mode: CupertinoDatePickerMode.date,
-                initialDateTime: dob ?? DateTime.now(),
-                minimumYear: 1950,
-                maximumYear: DateTime.now().year,
-                onDateTimeChanged: (DateTime newDate) {
-                  setState(() => dob = newDate);
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+    final maxDate = DateTime(
+      DateTime.now().year - 13,
+      DateTime.now().month,
+      DateTime.now().day,
     );
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: dob ?? maxDate,
+      firstDate: DateTime(1950),
+      lastDate: maxDate,
+      builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              surface: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) setState(() => dob = picked);
   }
 
   @override

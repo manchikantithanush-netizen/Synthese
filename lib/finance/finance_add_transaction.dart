@@ -11,6 +11,7 @@ import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/ui/components/app_toast.dart';
 
 class AddTransactionModal extends StatefulWidget {
   const AddTransactionModal({super.key});
@@ -235,6 +236,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
       HapticFeedback.mediumImpact();
 
       if (mounted) {
+        AppToast.success(context, 'Transaction saved', icon: Icons.receipt_rounded);
         Navigator.pop(context, true);
       }
     } catch (e) {

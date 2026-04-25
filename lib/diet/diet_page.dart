@@ -18,6 +18,7 @@ import '../ui/components/universalresetbutton.dart';
 import '../ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/services/data_aggregation_service.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
+import 'package:synthese/ui/components/app_toast.dart';
 
 class DietPage extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -53,6 +54,7 @@ class _DietPageState extends State<DietPage> {
   // Onboarding state
   bool? _dietSetupCompleted;
   int _dailyCalorieGoal = 2000;
+  bool _calorieGoalToasted = false;
 
   @override
   void initState() {
@@ -549,6 +551,14 @@ class _DietPageState extends State<DietPage> {
     Future.delayed(const Duration(milliseconds: 200), () {
       HapticFeedback.lightImpact();
     });
+    if (mounted) AppToast.success(context, '${newEntry.foodName} added to log', icon: Icons.restaurant_rounded);
+
+    // Check calorie goal — only toast once per session
+    final totalCals = _foodLog.fold<int>(0, (sum, e) => sum + e.calories);
+    if (!_calorieGoalToasted && totalCals >= _dailyCalorieGoal) {
+      _calorieGoalToasted = true;
+      if (mounted) AppToast.success(context, 'Daily calorie goal reached! 🎯', icon: Icons.local_fire_department_rounded);
+    }
 
     _loadFrequentFoods();
     unawaited(NotificationRulesEngine.evaluateGlobal());
@@ -632,6 +642,7 @@ class _DietPageState extends State<DietPage> {
       });
 
       HapticFeedback.mediumImpact();
+      if (mounted) AppToast.info(context, 'Food entry removed', icon: Icons.delete_outline_rounded);
 
       // Delete from Firestore if it has a document ID
       if (entry.firestoreId != null) {
@@ -665,32 +676,53 @@ class _DietPageState extends State<DietPage> {
 
   void _showImageSourcePicker() {
     HapticFeedback.lightImpact();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
 
-    showCupertinoModalPopup(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => CupertinoActionSheet(
-        title: const Text('Select Image Source'),
-        message: const Text('Choose where to get your food image'),
-        actions: [
-          CupertinoActionSheetAction(
-            onPressed: () {
-              Navigator.pop(context);
-              _pickImage(ImageSource.camera);
-            },
-            child: const Text('Camera'),
+      backgroundColor: cardColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36, height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: textColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              ListTile(
+                leading: Icon(Icons.camera_alt_rounded, color: textColor),
+                title: Text('Camera', style: TextStyle(color: textColor, fontWeight: FontWeight.w500)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.photo_library_rounded, color: textColor),
+                title: Text('Photo Library', style: TextStyle(color: textColor, fontWeight: FontWeight.w500)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.close_rounded, color: textColor.withOpacity(0.5)),
+                title: Text('Cancel', style: TextStyle(color: textColor.withOpacity(0.5))),
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
           ),
-          CupertinoActionSheetAction(
-            onPressed: () {
-              Navigator.pop(context);
-              _pickImage(ImageSource.gallery);
-            },
-            child: const Text('Photo Library'),
-          ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          isDestructiveAction: true,
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
         ),
       ),
     );

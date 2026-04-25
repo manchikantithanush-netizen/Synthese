@@ -26,74 +26,80 @@ class UniversalBottomNavBar extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          decoration: BoxDecoration(
-            color: bgColor,
+    return Container(
+      color: Colors.transparent,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: ClipRRect(
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : Colors.black.withValues(alpha: 0.08),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(items.length, (index) {
-              final item = items[index];
-              final isActive = currentIndex == index;
-
-              return GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  onTap(index);
-                },
-                behavior: HitTestBehavior.opaque,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                    horizontal: 8,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AnimatedScale(
-                        duration: const Duration(milliseconds: 200),
-                        scale: isActive ? 1.2 : 1.0,
-                        child: Icon(
-                          item.icon,
-                          color: isActive ? activeColor : inactiveColor,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      AnimatedDefaultTextStyle(
-                        duration: const Duration(milliseconds: 200),
-                        style: TextStyle(
-                          color: isActive ? activeColor : inactiveColor,
-                          fontSize: isActive ? 12 : 11,
-                          fontWeight: isActive
-                              ? FontWeight.w600
-                              : FontWeight.w500,
-                        ),
-                        child: Text(item.label),
-                      ),
-                    ],
-                  ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : Colors.black.withValues(alpha: 0.08),
+                  width: 1,
                 ),
-              );
-            }),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: List.generate(items.length, (index) {
+                  final item = items[index];
+                  final isActive = currentIndex == index;
+
+                  return GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      onTap(index);
+                    },
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 8,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AnimatedScale(
+                            duration: const Duration(milliseconds: 200),
+                            scale: isActive ? 1.2 : 1.0,
+                            child: Icon(
+                              item.icon,
+                              color: isActive ? activeColor : inactiveColor,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 200),
+                            style: TextStyle(
+                              color: isActive ? activeColor : inactiveColor,
+                              fontSize: isActive ? 12 : 11,
+                              fontWeight: isActive
+                                  ? FontWeight.w600
+                                  : FontWeight.w500,
+                            ),
+                            child: Text(item.label),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
           ),
         ),
       ),

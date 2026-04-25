@@ -102,11 +102,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "118165710666-hdmdj06hgh3976hv341egu04icram4vp.apps.googleusercontent.com",
+          "client_id": "118165710666-kldqc66bkc40bimkoujfqll3m00fgrg2.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.thanush.synthese",
-            "certificate_hash": "338c8f49acf5309cdd95d21efd8836d8ceb8719f"
+            "certificate_hash": "d2ae22c56edff0de846ca97cc591c5a18d7da79c"
           }
         },
         {

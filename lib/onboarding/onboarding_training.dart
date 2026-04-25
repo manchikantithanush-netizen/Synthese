@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 
 class OnboardingTraining extends StatefulWidget {
   final double trainingDays;
@@ -102,12 +101,6 @@ class _OnboardingTrainingState extends State<OnboardingTraining> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).colorScheme.onSurface;
 
-    final difficultyItems =[
-      const CNPopupMenuItem(label: 'Easy'),
-      const CNPopupMenuItem(label: 'Medium'),
-      const CNPopupMenuItem(label: 'Hard'),
-    ];
-
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 28),
       child: Column(
@@ -140,12 +133,13 @@ class _OnboardingTrainingState extends State<OnboardingTraining> {
 
           SizedBox(
             width: double.infinity,
-            child: CNSlider(
+            child: Slider(
               value: widget.trainingDays,
               min: 0,
               max: 7,
+              divisions: 7,
+              activeColor: const Color(0xFF4CD964),
               onChanged: (val) {
-                // Trigger a tick haptic only when the integer value changes
                 int currentInt = val.toInt();
                 if (_lastTrainingDaysInt != currentInt) {
                   HapticFeedback.selectionClick();
@@ -175,31 +169,14 @@ class _OnboardingTrainingState extends State<OnboardingTraining> {
           const SizedBox(height: 20),
 
           // --- TRAINING INTENSITY ---
-          Text("Training Intensity", style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 14)), // DYNAMIC
+          Text("Training Intensity", style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 14)),
           const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              // DYNAMIC: Dark gray in dark mode, light gray in light mode
-              color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(50),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children:[
-                Text("Difficulty Level", style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w600)), // DYNAMIC
-                CNPopupMenuButton(
-                  key: ValueKey(widget.intensityIndex),
-                  buttonLabel: difficultyItems[widget.intensityIndex].label,
-                  items: difficultyItems,
-                  onSelected: (val) {
-                    HapticFeedback.selectionClick();
-                    widget.onIntensitySelect(val);
-                  },
-                ),
-              ],
-            ),
-          ),
+          ...['Easy', 'Medium', 'Hard'].asMap().entries.map((e) =>
+              _buildSelectionPill(
+                e.value,
+                widget.intensityIndex == e.key,
+                () => widget.onIntensitySelect(e.key),
+              )),
 
           const SizedBox(height: 32),
 

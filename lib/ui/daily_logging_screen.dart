@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/ui/components/app_toast.dart';
 
 class DailyLoggingScreen extends StatefulWidget {
   final DateTime? selectedDate;
@@ -345,6 +346,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
           _isSaving = false;
         });
         _checkmarkController.forward();
+        AppToast.success(context, 'Cycle log saved', icon: Icons.favorite_rounded);
 
         // Wait and then close
         await Future.delayed(const Duration(milliseconds: 1500));

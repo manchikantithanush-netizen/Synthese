@@ -1,0 +1,213 @@
+ONBOARDING PERMISSIONS — SLIDE CONTENT
+=======================================
+
+
+SLIDE 1 — Before you begin
+───────────────────────────
+Heading:
+  "Before you begin,"
+
+Subtitle:
+  "We want to be fully transparent about how we use your data and what permissions we need."
+
+Cards:
+  [Lock icon] Your data stays yours
+    "We never sell, share, or use your data for advertising. Everything is used solely to power your experience."
+
+  [Shield icon] Health & fitness permissions
+    "We request access to Health Connect, location, activity recognition, camera, and notifications — only to deliver the features you use."
+
+  [Gavel icon] UAE PDPL compliant
+    "Synthese operates under UAE Federal Decree-Law No. 45 of 2021 on the Protection of Personal Data."
+
+Button:
+  "Let's go"
+
+
+───────────────────────────────────────────────────────────────────────────────
+
+
+SLIDE 2 — One app, six dimensions
+───────────────────────────────────
+Heading:
+  "One app,
+   six dimensions."
+
+Subtitle:
+  "Synthese brings together every part of your wellbeing — physical, mental, and financial — in one place."
+
+Sections list:
+  [Home icon]    Home
+    "Your daily metrics at a glance — steps, heart rate, calories, sleep, and more."
+
+  [Fork icon]    Diet
+    "AI-powered nutrition tracking, water intake, and personalised macro goals."
+
+  [Run icon]     Workout
+    "GPS-tracked sessions across running, cycling, swimming, and more."
+
+  [Yoga icon]    Mindfulness
+    "Mood check-ins, breathing exercises, and mental health assessments."
+
+  [Heart icon]   Cycles
+    "Cycle tracking and symptom logging — available for female users."
+
+  [Wallet icon]  Finance
+    "Expense tracking, budgeting, and debt management in one view."
+
+Button:
+  "Got it"
+
+
+───────────────────────────────────────────────────────────────────────────────
+
+
+SLIDE 3 — What to expect
+──────────────────────────
+Heading:
+  "What to expect."
+
+Subtitle:
+  "A few things worth knowing before you dive in."
+
+Cards:
+  [Sync icon] Your data, always in sync
+    "Connect Health Connect or grant health permissions to automatically pull your steps, heart rate, sleep, and calories into the Home dashboard."
+
+  [Tune icon] Personalised from day one
+    "The data you entered during setup shapes your nutrition targets, workout suggestions, and health insights. Update it anytime from Account Details."
+
+  [Location icon] Permissions are feature-gated
+    "Location is only used during active workout sessions. Camera is only used when you choose to upload a photo. You stay in control."
+
+  [Block icon] No ads, ever
+    "Synthese does not show ads, sell your data, or share it with third parties. Your health information is yours alone."
+
+Button:
+  "Continue"
+
+
+───────────────────────────────────────────────────────────────────────────────
+
+
+SLIDE 4 — Why we need access
+──────────────────────────────
+Heading:
+  "Why we need
+   access."
+
+Subtitle:
+  "Here's exactly what each permission is used for — nothing more."
+
+Permissions list:
+  [Bell icon]       Notifications
+    "Workout reminders, hydration nudges, and important app alerts."
+
+  [Location icon]   Location
+    "Tracks your route during workouts. Background location keeps your session running even when the screen is off — no interruptions."
+
+  [Walk icon]       Activity Recognition
+    "Detects movement to count your steps automatically throughout the day."
+
+  [Camera icon]     Camera
+    "Required for AI calorie analysis — snap your meal and let the AI do the math."
+
+  [Photos icon]     Photos & Media
+    "Used to upload your profile photo and to pick meal images for AI analysis."
+
+  [Watch icon]      Health Connect
+    "Syncs data from Samsung Galaxy Watch or any wearable — so you never have to log manually."
+
+Tip box (green):
+  [Info icon] "A few pop-ups are about to appear — just tap Allow for each one. If you skip any, no worries. The app will only ask again when you actually need that feature."
+
+Button:
+  "Allow Permissions"  (shows spinner while permissions are being requested)
+
+
+───────────────────────────────────────────────────────────────────────────────
+
+
+SLIDE 5 — Privacy Policy
+──────────────────────────
+Heading:
+  "Privacy Policy"
+
+Subtitle:
+  "Please read and agree to continue using Synthese."
+
+Scrollable policy body:
+  Title:    Synthese: Workout & Health
+  Meta:     Effective Date: April 21, 2026  ·  Jurisdiction: UAE
+
+  1. Introduction
+     Welcome to Synthese: Workout & Health. We are committed to protecting your personal information in compliance with UAE Federal Decree-Law No. 45 of 2021 (PDPL). By using Synthese, you agree to this Privacy Policy.
+
+  2. Data Controller
+     Synthese is developed and operated from the UAE. We are the sole data controller. We do not share, sell, or transfer your data to any third-party businesses, marketing partners, or affiliates.
+
+  3. Who This Policy Applies To
+     This App is for users aged 13 and older. Users aged 13–17 require parental or guardian consent before using the App.
+
+  4. Data We Collect
+     Personal Information:
+       • Name, username, or display name
+       • Email address and account credentials
+       • Date of birth and age
+       • Gender (optional)
+
+     Health & Biometric Data:
+       • Workout and exercise activity logs
+       • Physical metrics: height, weight, body measurements
+       • Biometric indicators: heart rate, calorie data
+       • Fitness goals and progress tracking data
+       • Medical or clinical health information you voluntarily enter
+
+     Device Permissions:
+       • Camera: Used for AI calorie analysis and progress photos.
+       • Photos / Media: To save and retrieve workout data and health records.
+       • Location: Used during workout tracking sessions only.
+       • Activity Recognition: To count steps and detect physical activity.
+       • Notifications: Service-related alerts only — not marketing.
+       • Health Connect (Android): Read-only access to steps, heart rate, sleep, calories, and exercise.
+
+     You may revoke any permission through your device settings at any time.
+
+  5. How We Use Your Data
+     We use your data exclusively to provide and improve Synthese — account management, personalised health insights, technical diagnostics, and UAE law compliance. We do not use your data for advertising or commercial profiling.
+
+  6. Data Storage & Security
+     Your data is stored on secure cloud servers with TLS/SSL encryption in transit and at rest, access controls, regular security audits, and secure deletion protocols.
+
+  7. Data Sharing & Third Parties
+     We do not sell, rent, or share your personal or health data with any third parties under any circumstances. Data may only be disclosed to comply with a lawful request from UAE government authorities.
+
+  8. Your Rights Under UAE PDPL
+       • Right to Access: Request a copy of the data we hold about you
+       • Right to Rectification: Request correction of inaccurate data
+       • Right to Erasure: Request deletion of your personal data
+       • Right to Restriction: Limit how we process your data
+       • Right to Data Portability: Receive your data in a machine-readable format
+       • Right to Withdraw Consent: Withdraw consent at any time
+       • Right to Object: Object to processing of your sensitive health data
+
+     Contact us through the App to exercise any right. We respond within 30 days.
+
+  9. Data Retention
+     We retain your data only as long as necessary. Upon account deletion, your data is deleted or anonymised within 90 days.
+
+  10. Minors
+      Users under 13 are not permitted. Users aged 13–17 may only use the App with verified parental or guardian consent.
+
+  11. Changes to This Policy
+      We may update this policy periodically and will notify you of material changes through the App or via email.
+
+  12. Governing Law
+      This Privacy Policy is governed by the laws of the United Arab Emirates. Last updated: April 21, 2026.
+
+Checkbox:
+  "I have read and agree to the Privacy Policy"
+
+Buttons:
+  "I Agree"         — primary button, dims until checkbox is ticked, shows spinner while saving
+  "I Do Not Agree"  — red outline button, signs user out and returns to login

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cupertino_native/cupertino_native.dart';
-import 'onboarding_utils.dart'; // Ensure you have this imported to access iosInput
+import 'onboarding_utils.dart';
 
 class OnboardingLifestyle extends StatefulWidget {
   final double sleepDuration;
@@ -133,14 +132,6 @@ class _OnboardingLifestyleState extends State<OnboardingLifestyle> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).colorScheme.onSurface;
 
-    // Pop up options mapped to index 0, 1, 2, 3
-    final sleepQualityItems =[
-      const CNPopupMenuItem(label: 'Poor'),
-      const CNPopupMenuItem(label: 'Fair'),
-      const CNPopupMenuItem(label: 'Good'),
-      const CNPopupMenuItem(label: 'Excellent'),
-    ];
-
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 28),
       child: Column(
@@ -172,10 +163,12 @@ class _OnboardingLifestyleState extends State<OnboardingLifestyle> {
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            child: CNSlider(
+            child: Slider(
               value: widget.sleepDuration,
-              min: 4, // 4 visually represents "< 5 hours"
-              max: 8, // 8 visually represents "8+ hours"
+              min: 4,
+              max: 8,
+              divisions: 4,
+              activeColor: const Color(0xFF4CD964),
               onChanged: (val) {
                 int currentInt = val.toInt();
                 if (_lastSleepInt != currentInt) {
@@ -190,31 +183,14 @@ class _OnboardingLifestyleState extends State<OnboardingLifestyle> {
           const SizedBox(height: 32),
 
           // --- SLEEP QUALITY ---
-          Text("Sleep Quality", style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 14)), // DYNAMIC
+          Text("Sleep Quality", style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 14)),
           const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              // DYNAMIC: Dark gray in dark mode, light gray in light mode
-              color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(50),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children:[
-                Text("Quality Level", style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w600)), // DYNAMIC
-                CNPopupMenuButton(
-                  key: ValueKey(widget.sleepQualityIndex),
-                  buttonLabel: sleepQualityItems[widget.sleepQualityIndex].label,
-                  items: sleepQualityItems,
-                  onSelected: (val) {
-                    HapticFeedback.selectionClick();
-                    widget.onSleepQualitySelect(val);
-                  },
-                ),
-              ],
-            ),
-          ),
+          ...['Poor', 'Fair', 'Good', 'Excellent'].asMap().entries.map((e) =>
+              _buildSelectionPill(
+                e.value,
+                widget.sleepQualityIndex == e.key,
+                () => widget.onSleepQualitySelect(e.key),
+              )),
 
           const SizedBox(height: 32),
 
@@ -232,10 +208,12 @@ class _OnboardingLifestyleState extends State<OnboardingLifestyle> {
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            child: CNSlider(
+            child: Slider(
               value: widget.waterIntake,
-              min: 1, // Minimum 1 Liter
-              max: 5, // 5 visually represents "5+ L"
+              min: 1,
+              max: 5,
+              divisions: 4,
+              activeColor: const Color(0xFF4CD964),
               onChanged: (val) {
                 int currentInt = val.toInt();
                 if (_lastWaterInt != currentInt) {
@@ -279,10 +257,12 @@ class _OnboardingLifestyleState extends State<OnboardingLifestyle> {
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
-            child: CNSlider(
+            child: Slider(
               value: widget.screenTime,
               min: 0,
-              max: 3, // 3 visually represents "2+ hours"
+              max: 3,
+              divisions: 3,
+              activeColor: const Color(0xFF4CD964),
               onChanged: (val) {
                 int currentInt = val.toInt();
                 if (_lastScreenInt != currentInt) {

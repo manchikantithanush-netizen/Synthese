@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'onboarding_utils.dart';
@@ -39,19 +38,17 @@ class OnboardingPhysical extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween, 
       children:[
         Text(t, style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w500)),
-        CupertinoTheme(
-          data: const CupertinoThemeData(primaryColor: Color(0xFF4CD964)),
-          child: CNSwitch(
-            value: v, 
-            onChanged: (val) => fn(val),
-          ),
+        Switch(
+          value: v,
+          onChanged: (val) => fn(val),
+          activeColor: const Color(0xFF4CD964),
         ),
       ],
     );
   }
 
-  // --- REUSABLE CUPERTINO PICKER MODAL ---
-  void _showCupertinoPicker({
+  // --- REUSABLE MATERIAL NUMBER PICKER DIALOG ---
+  void _showNumberPicker({
     required BuildContext context,
     required String title,
     required int min,
@@ -62,76 +59,73 @@ class OnboardingPhysical extends StatelessWidget {
   }) {
     HapticFeedback.selectionClick();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    // Find the current index based on what's already in the text field
-    int selectedValue = controller.text.isNotEmpty ? int.tryParse(controller.text) ?? initialValue : initialValue;
-    int selectedIndex = selectedValue - min;
-    if (selectedIndex < 0) selectedIndex = 0;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
 
-    showCupertinoModalPopup(
+    int selectedValue = controller.text.isNotEmpty
+        ? int.tryParse(controller.text) ?? initialValue
+        : initialValue;
+
+    final scrollController = FixedExtentScrollController(
+      initialItem: selectedValue - min,
+    );
+
+    showDialog(
       context: context,
-      builder: (context) => Material( // <--- ADDED MATERIAL HERE TO FIX YELLOW LINES
-        color: Colors.transparent,
-        child: Container(
-          height: 320,
-          color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          child: Column(
-            children: [
-              Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100,
-                  border: Border(bottom: BorderSide(color: isDark ? Colors.white12 : Colors.black12, width: 0.5)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20),
-                      child: Text(title, style: TextStyle(color: isDark ? Colors.white70 : Colors.black54, fontSize: 16, fontWeight: FontWeight.w500)),
-                    ),
-                    CupertinoButton(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: const Text("Done", style: TextStyle(color: Color(0xFF0A84FF), fontWeight: FontWeight.w600)),
-                      onPressed: () {
-                        // If user hits done without scrolling, lock in the default value
-                        if (controller.text.isEmpty) {
-                          controller.text = selectedValue.toString();
-                          onValueChange(selectedValue.toString());
-                        }
-                        Navigator.of(context).pop();
-                      },
-                    )
-                  ],
-                ),
-              ),
-              Expanded(
-                child: CupertinoPicker(
-                  scrollController: FixedExtentScrollController(initialItem: selectedIndex),
-                  itemExtent: 45,
-                  diameterRatio: 1.2,
-                  selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-                    background: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
-                  ),
-                  onSelectedItemChanged: (int index) {
-                    HapticFeedback.selectionClick();
-                    int actualValue = min + index;
-                    controller.text = actualValue.toString();
-                    onValueChange(actualValue.toString());
-                  },
-                  children: List.generate(
-                    max - min + 1,
-                    (index) => Center(
-                      child: Text(
-                        "${min + index} $suffix",
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 22, fontWeight: FontWeight.w500),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: cardColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(title,
+              style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
+          content: SizedBox(
+            height: 180,
+            child: ListWheelScrollView.useDelegate(
+              controller: scrollController,
+              itemExtent: 48,
+              perspective: 0.003,
+              diameterRatio: 1.8,
+              physics: const FixedExtentScrollPhysics(),
+              onSelectedItemChanged: (index) {
+                HapticFeedback.selectionClick();
+                selectedValue = min + index;
+              },
+              childDelegate: ListWheelChildBuilderDelegate(
+                childCount: max - min + 1,
+                builder: (context, index) {
+                  final val = min + index;
+                  return Center(
+                    child: Text(
+                      '$val $suffix',
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
-            ],
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel',
+                  style: TextStyle(color: textColor.withOpacity(0.5))),
+            ),
+            TextButton(
+              onPressed: () {
+                controller.text = selectedValue.toString();
+                onValueChange(selectedValue.toString());
+                Navigator.pop(context);
+              },
+              child: Text('Done',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w600)),
+            ),
+          ],
         ),
       ),
     );
@@ -167,7 +161,7 @@ class OnboardingPhysical extends StatelessWidget {
                   readOnly: true, // Prevents keyboard from showing
                   style: TextStyle(color: textColor), 
                   decoration: OnboardingUtils.iosInput(context, "Height (cm)", Icons.straighten), 
-                  onTap: () => _showCupertinoPicker(
+                  onTap: () => _showNumberPicker(
                     context: context, 
                     title: "Height", 
                     min: 100, max: 250, initialValue: 170, 
@@ -182,7 +176,7 @@ class OnboardingPhysical extends StatelessWidget {
                   readOnly: true, // Prevents keyboard from showing
                   style: TextStyle(color: textColor), 
                   decoration: OnboardingUtils.iosInput(context, "Weight (kg)", Icons.monitor_weight), 
-                  onTap: () => _showCupertinoPicker(
+                  onTap: () => _showNumberPicker(
                     context: context, 
                     title: "Weight", 
                     min: 30, max: 200, initialValue: 70, 
@@ -203,7 +197,7 @@ class OnboardingPhysical extends StatelessWidget {
                   readOnly: true, // Prevents keyboard from showing
                   style: TextStyle(color: textColor), 
                   decoration: OnboardingUtils.iosInput(context, "Body Fat (%)", Icons.percent),
-                  onTap: () => _showCupertinoPicker(
+                  onTap: () => _showNumberPicker(
                     context: context, 
                     title: "Body Fat", 
                     min: 5, max: 60, initialValue: 20, 
@@ -218,7 +212,7 @@ class OnboardingPhysical extends StatelessWidget {
                   readOnly: true, // Prevents keyboard from showing
                   style: TextStyle(color: textColor), 
                   decoration: OnboardingUtils.iosInput(context, "Waist (cm)", Icons.linear_scale),
-                  onTap: () => _showCupertinoPicker(
+                  onTap: () => _showNumberPicker(
                     context: context, 
                     title: "Waist", 
                     min: 40, max: 150, initialValue: 80, 

@@ -69,7 +69,12 @@ class _LoginPageState extends State<LoginPage> {
         password: passwordController.text.trim(),
       );
       User? user = FirebaseAuth.instance.currentUser;
-      if (user != null && !user.emailVerified) {
+      const _bypassVerificationEmails = {
+        'testforgoogle@synthese.com',
+        'testforthanush@synthese.com',
+      };
+      final emailLower = (user?.email ?? '').toLowerCase();
+      if (user != null && !user.emailVerified && !_bypassVerificationEmails.contains(emailLower)) {
         await FirebaseAuth.instance.signOut();
         _triggerNotification('Please verify your email before logging in.');
         setState(() => _isLoading = false);
@@ -228,7 +233,7 @@ class _LoginPageState extends State<LoginPage> {
                           isDark
                               ? 'assets/logotextdarkside.png'
                               : 'assets/logotextlightside.png',
-                          height: 100,
+                          height: 28,
                           fit: BoxFit.contain,
                         ),
                         const Spacer(),

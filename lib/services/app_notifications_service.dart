@@ -34,7 +34,6 @@ class AppNotificationsService {
         importance: Importance.defaultImportance,
       ),
     );
-    await androidPlugin?.requestNotificationsPermission();
     _initialized = true;
   }
 

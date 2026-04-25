@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 import 'login_page.dart';
 import 'verification_page.dart';
+import 'package:synthese/onboarding/onboarding_intro.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
@@ -88,10 +89,22 @@ class _SignupPageState extends State<SignupPage> {
       );
       if (mounted) {
         HapticFeedback.mediumImpact();
-        Navigator.pushReplacement(
-          context,
-          _fadeRoute(const VerificationPage()),
-        );
+        const _bypassVerificationEmails = {
+          'testforgoogle@synthese.com',
+          'testforthanush@synthese.com',
+        };
+        final emailLower = emailController.text.trim().toLowerCase();
+        if (_bypassVerificationEmails.contains(emailLower)) {
+          Navigator.pushReplacement(
+            context,
+            _fadeRoute(const OnboardingIntro()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            _fadeRoute(const VerificationPage()),
+          );
+        }
       }
     } on FirebaseAuthException catch (e) {
       _triggerError(e.message ?? 'Sign up failed');
@@ -153,7 +166,7 @@ class _SignupPageState extends State<SignupPage> {
                           isDark
                               ? 'assets/logotextdarkside.png'
                               : 'assets/logotextlightside.png',
-                          height: 100,
+                          height: 28,
                           fit: BoxFit.contain,
                         ),
                         const Spacer(),
