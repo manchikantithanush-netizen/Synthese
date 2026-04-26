@@ -28,6 +28,7 @@ import 'package:synthese/services/notification_rules_engine.dart';
 import 'package:health/health.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/services/update_reminder_service.dart';
+import 'package:synthese/ui/steps_detail_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -69,6 +70,8 @@ class _DashboardPageState extends State<DashboardPage>
   final List<({int bpm, DateTime time})> _hrHistory = [];
   // Exercise minutes per day for the last 7 days (today = last entry)
   final List<int> _exHistory = List.filled(7, 0);
+  // Hourly steps for today (index = hour 0–23)
+  final List<int> _hourlySteps = List.filled(24, 0);
   int _lastWorkoutCaloriesReported = 0;
   int _lastWorkoutMinutesReported = 0;
   bool _keepWorkoutAlive = false;
@@ -387,6 +390,14 @@ class _DashboardPageState extends State<DashboardPage>
         .where((p) => !p.dateTo.isBefore(todayStart) && !p.dateFrom.isAfter(now))
         .fold<int>(0, (acc, p) => acc + _asInt(p.value));
 
+    // Hourly steps today
+    final List<int> hourlySteps = List.filled(24, 0);
+    for (final p in points.where((p) => p.type == HealthDataType.STEPS)) {
+      if (p.dateTo.isBefore(todayStart) || p.dateFrom.isAfter(now)) continue;
+      final hour = p.dateFrom.hour.clamp(0, 23);
+      hourlySteps[hour] += _asInt(p.value);
+    }
+
     // Latest heart rate sample (today).
     final hrPoints = points
         .where((p) => p.type == HealthDataType.HEART_RATE)
@@ -466,8 +477,10 @@ class _DashboardPageState extends State<DashboardPage>
       }
 
       _steps = math.max(_steps, stepsToday);
-      _heartRate = latestHr;
-      if (latestHr > 0) {
+      for (int h = 0; h < 24; h++) {
+        _hourlySteps[h] = math.max(_hourlySteps[h], hourlySteps[h]);
+      }
+      _heartRate = latestHr;      if (latestHr > 0) {
         _hrHistory.add((bpm: latestHr, time: DateTime.now()));
       }
       _activeCalories = math.max(_activeCalories, activeCaloriesToday);
@@ -1235,6 +1248,15 @@ class _DashboardPageState extends State<DashboardPage>
                 stepsProgress: _steps / 10000.0,
                 onIncrement: () => _adjustSteps(100),
                 onDecrement: () => _adjustSteps(-100),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => StepsDetailPage(
+                          todaySteps: _steps,
+                        ),
+                    ),
+                  );
+                },
               ),
             ),
 
@@ -1487,6 +1509,7 @@ class MetricCard extends StatelessWidget {
   final VoidCallback? onDecrement;
   // Optional pill progress bar (0.0 – 1.0)
   final double? stepsProgress;
+  final VoidCallback? onTap;
 
   const MetricCard({
     super.key,
@@ -1505,6 +1528,7 @@ class MetricCard extends StatelessWidget {
     this.onIncrement,
     this.onDecrement,
     this.stepsProgress,
+    this.onTap,
   });
 
   @override
@@ -1518,7 +1542,9 @@ class MetricCard extends StatelessWidget {
     final unitSize = compact ? 11.0 : 12.0;
     final trendSize = compact ? 10.0 : 11.0;
 
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       height: double.infinity,
       padding: EdgeInsets.all(cardPadding),
       decoration: BoxDecoration(
@@ -1646,6 +1672,7 @@ class MetricCard extends StatelessWidget {
             ),
         ],
       ),
+    ),
     );
   }
 }
