@@ -408,7 +408,7 @@ class _FinancePageState extends State<FinancePage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : Colors.white;
+    final bgColor = isDark ? const Color(0xFF111111) : Colors.white;
     final cardColor = isDark
         ? const Color(0xFF151515)
         : const Color.fromARGB(255, 245, 245, 245);

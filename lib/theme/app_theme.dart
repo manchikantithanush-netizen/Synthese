@@ -45,11 +45,11 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: Colors.black, // Black background for the app
+      scaffoldBackgroundColor: const Color(0xFF111111),
       
       colorScheme: const ColorScheme.dark(
         primary: Colors.blue, // Keep brand color or change it for dark mode
-        surface: Colors.black,
+        surface: Color(0xFF111111),
         onSurface: Colors.white, // Default text/icon color on backgrounds
       ),
       
@@ -62,7 +62,7 @@ class AppTheme {
 
       // AppBar styling
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.black,
+        backgroundColor: const Color(0xFF111111),
         foregroundColor: Colors.white, // Makes the back button and title white
         elevation: 0,
       ),

@@ -7,7 +7,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:intl/intl.dart';
 
 import 'food_analysis_service.dart';
@@ -607,30 +606,39 @@ class _DietPageState extends State<DietPage> {
     BuildContext context,
     bool isDark,
   ) async {
-    bool result = false;
-    await AdaptiveAlertDialog.show(
+    final dialogBg = isDark ? const Color(0xFF252528) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final mutedText = isDark ? Colors.white70 : Colors.black54;
+
+    final result = await showDialog<bool>(
       context: context,
-      title: 'Delete Food Log',
-      message:
+      builder: (context) => AlertDialog(
+        backgroundColor: dialogBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Delete Food Log', style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
+        content: Text(
           'Are you sure you want to delete this food entry? This will remove it from your calorie count.',
-      icon: 'trash.fill',
-      actions: [
-        AlertAction(
-          title: 'Cancel',
-          style: AlertActionStyle.cancel,
-          onPressed: () {},
+          style: TextStyle(color: mutedText),
         ),
-        AlertAction(
-          title: 'Delete',
-          style: AlertActionStyle.destructive,
-          onPressed: () {
-            HapticFeedback.lightImpact();
-            result = true;
-          },
-        ),
-      ],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: TextStyle(color: textColor)),
+          ),
+          TextButton(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.pop(context, true);
+            },
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
     );
-    return result;
+    return result ?? false;
   }
 
   void _deleteFoodLog(int index) async {
@@ -1100,7 +1108,7 @@ class _DietPageState extends State<DietPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final safePadding = mediaQuery.padding;
 
-    final bgColor = isDark ? Colors.black : Colors.white;
+    final bgColor = isDark ? const Color(0xFF111111) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = textColor.withOpacity(0.5);
     final cardColor = isDark ? const Color(0xFF151515) : Colors.grey.shade100;

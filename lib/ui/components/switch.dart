@@ -115,7 +115,7 @@ class _UniversalSwitchState extends State<UniversalSwitch>
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut,
                   left: widget.value 
-                      ? switchWidth - 28 - 2 // Go all the way to the end
+                      ? switchWidth - 24 - 2 // Go all the way to the end
                       : 2,
                   top: (switchHeight - 24) / 2, // Center vertically
                   child: Container(

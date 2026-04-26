@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class FoodAnalysisResult {
   final int estimatedCalories;
@@ -40,9 +39,9 @@ class FoodAnalysisResult {
 }
 
 class FoodAnalysisService {
-  static final String _token = dotenv.env['GITHUB_TOKEN'] ?? '';
+  static const String _baseUrl = 'https://synthese-backend.manchikanti-thanush.workers.dev/github';
   static const String _model = 'openai/gpt-4o-mini';
-  static const String _baseUrl = 'https://models.github.ai/inference/chat/completions';
+  static const String _appSecret = String.fromEnvironment('APP_SECRET');
 
   Future<FoodAnalysisResult> analyzeFood(File imageFile) async {
     try {
@@ -58,9 +57,8 @@ class FoodAnalysisService {
       final response = await http.post(
         Uri.parse(_baseUrl),
         headers: {
-          'Authorization': 'Bearer $_token',
           'Content-Type': 'application/json',
-          'Accept': 'application/vnd.github+json',
+          'X-App-Secret': _appSecret,
         },
         body: jsonEncode({
           'model': _model,
@@ -122,9 +120,8 @@ Be realistic with estimates. If you cannot identify the food or it's not food, r
       final response = await http.post(
         Uri.parse(_baseUrl),
         headers: {
-          'Authorization': 'Bearer $_token',
           'Content-Type': 'application/json',
-          'Accept': 'application/vnd.github+json',
+          'X-App-Secret': _appSecret,
         },
         body: jsonEncode({
           'model': _model,

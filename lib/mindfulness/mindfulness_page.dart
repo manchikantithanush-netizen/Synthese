@@ -288,7 +288,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
     final clampedTextScale = mediaQuery.textScaler.scale(1.0).clamp(0.9, 1.0);
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : Colors.white;
+    final bgColor = isDark ? const Color(0xFF111111) : Colors.white;
     final safePadding = MediaQuery.of(context).padding;
     final isNarrow = MediaQuery.of(context).size.width < 380;
 

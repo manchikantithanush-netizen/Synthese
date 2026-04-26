@@ -154,10 +154,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
   double? _weatherFeelsLikeC;
   int? _weatherHumidity;
   double? _weatherWindKph;
-  // Use dotenv for runtime API key loading
-  static String get _weatherApiKey => const String.fromEnvironment('WEATHER_API_KEY', defaultValue: '') != ''
-      ? const String.fromEnvironment('WEATHER_API_KEY', defaultValue: '')
-      : (const bool.hasEnvironment('FLUTTER_TEST') ? '' : (dotenv.env['WEATHER_API_KEY'] ?? ''));
+  // No local API key needed — proxied through Cloudflare worker
+  static const String _workerBaseUrl = 'https://synthese-backend.manchikanti-thanush.workers.dev';
+  static const String _appSecret = String.fromEnvironment('APP_SECRET');
 
   int _lastDistanceMilestoneKm = 0;
   int _lastDurationMilestoneMinutes = 0;
@@ -432,9 +431,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
     try {
       final uri = Uri.parse(
-        'https://api.weatherapi.com/v1/current.json?key=$_weatherApiKey&q=${point.latitude},${point.longitude}&aqi=no',
+        '$_workerBaseUrl/weather?lat=${point.latitude}&lon=${point.longitude}',
       );
-      final response = await http.get(uri);
+      final response = await http.get(uri, headers: {'X-App-Secret': _appSecret});
       if (response.statusCode != 200) {
         throw Exception('Weather API returned ${response.statusCode}');
       }
@@ -2629,8 +2628,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : Colors.white;
-    final textColor = isDark ? Colors.white : Colors.black;
+    final bgColor = isDark ? const Color(0xFF111111) : Colors.white;    final textColor = isDark ? Colors.white : Colors.black;
     final cardColor = isDark ? const Color(0xFF1F1F1F) : Colors.white;
     // Match finance page search field in light mode (finance.dart cardColor).
     final searchBarFillColor =
