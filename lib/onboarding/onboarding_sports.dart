@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 class OnboardingSports extends StatefulWidget {
@@ -27,12 +26,12 @@ class _OnboardingSportsState extends State<OnboardingSports> {
 
   void _showSportPicker(BuildContext context, {required bool isSecondary}) {
     HapticFeedback.selectionClick();
-    
-    // DYNAMIC THEME VARIABLES FOR BOTTOM SHEET
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = Theme.of(context).colorScheme.onSurface;
 
-    // Exclude sports that are already selected in the primary picker 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+
+    // Exclude sports that are already selected in the primary picker
     // and exclude the other picker's selection to avoid duplicates.
     List<String> availableSports = widget.options.where((sport) {
       if (widget.selected.contains(sport)) return false;
@@ -43,82 +42,80 @@ class _OnboardingSportsState extends State<OnboardingSports> {
 
     if (availableSports.isEmpty) return;
 
-    int tempIndex = 0;
+    final currentSport = isSecondary ? _secondarySport : _tertiarySport;
+    int selectedIndex = currentSport != null
+        ? availableSports.indexOf(currentSport).clamp(0, availableSports.length - 1)
+        : 0;
 
-    showModalBottomSheet(
+    final scrollController = FixedExtentScrollController(initialItem: selectedIndex);
+
+    showDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return Container(
-          height: 280,
-          decoration: BoxDecoration(
-            // DYNAMIC: Dark gray in dark mode, white in light mode
-            color: isDark ? const Color(0xFF1C1C1E) : Colors.white,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: cardColor,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            isSecondary ? "Secondary Sport" : "Tertiary Sport",
+            style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
+          ),
+          content: SizedBox(
+            height: 180,
+            child: ListWheelScrollView.useDelegate(
+              controller: scrollController,
+              itemExtent: 48,
+              perspective: 0.003,
+              diameterRatio: 1.8,
+              physics: const FixedExtentScrollPhysics(),
+              onSelectedItemChanged: (index) {
+                HapticFeedback.selectionClick();
+                selectedIndex = index;
+              },
+              childDelegate: ListWheelChildBuilderDelegate(
+                childCount: availableSports.length,
+                builder: (context, index) {
+                  return Center(
+                    child: Text(
+                      availableSports[index],
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
-          child: Column(
-            children:[
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                decoration: BoxDecoration(
-                  // DYNAMIC: Border color matches theme
-                  border: Border(bottom: BorderSide(color: textColor.withOpacity(0.1), width: 1)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children:[
-                    GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        Navigator.pop(context);
-                      },
-                      child: Text("Cancel", style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 16)), // DYNAMIC
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        HapticFeedback.mediumImpact();
-                        final chosenSport = availableSports[tempIndex];
-                        setState(() {
-                          if (isSecondary) {
-                            _secondarySport = chosenSport;
-                          } else {
-                            _tertiarySport = chosenSport;
-                          }
-                        });
-                        widget.onSelect(chosenSport);
-                        Navigator.pop(context);
-                      },
-                      child: const Text("Done", style: TextStyle(color: Color(0xFF4CD964), fontSize: 16, fontWeight: FontWeight.w600)), // Kept green accent
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: CupertinoPicker(
-                  backgroundColor: Colors.transparent,
-                  itemExtent: 44,
-                  scrollController: FixedExtentScrollController(initialItem: 0),
-                  onSelectedItemChanged: (int index) {
-                    HapticFeedback.selectionClick();
-                    tempIndex = index;
-                  },
-                  children: availableSports.map((sport) {
-                    return Center(
-                      child: Text(
-                        sport,
-                        style: TextStyle(color: textColor, fontSize: 20), // DYNAMIC
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel',
+                  style: TextStyle(color: textColor.withOpacity(0.5))),
+            ),
+            TextButton(
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                final chosenSport = availableSports[selectedIndex];
+                setState(() {
+                  if (isSecondary) {
+                    _secondarySport = chosenSport;
+                  } else {
+                    _tertiarySport = chosenSport;
+                  }
+                });
+                widget.onSelect(chosenSport);
+                Navigator.pop(context);
+              },
+              child: Text('Done',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

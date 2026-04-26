@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cupertino_native/cupertino_native.dart';
-import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 
 import 'package:synthese/main.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
@@ -95,30 +94,40 @@ class _AccountPageModalState extends State<AccountPageModal> {
   );
 
   Future<bool> _showDeleteAccountConfirmation(BuildContext context) async {
-    bool result = false;
-    await AdaptiveAlertDialog.show(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogBg = isDark ? const Color(0xFF252528) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final mutedText = isDark ? Colors.white70 : Colors.black54;
+
+    final result = await showDialog<bool>(
       context: context,
-      title: 'Delete Account',
-      message:
+      builder: (context) => AlertDialog(
+        backgroundColor: dialogBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Delete Account', style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
+        content: Text(
           'Are you sure you want to delete your account? This will permanently delete all your data and cannot be undone.',
-      icon: 'trash.fill',
-      actions: [
-        AlertAction(
-          title: 'Cancel',
-          style: AlertActionStyle.cancel,
-          onPressed: () {},
+          style: TextStyle(color: mutedText),
         ),
-        AlertAction(
-          title: 'Delete',
-          style: AlertActionStyle.destructive,
-          onPressed: () {
-            HapticFeedback.lightImpact();
-            result = true;
-          },
-        ),
-      ],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: TextStyle(color: textColor)),
+          ),
+          TextButton(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.pop(context, true);
+            },
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
     );
-    return result;
+    return result ?? false;
   }
 
   Future<void> _deleteAccount() async {
@@ -157,19 +166,27 @@ class _AccountPageModalState extends State<AccountPageModal> {
       setState(() => _isDeletingAccount = false);
       if (context.mounted) {
         // Show error dialog
-        await AdaptiveAlertDialog.show(
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final dialogBg = isDark ? const Color(0xFF252528) : Colors.white;
+        final textColor = isDark ? Colors.white : Colors.black;
+        final mutedText = isDark ? Colors.white70 : Colors.black54;
+        await showDialog<void>(
           context: context,
-          title: 'Error',
-          message:
+          builder: (context) => AlertDialog(
+            backgroundColor: dialogBg,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text('Error', style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
+            content: Text(
               'Failed to delete account. Please try again or contact support.',
-          icon: 'exclamationmark.triangle.fill',
-          actions: [
-            AlertAction(
-              title: 'OK',
-              style: AlertActionStyle.cancel,
-              onPressed: () {},
+              style: TextStyle(color: mutedText),
             ),
-          ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK', style: TextStyle(color: textColor)),
+              ),
+            ],
+          ),
         );
       }
     }

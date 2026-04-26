@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:synthese/ui/auth/login_page.dart';
 import 'package:synthese/ui/dashboard.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
@@ -127,8 +128,11 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
         else await _signOutToLogin();
       },
       child: Scaffold(
-        body: SafeArea(
-          child: Column(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: DefaultTextStyle(
+          style: GoogleFonts.plusJakartaSans(),
+          child: SafeArea(
+            child: Column(
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(28, 16, 28, 0),
@@ -246,6 +250,7 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -569,9 +574,47 @@ class _SlideHealthConnect extends StatelessWidget {
                         letterSpacing: -0.8,
                         height: 1.2)),
                 const SizedBox(height: 12),
-                Text('Health Connect syncs data from your Samsung Galaxy Watch or any Android wearable — so your dashboard stays up to date automatically.',
+                Text('Health Connect syncs data from your wearable — so your dashboard stays up to date automatically.',
                     style: TextStyle(color: subColor, fontSize: 15, height: 1.55)),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: textColor.withOpacity(0.07)),
+                  ),
+                  child: Column(
+                    children: [
+                      _WearableRow(icon: Icons.watch_rounded, name: 'Samsung Galaxy Watch', isLast: false, textColor: textColor, subColor: subColor),
+                      _WearableRow(icon: Icons.watch_rounded, name: 'Google Pixel Watch', isLast: false, textColor: textColor, subColor: subColor),
+                      _WearableRow(icon: Icons.watch_rounded, name: 'Fitbit', isLast: false, textColor: textColor, subColor: subColor),
+                      _WearableRow(icon: Icons.watch_rounded, name: 'Garmin', isLast: true, textColor: textColor, subColor: subColor),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.info_outline_rounded, color: Colors.orange, size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'You must have the Health Connect app installed on your phone. Without it, wearable data will not sync.',
+                          style: TextStyle(color: Colors.orange.shade700, fontSize: 13, height: 1.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(
                     color: cardColor,
@@ -1197,5 +1240,58 @@ class _PolicyContent extends StatelessWidget {
       _section("12. Governing Law",
           "This Privacy Policy is governed by the laws of the United Arab Emirates. Last updated: April 21, 2026."),
     ]);
+  }
+}
+
+// Wearable row for the Health Connect slide
+class _WearableRow extends StatelessWidget {
+  final IconData icon;
+  final String name;
+  final bool isLast;
+  final Color textColor;
+  final Color subColor;
+
+  const _WearableRow({
+    required this.icon,
+    required this.name,
+    required this.isLast,
+    required this.textColor,
+    required this.subColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: textColor.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: textColor, size: 18),
+              ),
+              const SizedBox(width: 14),
+              Text(name,
+                  style: TextStyle(
+                      color: textColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
+        if (!isLast)
+          Divider(
+              height: 1,
+              thickness: 0.5,
+              indent: 20,
+              endIndent: 20,
+              color: textColor.withOpacity(0.07)),
+      ],
+    );
   }
 }

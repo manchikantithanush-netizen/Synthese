@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
+import 'package:synthese/ui/components/switch.dart';
 import 'onboarding_utils.dart';
 
 class OnboardingPhysical extends StatelessWidget {
@@ -33,20 +34,7 @@ class OnboardingPhysical extends StatelessWidget {
     required this.onValueChange,
   });
 
-  Widget _toggle(String t, bool v, Function(bool) fn, Color textColor) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween, 
-      children:[
-        Text(t, style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w500)),
-        Switch(
-          value: v,
-          onChanged: (val) => fn(val),
-          activeColor: const Color(0xFF4CD964),
-        ),
-      ],
-    );
-  }
-
+  
   // --- REUSABLE MATERIAL NUMBER PICKER DIALOG ---
   void _showNumberPicker({
     required BuildContext context,
@@ -245,7 +233,12 @@ class OnboardingPhysical extends StatelessWidget {
           
           const SizedBox(height: 32),
           
-          _toggle("Prescription Supplements", hasSupplements, onSupplementToggle, textColor), 
+          UniversalSwitchRow(
+            title: "Prescription Supplements",
+            value: hasSupplements,
+            onChanged: onSupplementToggle,
+            activeColor: const Color(0xFF4CD964),
+          ), 
           if (hasSupplements) Padding(
             padding: const EdgeInsets.only(top: 12), 
             child: TextField(
@@ -257,7 +250,12 @@ class OnboardingPhysical extends StatelessWidget {
           
           const SizedBox(height: 20),
           
-          _toggle("Physical Disabilities", hasDisabilities, onDisabilityToggle, textColor), 
+          UniversalSwitchRow(
+            title: "Physical Disabilities",
+            value: hasDisabilities,
+            onChanged: onDisabilityToggle,
+            activeColor: const Color(0xFF4CD964),
+          ), 
           if (hasDisabilities) Padding(
             padding: const EdgeInsets.only(top: 12), 
             child: TextField(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'login_page.dart';
 import 'verification_page.dart';
@@ -139,9 +140,12 @@ class _SignupPageState extends State<SignupPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
+      backgroundColor: isDark ? const Color(0xFF111111) : null,
+      body: DefaultTextStyle(
+        style: GoogleFonts.plusJakartaSans(),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
             final mediaQuery = MediaQuery.of(context);
             final bottomSpacing =
                 mediaQuery.padding.bottom + mediaQuery.viewInsets.bottom + 24;
@@ -292,6 +296,7 @@ class _SignupPageState extends State<SignupPage> {
             );
           },
         ),
+      ),
       ),
     );
   }

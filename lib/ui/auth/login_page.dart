@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
+import 'dart:math' as math;
 import 'signup_page.dart';
 import 'package:synthese/onboarding/onboarding_intro.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
@@ -205,9 +207,12 @@ class _LoginPageState extends State<LoginPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
+      backgroundColor: isDark ? const Color(0xFF111111) : null,
+      body: DefaultTextStyle(
+        style: GoogleFonts.plusJakartaSans(),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
             final mediaQuery = MediaQuery.of(context);
             final bottomSpacing =
                 mediaQuery.padding.bottom + mediaQuery.viewInsets.bottom + 24;
@@ -332,6 +337,12 @@ class _LoginPageState extends State<LoginPage> {
                               PremiumButton(
                                 text: 'Continue with Google',
                                 onPressed: signInWithGoogle,
+                                showIcon: true,
+                                icon: Image.asset(
+                                  'assets/google.png',
+                                  width: 18,
+                                  height: 18,
+                                ),
                               ),
                             ],
                           ),
@@ -373,6 +384,7 @@ class _LoginPageState extends State<LoginPage> {
             );
           },
         ),
+      ),
       ),
     );
   }

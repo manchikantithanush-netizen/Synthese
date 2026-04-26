@@ -5,7 +5,6 @@ import 'onboarding_utils.dart';
 class OnboardingPersonal extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController countryController;
-  final TextEditingController timeZoneController;
   final String? gender;
   final DateTime? dob;
   final Function(String) onGenderSelect;
@@ -15,7 +14,6 @@ class OnboardingPersonal extends StatelessWidget {
     super.key,
     required this.nameController,
     required this.countryController,
-    required this.timeZoneController,
     required this.gender,
     required this.dob,
     required this.onGenderSelect,
@@ -29,27 +27,6 @@ class OnboardingPersonal extends StatelessWidget {
     'Saudi Arabia', 'South Africa', 'Mexico', 'Italy', 'Spain', 'Netherlands',
     'Russia', 'South Korea', 'Turkey', 'Argentina', 'Sweden', 'Switzerland',
     'New Zealand', 'Singapore', 'Malaysia', 'Philippines', 'Indonesia', 'Egypt',
-  ];
-
-  static const List<String> _timeZones =[
-    'UTC (Coordinated Universal Time)',
-    'GMT (Greenwich Mean Time)',
-    'EST (Eastern Standard Time)',
-    'CST (Central Standard Time)',
-    'MST (Mountain Standard Time)',
-    'PST (Pacific Standard Time)',
-    'AST (Atlantic Standard Time)',
-    'AKST (Alaska Standard Time)',
-    'HST (Hawaii Standard Time)',
-    'CET (Central European Time)',
-    'EET (Eastern European Time)',
-    'IST (Indian Standard Time)',
-    'JST (Japan Standard Time)',
-    'AEST (Australian Eastern Standard Time)',
-    'AWST (Australian Western Standard Time)',
-    'GST (Gulf Standard Time)',
-    'BST (British Summer Time)',
-    'PDT (Pacific Daylight Time)',
   ];
 
   int _calculateAge(DateTime birthDate) {
@@ -287,16 +264,6 @@ class OnboardingPersonal extends StatelessWidget {
             hint: "Country",
             icon: Icons.public,
             options: _countries,
-          ),
-          
-          const SizedBox(height: 12),
-          
-          _buildAutocomplete(
-            context: context,
-            parentController: timeZoneController,
-            hint: "Time Zone",
-            icon: Icons.access_time,
-            options: _timeZones,
           ),
           
           const SizedBox(height: 140), 

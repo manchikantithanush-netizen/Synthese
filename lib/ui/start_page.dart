@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:cupertino_native/cupertino_native.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/auth/login_page.dart';
 import 'package:synthese/ui/auth/signup_page.dart';
@@ -247,9 +249,12 @@ class _StartPageState extends State<StartPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
+      backgroundColor: isDark ? const Color(0xFF111111) : null,
+      body: DefaultTextStyle(
+        style: GoogleFonts.plusJakartaSans(),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
             final widthScale = (constraints.maxWidth / 390).clamp(0.9, 1.2);
             final heightScale = (constraints.maxHeight / 800).clamp(0.85, 1.15);
             final textScale = ((widthScale + heightScale) / 2).toDouble();
@@ -316,11 +321,12 @@ class _StartPageState extends State<StartPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       PremiumButton(
-                        text: 'Continue with Sign In',
+                        text: 'Continue with Sign Up',
                         onPressed: () {
+                          HapticFeedback.lightImpact();
                           Navigator.push(
                             context,
-                            _fadeRoute(const LoginPage()),
+                            _fadeRoute(const SignupPage()),
                           );
                         },
                       ),
@@ -337,13 +343,13 @@ class _StartPageState extends State<StartPage> {
                               ).colorScheme.copyWith(primary: Colors.green),
                             ),
                             child: CNButton(
-                              label: 'Continue with Sign Up',
+                              label: 'Continue with Sign In',
                               style: CNButtonStyle.bordered,
                               onPressed: () {
                                 HapticFeedback.lightImpact();
                                 Navigator.push(
                                   context,
-                                  _fadeRoute(const SignupPage()),
+                                  _fadeRoute(const LoginPage()),
                                 );
                               },
                             ),
@@ -364,11 +370,26 @@ class _StartPageState extends State<StartPage> {
                             const TextSpan(
                               text: 'By pressing Continue you agree with our\n',
                             ),
-                            TextSpan(
-                              text: 'privacy policy',
-                              style: TextStyle(
-                                color: textColor,
-                                fontWeight: FontWeight.bold,
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.baseline,
+                              baseline: TextBaseline.alphabetic,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  final uri = Uri.parse('https://sites.google.com/view/syntheseapp/home');
+                                  try {
+                                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                  } catch (_) {
+                                    await launchUrl(uri, mode: LaunchMode.platformDefault);
+                                  }
+                                },
+                                child: Text(
+                                  'privacy policy',
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
                               ),
                             ),
                             const TextSpan(text: ' and '),
@@ -391,6 +412,7 @@ class _StartPageState extends State<StartPage> {
             );
           },
         ),
+      ),
       ),
     );
   }

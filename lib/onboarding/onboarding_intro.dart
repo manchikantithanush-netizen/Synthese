@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 // 1. IMPORT DASHBOARD INSTEAD OF MAIN
 import 'package:synthese/ui/dashboard.dart';
+import 'package:synthese/ui/start_page.dart';
 import 'onboarding_data.dart';
 
 class OnboardingIntro extends StatefulWidget {
@@ -56,6 +58,22 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
     }
   }
 
+  Future<void> _goBack() async {
+    try {
+      HapticFeedback.lightImpact();
+      await FirebaseAuth.instance.signOut();
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          _fadeRoute(const StartPage()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      debugPrint("Error signing out: $e");
+    }
+  }
+
   Route _fadeRoute(Widget page) {
     return PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 600),
@@ -82,9 +100,12 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
     }
 
     return Scaffold(
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: DefaultTextStyle(
+        style: GoogleFonts.plusJakartaSans(),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
             return SingleChildScrollView(
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
@@ -185,6 +206,37 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
                             },
                           ),
 
+                          const SizedBox(height: 16),
+
+                          // Go Back Button
+                          GestureDetector(
+                            onTap: _goBack,
+                            child: Container(
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(50),
+                                border: Border.all(
+                                  color: textColor.withOpacity(0.2),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Go Back",
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
                           const SizedBox(height: 40),
                         ],
                       ),
@@ -194,6 +246,7 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
               ),
             );
           },
+          ),
         ),
       ),
     );

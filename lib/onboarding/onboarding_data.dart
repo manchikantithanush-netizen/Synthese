@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 
 import 'package:synthese/ui/dashboard.dart';
@@ -35,7 +36,6 @@ class _OnboardingDataState extends State<OnboardingData> {
   // Controllers
   final TextEditingController nameController = TextEditingController();
   final TextEditingController countryController = TextEditingController();
-  final TextEditingController timeZoneController = TextEditingController();
 
   final TextEditingController heightController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
@@ -121,7 +121,6 @@ class _OnboardingDataState extends State<OnboardingData> {
     setState(() => _errorMessage = msg);
     _errorTimer?.cancel();
 
-    // FIX: Add 'if (!mounted) return;' inside the Timer
     _errorTimer = Timer(const Duration(seconds: 4), () {
       if (!mounted) return;
       setState(() => _errorMessage = null);
@@ -130,14 +129,10 @@ class _OnboardingDataState extends State<OnboardingData> {
 
   @override
   void dispose() {
-    // 1. Cancel the timer if it is running
     _errorTimer?.cancel();
-
-    // 2. Clean up all controllers to prevent major memory leaks
     _pageController.dispose();
     nameController.dispose();
     countryController.dispose();
-    timeZoneController.dispose();
     heightController.dispose();
     weightController.dispose();
     bodyFatController.dispose();
@@ -149,7 +144,6 @@ class _OnboardingDataState extends State<OnboardingData> {
     super.dispose();
   }
 
-  // --- CALCULATIONS ---
   Map<String, dynamic>? get bmiData {
     double? h = double.tryParse(heightController.text);
     double? w = double.tryParse(weightController.text);
@@ -176,15 +170,12 @@ class _OnboardingDataState extends State<OnboardingData> {
     };
   }
 
-  // --- NAVIGATION & SAVE ---
   void _nextStep() {
-    // Basic validations
     if (_currentStep == 0) {
       if (nameController.text.isEmpty ||
           gender == null ||
           dob == null ||
-          countryController.text.isEmpty ||
-          timeZoneController.text.isEmpty)
+          countryController.text.isEmpty)
         return _triggerError("Fill all personal info");
     } else if (_currentStep == 1) {
       if (heightController.text.isEmpty || weightController.text.isEmpty)
@@ -206,7 +197,6 @@ class _OnboardingDataState extends State<OnboardingData> {
     }
 
     if (_currentStep < 5) {
-      // 5 is now the final step for everyone
       HapticFeedback.lightImpact();
       _pageController.nextPage(
         duration: const Duration(milliseconds: 500),
@@ -230,7 +220,6 @@ class _OnboardingDataState extends State<OnboardingData> {
         'gender': gender,
         'dob': dob,
         'country': countryController.text,
-        'timeZone': timeZoneController.text,
         'height': heightController.text,
         'weight': weightController.text,
         'bmi': calculatedBmi,
@@ -247,13 +236,11 @@ class _OnboardingDataState extends State<OnboardingData> {
         'athleteType': athleteType,
         'experienceLevel': experienceLevel,
         'selectedSports': selectedSports,
-        // Save Training metrics
         'trainingDays': trainingDays.toInt(),
         'averageDuration': averageDuration,
         'trainingIntensity': ['Easy', 'Medium', 'Hard'][intensityIndex],
         'primaryGoals': primaryGoals,
         'secondaryGoals': secondaryGoals,
-        // Save Lifestyle metrics
         'sleepDuration': sleepDuration,
         'sleepQuality': [
           'Poor',
@@ -265,7 +252,6 @@ class _OnboardingDataState extends State<OnboardingData> {
         'caffeineIntake': caffeineIntake,
         'screenTime': screenTime,
         'injuryHistory': injuryHistoryController.text,
-
         'onboardingCompleted': true,
       }, SetOptions(merge: true));
 
@@ -300,9 +286,22 @@ class _OnboardingDataState extends State<OnboardingData> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
-              surface: isDark ? const Color(0xFF2C2C2E) : Colors.white,
-            ),
+            colorScheme: isDark 
+                ? ColorScheme.dark(
+                    surface: const Color(0xFF1C1C1E),
+                    background: const Color(0xFF1C1C1E),
+                    onSurface: Colors.white,
+                    primary: const Color(0xFF007AFF),
+                  )
+                : ColorScheme.light(
+                    surface: Colors.white,
+                    background: Colors.white,
+                    onSurface: Colors.black,
+                    primary: const Color(0xFF007AFF),
+                  ),
+            dialogBackgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            scaffoldBackgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
+            cardColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
           ),
           child: child!,
         );
@@ -319,174 +318,160 @@ class _OnboardingDataState extends State<OnboardingData> {
       );
     }
 
-    int totalSteps = 6; // Standardized to 6 steps for everyone
+    int totalSteps = 6;
     final textColor = Theme.of(context).colorScheme.onSurface;
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Nav & Progress Bars
-            Padding(
-              padding: const EdgeInsets.fromLTRB(28, 10, 28, 12),
-              child: Row(
-                children: [
-                  UniversalBackButton(
-                    onPressed: () {
-                      if (_currentStep > 0) {
-                        _pageController.previousPage(
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.easeInOut,
-                        );
-                      } else {
-                        Navigator.pop(context);
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Row(
-                      children: List.generate(
-                        totalSteps,
-                        (i) => Expanded(
-                          child: Container(
-                            height: 4,
-                            margin: const EdgeInsets.symmetric(horizontal: 2),
-                            decoration: BoxDecoration(
-                              color: i <= _currentStep
-                                  ? textColor
-                                  : textColor.withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(2),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: DefaultTextStyle(
+        style: GoogleFonts.plusJakartaSans(),
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 10, 28, 12),
+                  child: Row(
+                    children: [
+                      UniversalBackButton(
+                        onPressed: () {
+                          if (_currentStep > 0) {
+                            _pageController.previousPage(
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeInOut,
+                            );
+                          } else {
+                            Navigator.pop(context);
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Row(
+                          children: List.generate(
+                            totalSteps,
+                            (i) => Expanded(
+                              child: Container(
+                                height: 4,
+                                margin: const EdgeInsets.symmetric(horizontal: 2),
+                                decoration: BoxDecoration(
+                                  color: i <= _currentStep
+                                      ? Colors.white
+                                      : Colors.white.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-
-            // Inline Notification
-            AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              child: _errorMessage != null
-                  ? Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Text(
-                        _errorMessage!,
-                        style: const TextStyle(
-                          color: Color(0xFFFF3B30),
-                          fontSize: 13,
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (i) => setState(() => _currentStep = i),
+                    children: [
+                      OnboardingPersonal(
+                        nameController: nameController,
+                        countryController: countryController,
+                        gender: gender,
+                        dob: dob,
+                        onGenderSelect: (g) => setState(() => gender = g),
+                        onDateTap: _showDatePicker,
+                      ),
+                      OnboardingPhysical(
+                        heightController: heightController,
+                        weightController: weightController,
+                        bodyFatController: bodyFatController,
+                        waistCircumferenceController: waistCircumferenceController,
+                        bmi: bmiData,
+                        hasSupplements: hasSupplements,
+                        hasDisabilities: hasDisabilities,
+                        supplementsController: supplementsDetailsController,
+                        disabilityController: disabilityDetailsController,
+                        onSupplementToggle: (v) =>
+                            setState(() => hasSupplements = v),
+                        onDisabilityToggle: (v) =>
+                            setState(() => hasDisabilities = v),
+                        onValueChange: (v) => setState(() {}),
+                      ),
+                      OnboardingAthlete(
+                        athleteType: athleteType,
+                        experienceLevel: experienceLevel,
+                        onAthleteTypeSelect: (val) =>
+                            setState(() => athleteType = val),
+                        onExperienceSelect: (val) =>
+                            setState(() => experienceLevel = val),
+                      ),
+                      OnboardingSports(
+                        options: sportsOptions,
+                        selected: selectedSports,
+                        onSelect: (s) => setState(
+                          () => selectedSports.contains(s)
+                              ? selectedSports.remove(s)
+                              : selectedSports.add(s),
                         ),
                       ),
-                    )
-                  : const SizedBox.shrink(),
-            ),
-
-            // Page Content
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (i) => setState(() => _currentStep = i),
-                children: [
-                  OnboardingPersonal(
-                    nameController: nameController,
-                    countryController: countryController,
-                    timeZoneController: timeZoneController,
-                    gender: gender,
-                    dob: dob,
-                    onGenderSelect: (g) => setState(() => gender = g),
-                    onDateTap: _showDatePicker,
+                      OnboardingTraining(
+                        trainingDays: trainingDays,
+                        onTrainingDaysChange: (val) =>
+                            setState(() => trainingDays = val),
+                        averageDuration: averageDuration,
+                        onDurationSelect: (val) =>
+                            setState(() => averageDuration = val),
+                        intensityIndex: intensityIndex,
+                        onIntensitySelect: (index) =>
+                            setState(() => intensityIndex = index),
+                        primaryGoals: primaryGoals,
+                        onPrimaryGoalToggle: (val) => setState(() {
+                          primaryGoals.contains(val)
+                              ? primaryGoals.remove(val)
+                              : primaryGoals.add(val);
+                        }),
+                        secondaryGoals: secondaryGoals,
+                        onSecondaryGoalToggle: (val) => setState(() {
+                          secondaryGoals.contains(val)
+                              ? secondaryGoals.remove(val)
+                              : secondaryGoals.add(val);
+                        }),
+                      ),
+                      OnboardingLifestyle(
+                        sleepDuration: sleepDuration,
+                        onSleepDurationChange: (val) =>
+                            setState(() => sleepDuration = val),
+                        sleepQualityIndex: sleepQualityIndex,
+                        onSleepQualitySelect: (index) =>
+                            setState(() => sleepQualityIndex = index),
+                        waterIntake: waterIntake,
+                        onWaterIntakeChange: (val) =>
+                            setState(() => waterIntake = val),
+                        caffeineIntake: caffeineIntake,
+                        onCaffeineSelect: (val) =>
+                            setState(() => caffeineIntake = val),
+                        screenTime: screenTime,
+                        onScreenTimeChange: (val) =>
+                            setState(() => screenTime = val),
+                        injuryHistoryController: injuryHistoryController,
+                      ),
+                    ],
                   ),
-                  OnboardingPhysical(
-                    heightController: heightController,
-                    weightController: weightController,
-                    bodyFatController: bodyFatController,
-                    waistCircumferenceController: waistCircumferenceController,
-                    bmi: bmiData,
-                    hasSupplements: hasSupplements,
-                    hasDisabilities: hasDisabilities,
-                    supplementsController: supplementsDetailsController,
-                    disabilityController: disabilityDetailsController,
-                    onSupplementToggle: (v) =>
-                        setState(() => hasSupplements = v),
-                    onDisabilityToggle: (v) =>
-                        setState(() => hasDisabilities = v),
-                    onValueChange: (v) => setState(() {}),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(28),
+                  child: PremiumButton(
+                    text: _currentStep == totalSteps - 1 ? "Finish" : "Continue",
+                    isLoading: _isSaving,
+                    onPressed: _nextStep,
                   ),
-                  OnboardingAthlete(
-                    athleteType: athleteType,
-                    experienceLevel: experienceLevel,
-                    onAthleteTypeSelect: (val) =>
-                        setState(() => athleteType = val),
-                    onExperienceSelect: (val) =>
-                        setState(() => experienceLevel = val),
-                  ),
-                  OnboardingSports(
-                    options: sportsOptions,
-                    selected: selectedSports,
-                    onSelect: (s) => setState(
-                      () => selectedSports.contains(s)
-                          ? selectedSports.remove(s)
-                          : selectedSports.add(s),
-                    ),
-                  ),
-                  OnboardingTraining(
-                    trainingDays: trainingDays,
-                    onTrainingDaysChange: (val) =>
-                        setState(() => trainingDays = val),
-                    averageDuration: averageDuration,
-                    onDurationSelect: (val) =>
-                        setState(() => averageDuration = val),
-                    intensityIndex: intensityIndex,
-                    onIntensitySelect: (index) =>
-                        setState(() => intensityIndex = index),
-                    primaryGoals: primaryGoals,
-                    onPrimaryGoalToggle: (val) => setState(() {
-                      primaryGoals.contains(val)
-                          ? primaryGoals.remove(val)
-                          : primaryGoals.add(val);
-                    }),
-                    secondaryGoals: secondaryGoals,
-                    onSecondaryGoalToggle: (val) => setState(() {
-                      secondaryGoals.contains(val)
-                          ? secondaryGoals.remove(val)
-                          : secondaryGoals.add(val);
-                    }),
-                  ),
-                  OnboardingLifestyle(
-                    sleepDuration: sleepDuration,
-                    onSleepDurationChange: (val) =>
-                        setState(() => sleepDuration = val),
-                    sleepQualityIndex: sleepQualityIndex,
-                    onSleepQualitySelect: (index) =>
-                        setState(() => sleepQualityIndex = index),
-                    waterIntake: waterIntake,
-                    onWaterIntakeChange: (val) =>
-                        setState(() => waterIntake = val),
-                    caffeineIntake: caffeineIntake,
-                    onCaffeineSelect: (val) =>
-                        setState(() => caffeineIntake = val),
-                    screenTime: screenTime,
-                    onScreenTimeChange: (val) =>
-                        setState(() => screenTime = val),
-                    injuryHistoryController: injuryHistoryController,
-                  ),
-                ],
-              ),
-            ),
-            // Button
-            Padding(
-              padding: const EdgeInsets.all(28),
-              child: PremiumButton(
-                text: _currentStep == totalSteps - 1 ? "Finish" : "Continue",
-                isLoading: _isSaving,
-                onPressed: _nextStep,
-              ),
-            ),
-          ],
+                ),
+              ],
+            );},
+          ),
         ),
       ),
     );
