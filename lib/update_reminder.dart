@@ -13,10 +13,10 @@
 
 class UpdateReminder {
   /// Must match pubspec.yaml version exactly, e.g. "1.0.0+3"
-  static const String currentVersion = '1.4.0+8';
+  static const String currentVersion = '1.5.0+9';
 
   /// What to show the user when they open the app on this version for the first time.
-  static const String updateMessage = """Version 1.4.0+8 brings a polished visual refresh and smoother first-time experience across the app. We’ve introduced a new Dark Mode switch, redesigned switches and interactive button animations, and improved colors across the start, sign in, sign up, onboarding, and picker screens for a more consistent modern look. Typography has also been updated to Plus Jakarta Sans across key pages to better match the dashboard experience.
+  static const String updateMessage = """Version 1.5.0+9 delivers a major upgrade focused on security, visual consistency, and a richer activity tracking experience. We’ve improved onboarding by refining Dark Mode colors, refreshed section colors across the app for a cleaner and more unified appearance, and redesigned alert dialogs with a modern gray style. Switch controls have also been fixed for smoother and more reliable interaction without stopping midway.
 
-This update also improves usability and clarity by reorganizing the start page navigation, adding direct access to the Privacy Policy, expanding the wearable compatibility list, and including guidance for installing Health Connect for syncing. We’ve refined the About App page by removing unnecessary details, updated the version display style, and improved dialogs and theme consistency throughout the app, including battery and bottom navigation bar visuals.""";
+This update introduces an expanded steps analytics experience with a new detailed steps view, interactive bar graph, activity heatmap, distance tracker, circular goal progress tracker, and energy goal tracker to help you better understand your daily movement at a glance. Behind the scenes, we’ve also completed a major security improvement by moving sensitive environment configuration to Cloudflare for safer and more scalable infrastructure.""";
 }

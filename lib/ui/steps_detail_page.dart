@@ -115,10 +115,15 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
       if (uid == null) return;
 
       final now = DateTime.now();
+      // Find this week's Monday
+      final int daysSinceMonday = now.weekday - 1; // Mon=0, Sun=6
+      final DateTime monday = DateTime(
+          now.year, now.month, now.day - daysSinceMonday);
+
       final List<int> steps = List.filled(7, 0);
 
-      for (int i = 6; i >= 0; i--) {
-        final day = now.subtract(Duration(days: i));
+      for (int i = 0; i <= daysSinceMonday; i++) {
+        final day = monday.add(Duration(days: i));
         final key = _dateKey(day);
         final doc = await FirebaseFirestore.instance
             .collection('users')
@@ -127,8 +132,7 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
             .doc(key)
             .get();
         final daySteps = (doc.data()?['steps'] as num?)?.toInt() ?? 0;
-        final idx = (day.weekday - 1).clamp(0, 6);
-        steps[idx] = daySteps;
+        steps[i] = daySteps; // i=0 is Mon, i=6 is Sun
       }
 
       if (mounted) setState(() => _weeklySteps = steps);
@@ -352,6 +356,16 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
 
                                 const SizedBox(height: 24),
 
+                                // Energy bar
+                                _EnergyBar(
+                                  progress: (widget.todaySteps / 10000.0).clamp(0.0, 1.0),
+                                  accentColor: accentColor,
+                                  isDark: isDark,
+                                  textColor: textColor,
+                                ),
+
+                                const SizedBox(height: 16),
+
                                 isLoading
                                     ? SizedBox(
                                         height: 200,
@@ -373,6 +387,35 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                                       ),
                               ],
                             ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Distance card
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: _DistanceCard(
+                            steps: widget.todaySteps,
+                            accentColor: accentColor,
+                            cardColor: cardColor,
+                            textColor: textColor,
+                            isDark: isDark,
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Weekly rings
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: _WeeklyRings(
+                            weeklySteps: _weeklySteps,
+                            accentColor: accentColor,
+                            cardColor: cardColor,
+                            textColor: textColor,
+                            isDark: isDark,
+                            stepGoal: 10000,
                           ),
                         ),
 
@@ -401,6 +444,552 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
           ),
         );
       },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Weekly Rings
+// ─────────────────────────────────────────────
+
+class _WeeklyRings extends StatelessWidget {
+  final List<int> weeklySteps; // index 0=Mon … 6=Sun
+  final Color accentColor;
+  final Color cardColor;
+  final Color textColor;
+  final bool isDark;
+  final int stepGoal;
+
+  const _WeeklyRings({
+    required this.weeklySteps,
+    required this.accentColor,
+    required this.cardColor,
+    required this.textColor,
+    required this.isDark,
+    required this.stepGoal,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final font = GoogleFonts.plusJakartaSans;
+    final dimColor = textColor.withValues(alpha: 0.35);
+    // Today's weekday index: Mon=0 … Sun=6
+    final int todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
+    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(7, (i) {
+          final steps = weeklySteps.length > i ? weeklySteps[i] : 0;
+          final double progress = (steps / stepGoal).clamp(0.0, 1.0);
+          final bool isToday = i == todayIdx;
+          // Future days (after today this week) — no data yet
+          final bool isFuture = i > todayIdx;
+
+          return Column(
+            children: [
+              _RingCircle(
+                progress: isFuture ? 0.0 : progress,
+                accentColor: accentColor,
+                isDark: isDark,
+                isToday: isToday,
+                isFuture: isFuture,
+                textColor: textColor,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                isToday ? 'Today' : labels[i],
+                style: font(
+                  fontSize: 11,
+                  fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
+                  color: isToday ? accentColor : dimColor,
+                ),
+              ),
+            ],
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _RingCircle extends StatefulWidget {
+  final double progress;
+  final Color accentColor;
+  final bool isDark;
+  final bool isToday;
+  final bool isFuture;
+  final Color textColor;
+
+  const _RingCircle({
+    required this.progress,
+    required this.accentColor,
+    required this.isDark,
+    required this.isToday,
+    required this.isFuture,
+    required this.textColor,
+  });
+
+  @override
+  State<_RingCircle> createState() => _RingCircleState();
+}
+
+class _RingCircleState extends State<_RingCircle>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic);
+    // Stagger by index isn't available here, just forward
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (_, __) => CustomPaint(
+        size: const Size(38, 38),
+        painter: _RingPainter(
+          progress: _anim.value * widget.progress,
+          accentColor: widget.accentColor,
+          isDark: widget.isDark,
+          isToday: widget.isToday,
+          isFuture: widget.isFuture,
+          textColor: widget.textColor,
+        ),
+      ),
+    );
+  }
+}
+
+class _RingPainter extends CustomPainter {
+  final double progress;
+  final Color accentColor;
+  final bool isDark;
+  final bool isToday;
+  final bool isFuture;
+  final Color textColor;
+
+  const _RingPainter({
+    required this.progress,
+    required this.accentColor,
+    required this.isDark,
+    required this.isToday,
+    required this.isFuture,
+    required this.textColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width / 2) - 3;
+    const strokeW = 3.5;
+
+    // Track
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = isDark
+            ? Colors.white.withValues(alpha: isFuture ? 0.06 : 0.10)
+            : Colors.black.withValues(alpha: isFuture ? 0.06 : 0.08)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeW,
+    );
+
+    // Progress arc
+    if (progress > 0) {
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        -math.pi / 2,
+        2 * math.pi * progress,
+        false,
+        Paint()
+          ..color = accentColor
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = strokeW
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+
+    // Center dot — solid for today, small dim for others
+    if (isToday) {
+      canvas.drawCircle(
+        center,
+        4,
+        Paint()..color = accentColor,
+      );
+      canvas.drawCircle(
+        center,
+        2,
+        Paint()
+          ..color = isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      );
+    } else if (!isFuture && progress >= 1.0) {
+      // Goal met — small filled dot
+      canvas.drawCircle(
+        center,
+        3,
+        Paint()..color = accentColor.withValues(alpha: 0.8),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_RingPainter old) =>
+      old.progress != progress ||
+      old.accentColor != accentColor ||
+      old.isToday != isToday;
+}
+
+// ─────────────────────────────────────────────
+// Distance Card
+// ─────────────────────────────────────────────
+
+class _DistanceCard extends StatelessWidget {
+  final int steps;
+  final Color accentColor;
+  final Color cardColor;
+  final Color textColor;
+  final bool isDark;
+
+  // Average stride length ~0.762 m
+  static const double _strideM = 0.762;
+
+  const _DistanceCard({
+    required this.steps,
+    required this.accentColor,
+    required this.cardColor,
+    required this.textColor,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final double km = (steps * _strideM) / 1000.0;
+    final String distStr = km >= 10
+        ? km.toStringAsFixed(1)
+        : km.toStringAsFixed(2);
+
+    final font = GoogleFonts.plusJakartaSans;
+    final dimColor = textColor.withValues(alpha: 0.35);
+    final subColor = textColor.withValues(alpha: 0.55);
+
+    // Progress along a 5 km "daily route" goal
+    final double routeProgress = (km / 5.0).clamp(0.0, 1.0);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      padding: const EdgeInsets.fromLTRB(22, 20, 22, 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // ── Left: number + label + splits ──
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Distance',
+                  style: font(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: dimColor,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      distStr,
+                      style: font(
+                        fontSize: 44,
+                        fontWeight: FontWeight.w800,
+                        color: textColor,
+                        height: 1.0,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 6, left: 5),
+                      child: Text(
+                        'km',
+                        style: font(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: subColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '≈ ${(steps * _strideM).round()} m  ·  ${steps.toString()} steps',
+                  style: font(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: dimColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 20),
+
+          // ── Right: vertical route track ──
+          SizedBox(
+            width: 48,
+            height: 110,
+            child: CustomPaint(
+              painter: _RoutePainter(
+                progress: routeProgress,
+                accentColor: accentColor,
+                dimColor: dimColor,
+                isDark: isDark,
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 10),
+
+          // ── Far right: 0 km / 5 km labels ──
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '5 km',
+                style: font(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: dimColor,
+                ),
+              ),
+              SizedBox(height: 80),
+              Text(
+                '0',
+                style: font(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: dimColor,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RoutePainter extends CustomPainter {
+  final double progress; // 0.0 – 1.0
+  final Color accentColor;
+  final Color dimColor;
+  final bool isDark;
+
+  const _RoutePainter({
+    required this.progress,
+    required this.accentColor,
+    required this.dimColor,
+    required this.isDark,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const double cx = 24;
+    const double dotR = 5.0;
+    const double endDotR = 4.0;
+    const double dashLen = 5.0;
+    const double dashGap = 4.0;
+
+    final trackPaint = Paint()
+      ..color = dimColor.withValues(alpha: 0.4)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    final filledPaint = Paint()
+      ..color = accentColor
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    final double topY = dotR;
+    final double bottomY = size.height - dotR;
+    final double progressY = bottomY - (bottomY - topY) * progress;
+
+    // Draw dashed track — unfilled portion (above progress dot)
+    double y = topY;
+    while (y < progressY - dotR) {
+      final end = math.min(y + dashLen, progressY - dotR);
+      canvas.drawLine(Offset(cx, y), Offset(cx, end), trackPaint);
+      y += dashLen + dashGap;
+    }
+
+    // Draw solid filled track — below progress dot to bottom
+    canvas.drawLine(
+      Offset(cx, progressY + dotR),
+      Offset(cx, bottomY),
+      filledPaint,
+    );
+
+    // Bottom dot (start)
+    canvas.drawCircle(
+      Offset(cx, bottomY),
+      endDotR,
+      Paint()..color = isDark ? const Color(0xFF1C1C1E) : Colors.black,
+    );
+
+    // Progress dot (current position)
+    canvas.drawCircle(
+      Offset(cx, progressY),
+      dotR,
+      Paint()..color = accentColor,
+    );
+    // Inner white dot
+    canvas.drawCircle(
+      Offset(cx, progressY),
+      dotR * 0.45,
+      Paint()..color = isDark ? const Color(0xFF1C1C1E) : Colors.white,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_RoutePainter old) =>
+      old.progress != progress || old.accentColor != accentColor;
+}
+
+// ─────────────────────────────────────────────
+// Energy Bar
+// ─────────────────────────────────────────────
+
+class _EnergyBar extends StatefulWidget {
+  final double progress; // 0.0 – 1.0
+  final Color accentColor;
+  final bool isDark;
+  final Color textColor;
+
+  const _EnergyBar({
+    required this.progress,
+    required this.accentColor,
+    required this.isDark,
+    required this.textColor,
+  });
+
+  @override
+  State<_EnergyBar> createState() => _EnergyBarState();
+}
+
+class _EnergyBarState extends State<_EnergyBar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic);
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final font = GoogleFonts.plusJakartaSans;
+    final pct = (widget.progress * 100).round();
+    final trackColor = widget.isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.black.withValues(alpha: 0.07);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: trackColor,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          // Label
+          Text(
+            'Daily Goal',
+            style: font(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: widget.textColor.withValues(alpha: 0.55),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Bar track
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Container(
+                height: 8,
+                color: widget.isDark
+                    ? Colors.white.withValues(alpha: 0.10)
+                    : Colors.black.withValues(alpha: 0.08),
+                child: AnimatedBuilder(
+                  animation: _anim,
+                  builder: (_, __) => FractionallySizedBox(
+                    widthFactor: _anim.value * widget.progress,
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: widget.accentColor,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          // Percentage
+          Text(
+            '$pct%',
+            style: font(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: widget.accentColor,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
