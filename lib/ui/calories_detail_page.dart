@@ -68,7 +68,6 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
   }
 
   Future<void> _fetchWeeklyData() async {
-    setState(() => _loadingWeekly = true);
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) return;
