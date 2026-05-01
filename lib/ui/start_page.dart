@@ -387,7 +387,7 @@ class _StartPageState extends State<StartPage> {
                                   style: TextStyle(
                                     color: textColor,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 12,
+                                    fontSize: 13,
                                   ),
                                 ),
                               ),
@@ -398,6 +398,7 @@ class _StartPageState extends State<StartPage> {
                               style: TextStyle(
                                 color: textColor,
                                 fontWeight: FontWeight.bold,
+                                fontSize: 13,
                               ),
                             ),
                             const TextSpan(text: '.'),

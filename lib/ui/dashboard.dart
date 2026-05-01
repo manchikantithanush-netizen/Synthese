@@ -29,6 +29,8 @@ import 'package:health/health.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/services/update_reminder_service.dart';
 import 'package:synthese/ui/steps_detail_page.dart';
+import 'package:synthese/ui/heart_rate_detail_page.dart';
+import 'package:synthese/ui/calories_detail_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -65,6 +67,8 @@ class _DashboardPageState extends State<DashboardPage>
   int _heartRate = 0;
   int _steps = 0;
   int _exerciseMinutes = 0;
+  int _eatenCalories = 0; // from diet logs via dailyAgg — live stream
+  StreamSubscription<DocumentSnapshot>? _dailyAggSub;
   List<int> _sleepData = [0, 0, 0, 0, 0, 0, 0];
   // Heart rate history for the graph — timestamped readings
   final List<({int bpm, DateTime time})> _hrHistory = [];
@@ -131,6 +135,8 @@ class _DashboardPageState extends State<DashboardPage>
     _fetchUserGender();
     _fetchUserProfile();
     _fetchMindfulnessOnboarding();
+    unawaited(_fetchEatenCalories());
+    _listenEatenCalories();
     unawaited(_firstLaunchPermissionsService.requestAllPermissionsIfFirstLaunch());
     unawaited(NotificationRulesEngine.evaluateGlobal());
     _notificationRulesTimer = Timer.periodic(const Duration(hours: 3), (_) {
@@ -193,6 +199,7 @@ class _DashboardPageState extends State<DashboardPage>
     _workoutTabEnterController.dispose();
     _metricsPersistDebounce?.cancel();
     _notificationRulesTimer?.cancel();
+    _dailyAggSub?.cancel();
     unawaited(_persistDashboardMetricsNow());
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -566,7 +573,42 @@ class _DashboardPageState extends State<DashboardPage>
     }
   }
 
+  Future<void> _fetchEatenCalories() async {
+    // Initial fast load before stream fires
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+      final dayKey = _dateKey(DateTime.now());
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('dailyAgg')
+          .doc(dayKey)
+          .get();
+      final cal = (doc.data()?['caloriesLogged'] as num?)?.toInt() ?? 0;
+      if (mounted) setState(() => _eatenCalories = cal);
+    } catch (_) {}
+  }
+
+  void _listenEatenCalories() {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final dayKey = _dateKey(DateTime.now());
+    _dailyAggSub?.cancel();
+    _dailyAggSub = FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('dailyAgg')
+        .doc(dayKey)
+        .snapshots()
+        .listen((snap) {
+      final cal = (snap.data()?['caloriesLogged'] as num?)?.toInt() ?? 0;
+      if (mounted) setState(() => _eatenCalories = cal);
+    });
+  }
+
   // --- HEALTH SCORE CALCULATOR ---
+
   void _updateScore() {
     double avgSleepMinutes = _sleepData.reduce((a, b) => a + b) / 7.0;
 
@@ -1275,6 +1317,13 @@ class _DashboardPageState extends State<DashboardPage>
                 trendColor: hrTrend.color,
                 onIncrement: () => _adjustHeartRate(1),
                 onDecrement: () => _adjustHeartRate(-1),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => HeartRateDetailPage(
+                      currentBpm: _heartRate,
+                    ),
+                  ),
+                ),
               ),
             ),
 
@@ -1282,16 +1331,25 @@ class _DashboardPageState extends State<DashboardPage>
 
             // --- CALORIES ---
             SizedBox(
-              height: 210,
+              height: 260,
               child: CaloriesCard(
                 cardColor: cardColor,
                 textColor: textColor,
                 subTextColor: subTextColor,
                 activeCalories: _activeCalories,
+                eatenCalories: _eatenCalories,
                 trendText: calTrend.text,
                 trendColor: calTrend.color,
                 onIncrement: () => _adjustActiveCalories(10),
                 onDecrement: () => _adjustActiveCalories(-10),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => CaloriesDetailPage(
+                      activeCalories: _activeCalories,
+                      eatenCalories: _eatenCalories,
+                    ),
+                  ),
+                ),
               ),
             ),
 
@@ -1589,6 +1647,14 @@ class MetricCard extends StatelessWidget {
                 _RepeatActionIconButton(
                   icon: Icons.add_rounded,
                   onPressed: onIncrement!,
+                ),
+              ],
+              if (onTap != null) ...[
+                const SizedBox(width: 6),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 18,
+                  color: subTextColor,
                 ),
               ],
             ],
@@ -1904,6 +1970,7 @@ class HeartRateCard extends StatelessWidget {
   final bool compact;
   final VoidCallback? onIncrement;
   final VoidCallback? onDecrement;
+  final VoidCallback? onTap;
 
   const HeartRateCard({
     super.key,
@@ -1917,6 +1984,7 @@ class HeartRateCard extends StatelessWidget {
     this.compact = false,
     this.onIncrement,
     this.onDecrement,
+    this.onTap,
   });
 
   @override
@@ -1928,7 +1996,9 @@ class HeartRateCard extends StatelessWidget {
     final iconSize = compact ? 20.0 : 24.0;
     final iconPad = compact ? 6.0 : 8.0;
 
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       height: double.infinity,
       padding: EdgeInsets.all(p),
       decoration: BoxDecoration(
@@ -1973,6 +2043,14 @@ class HeartRateCard extends StatelessWidget {
                 _RepeatActionIconButton(
                   icon: Icons.add_rounded,
                   onPressed: onIncrement!,
+                ),
+              ],
+              if (onTap != null) ...[
+                const SizedBox(width: 6),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 18,
+                  color: subTextColor,
                 ),
               ],
             ],
@@ -2025,6 +2103,7 @@ class HeartRateCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }
@@ -2340,11 +2419,13 @@ class CaloriesCard extends StatelessWidget {
   final Color cardColor, textColor, subTextColor, trendColor;
   final String trendText;
   final int activeCalories;
+  final int eatenCalories;
   final bool compact;
   final VoidCallback? onIncrement;
   final VoidCallback? onDecrement;
+  final VoidCallback? onTap;
 
-  static const int _goal = 5000;
+  static const int _burnGoal = 500;
 
   const CaloriesCard({
     super.key,
@@ -2354,9 +2435,11 @@ class CaloriesCard extends StatelessWidget {
     required this.trendColor,
     required this.trendText,
     required this.activeCalories,
+    this.eatenCalories = 0,
     this.compact = false,
     this.onIncrement,
     this.onDecrement,
+    this.onTap,
   });
 
   @override
@@ -2365,119 +2448,190 @@ class CaloriesCard extends StatelessWidget {
     final trendSize = compact ? 10.0 : 11.0;
     final iconSize = compact ? 20.0 : 24.0;
     final iconPad = compact ? 6.0 : 8.0;
-    final progress = (activeCalories / _goal).clamp(0.0, 1.0);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      height: double.infinity,
-      padding: EdgeInsets.all(p),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: EdgeInsets.all(iconPad),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+    final int net = eatenCalories - activeCalories;
+    final Color netColor;
+    if (net < -1000 || net > 200) {
+      netColor = const Color(0xFFFF453A);
+    } else if (net >= -200 && net <= 200) {
+      netColor = const Color(0xFFFFD60A);
+    } else {
+      netColor = const Color(0xFF30D158);
+    }
+    final String netStr = net >= 0 ? '+$net' : '$net';
+    final double burnProgress = (activeCalories / _burnGoal).clamp(0.0, 1.0);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: double.infinity,
+        padding: EdgeInsets.all(p),
+        decoration: BoxDecoration(
+          color: cardColor,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(iconPad),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.local_fire_department,
+                      color: Colors.orange, size: iconSize),
                 ),
-                child: Icon(Icons.local_fire_department,
-                    color: Colors.orange, size: iconSize),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  trendText,
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    color: trendColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: trendSize,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    trendText,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      color: trendColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: trendSize,
+                    ),
                   ),
                 ),
+                if (onIncrement != null && onDecrement != null) ...[
+                  const SizedBox(width: 8),
+                  _RepeatActionIconButton(
+                      icon: Icons.remove_rounded, onPressed: onDecrement!),
+                  const SizedBox(width: 6),
+                  _RepeatActionIconButton(
+                      icon: Icons.add_rounded, onPressed: onIncrement!),
+                ],
+                if (onTap != null) ...[
+                  const SizedBox(width: 6),
+                  Icon(Icons.chevron_right_rounded,
+                      size: 18, color: subTextColor),
+                ],
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            // Burned label + value
+            Text(
+              'Calories Burned',
+              style: TextStyle(
+                color: subTextColor,
+                fontSize: compact ? 12.0 : 13.0,
+                fontWeight: FontWeight.w500,
               ),
-              if (onIncrement != null && onDecrement != null) ...[
-                const SizedBox(width: 8),
-                _RepeatActionIconButton(
-                  icon: Icons.remove_rounded,
-                  onPressed: onDecrement!,
+            ),
+            const SizedBox(height: 4),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  activeCalories >= 1000
+                      ? '${(activeCalories / 1000).toStringAsFixed(1)}k'
+                      : activeCalories.toString(),
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: compact ? 22.0 : 26.0,
+                    fontWeight: FontWeight.bold,
+                    height: 1.0,
+                  ),
                 ),
-                const SizedBox(width: 6),
-                _RepeatActionIconButton(
-                  icon: Icons.add_rounded,
-                  onPressed: onIncrement!,
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 3, left: 4),
+                  child: Text(
+                    'kcal',
+                    style: TextStyle(
+                      color: subTextColor,
+                      fontSize: compact ? 11.0 : 12.0,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ],
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Active Cal',
-            style: TextStyle(
-              color: subTextColor,
-              fontSize: compact ? 13.0 : 14.0,
-              fontWeight: FontWeight.w500,
             ),
-          ),
-          const SizedBox(height: 6),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                activeCalories >= 1000
-                    ? '${(activeCalories / 1000).toStringAsFixed(1)}k'
-                    : activeCalories.toString(),
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: compact ? 24.0 : 28.0,
-                  fontWeight: FontWeight.bold,
+
+            const SizedBox(height: 6),
+
+            // Fuel bar
+            _CalFuelBar(progress: burnProgress, compact: compact),
+
+            const Spacer(),
+
+            // Three metrics
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                _CalMetric(
+                  label: 'Burned',
+                  value: activeCalories,
+                  color: Colors.orange,
+                  textColor: textColor,
+                  subTextColor: subTextColor,
+                  compact: compact,
                 ),
-              ),
-              const SizedBox(width: 4),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Text(
-                  'kcal  / 5k',
-                  style: TextStyle(
-                    color: subTextColor,
-                    fontSize: compact ? 11.0 : 12.0,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Container(
+                    width: 1,
+                    height: 28,
+                    color: subTextColor.withValues(alpha: 0.15)),
+                _CalMetric(
+                  label: 'Eaten',
+                  value: eatenCalories,
+                  color: const Color(0xFF30A2FF),
+                  textColor: textColor,
+                  subTextColor: subTextColor,
+                  compact: compact,
                 ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          // Segmented fuel-gauge bar
-          _CalFuelBar(progress: progress, compact: compact),
-          const SizedBox(height: 4),
-        ],
+                Container(
+                    width: 1,
+                    height: 28,
+                    color: subTextColor.withValues(alpha: 0.15)),
+                _CalMetric(
+                  label: 'Net',
+                  valueStr: netStr,
+                  color: netColor,
+                  textColor: textColor,
+                  subTextColor: subTextColor,
+                  compact: compact,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 8),
+
+            // Net bar
+            _NetEnergyBar(net: net, isDark: isDark),
+
+            const SizedBox(height: 2),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _CalFuelBar extends StatelessWidget {
-  final double progress; // 0.0–1.0
+  final double progress;
   final bool compact;
 
   const _CalFuelBar({required this.progress, required this.compact});
 
   @override
   Widget build(BuildContext context) {
-    final color = AccentColor.notifier.value;
+    final color = Colors.orange;
     const total = 12;
     final filled = (progress * total).round().clamp(0, total);
-    const heightPattern = [0.45, 0.55, 0.50, 0.65, 0.55, 0.70,
-                           0.60, 0.75, 0.65, 0.80, 0.70, 0.90];
-    final maxH = compact ? 30.0 : 36.0;
+    const heightPattern = [
+      0.45, 0.55, 0.50, 0.65, 0.55, 0.70,
+      0.60, 0.75, 0.65, 0.80, 0.70, 0.90
+    ];
+    final maxH = compact ? 28.0 : 34.0;
 
     return LayoutBuilder(builder: (context, constraints) {
       const gap = 4.0;
@@ -2495,12 +2649,142 @@ class _CalFuelBar extends StatelessWidget {
               width: segW,
               height: h,
               decoration: BoxDecoration(
-                color: active ? color : color.withOpacity(0.13),
+                color: active
+                    ? color
+                    : color.withValues(alpha: 0.13),
                 borderRadius: BorderRadius.circular(segW / 2),
               ),
             ),
           );
         }),
+      );
+    });
+  }
+}
+
+class _CalMetric extends StatelessWidget {
+  final String label;
+  final int? value;
+  final String? valueStr;
+  final Color color;
+  final Color textColor;
+  final Color subTextColor;
+  final bool compact;
+
+  const _CalMetric({
+    required this.label,
+    this.value,
+    this.valueStr,
+    required this.color,
+    required this.textColor,
+    required this.subTextColor,
+    required this.compact,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final display = valueStr ?? (value != null
+        ? (value! >= 1000
+            ? '${(value! / 1000).toStringAsFixed(1)}k'
+            : value.toString())
+        : '0');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          display,
+          style: TextStyle(
+            color: color,
+            fontSize: compact ? 16.0 : 18.0,
+            fontWeight: FontWeight.w800,
+            height: 1.0,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          label,
+          style: TextStyle(
+            color: subTextColor,
+            fontSize: compact ? 10.0 : 11.0,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _NetEnergyBar extends StatelessWidget {
+  final int net;
+  final bool isDark;
+
+  const _NetEnergyBar({required this.net, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    // Bar spans -2000 to +2000, center = 0
+    const int range = 2000;
+    final double ratio = (net / range).clamp(-1.0, 1.0);
+    final bool isPositive = net >= 0;
+
+    final Color barColor;
+    if (net < -1000 || net > 200) {
+      barColor = const Color(0xFFFF453A);
+    } else if (net >= -200 && net <= 200) {
+      barColor = const Color(0xFFFFD60A);
+    } else {
+      barColor = const Color(0xFF30D158);
+    }
+
+    final trackColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.black.withValues(alpha: 0.07);
+
+    return LayoutBuilder(builder: (context, constraints) {
+      final double totalW = constraints.maxWidth;
+      final double centerX = totalW / 2;
+      final double barW = (ratio.abs() * centerX).clamp(2.0, centerX);
+
+      return SizedBox(
+        height: 6,
+        child: Stack(
+          children: [
+            // Track
+            Container(
+              decoration: BoxDecoration(
+                color: trackColor,
+                borderRadius: BorderRadius.circular(3),
+              ),
+            ),
+            // Center tick
+            Positioned(
+              left: centerX - 0.5,
+              top: 0,
+              bottom: 0,
+              width: 1,
+              child: Container(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : Colors.black.withValues(alpha: 0.15),
+              ),
+            ),
+            // Filled bar from center
+            Positioned(
+              left: isPositive ? centerX : centerX - barW,
+              top: 1,
+              bottom: 1,
+              width: barW,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: barColor,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ),
+          ],
+        ),
       );
     });
   }

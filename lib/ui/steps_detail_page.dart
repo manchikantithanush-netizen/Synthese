@@ -9,6 +9,7 @@ import 'package:health/health.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class StepsDetailPage extends StatefulWidget {
   final int todaySteps;
@@ -367,13 +368,10 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                                 const SizedBox(height: 16),
 
                                 isLoading
-                                    ? SizedBox(
+                                    ? const SizedBox(
                                         height: 200,
                                         child: Center(
-                                          child: CircularProgressIndicator(
-                                            color: accentColor,
-                                            strokeWidth: 2,
-                                          ),
+                                          child: BouncingDotsLoader(),
                                         ),
                                       )
                                     : _StepsBarChart(
@@ -1418,13 +1416,10 @@ class _MonthHeatmap extends StatelessWidget {
 
                   // Grid rows
                   isLoading
-                      ? SizedBox(
+                      ? const SizedBox(
                           height: 80,
                           child: Center(
-                            child: CircularProgressIndicator(
-                              color: accentColor,
-                              strokeWidth: 2,
-                            ),
+                            child: BouncingDotsLoader(),
                           ),
                         )
                       : Column(
