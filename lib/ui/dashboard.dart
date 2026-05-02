@@ -32,6 +32,7 @@ import 'package:synthese/ui/steps_detail_page.dart';
 import 'package:synthese/ui/heart_rate_detail_page.dart';
 import 'package:synthese/ui/calories_detail_page.dart';
 import 'package:synthese/ui/exercise_detail_page.dart';
+import 'package:synthese/ui/sleep_detail_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -1393,6 +1394,11 @@ class _DashboardPageState extends State<DashboardPage>
               isDark: isDark,
               onIncrement: () => _adjustSleep(30),
               onDecrement: () => _adjustSleep(-30),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const SleepDetailPage(),
+                ),
+              ),
             ),
           ],
         ),
@@ -2819,6 +2825,7 @@ class SleepCard extends StatelessWidget {
   final bool isDark;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
+  final VoidCallback? onTap;
 
   const SleepCard({
     super.key,
@@ -2832,6 +2839,7 @@ class SleepCard extends StatelessWidget {
     required this.isDark,
     required this.onIncrement,
     required this.onDecrement,
+    this.onTap,
   });
 
   String _fmt(int mins) {
@@ -2851,7 +2859,9 @@ class SleepCard extends StatelessWidget {
     // Max hours to show on the bar = 10h
     const maxMins = 600.0;
 
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: cardColor,
@@ -2890,6 +2900,10 @@ class SleepCard extends StatelessWidget {
               const SizedBox(width: 6),
               _RepeatActionIconButton(
                   icon: Icons.add_rounded, onPressed: onIncrement),
+              if (onTap != null) ...[
+                const SizedBox(width: 6),
+                Icon(Icons.chevron_right_rounded, size: 18, color: subTextColor),
+              ],
             ],
           ),
 
@@ -2982,6 +2996,7 @@ class SleepCard extends StatelessWidget {
           }),
         ],
       ),
+    ),
     );
   }
 }
