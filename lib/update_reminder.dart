@@ -13,10 +13,14 @@
 
 class UpdateReminder {
   /// Must match pubspec.yaml version exactly, e.g. "1.0.0+3"
-  static const String currentVersion = '1.5.0+9';
+  static const String currentVersion = '1.6.0+10';
 
   /// What to show the user when they open the app on this version for the first time.
-  static const String updateMessage = """Version 1.5.0+9 delivers a major upgrade focused on security, visual consistency, and a richer activity tracking experience. We’ve improved onboarding by refining Dark Mode colors, refreshed section colors across the app for a cleaner and more unified appearance, and redesigned alert dialogs with a modern gray style. Switch controls have also been fixed for smoother and more reliable interaction without stopping midway.
+  static const String updateMessage = """Version 1.6.0+10 introduces a powerful expansion to your health tracking experience, with a strong focus on deeper insights and clearer data visualization. This update brings a fully redesigned heart rate detailed view, now featuring a daily plot graph, weekly bar graph, heart rate zones, and clear tracking of your lowest and highest heart rate values, giving you a much better understanding of your cardiovascular activity.
 
-This update introduces an expanded steps analytics experience with a new detailed steps view, interactive bar graph, activity heatmap, distance tracker, circular goal progress tracker, and energy goal tracker to help you better understand your daily movement at a glance. Behind the scenes, we’ve also completed a major security improvement by moving sensitive environment configuration to Cloudflare for safer and more scalable infrastructure.""";
+We’ve also enhanced the dashboard with a new calorie overview that clearly displays burned, eaten, and net calories in one place, making it easier to track your daily balance at a glance.
+
+The calorie detailed view has been significantly upgraded with a new ring-style burned calorie tracker, a full calorie balance breakdown with individual graphs, and a calorie heatmap to visualize your patterns over time. These additions provide a more complete and intuitive way to monitor your energy intake and expenditure.
+
+Overall, this update focuses on turning raw data into meaningful insights, helping you stay more aware, consistent, and in control of your health.""";
 }

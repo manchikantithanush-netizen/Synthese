@@ -31,6 +31,7 @@ import 'package:synthese/services/update_reminder_service.dart';
 import 'package:synthese/ui/steps_detail_page.dart';
 import 'package:synthese/ui/heart_rate_detail_page.dart';
 import 'package:synthese/ui/calories_detail_page.dart';
+import 'package:synthese/ui/exercise_detail_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -1368,6 +1369,13 @@ class _DashboardPageState extends State<DashboardPage>
                 trendColor: exTrend.color,
                 onIncrement: () => _adjustExerciseMinutes(1),
                 onDecrement: () => _adjustExerciseMinutes(-1),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ExerciseDetailPage(
+                      exerciseMinutes: _exerciseMinutes,
+                    ),
+                  ),
+                ),
               ),
             ),
 
@@ -2233,10 +2241,11 @@ class ExerciseTimeCard extends StatelessWidget {
   final Color cardColor, textColor, subTextColor, trendColor;
   final String trendText;
   final int exerciseMinutes;
-  final List<int> exHistory; // 7 values, Mon–Sun, minutes
+  final List<int> exHistory;
   final bool compact;
   final VoidCallback? onIncrement;
   final VoidCallback? onDecrement;
+  final VoidCallback? onTap;
 
   const ExerciseTimeCard({
     super.key,
@@ -2250,6 +2259,7 @@ class ExerciseTimeCard extends StatelessWidget {
     this.compact = false,
     this.onIncrement,
     this.onDecrement,
+    this.onTap,
   });
 
   String _fmt(int mins) {
@@ -2272,7 +2282,9 @@ class ExerciseTimeCard extends StatelessWidget {
     const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
     final todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
 
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       height: double.infinity,
       padding: EdgeInsets.all(p),
       decoration: BoxDecoration(
@@ -2319,6 +2331,10 @@ class ExerciseTimeCard extends StatelessWidget {
                   icon: Icons.add_rounded,
                   onPressed: onIncrement!,
                 ),
+              ],
+              if (onTap != null) ...[
+                const SizedBox(width: 6),
+                Icon(Icons.chevron_right_rounded, size: 18, color: subTextColor),
               ],
             ],
           ),
@@ -2407,6 +2423,7 @@ class ExerciseTimeCard extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }
