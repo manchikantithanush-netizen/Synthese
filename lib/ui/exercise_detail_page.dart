@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
@@ -9,8 +10,13 @@ import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class ExerciseDetailPage extends StatefulWidget {
   final int exerciseMinutes;
+  final ValueChanged<int>? onManualExerciseMinutesAdded;
 
-  const ExerciseDetailPage({super.key, this.exerciseMinutes = 0});
+  const ExerciseDetailPage({
+    super.key,
+    this.exerciseMinutes = 0,
+    this.onManualExerciseMinutesAdded,
+  });
 
   @override
   State<ExerciseDetailPage> createState() => _ExerciseDetailPageState();
@@ -20,6 +26,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<double> _anim;
+  late int _exerciseMinutes;
 
   // Monthly heatmap: day → minutes
   Map<int, int> _monthlyMinutes = {};
@@ -30,6 +37,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
   @override
   void initState() {
     super.initState();
+    _exerciseMinutes = widget.exerciseMinutes;
     _ctrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1100),
@@ -49,6 +57,63 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
     final m = d.month.toString().padLeft(2, '0');
     final day = d.day.toString().padLeft(2, '0');
     return '${d.year}-$m-$day';
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  Future<void> _addManualExerciseMinutes({
+    required DateTime when,
+    required int minutes,
+  }) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final key = _dateKey(when);
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('dashboardDaily')
+        .doc(key)
+        .set({
+          'exerciseMinutes': FieldValue.increment(minutes),
+          'dateKey': key,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+    if (!mounted) return;
+    setState(() {
+      if (_isSameDay(when, DateTime.now())) {
+        _exerciseMinutes += minutes;
+      }
+      if (when.year == DateTime.now().year &&
+          when.month == DateTime.now().month) {
+        final day = when.day;
+        _monthlyMinutes[day] = (_monthlyMinutes[day] ?? 0) + minutes;
+      }
+    });
+    if (_isSameDay(when, DateTime.now())) {
+      widget.onManualExerciseMinutesAdded?.call(minutes);
+    }
+  }
+
+  Future<void> _showAddDataSheet({
+    required Color accentColor,
+    required bool isDark,
+    required Color textColor,
+    required Color cardColor,
+  }) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => _ExerciseAddSheet(
+        isDark: isDark,
+        textColor: textColor,
+        onSave: (when, minutes) =>
+            _addManualExerciseMinutes(when: when, minutes: minutes),
+      ),
+    );
   }
 
   Future<void> _fetchMonthlyData() async {
@@ -72,10 +137,10 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
               .doc(key)
               .get()
               .then((doc) {
-            final mins =
-                (doc.data()?['exerciseMinutes'] as num?)?.toInt() ?? 0;
-            result[day] = mins;
-          }),
+                final mins =
+                    (doc.data()?['exerciseMinutes'] as num?)?.toInt() ?? 0;
+                result[day] = mins;
+              }),
         );
       }
       await Future.wait(futures);
@@ -95,7 +160,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
   }
 
   ({String prefix, String keyword, String suffix}) _buildInsight() {
-    final int mins = widget.exerciseMinutes;
+    final int mins = _exerciseMinutes;
     final double pct = mins / _goalMinutes;
 
     if (mins == 0) {
@@ -106,18 +171,10 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
       );
     }
     if (pct >= 1.0) {
-      return (
-        prefix: 'You\'ve ',
-        keyword: 'hit your goal',
-        suffix: ' today!',
-      );
+      return (prefix: 'You\'ve ', keyword: 'hit your goal', suffix: ' today!');
     }
     if (pct >= 0.75) {
-      return (
-        prefix: 'Almost there — ',
-        keyword: 'keep going',
-        suffix: '.',
-      );
+      return (prefix: 'Almost there — ', keyword: 'keep going', suffix: '.');
     }
     if (pct >= 0.5) {
       return (
@@ -148,8 +205,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final font = GoogleFonts.plusJakartaSans;
 
-    final double progress =
-        (widget.exerciseMinutes / _goalMinutes).clamp(0.0, 1.0);
+    final double progress = (_exerciseMinutes / _goalMinutes).clamp(0.0, 1.0);
     final insight = _buildInsight();
 
     return ValueListenableBuilder<Color>(
@@ -168,7 +224,10 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
               children: [
                 // Accent glow
                 Positioned(
-                  top: 0, left: 0, right: 0, height: 260,
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 260,
                   child: IgnorePointer(
                     child: Container(
                       decoration: BoxDecoration(
@@ -196,9 +255,44 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
                       children: [
                         // Back button
                         Padding(
-                          padding: const EdgeInsets.only(left: 8, top: 8),
-                          child: UniversalBackButton(
-                            onPressed: () => Navigator.of(context).pop(),
+                          padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+                          child: Row(
+                            children: [
+                              UniversalBackButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                              const Spacer(),
+                              OutlinedButton.icon(
+                                onPressed: () => _showAddDataSheet(
+                                  accentColor: accentColor,
+                                  isDark: isDark,
+                                  textColor: textColor,
+                                  cardColor: cardColor,
+                                ),
+                                icon: Icon(Icons.add_rounded,
+                                    size: 16, color: textColor),
+                                label: Text(
+                                  'Add data',
+                                  style: font(
+                                    fontWeight: FontWeight.w700,
+                                    color: textColor,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.2)
+                                        : Colors.black.withValues(alpha: 0.15),
+                                  ),
+                                  shape: const StadiumBorder(),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 8),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
 
@@ -220,7 +314,8 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
                                 TextSpan(
                                   text: insight.keyword,
                                   style: const TextStyle(
-                                      color: Color(0xFFFF4B4B)),
+                                    color: Color(0xFFFF4B4B),
+                                  ),
                                 ),
                                 TextSpan(text: insight.suffix),
                               ],
@@ -239,8 +334,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
                               color: cardColor,
                               borderRadius: BorderRadius.circular(24),
                             ),
-                            padding:
-                                const EdgeInsets.fromLTRB(24, 28, 24, 20),
+                            padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
                             child: Column(
                               children: [
                                 AnimatedBuilder(
@@ -260,31 +354,35 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             RichText(
-                                              text: TextSpan(children: [
-                                                TextSpan(
-                                                  text: _fmt(widget
-                                                      .exerciseMinutes),
-                                                  style: font(
-                                                    fontSize: 38,
-                                                    fontWeight:
-                                                        FontWeight.w800,
-                                                    color: textColor,
-                                                    height: 1.0,
+                                              text: TextSpan(
+                                                children: [
+                                                  TextSpan(
+                                                    text: _fmt(
+                                                      widget.exerciseMinutes,
+                                                    ),
+                                                    style: font(
+                                                      fontSize: 38,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                      color: textColor,
+                                                      height: 1.0,
+                                                    ),
                                                   ),
-                                                ),
-                                                TextSpan(
-                                                  text:
-                                                      ' / ${_fmt(_goalMinutes)}',
-                                                  style: font(
-                                                    fontSize: 16,
-                                                    fontWeight:
-                                                        FontWeight.w600,
-                                                    color: textColor
-                                                        .withValues(
-                                                            alpha: 0.4),
+                                                  TextSpan(
+                                                    text:
+                                                        ' / ${_fmt(_goalMinutes)}',
+                                                    style: font(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: textColor
+                                                          .withValues(
+                                                            alpha: 0.4,
+                                                          ),
+                                                    ),
                                                   ),
-                                                ),
-                                              ]),
+                                                ],
+                                              ),
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
@@ -293,7 +391,8 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w500,
                                                 color: textColor.withValues(
-                                                    alpha: 0.4),
+                                                  alpha: 0.4,
+                                                ),
                                               ),
                                             ),
                                           ],
@@ -306,18 +405,26 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('Just starting',
-                                        style: font(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            color: textColor.withValues(
-                                                alpha: 0.35))),
-                                    Text('Goal reached',
-                                        style: font(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            color: textColor.withValues(
-                                                alpha: 0.35))),
+                                    Text(
+                                      'Just starting',
+                                      style: font(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: textColor.withValues(
+                                          alpha: 0.35,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      'Goal reached',
+                                      style: font(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: textColor.withValues(
+                                          alpha: 0.35,
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ],
@@ -390,12 +497,22 @@ class _ExerciseHeatmap extends StatelessWidget {
     final int month = now.month;
     final int daysInMonth = DateUtils.getDaysInMonth(year, month);
     const monthNames = [
-      '', 'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      '',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     final monthLabel = '${monthNames[month]} $year';
-    final int firstWeekday =
-        (DateTime(year, month, 1).weekday - 1).clamp(0, 6);
+    final int firstWeekday = (DateTime(year, month, 1).weekday - 1).clamp(0, 6);
     final int totalCells = firstWeekday + daysInMonth;
     final int rows = (totalCells / 7).ceil();
     const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -416,18 +533,24 @@ class _ExerciseHeatmap extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(monthLabel,
-                  style: font(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: textColor)),
+              Text(
+                monthLabel,
+                style: font(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                ),
+              ),
               Row(
                 children: [
-                  Text('Less',
-                      style: font(
-                          fontSize: 11,
-                          color: labelColor,
-                          fontWeight: FontWeight.w500)),
+                  Text(
+                    'Less',
+                    style: font(
+                      fontSize: 11,
+                      color: labelColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                   const SizedBox(width: 4),
                   ...List.generate(5, (i) {
                     final opacity = 0.12 + (i / 4) * 0.88;
@@ -442,11 +565,14 @@ class _ExerciseHeatmap extends StatelessWidget {
                     );
                   }),
                   const SizedBox(width: 4),
-                  Text('More',
-                      style: font(
-                          fontSize: 11,
-                          color: labelColor,
-                          fontWeight: FontWeight.w500)),
+                  Text(
+                    'More',
+                    style: font(
+                      fontSize: 11,
+                      color: labelColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -454,82 +580,93 @@ class _ExerciseHeatmap extends StatelessWidget {
 
           const SizedBox(height: 14),
 
-          LayoutBuilder(builder: (context, constraints) {
-            const int cols = 7;
-            const double gap = 4.0;
-            final double cellSize =
-                (constraints.maxWidth - gap * (cols - 1)) / cols;
+          LayoutBuilder(
+            builder: (context, constraints) {
+              const int cols = 7;
+              const double gap = 4.0;
+              final double cellSize =
+                  (constraints.maxWidth - gap * (cols - 1)) / cols;
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(
-                    cols,
-                    (i) => SizedBox(
-                      width: cellSize,
-                      child: Center(
-                        child: Text(dayLabels[i],
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(
+                      cols,
+                      (i) => SizedBox(
+                        width: cellSize,
+                        child: Center(
+                          child: Text(
+                            dayLabels[i],
                             style: font(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: labelColor)),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: labelColor,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                isLoading
-                    ? const SizedBox(
-                        height: 80,
-                        child: Center(child: BouncingDotsLoader()))
-                    : Column(
-                        children: List.generate(rows, (row) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: gap),
-                            child: Row(
-                              mainAxisAlignment:
-                                  MainAxisAlignment.spaceBetween,
-                              children: List.generate(cols, (col) {
-                                final cellIndex = row * cols + col;
-                                final day = cellIndex - firstWeekday + 1;
-                                final isValid =
-                                    day >= 1 && day <= daysInMonth;
-                                final isFuture = day > now.day;
+                  const SizedBox(height: 6),
+                  isLoading
+                      ? const SizedBox(
+                          height: 80,
+                          child: Center(child: BouncingDotsLoader()),
+                        )
+                      : Column(
+                          children: List.generate(rows, (row) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: gap),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: List.generate(cols, (col) {
+                                  final cellIndex = row * cols + col;
+                                  final day = cellIndex - firstWeekday + 1;
+                                  final isValid =
+                                      day >= 1 && day <= daysInMonth;
+                                  final isFuture = day > now.day;
 
-                                if (!isValid) {
-                                  return SizedBox(
-                                      width: cellSize, height: cellSize);
-                                }
+                                  if (!isValid) {
+                                    return SizedBox(
+                                      width: cellSize,
+                                      height: cellSize,
+                                    );
+                                  }
 
-                                final mins = monthlyMinutes[day];
-                                final Color cellColor = isFuture
-                                    ? emptyColor
-                                    : accentColor.withValues(
-                                        alpha: _cellOpacity(mins));
-                                final bool isToday = day == now.day;
+                                  final mins = monthlyMinutes[day];
+                                  final Color cellColor = isFuture
+                                      ? emptyColor
+                                      : accentColor.withValues(
+                                          alpha: _cellOpacity(mins),
+                                        );
+                                  final bool isToday = day == now.day;
 
-                                return Container(
-                                  width: cellSize,
-                                  height: cellSize,
-                                  decoration: BoxDecoration(
-                                    color: cellColor,
-                                    borderRadius: BorderRadius.circular(5),
-                                    border: isToday
-                                        ? Border.all(
-                                            color: accentColor, width: 1.5)
-                                        : null,
-                                  ),
-                                );
-                              }),
-                            ),
-                          );
-                        }),
-                      ),
-              ],
-            );
-          }),
+                                  return Container(
+                                    width: cellSize,
+                                    height: cellSize,
+                                    decoration: BoxDecoration(
+                                      color: cellColor,
+                                      borderRadius: BorderRadius.circular(5),
+                                      border: isToday
+                                          ? Border.all(
+                                              color: accentColor,
+                                              width: 1.5,
+                                            )
+                                          : null,
+                                    ),
+                                  );
+                                }),
+                              ),
+                            );
+                          }),
+                        ),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );
@@ -572,8 +709,7 @@ class _SemiGaugePainter extends CustomPainter {
 
     for (int i = 0; i < _totalDashes; i++) {
       final double slotStart = _startAngle + i * slotAngle;
-      final double dashStart =
-          slotStart + slotAngle * (dashGapFraction / 2);
+      final double dashStart = slotStart + slotAngle * (dashGapFraction / 2);
       final double dashEnd = dashStart + dashAngle;
       final double halfAngle = dashAngle / 2;
 
@@ -613,7 +749,11 @@ class _SemiGaugePainter extends CustomPainter {
         ..close();
 
       canvas.drawPath(
-          path, Paint()..color = color..style = PaintingStyle.fill);
+        path,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.fill,
+      );
     }
   }
 
@@ -623,4 +763,419 @@ class _SemiGaugePainter extends CustomPainter {
   @override
   bool shouldRepaint(_SemiGaugePainter old) =>
       old.progress != progress || old.accentColor != accentColor;
+}
+
+// ─────────────────────────────────────────────
+// Exercise Add Sheet
+// ─────────────────────────────────────────────
+
+class _ExerciseAddSheet extends StatefulWidget {
+  final bool isDark;
+  final Color textColor;
+  final Future<void> Function(DateTime when, int minutes) onSave;
+
+  const _ExerciseAddSheet({
+    required this.isDark,
+    required this.textColor,
+    required this.onSave,
+  });
+
+  @override
+  State<_ExerciseAddSheet> createState() => _ExerciseAddSheetState();
+}
+
+class _ExerciseAddSheetState extends State<_ExerciseAddSheet> {
+  late DateTime _selectedDateTime;
+  final TextEditingController _minsCtrl = TextEditingController();
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDateTime = DateTime.now();
+  }
+
+  @override
+  void dispose() {
+    _minsCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateTime,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+      builder: (context, child) => Theme(data: _pickerTheme(context), child: child!),
+    );
+    if (!mounted || picked == null) return;
+    setState(() {
+      _selectedDateTime = DateTime(
+        picked.year, picked.month, picked.day,
+        _selectedDateTime.hour, _selectedDateTime.minute,
+      );
+    });
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
+      builder: (context, child) => Theme(data: _pickerTheme(context), child: child!),
+    );
+    if (!mounted || picked == null) return;
+    setState(() {
+      _selectedDateTime = DateTime(
+        _selectedDateTime.year, _selectedDateTime.month, _selectedDateTime.day,
+        picked.hour, picked.minute,
+      );
+    });
+  }
+
+  Future<void> _submit() async {
+    final mins = int.tryParse(_minsCtrl.text.trim());
+    if (mins == null || mins <= 0) {
+      setState(() => _error = 'Enter a valid number of minutes greater than 0.');
+      return;
+    }
+    setState(() { _error = null; _saving = true; });
+    try {
+      await widget.onSave(_selectedDateTime, mins);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() { _error = 'Failed to save. Please try again.'; _saving = false; });
+    }
+  }
+
+  String _formatDate(DateTime dt) {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+  }
+
+  String _formatTime(DateTime dt) {
+    final h = dt.hour == 0 ? 12 : dt.hour > 12 ? dt.hour - 12 : dt.hour;
+    final m = dt.minute.toString().padLeft(2, '0');
+    final period = dt.hour < 12 ? 'AM' : 'PM';
+    return '$h:$m $period';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF2F2F7);
+    final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+    final textColor = widget.textColor;
+    final subColor = isDark ? Colors.white38 : Colors.black38;
+    final pillBg = isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA);
+    final divColor = isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07);
+    final font = GoogleFonts.plusJakartaSans;
+
+    return FractionallySizedBox(
+      heightFactor: 0.93,
+      child: Container(
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(38)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── top bar ──
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _ExSheetTopButton(
+                      isDark: isDark,
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Icon(Icons.close_rounded, size: 18, color: textColor),
+                    ),
+                    _ExSheetTopButton(
+                      isDark: isDark,
+                      onTap: _saving ? null : _submit,
+                      child: _saving
+                          ? SizedBox(
+                              width: 24,
+                              height: 12,
+                              child: BouncingDotsLoader.compact(
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                            )
+                          : Icon(Icons.check_rounded, size: 18, color: textColor),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── icon ──
+              Center(
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.timer,
+                    size: 34,
+                    color: Color(0xFFFF4B4B),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // ── title ──
+              Center(
+                child: Text(
+                  'Exercise Time',
+                  style: font(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: textColor,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              // ── rows card ──
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      // Date
+                      _ExSheetRow(
+                        label: 'Date',
+                        subColor: subColor,
+                        textColor: textColor,
+                        font: font,
+                        trailing: GestureDetector(
+                          onTap: _pickDate,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: pillBg,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _formatDate(_selectedDateTime),
+                              style: font(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: textColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Divider(height: 1, thickness: 0.5, indent: 16, color: divColor),
+                      // Time
+                      _ExSheetRow(
+                        label: 'Time',
+                        subColor: subColor,
+                        textColor: textColor,
+                        font: font,
+                        trailing: GestureDetector(
+                          onTap: _pickTime,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: pillBg,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _formatTime(_selectedDateTime),
+                              style: font(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: textColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Divider(height: 1, thickness: 0.5, indent: 16, color: divColor),
+                      // Minutes input
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 2),
+                        child: Row(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('Minutes',
+                                    style: font(fontSize: 16, color: subColor)),
+                                Text('min',
+                                    style: font(
+                                        fontSize: 11,
+                                        color: const Color(0xFFFF4B4B)
+                                            .withValues(alpha: 0.8))),
+                              ],
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextField(
+                                controller: _minsCtrl,
+                                keyboardType: TextInputType.number,
+                                textInputAction: TextInputAction.done,
+                                autofocus: true,
+                                textAlign: TextAlign.right,
+                                onChanged: (_) {
+                                  if (_error != null) setState(() => _error = null);
+                                },
+                                onSubmitted: (_) => _submit(),
+                                style: font(fontSize: 16, color: textColor),
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: '',
+                                  isDense: true,
+                                  contentPadding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // inline error
+              if (_error != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  child: Text(
+                    _error!,
+                    style: font(fontSize: 13, color: Colors.redAccent),
+                  ),
+                ),
+
+              const Spacer(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExSheetTopButton extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback? onTap;
+  final Widget child;
+
+  const _ExSheetTopButton({
+    required this.isDark,
+    required this.onTap,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : Colors.black.withValues(alpha: 0.06);
+    final border = isDark
+        ? Colors.white.withValues(alpha: 0.2)
+        : Colors.black.withValues(alpha: 0.08);
+
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Material(
+        color: bg,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: border),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap == null
+              ? null
+              : () {
+                  HapticFeedback.lightImpact();
+                  onTap!();
+                },
+          child: Center(child: child),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExSheetRow extends StatelessWidget {
+  final String label;
+  final Color subColor;
+  final Color textColor;
+  final TextStyle Function({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? letterSpacing,
+    double? height,
+  }) font;
+  final Widget trailing;
+
+  const _ExSheetRow({
+    required this.label,
+    required this.subColor,
+    required this.textColor,
+    required this.font,
+    required this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: font(fontSize: 16, color: subColor)),
+          trailing,
+        ],
+      ),
+    );
+  }
+}
+
+ThemeData _pickerTheme(BuildContext context) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  if (!isDark) return Theme.of(context);
+  const bg = Color(0xFF252528);
+  return Theme.of(context).copyWith(
+    colorScheme: Theme.of(context).colorScheme.copyWith(
+      surface: bg,
+      surfaceContainerHigh: bg,
+      surfaceContainerHighest: bg,
+      surfaceContainer: bg,
+    ),
+    dialogTheme: const DialogThemeData(backgroundColor: bg),
+    datePickerTheme: const DatePickerThemeData(backgroundColor: bg),
+    timePickerTheme: const TimePickerThemeData(backgroundColor: bg),
+  );
 }

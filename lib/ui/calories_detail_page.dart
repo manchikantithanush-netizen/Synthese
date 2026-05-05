@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
@@ -10,11 +11,13 @@ import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 class CaloriesDetailPage extends StatefulWidget {
   final int activeCalories;
   final int eatenCalories;
+  final ValueChanged<int>? onManualBurnedCaloriesAdded;
 
   const CaloriesDetailPage({
     super.key,
     required this.activeCalories,
     this.eatenCalories = 0,
+    this.onManualBurnedCaloriesAdded,
   });
 
   @override
@@ -25,6 +28,7 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<double> _anim;
+  late int _activeCalories;
 
   static const int _burnGoal = 500;
   static const int _eatGoal = 2000;
@@ -40,6 +44,7 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
   @override
   void initState() {
     super.initState();
+    _activeCalories = widget.activeCalories;
     _ctrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
@@ -67,6 +72,65 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
     return DateTime(now.year, now.month, now.day - (now.weekday - 1));
   }
 
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  Future<void> _addManualBurnedCalories({
+    required DateTime when,
+    required int calories,
+  }) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final key = _dateKey(when);
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('dashboardDaily')
+        .doc(key)
+        .set({
+          'activeCalories': FieldValue.increment(calories),
+          'dateKey': key,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+    if (!mounted) return;
+    setState(() {
+      if (_isSameDay(when, DateTime.now())) {
+        _activeCalories += calories;
+      }
+      final idx = (when.weekday - 1).clamp(0, 6);
+      _weeklyBurned[idx] += calories;
+      if (when.year == DateTime.now().year &&
+          when.month == DateTime.now().month) {
+        final day = when.day;
+        _monthlyNet[day] = (_monthlyNet[day] ?? 0) - calories;
+      }
+    });
+    if (_isSameDay(when, DateTime.now())) {
+      widget.onManualBurnedCaloriesAdded?.call(calories);
+    }
+  }
+
+  Future<void> _showAddDataSheet({
+    required Color accentColor,
+    required bool isDark,
+    required Color textColor,
+    required Color cardColor,
+  }) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => _CaloriesAddSheet(
+        isDark: isDark,
+        textColor: textColor,
+        onSaveBurned: (when, cal) =>
+            _addManualBurnedCalories(when: when, calories: cal),
+      ),
+    );
+  }
+
   Future<void> _fetchWeeklyData() async {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -83,22 +147,36 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
         final day = monday.add(Duration(days: i));
         final key = _dateKey(day);
         // Burned from dashboardDaily
-        futures.add(FirebaseFirestore.instance
-            .collection('users').doc(uid)
-            .collection('dashboardDaily').doc(key).get()
-            .then((d) {
-          burned[i] = (d.data()?['activeCalories'] as num?)?.toInt() ?? 0;
-        }));
+        futures.add(
+          FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .collection('dashboardDaily')
+              .doc(key)
+              .get()
+              .then((d) {
+                burned[i] = (d.data()?['activeCalories'] as num?)?.toInt() ?? 0;
+              }),
+        );
         // Eaten from dailyAgg
-        futures.add(FirebaseFirestore.instance
-            .collection('users').doc(uid)
-            .collection('dailyAgg').doc(key).get()
-            .then((d) {
-          eaten[i] = (d.data()?['caloriesLogged'] as num?)?.toInt() ?? 0;
-        }));
+        futures.add(
+          FirebaseFirestore.instance
+              .collection('users')
+              .doc(uid)
+              .collection('dailyAgg')
+              .doc(key)
+              .get()
+              .then((d) {
+                eaten[i] = (d.data()?['caloriesLogged'] as num?)?.toInt() ?? 0;
+              }),
+        );
       }
       await Future.wait(futures);
-      if (mounted) setState(() { _weeklyBurned = burned; _weeklyEaten = eaten; });
+      if (mounted)
+        setState(() {
+          _weeklyBurned = burned;
+          _weeklyEaten = eaten;
+        });
     } catch (_) {
     } finally {
       if (mounted) setState(() {});
@@ -119,16 +197,30 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
         final date = DateTime(now.year, now.month, day);
         final key = _dateKey(date);
         int burned = 0, eaten = 0;
-        futures.add(Future.wait([
-          FirebaseFirestore.instance
-              .collection('users').doc(uid)
-              .collection('dashboardDaily').doc(key).get()
-              .then((d) { burned = (d.data()?['activeCalories'] as num?)?.toInt() ?? 0; }),
-          FirebaseFirestore.instance
-              .collection('users').doc(uid)
-              .collection('dailyAgg').doc(key).get()
-              .then((d) { eaten = (d.data()?['caloriesLogged'] as num?)?.toInt() ?? 0; }),
-        ]).then((_) { result[day] = eaten - burned; }));
+        futures.add(
+          Future.wait([
+            FirebaseFirestore.instance
+                .collection('users')
+                .doc(uid)
+                .collection('dashboardDaily')
+                .doc(key)
+                .get()
+                .then((d) {
+                  burned = (d.data()?['activeCalories'] as num?)?.toInt() ?? 0;
+                }),
+            FirebaseFirestore.instance
+                .collection('users')
+                .doc(uid)
+                .collection('dailyAgg')
+                .doc(key)
+                .get()
+                .then((d) {
+                  eaten = (d.data()?['caloriesLogged'] as num?)?.toInt() ?? 0;
+                }),
+          ]).then((_) {
+            result[day] = eaten - burned;
+          }),
+        );
       }
       await Future.wait(futures);
       if (mounted) setState(() => _monthlyNet = result);
@@ -138,33 +230,66 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
     }
   }
 
-  ({String prefix, String keyword, String suffix}) _buildInsight() {    final int burned = widget.activeCalories;
+  ({String prefix, String keyword, String suffix}) _buildInsight() {
+    final int burned = _activeCalories;
     final int eaten = widget.eatenCalories;
     final int net = eaten - burned;
     final double pct = _burnGoal > 0 ? burned / _burnGoal : 0;
 
     if (burned == 0 && eaten == 0) {
-      return (prefix: 'No activity ', keyword: 'recorded', suffix: ' yet today.');
+      return (
+        prefix: 'No activity ',
+        keyword: 'recorded',
+        suffix: ' yet today.',
+      );
     }
     if (burned == 0) {
-      return (prefix: 'You\'ve eaten but haven\'t ', keyword: 'burned any calories', suffix: ' yet.');
+      return (
+        prefix: 'You\'ve eaten but haven\'t ',
+        keyword: 'burned any calories',
+        suffix: ' yet.',
+      );
     }
     if (pct >= 1.0) {
-      return (prefix: 'You\'ve ', keyword: 'hit your burn goal', suffix: ' today!');
+      return (
+        prefix: 'You\'ve ',
+        keyword: 'hit your burn goal',
+        suffix: ' today!',
+      );
     }
     if (net < -500) {
-      return (prefix: 'You\'re in a ', keyword: 'solid deficit', suffix: ' today.');
+      return (
+        prefix: 'You\'re in a ',
+        keyword: 'solid deficit',
+        suffix: ' today.',
+      );
     }
     if (net > 500) {
-      return (prefix: 'You\'re in a ', keyword: 'calorie surplus', suffix: ' today.');
+      return (
+        prefix: 'You\'re in a ',
+        keyword: 'calorie surplus',
+        suffix: ' today.',
+      );
     }
     if (net >= -200 && net <= 200) {
-      return (prefix: 'You\'re close to ', keyword: 'maintenance', suffix: ' today.');
+      return (
+        prefix: 'You\'re close to ',
+        keyword: 'maintenance',
+        suffix: ' today.',
+      );
     }
     if (pct >= 0.5) {
-      return (prefix: 'You\'re ', keyword: 'halfway to your burn goal', suffix: '.');
+      return (
+        prefix: 'You\'re ',
+        keyword: 'halfway to your burn goal',
+        suffix: '.',
+      );
     }
-    return (prefix: 'Keep moving to ', keyword: 'reach your goal', suffix: ' today.');
+    return (
+      prefix: 'Keep moving to ',
+      keyword: 'reach your goal',
+      suffix: ' today.',
+    );
   }
 
   @override
@@ -175,7 +300,7 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final font = GoogleFonts.plusJakartaSans;
 
-    final int burned = widget.activeCalories;
+    final int burned = _activeCalories;
     final int eaten = widget.eatenCalories;
     final int net = eaten - burned;
     final double burnProgress = (burned / _burnGoal).clamp(0.0, 1.0);
@@ -211,7 +336,10 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
               children: [
                 // Accent glow
                 Positioned(
-                  top: 0, left: 0, right: 0, height: 260,
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 260,
                   child: IgnorePointer(
                     child: Container(
                       decoration: BoxDecoration(
@@ -239,9 +367,44 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                       children: [
                         // Back button
                         Padding(
-                          padding: const EdgeInsets.only(left: 8, top: 8),
-                          child: UniversalBackButton(
-                            onPressed: () => Navigator.of(context).pop(),
+                          padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+                          child: Row(
+                            children: [
+                              UniversalBackButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                              const Spacer(),
+                              OutlinedButton.icon(
+                                onPressed: () => _showAddDataSheet(
+                                  accentColor: accentColor,
+                                  isDark: isDark,
+                                  textColor: textColor,
+                                  cardColor: cardColor,
+                                ),
+                                icon: Icon(Icons.add_rounded,
+                                    size: 16, color: textColor),
+                                label: Text(
+                                  'Add data',
+                                  style: font(
+                                    fontWeight: FontWeight.w700,
+                                    color: textColor,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.2)
+                                        : Colors.black.withValues(alpha: 0.15),
+                                  ),
+                                  shape: const StadiumBorder(),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 8),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
 
@@ -250,27 +413,31 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                         // Insight
                         Padding(
                           padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
-                          child: Builder(builder: (_) {
-                            final insight = _buildInsight();
-                            return RichText(
-                              text: TextSpan(
-                                style: font(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w800,
-                                  color: textColor,
-                                  height: 1.3,
-                                ),
-                                children: [
-                                  TextSpan(text: insight.prefix),
-                                  TextSpan(
-                                    text: insight.keyword,
-                                    style: TextStyle(color: Colors.orange.shade400),
+                          child: Builder(
+                            builder: (_) {
+                              final insight = _buildInsight();
+                              return RichText(
+                                text: TextSpan(
+                                  style: font(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                    color: textColor,
+                                    height: 1.3,
                                   ),
-                                  TextSpan(text: insight.suffix),
-                                ],
-                              ),
-                            );
-                          }),
+                                  children: [
+                                    TextSpan(text: insight.prefix),
+                                    TextSpan(
+                                      text: insight.keyword,
+                                      style: TextStyle(
+                                        color: Colors.orange.shade400,
+                                      ),
+                                    ),
+                                    TextSpan(text: insight.suffix),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                         ),
 
                         const SizedBox(height: 24),
@@ -285,7 +452,9 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                               borderRadius: BorderRadius.circular(24),
                             ),
                             padding: const EdgeInsets.symmetric(
-                                vertical: 28, horizontal: 24),
+                              vertical: 28,
+                              horizontal: 24,
+                            ),
                             child: AnimatedBuilder(
                               animation: _anim,
                               builder: (_, __) => SizedBox(
@@ -301,25 +470,29 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         RichText(
-                                          text: TextSpan(children: [
-                                            TextSpan(
-                                              text: '$burned',
-                                              style: font(
-                                                fontSize: 44,
-                                                fontWeight: FontWeight.w800,
-                                                color: textColor,
-                                                height: 1.0,
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: '$burned',
+                                                style: font(
+                                                  fontSize: 44,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: textColor,
+                                                  height: 1.0,
+                                                ),
                                               ),
-                                            ),
-                                            TextSpan(
-                                              text: ' kcal',
-                                              style: font(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w600,
-                                                color: textColor.withValues(alpha: 0.55),
+                                              TextSpan(
+                                                text: ' kcal',
+                                                style: font(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: textColor.withValues(
+                                                    alpha: 0.55,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                          ]),
+                                            ],
+                                          ),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
@@ -327,7 +500,9 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                                           style: font(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w500,
-                                            color: textColor.withValues(alpha: 0.4),
+                                            color: textColor.withValues(
+                                              alpha: 0.4,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -353,11 +528,14 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Calorie Balance',
-                                    style: font(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                        color: textColor)),
+                                Text(
+                                  'Calorie Balance',
+                                  style: font(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: textColor,
+                                  ),
+                                ),
 
                                 const SizedBox(height: 20),
 
@@ -420,42 +598,53 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                                   children: [
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Text('Net',
-                                              style: font(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: textColor)),
+                                          Text(
+                                            'Net',
+                                            style: font(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w700,
+                                              color: textColor,
+                                            ),
+                                          ),
                                           const SizedBox(height: 2),
-                                          Text(netLabel,
-                                              style: font(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: netColor)),
+                                          Text(
+                                            netLabel,
+                                            style: font(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: netColor,
+                                            ),
+                                          ),
                                         ],
                                       ),
                                     ),
                                     RichText(
-                                      text: TextSpan(children: [
-                                        TextSpan(
-                                          text: netStr,
-                                          style: font(
-                                            fontSize: 32,
-                                            fontWeight: FontWeight.w800,
-                                            color: netColor,
-                                            height: 1.0,
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: netStr,
+                                            style: font(
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.w800,
+                                              color: netColor,
+                                              height: 1.0,
+                                            ),
                                           ),
-                                        ),
-                                        TextSpan(
-                                          text: ' kcal',
-                                          style: font(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: netColor.withValues(alpha: 0.6),
+                                          TextSpan(
+                                            text: ' kcal',
+                                            style: font(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: netColor.withValues(
+                                                alpha: 0.6,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ]),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -469,20 +658,30 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
 
                                 // Scale labels
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('−2000',
-                                        style: font(
-                                            fontSize: 10,
-                                            color: textColor.withValues(alpha: 0.3))),
-                                    Text('0',
-                                        style: font(
-                                            fontSize: 10,
-                                            color: textColor.withValues(alpha: 0.3))),
-                                    Text('+2000',
-                                        style: font(
-                                            fontSize: 10,
-                                            color: textColor.withValues(alpha: 0.3))),
+                                    Text(
+                                      '−2000',
+                                      style: font(
+                                        fontSize: 10,
+                                        color: textColor.withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                    Text(
+                                      '0',
+                                      style: font(
+                                        fontSize: 10,
+                                        color: textColor.withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                    Text(
+                                      '+2000',
+                                      style: font(
+                                        fontSize: 10,
+                                        color: textColor.withValues(alpha: 0.3),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ],
@@ -503,7 +702,6 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                             isDark: isDark,
                           ),
                         ),
-
                       ],
                     ),
                   ),
@@ -589,8 +787,14 @@ class _SparklinePainter extends CustomPainter {
         points[i].dx + (points[i + 1].dx - points[i].dx) / 2,
         points[i + 1].dy,
       );
-      fillPath.cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy,
-          points[i + 1].dx, points[i + 1].dy);
+      fillPath.cubicTo(
+        cp1.dx,
+        cp1.dy,
+        cp2.dx,
+        cp2.dy,
+        points[i + 1].dx,
+        points[i + 1].dy,
+      );
     }
     fillPath.lineTo(points.last.dx, size.height);
     fillPath.close();
@@ -607,8 +811,14 @@ class _SparklinePainter extends CustomPainter {
         points[i].dx + (points[i + 1].dx - points[i].dx) / 2,
         points[i + 1].dy,
       );
-      linePath.cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy,
-          points[i + 1].dx, points[i + 1].dy);
+      linePath.cubicTo(
+        cp1.dx,
+        cp1.dy,
+        cp2.dx,
+        cp2.dy,
+        points[i + 1].dx,
+        points[i + 1].dy,
+      );
     }
     canvas.drawPath(
       linePath,
@@ -624,8 +834,7 @@ class _SparklinePainter extends CustomPainter {
     canvas.drawCircle(
       points.last,
       1.5,
-      Paint()
-        ..color = isDark ? const Color(0xFF1C1C1E) : Colors.white,
+      Paint()..color = isDark ? const Color(0xFF1C1C1E) : Colors.white,
     );
   }
 
@@ -655,9 +864,10 @@ class _CalHeatmap extends StatelessWidget {
   // Green for deficit, red for surplus, opacity by magnitude
   Color _cellColor(int? net) {
     if (net == null) return Colors.transparent;
-    if (net == 0) return (isDark
-        ? Colors.white.withValues(alpha: 0.06)
-        : Colors.black.withValues(alpha: 0.06));
+    if (net == 0)
+      return (isDark
+          ? Colors.white.withValues(alpha: 0.06)
+          : Colors.black.withValues(alpha: 0.06));
     final bool surplus = net > 0;
     final double magnitude = (net.abs() / 1000).clamp(0.0, 1.0);
     final double opacity = 0.15 + magnitude * 0.85;
@@ -674,8 +884,19 @@ class _CalHeatmap extends StatelessWidget {
     final int month = now.month;
     final int daysInMonth = DateUtils.getDaysInMonth(year, month);
     const monthNames = [
-      '', 'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      '',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     final monthLabel = '${monthNames[month]} $year';
     final int firstWeekday = (DateTime(year, month, 1).weekday - 1).clamp(0, 6);
@@ -699,15 +920,19 @@ class _CalHeatmap extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(monthLabel,
-                  style: font(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: textColor)),
+              Text(
+                monthLabel,
+                style: font(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                ),
+              ),
               Row(
                 children: [
                   Container(
-                    width: 10, height: 10,
+                    width: 10,
+                    height: 10,
                     margin: const EdgeInsets.only(right: 4),
                     decoration: BoxDecoration(
                       color: const Color(0xFF30D158).withValues(alpha: 0.8),
@@ -717,7 +942,8 @@ class _CalHeatmap extends StatelessWidget {
                   Text('Deficit', style: font(fontSize: 11, color: labelColor)),
                   const SizedBox(width: 10),
                   Container(
-                    width: 10, height: 10,
+                    width: 10,
+                    height: 10,
                     margin: const EdgeInsets.only(right: 4),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF453A).withValues(alpha: 0.8),
@@ -732,76 +958,96 @@ class _CalHeatmap extends StatelessWidget {
 
           const SizedBox(height: 14),
 
-          LayoutBuilder(builder: (context, constraints) {
-            const int cols = 7;
-            const double gap = 4.0;
-            final double cellSize =
-                (constraints.maxWidth - gap * (cols - 1)) / cols;
+          LayoutBuilder(
+            builder: (context, constraints) {
+              const int cols = 7;
+              const double gap = 4.0;
+              final double cellSize =
+                  (constraints.maxWidth - gap * (cols - 1)) / cols;
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(cols, (i) => SizedBox(
-                    width: cellSize,
-                    child: Center(
-                      child: Text(dayLabels[i],
-                          style: font(
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(
+                      cols,
+                      (i) => SizedBox(
+                        width: cellSize,
+                        child: Center(
+                          child: Text(
+                            dayLabels[i],
+                            style: font(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: labelColor)),
-                    ),
-                  )),
-                ),
-                const SizedBox(height: 6),
-                isLoading
-                    ? const SizedBox(
-                        height: 80,
-                        child: Center(child: BouncingDotsLoader()))
-                    : Column(
-                        children: List.generate(rows, (row) => Padding(
-                          padding: const EdgeInsets.only(bottom: gap),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: List.generate(cols, (col) {
-                              final cellIndex = row * cols + col;
-                              final day = cellIndex - firstWeekday + 1;
-                              final isValid = day >= 1 && day <= daysInMonth;
-                              final isFuture = day > now.day;
-
-                              if (!isValid) {
-                                return SizedBox(width: cellSize, height: cellSize);
-                              }
-
-                              final net = monthlyNet[day];
-                              final Color cellColor = isFuture
-                                  ? emptyColor
-                                  : (net == null
-                                      ? emptyColor
-                                      : _cellColor(net));
-                              final bool isToday = day == now.day;
-
-                              return Container(
-                                width: cellSize,
-                                height: cellSize,
-                                decoration: BoxDecoration(
-                                  color: cellColor,
-                                  borderRadius: BorderRadius.circular(5),
-                                  border: isToday
-                                      ? Border.all(
-                                          color: textColor.withValues(alpha: 0.4),
-                                          width: 1.5)
-                                      : null,
-                                ),
-                              );
-                            }),
+                              color: labelColor,
+                            ),
                           ),
-                        )),
+                        ),
                       ),
-              ],
-            );
-          }),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  isLoading
+                      ? const SizedBox(
+                          height: 80,
+                          child: Center(child: BouncingDotsLoader()),
+                        )
+                      : Column(
+                          children: List.generate(
+                            rows,
+                            (row) => Padding(
+                              padding: const EdgeInsets.only(bottom: gap),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: List.generate(cols, (col) {
+                                  final cellIndex = row * cols + col;
+                                  final day = cellIndex - firstWeekday + 1;
+                                  final isValid =
+                                      day >= 1 && day <= daysInMonth;
+                                  final isFuture = day > now.day;
+
+                                  if (!isValid) {
+                                    return SizedBox(
+                                      width: cellSize,
+                                      height: cellSize,
+                                    );
+                                  }
+
+                                  final net = monthlyNet[day];
+                                  final Color cellColor = isFuture
+                                      ? emptyColor
+                                      : (net == null
+                                            ? emptyColor
+                                            : _cellColor(net));
+                                  final bool isToday = day == now.day;
+
+                                  return Container(
+                                    width: cellSize,
+                                    height: cellSize,
+                                    decoration: BoxDecoration(
+                                      color: cellColor,
+                                      borderRadius: BorderRadius.circular(5),
+                                      border: isToday
+                                          ? Border.all(
+                                              color: textColor.withValues(
+                                                alpha: 0.4,
+                                              ),
+                                              width: 1.5,
+                                            )
+                                          : null,
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ),
+                          ),
+                        ),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );
@@ -856,37 +1102,47 @@ class _CalRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label,
-                      style: font(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: textColor)),
-                  Text(sublabel,
-                      style: font(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: textColor.withValues(alpha: 0.4))),
+                  Text(
+                    label,
+                    style: font(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
+                    ),
+                  ),
+                  Text(
+                    sublabel,
+                    style: font(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: textColor.withValues(alpha: 0.4),
+                    ),
+                  ),
                 ],
               ),
             ),
             RichText(
-              text: TextSpan(children: [
-                TextSpan(
-                  text: '$value',
-                  style: font(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$value',
+                    style: font(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: color,
-                      height: 1.0),
-                ),
-                TextSpan(
-                  text: ' / $goal',
-                  style: font(
+                      height: 1.0,
+                    ),
+                  ),
+                  TextSpan(
+                    text: ' / $goal',
+                    style: font(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: textColor.withValues(alpha: 0.35)),
-                ),
-              ]),
+                      color: textColor.withValues(alpha: 0.35),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -937,48 +1193,50 @@ class _NetBar extends StatelessWidget {
         ? Colors.white.withValues(alpha: 0.08)
         : Colors.black.withValues(alpha: 0.07);
 
-    return LayoutBuilder(builder: (context, constraints) {
-      final double totalW = constraints.maxWidth;
-      final double centerX = totalW / 2;
-      final double barW = (ratio.abs() * centerX).clamp(2.0, centerX);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double totalW = constraints.maxWidth;
+        final double centerX = totalW / 2;
+        final double barW = (ratio.abs() * centerX).clamp(2.0, centerX);
 
-      return SizedBox(
-        height: 8,
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: trackColor,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            Positioned(
-              left: centerX - 0.5,
-              top: 0,
-              bottom: 0,
-              width: 1,
-              child: Container(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.25)
-                    : Colors.black.withValues(alpha: 0.15),
-              ),
-            ),
-            Positioned(
-              left: isPositive ? centerX : centerX - barW,
-              top: 1,
-              bottom: 1,
-              width: barW,
-              child: Container(
+        return SizedBox(
+          height: 8,
+          child: Stack(
+            children: [
+              Container(
                 decoration: BoxDecoration(
-                  color: barColor,
+                  color: trackColor,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
-            ),
-          ],
-        ),
-      );
-    });
+              Positioned(
+                left: centerX - 0.5,
+                top: 0,
+                bottom: 0,
+                width: 1,
+                child: Container(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.25)
+                      : Colors.black.withValues(alpha: 0.15),
+                ),
+              ),
+              Positioned(
+                left: isPositive ? centerX : centerX - barW,
+                top: 1,
+                bottom: 1,
+                width: barW,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: barColor,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -1024,12 +1282,18 @@ class _SegmentedRingPainter extends CustomPainter {
         color = _emptyColor(isDark);
       }
 
-      final outerStart = center +
-          Offset(outerR * math.cos(startAngle + 0.02),
-              outerR * math.sin(startAngle + 0.02));
-      final innerEnd = center +
-          Offset(innerR * math.cos(endAngle - 0.03),
-              innerR * math.sin(endAngle - 0.03));
+      final outerStart =
+          center +
+          Offset(
+            outerR * math.cos(startAngle + 0.02),
+            outerR * math.sin(startAngle + 0.02),
+          );
+      final innerEnd =
+          center +
+          Offset(
+            innerR * math.cos(endAngle - 0.03),
+            innerR * math.sin(endAngle - 0.03),
+          );
 
       final path = Path()
         ..moveTo(outerStart.dx, outerStart.dy)
@@ -1049,7 +1313,11 @@ class _SegmentedRingPainter extends CustomPainter {
         ..close();
 
       canvas.drawPath(
-          path, Paint()..color = color..style = PaintingStyle.fill);
+        path,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.fill,
+      );
     }
   }
 
@@ -1059,4 +1327,433 @@ class _SegmentedRingPainter extends CustomPainter {
   @override
   bool shouldRepaint(_SegmentedRingPainter old) =>
       old.progress != progress || old.isDark != isDark;
+}
+
+
+// ─────────────────────────────────────────────
+// Calories Add Sheet — Burned + Gained inputs
+// ─────────────────────────────────────────────
+
+class _CaloriesAddSheet extends StatefulWidget {
+  final bool isDark;
+  final Color textColor;
+  final Future<void> Function(DateTime when, int calories) onSaveBurned;
+
+  const _CaloriesAddSheet({
+    required this.isDark,
+    required this.textColor,
+    required this.onSaveBurned,
+  });
+
+  @override
+  State<_CaloriesAddSheet> createState() => _CaloriesAddSheetState();
+}
+
+class _CaloriesAddSheetState extends State<_CaloriesAddSheet> {
+  late DateTime _selectedDateTime;
+  final TextEditingController _burnedCtrl = TextEditingController();
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDateTime = DateTime.now();
+  }
+
+  @override
+  void dispose() {
+    _burnedCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateTime,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+      builder: (context, child) => Theme(data: _pickerTheme(context), child: child!),
+    );
+    if (!mounted || picked == null) return;
+    setState(() {
+      _selectedDateTime = DateTime(
+        picked.year, picked.month, picked.day,
+        _selectedDateTime.hour, _selectedDateTime.minute,
+      );
+    });
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
+      builder: (context, child) => Theme(data: _pickerTheme(context), child: child!),
+    );
+    if (!mounted || picked == null) return;
+    setState(() {
+      _selectedDateTime = DateTime(
+        _selectedDateTime.year, _selectedDateTime.month, _selectedDateTime.day,
+        picked.hour, picked.minute,
+      );
+    });
+  }
+
+  Future<void> _submit() async {
+    final burned = int.tryParse(_burnedCtrl.text.trim());
+    if (burned == null || burned <= 0) {
+      setState(() => _error = 'Enter a valid calorie amount greater than 0.');
+      return;
+    }
+    setState(() { _error = null; _saving = true; });
+    try {
+      await widget.onSaveBurned(_selectedDateTime, burned);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() { _error = 'Failed to save. Please try again.'; _saving = false; });
+    }
+  }
+
+  String _formatDate(DateTime dt) {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+  }
+
+  String _formatTime(DateTime dt) {
+    final h = dt.hour == 0 ? 12 : dt.hour > 12 ? dt.hour - 12 : dt.hour;
+    final m = dt.minute.toString().padLeft(2, '0');
+    final period = dt.hour < 12 ? 'AM' : 'PM';
+    return '$h:$m $period';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF2F2F7);
+    final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+    final textColor = widget.textColor;
+    final subColor = isDark ? Colors.white38 : Colors.black38;
+    final pillBg = isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA);
+    final divColor = isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07);
+    final font = GoogleFonts.plusJakartaSans;
+
+    return FractionallySizedBox(
+      heightFactor: 0.93,
+      child: Container(
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(38)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── top bar ──
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _CalSheetTopButton(
+                      isDark: isDark,
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Icon(Icons.close_rounded, size: 18, color: textColor),
+                    ),
+                    _CalSheetTopButton(
+                      isDark: isDark,
+                      onTap: _saving ? null : _submit,
+                      child: _saving
+                          ? SizedBox(
+                              width: 24,
+                              height: 12,
+                              child: BouncingDotsLoader.compact(
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                            )
+                          : Icon(Icons.check_rounded, size: 18, color: textColor),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── icon ──
+              Center(
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.local_fire_department_rounded,
+                    size: 34,
+                    color: Colors.orange,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // ── title ──
+              Center(
+                child: Text(
+                  'Calories',
+                  style: font(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: textColor,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              // ── rows card ──
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      // Date
+                      _CalSheetRow(
+                        label: 'Date',
+                        subColor: subColor,
+                        textColor: textColor,
+                        font: font,
+                        trailing: GestureDetector(
+                          onTap: _pickDate,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: pillBg,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _formatDate(_selectedDateTime),
+                              style: font(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: textColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Divider(height: 1, thickness: 0.5, indent: 16, color: divColor),
+                      // Time
+                      _CalSheetRow(
+                        label: 'Time',
+                        subColor: subColor,
+                        textColor: textColor,
+                        font: font,
+                        trailing: GestureDetector(
+                          onTap: _pickTime,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: pillBg,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _formatTime(_selectedDateTime),
+                              style: font(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: textColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Divider(height: 1, thickness: 0.5, indent: 16, color: divColor),
+                      // Burned input
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 2),
+                        child: Row(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('Burned',
+                                    style: font(fontSize: 16, color: subColor)),
+                                Text('kcal',
+                                    style: font(
+                                        fontSize: 11,
+                                        color: Colors.orange.withValues(alpha: 0.8))),
+                              ],
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextField(
+                                controller: _burnedCtrl,
+                                keyboardType: TextInputType.number,
+                                textInputAction: TextInputAction.done,
+                                autofocus: true,
+                                textAlign: TextAlign.right,
+                                onChanged: (_) {
+                                  if (_error != null) setState(() => _error = null);
+                                },
+                                onSubmitted: (_) => _submit(),
+                                style: font(fontSize: 16, color: textColor),
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: '',
+                                  isDense: true,
+                                  contentPadding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // ── gained note ──
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                child: Text(
+                  'To log gained (eaten) calories, use the Diet section.',
+                  style: font(
+                    fontSize: 12,
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.35)
+                        : Colors.black.withValues(alpha: 0.35),
+                  ),
+                ),
+              ),
+
+              // inline error
+              if (_error != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  child: Text(
+                    _error!,
+                    style: font(fontSize: 13, color: Colors.redAccent),
+                  ),
+                ),
+
+              const Spacer(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CalSheetTopButton extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback? onTap;
+  final Widget child;
+
+  const _CalSheetTopButton({
+    required this.isDark,
+    required this.onTap,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : Colors.black.withValues(alpha: 0.06);
+    final border = isDark
+        ? Colors.white.withValues(alpha: 0.2)
+        : Colors.black.withValues(alpha: 0.08);
+
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Material(
+        color: bg,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: border),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap == null
+              ? null
+              : () {
+                  HapticFeedback.lightImpact();
+                  onTap!();
+                },
+          child: Center(child: child),
+        ),
+      ),
+    );
+  }
+}
+
+class _CalSheetRow extends StatelessWidget {
+  final String label;
+  final Color subColor;
+  final Color textColor;
+  final TextStyle Function({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? letterSpacing,
+    double? height,
+  }) font;
+  final Widget trailing;
+
+  const _CalSheetRow({
+    required this.label,
+    required this.subColor,
+    required this.textColor,
+    required this.font,
+    required this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: font(fontSize: 16, color: subColor)),
+          trailing,
+        ],
+      ),
+    );
+  }
+}
+
+ThemeData _pickerTheme(BuildContext context) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  if (!isDark) return Theme.of(context);
+  const bg = Color(0xFF252528);
+  return Theme.of(context).copyWith(
+    colorScheme: Theme.of(context).colorScheme.copyWith(
+      surface: bg,
+      surfaceContainerHigh: bg,
+      surfaceContainerHighest: bg,
+      surfaceContainer: bg,
+    ),
+    dialogTheme: const DialogThemeData(backgroundColor: bg),
+    datePickerTheme: const DatePickerThemeData(backgroundColor: bg),
+    timePickerTheme: const TimePickerThemeData(backgroundColor: bg),
+  );
 }

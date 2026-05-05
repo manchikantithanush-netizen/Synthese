@@ -134,8 +134,7 @@ class AboutAppPage extends StatelessWidget {
                     _InfoRow(icon: Icons.location_on_outlined,    title: 'Location',             value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
                     _InfoRow(icon: Icons.directions_walk_rounded, title: 'Activity Recognition', value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
                     _InfoRow(icon: Icons.camera_alt_outlined,     title: 'Camera',               value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
-                    _InfoRow(icon: Icons.photo_library_outlined,  title: 'Photos & Media',       value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
-                    _InfoRow(icon: Icons.watch_outlined,          title: 'Health Connect',       value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: true),
+                    _InfoRow(icon: Icons.photo_library_outlined,  title: 'Photos & Media',       value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: true),
                   ]),
                 ),
 

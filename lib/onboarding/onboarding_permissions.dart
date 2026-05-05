@@ -30,7 +30,6 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
   bool _loadingActivity = false;
   bool _loadingCamera = false;
   bool _loadingPhotos = false;
-  bool _loadingHealth = false;
 
   final _permService = FirstLaunchPermissionsService();
 
@@ -223,14 +222,6 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
                       ),
                       onSkip: _next,
                     ),
-                    _SlideHealthConnect(
-                      isLoading: _loadingHealth,
-                      onAllow: () => _requestThenAdvance(
-                        _permService.requestHealthConnect,
-                        (v) => setState(() => _loadingHealth = v),
-                      ),
-                      onSkip: _next,
-                    ),
 
                     // ── Privacy & finish ──────────────────────────────────
                     _SlidePrivacyPolicy(
@@ -285,7 +276,7 @@ class _SlideIntro extends StatelessWidget {
               isDark: isDark, textColor: textColor),
           const SizedBox(height: 14),
           _Card(icon: Icons.health_and_safety_outlined, title: "Health & fitness permissions",
-              body: "We request access to Health Connect, location, activity recognition, camera, and notifications — only to deliver the features you use.",
+              body: "We request access to location, activity recognition, camera, and notifications — only to deliver the features you use.",
               isDark: isDark, textColor: textColor),
           const SizedBox(height: 14),
           _Card(icon: Icons.gavel_rounded, title: "UAE PDPL compliant",
@@ -407,10 +398,6 @@ class _SlideWhatToExpect extends StatelessWidget {
           Text("A few things worth knowing before you dive in.",
               style: TextStyle(color: textColor.withOpacity(0.55), fontSize: 17, height: 1.5, letterSpacing: -0.2)),
           const SizedBox(height: 32),
-          _Card(icon: Icons.sync_rounded, title: "Your data, always in sync",
-              body: "Connect Health Connect or grant health permissions to automatically pull your steps, heart rate, sleep, and calories into the Home dashboard.",
-              isDark: isDark, textColor: textColor),
-          const SizedBox(height: 14),
           _Card(icon: Icons.tune_rounded, title: "Personalised from day one",
               body: "The data you entered during setup shapes your nutrition targets, workout suggestions, and health insights. Update it anytime from Account Details.",
               isDark: isDark, textColor: textColor),
@@ -518,164 +505,6 @@ class _SlidePermissionRequest extends StatelessWidget {
     });
   }
 }
-
-// Health Connect slide — uses dashboard-style metric icons instead of a photo
-class _SlideHealthConnect extends StatelessWidget {
-  final bool isLoading;
-  final VoidCallback onAllow;
-  final VoidCallback onSkip;
-
-  const _SlideHealthConnect({
-    required this.isLoading,
-    required this.onAllow,
-    required this.onSkip,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = Theme.of(context).colorScheme.onSurface;
-    final subColor = textColor.withOpacity(0.55);
-    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100;
-
-    final metrics = [
-      (Icons.directions_walk_rounded, 'Steps', 'Daily step count'),
-      (Icons.favorite_rounded, 'Heart Rate', 'BPM throughout the day'),
-      (Icons.bedtime_rounded, 'Sleep', 'Duration & quality'),
-      (Icons.local_fire_department_rounded, 'Active Calories', 'Calories burned'),
-      (Icons.fitness_center_rounded, 'Exercise', 'Workout sessions'),
-    ];
-
-    return Column(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(28, 40, 28, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Watch icon header
-                Container(
-                  width: 72, height: 72,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Icon(Icons.watch_rounded,
-                      size: 36, color: Theme.of(context).colorScheme.primary),
-                ),
-                const SizedBox(height: 20),
-                Text('Connect your wearable',
-                    style: TextStyle(
-                        color: textColor,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.8,
-                        height: 1.2)),
-                const SizedBox(height: 12),
-                Text('Health Connect syncs data from your wearable — so your dashboard stays up to date automatically.',
-                    style: TextStyle(color: subColor, fontSize: 15, height: 1.55)),
-                const SizedBox(height: 20),
-                Container(
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: textColor.withOpacity(0.07)),
-                  ),
-                  child: Column(
-                    children: [
-                      _WearableRow(icon: Icons.watch_rounded, name: 'Samsung Galaxy Watch', isLast: false, textColor: textColor, subColor: subColor),
-                      _WearableRow(icon: Icons.watch_rounded, name: 'Google Pixel Watch', isLast: false, textColor: textColor, subColor: subColor),
-                      _WearableRow(icon: Icons.watch_rounded, name: 'Fitbit', isLast: false, textColor: textColor, subColor: subColor),
-                      _WearableRow(icon: Icons.watch_rounded, name: 'Garmin', isLast: true, textColor: textColor, subColor: subColor),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.info_outline_rounded, color: Colors.orange, size: 18),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'You must have the Health Connect app installed on your phone. Without it, wearable data will not sync.',
-                          style: TextStyle(color: Colors.orange.shade700, fontSize: 13, height: 1.5),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: textColor.withOpacity(0.07)),
-                  ),
-                  child: Column(
-                    children: metrics.asMap().entries.map((e) {
-                      final isLast = e.key == metrics.length - 1;
-                      return Column(children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                          child: Row(children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: textColor.withOpacity(0.08),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(e.value.$1, color: textColor, size: 18),
-                            ),
-                            const SizedBox(width: 14),
-                            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text(e.value.$2,
-                                  style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w600)),
-                              Text(e.value.$3,
-                                  style: TextStyle(color: subColor, fontSize: 13)),
-                            ]),
-                          ]),
-                        ),
-                        if (!isLast) Divider(height: 1, thickness: 0.5, indent: 20, endIndent: 20, color: textColor.withOpacity(0.07)),
-                      ]);
-                    }).toList(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(28, 16, 28, 8),
-          child: _InlineLoadingButton(
-            text: 'Connect Health Connect',
-            isLoading: isLoading,
-            onPressed: onAllow,
-          ),
-        ),
-        TextButton(
-          onPressed: isLoading ? null : onSkip,
-          child: Text('Skip for now',
-              style: TextStyle(
-                  color: textColor.withOpacity(0.35),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500)),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // SLIDE 10 — Privacy Policy
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1203,7 +1032,6 @@ class _PolicyContent extends StatelessWidget {
       _bullet("Location: Used during workout tracking sessions only."),
       _bullet("Activity Recognition: To count steps and detect physical activity."),
       _bullet("Notifications: Service-related alerts only — not marketing."),
-      _bullet("Health Connect (Android): Read-only access to steps, heart rate, sleep, calories, and exercise."),
       const SizedBox(height: 10),
       Padding(
         padding: const EdgeInsets.only(bottom: 20),
@@ -1243,55 +1071,4 @@ class _PolicyContent extends StatelessWidget {
   }
 }
 
-// Wearable row for the Health Connect slide
-class _WearableRow extends StatelessWidget {
-  final IconData icon;
-  final String name;
-  final bool isLast;
-  final Color textColor;
-  final Color subColor;
 
-  const _WearableRow({
-    required this.icon,
-    required this.name,
-    required this.isLast,
-    required this.textColor,
-    required this.subColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: textColor.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: textColor, size: 18),
-              ),
-              const SizedBox(width: 14),
-              Text(name,
-                  style: TextStyle(
-                      color: textColor,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600)),
-            ],
-          ),
-        ),
-        if (!isLast)
-          Divider(
-              height: 1,
-              thickness: 0.5,
-              indent: 20,
-              endIndent: 20,
-              color: textColor.withOpacity(0.07)),
-      ],
-    );
-  }
-}

@@ -1,20 +1,25 @@
-import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:health/health.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
+import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class StepsDetailPage extends StatefulWidget {
   final int todaySteps;
+  final ValueChanged<int>? onTodayManualStepsAdded;
 
-  const StepsDetailPage({super.key, required this.todaySteps});
+  const StepsDetailPage({
+    super.key,
+    required this.todaySteps,
+    this.onTodayManualStepsAdded,
+  });
 
   @override
   State<StepsDetailPage> createState() => _StepsDetailPageState();
@@ -23,6 +28,7 @@ class StepsDetailPage extends StatefulWidget {
 class _StepsDetailPageState extends State<StepsDetailPage> {
   String _firstName = '';
   int _selectedTab = 0; // 0 = Daily, 1 = Weekly
+  late int _todaySteps;
 
   // Daily: 24 hourly buckets
   List<int> _hourlySteps = List.filled(24, 0);
@@ -39,10 +45,93 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
   @override
   void initState() {
     super.initState();
+    _todaySteps = widget.todaySteps;
     _fetchUserName();
     _fetchHourlySteps();
     _fetchWeeklySteps();
     _fetchMonthlySteps();
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  Future<void> _addManualSteps({
+    required DateTime when,
+    required int steps,
+  }) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final day = DateTime(when.year, when.month, when.day);
+    final dayKey = _dateKey(day);
+    final hour = when.hour.clamp(0, 23);
+
+    // Build updated hourly array
+    final updatedHourly = List<int>.from(_hourlySteps);
+    if (_isSameDay(when, DateTime.now())) {
+      updatedHourly[hour] += steps;
+    }
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('dashboardDaily')
+        .doc(dayKey)
+        .set({
+          'steps': FieldValue.increment(steps),
+          'manualStepAdjustments': FieldValue.increment(steps),
+          'hourlySteps': updatedHourly,
+          'dateKey': dayKey,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+    if (!mounted) return;
+
+    final now = DateTime.now();
+    setState(() {
+      if (_isSameDay(when, now)) {
+        _todaySteps += steps;
+        _hourlySteps[hour] += steps;
+      }
+
+      final daysSinceMonday = now.weekday - 1;
+      final monday = DateTime(now.year, now.month, now.day - daysSinceMonday);
+      final sunday = monday.add(const Duration(days: 6));
+      if (!day.isBefore(monday) && !day.isAfter(sunday)) {
+        final weekIndex = day.weekday - 1;
+        _weeklySteps[weekIndex] += steps;
+      }
+
+      if (day.year == now.year && day.month == now.month) {
+        final d = day.day;
+        _monthlySteps[d] = (_monthlySteps[d] ?? 0) + steps;
+      }
+    });
+
+    if (_isSameDay(when, now)) {
+      widget.onTodayManualStepsAdded?.call(steps);
+    }
+  }
+
+  Future<void> _showAddDataSheet({
+    required Color accentColor,
+    required bool isDark,
+    required Color textColor,
+    required Color cardColor,
+  }) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => _AddStepsSheet(
+        accentColor: accentColor,
+        isDark: isDark,
+        textColor: textColor,
+        cardColor: cardColor,
+        onSave: _addManualSteps,
+      ),
+    );
   }
 
   Future<void> _fetchUserName() async {
@@ -60,49 +149,25 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
     } catch (_) {}
   }
 
-  /// Fetch today's hourly steps from HealthKit (iOS) or Health Connect (Android).
+  /// Fetch today's hourly steps from Firestore (manual entries only).
   Future<void> _fetchHourlySteps() async {
     setState(() => _loadingDaily = true);
     try {
-      final health = Health();
-      await health.configure();
-
-      const types = [HealthDataType.STEPS];
-      const perms = [HealthDataAccess.READ];
-
-      bool granted = false;
-      if (Platform.isAndroid) {
-        final available = await health.isHealthConnectAvailable();
-        if (!available) return;
-      }
-
-      final hasPerm = await health.hasPermissions(types, permissions: perms);
-      if (hasPerm != true) {
-        granted = await health.requestAuthorization(types, permissions: perms);
-        if (!granted) return;
-      }
-
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
       final now = DateTime.now();
-      final todayStart = DateTime(now.year, now.month, now.day);
-
-      final points = await health.getHealthDataFromTypes(
-        startTime: todayStart,
-        endTime: now,
-        types: types,
-      );
-      final deduped = health.removeDuplicates(points);
-
-      final List<int> hourly = List.filled(24, 0);
-      for (final p in deduped) {
-        if (p.type != HealthDataType.STEPS) continue;
-        final hour = p.dateFrom.hour.clamp(0, 23);
-        final val = p.value is NumericHealthValue
-            ? (p.value as NumericHealthValue).numericValue.round()
-            : 0;
-        hourly[hour] += val;
+      final dayKey = _dateKey(DateTime(now.year, now.month, now.day));
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('dashboardDaily')
+          .doc(dayKey)
+          .get();
+      final raw = doc.data()?['hourlySteps'] as List<dynamic>?;
+      if (raw != null && raw.length == 24) {
+        final hourly = raw.map((e) => (e as num).toInt()).toList();
+        if (mounted) setState(() => _hourlySteps = hourly);
       }
-
-      if (mounted) setState(() => _hourlySteps = hourly);
     } catch (_) {
     } finally {
       if (mounted) setState(() => _loadingDaily = false);
@@ -119,7 +184,10 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
       // Find this week's Monday
       final int daysSinceMonday = now.weekday - 1; // Mon=0, Sun=6
       final DateTime monday = DateTime(
-          now.year, now.month, now.day - daysSinceMonday);
+        now.year,
+        now.month,
+        now.day - daysSinceMonday,
+      );
 
       final List<int> steps = List.filled(7, 0);
 
@@ -166,9 +234,9 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
               .doc(key)
               .get()
               .then((doc) {
-            final steps = (doc.data()?['steps'] as num?)?.toInt() ?? 0;
-            result[day] = steps;
-          }),
+                final steps = (doc.data()?['steps'] as num?)?.toInt() ?? 0;
+                result[day] = steps;
+              }),
         );
       }
       await Future.wait(futures);
@@ -180,7 +248,8 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
     }
   }
 
-  String _dateKey(DateTime date) {    final m = date.month.toString().padLeft(2, '0');
+  String _dateKey(DateTime date) {
+    final m = date.month.toString().padLeft(2, '0');
     final d = date.day.toString().padLeft(2, '0');
     return '${date.year}-$m-$d';
   }
@@ -208,7 +277,10 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
     // Daily: trim to last active hour, min 8 bars
     int lastNonZero = 7;
     for (int i = 23; i >= 0; i--) {
-      if (_hourlySteps[i] > 0) { lastNonZero = i; break; }
+      if (_hourlySteps[i] > 0) {
+        lastNonZero = i;
+        break;
+      }
     }
     final int hourCount = math.max(lastNonZero + 1, 8);
     final List<int> dailyBars = _hourlySteps.sublist(0, hourCount);
@@ -221,7 +293,7 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
         ? 0
         : nonZero.reduce((a, b) => a + b) ~/ nonZero.length;
 
-    final int displayNum = isDaily ? widget.todaySteps : avg;
+    final int displayNum = isDaily ? _todaySteps : avg;
     final String displayLabel = isDaily ? "Today's steps" : 'Avg. daily steps';
 
     const weekLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -241,7 +313,10 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
               children: [
                 // Accent glow
                 Positioned(
-                  top: 0, left: 0, right: 0, height: 260,
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 260,
                   child: IgnorePointer(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
@@ -268,9 +343,44 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(left: 8, top: 8),
-                          child: UniversalBackButton(
-                            onPressed: () => Navigator.of(context).pop(),
+                          padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+                          child: Row(
+                            children: [
+                              UniversalBackButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                              const Spacer(),
+                              OutlinedButton.icon(
+                                onPressed: () => _showAddDataSheet(
+                                  accentColor: accentColor,
+                                  isDark: isDark,
+                                  textColor: textColor,
+                                  cardColor: cardColor,
+                                ),
+                                icon: Icon(Icons.add_rounded,
+                                    size: 16, color: textColor),
+                                label: Text(
+                                  'Add data',
+                                  style: font(
+                                    fontWeight: FontWeight.w700,
+                                    color: textColor,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.2)
+                                        : Colors.black.withValues(alpha: 0.15),
+                                  ),
+                                  shape: const StadiumBorder(),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 8),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
 
@@ -290,7 +400,7 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                                   TextSpan(text: 'Hey $_firstName,\n'),
                                 const TextSpan(text: 'You walked '),
                                 TextSpan(
-                                  text: _formatLarge(widget.todaySteps),
+                                  text: _formatLarge(_todaySteps),
                                   style: font(
                                     fontSize: 28,
                                     fontWeight: FontWeight.w800,
@@ -359,7 +469,10 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
 
                                 // Energy bar
                                 _EnergyBar(
-                                  progress: (widget.todaySteps / 10000.0).clamp(0.0, 1.0),
+                                  progress: (_todaySteps / 10000.0).clamp(
+                                    0.0,
+                                    1.0,
+                                  ),
                                   accentColor: accentColor,
                                   isDark: isDark,
                                   textColor: textColor,
@@ -394,7 +507,7 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: _DistanceCard(
-                            steps: widget.todaySteps,
+                            steps: _todaySteps,
                             accentColor: accentColor,
                             cardColor: cardColor,
                             textColor: textColor,
@@ -432,7 +545,6 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                             stepGoal: 10000,
                           ),
                         ),
-
                       ],
                     ),
                   ),
@@ -442,6 +554,411 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
           ),
         );
       },
+    );
+  }
+}
+
+class _AddStepsSheet extends StatefulWidget {
+  const _AddStepsSheet({
+    required this.accentColor,
+    required this.isDark,
+    required this.textColor,
+    required this.cardColor,
+    required this.onSave,
+  });
+
+  final Color accentColor;
+  final bool isDark;
+  final Color textColor;
+  final Color cardColor;
+  final Future<void> Function({required DateTime when, required int steps}) onSave;
+
+  @override
+  State<_AddStepsSheet> createState() => _AddStepsSheetState();
+}
+
+class _AddStepsSheetState extends State<_AddStepsSheet> {
+  late DateTime _selectedDateTime;
+  late TextEditingController _stepsController;
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDateTime = DateTime.now();
+    _stepsController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _stepsController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateTime,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+      builder: (context, child) => Theme(data: _pickerTheme(context), child: child!),
+    );
+    if (!mounted || picked == null) return;
+    setState(() {
+      _selectedDateTime = DateTime(
+        picked.year, picked.month, picked.day,
+        _selectedDateTime.hour, _selectedDateTime.minute,
+      );
+    });
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
+      builder: (context, child) => Theme(data: _pickerTheme(context), child: child!),
+    );
+    if (!mounted || picked == null) return;
+    setState(() {
+      _selectedDateTime = DateTime(
+        _selectedDateTime.year, _selectedDateTime.month, _selectedDateTime.day,
+        picked.hour, picked.minute,
+      );
+    });
+  }
+
+  Future<void> _submit() async {
+    final value = int.tryParse(_stepsController.text.trim());
+    if (value == null || value <= 0) {
+      setState(() => _error = 'Enter a valid step count greater than 0.');
+      return;
+    }
+    setState(() { _error = null; _saving = true; });
+    try {
+      await widget.onSave(when: _selectedDateTime, steps: value);
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() { _error = 'Failed to save. Please try again.'; _saving = false; });
+    }
+  }
+
+  String _formatDate(DateTime dt) {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+  }
+
+  String _formatTime(DateTime dt) {
+    final h = dt.hour == 0 ? 12 : dt.hour > 12 ? dt.hour - 12 : dt.hour;
+    final m = dt.minute.toString().padLeft(2, '0');
+    final period = dt.hour < 12 ? 'AM' : 'PM';
+    return '$h:$m $period';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF2F2F7);
+    final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+    final textColor = widget.textColor;
+    final subColor = isDark ? Colors.white38 : Colors.black38;
+    final pillBg = isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA);
+    final divColor = isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07);
+    final font = GoogleFonts.plusJakartaSans;
+
+    return FractionallySizedBox(
+      heightFactor: 0.93,
+      child: Container(
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(38)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── top bar: X left, ✓ right ──
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // X
+                    _TopBarButton(
+                      isDark: isDark,
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Icon(Icons.close_rounded,
+                          size: 18, color: textColor),
+                    ),
+                    // ✓
+                    _TopBarButton(
+                      isDark: isDark,
+                      onTap: _saving ? null : _submit,
+                      child: _saving
+                          ? SizedBox(
+                              width: 24,
+                              height: 12,
+                              child: BouncingDotsLoader.compact(
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                            )
+                          : Icon(Icons.check_rounded,
+                              size: 18, color: textColor),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── icon ──
+              Center(
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.directions_walk_rounded,
+                    size: 34,
+                    color: Color(0xFF6C63FF),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // ── title ──
+              Center(
+                child: Text(
+                  'Steps',
+                  style: font(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: textColor,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 28),
+
+              // ── rows card ──
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      // Date row
+                      _SheetRow(
+                        label: 'Date',
+                        subColor: subColor,
+                        textColor: textColor,
+                        font: font,
+                        trailing: GestureDetector(
+                          onTap: _pickDate,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: pillBg,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _formatDate(_selectedDateTime),
+                              style: font(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: textColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Divider(height: 1, thickness: 0.5,
+                          indent: 16, color: divColor),
+                      // Time row
+                      _SheetRow(
+                        label: 'Time',
+                        subColor: subColor,
+                        textColor: textColor,
+                        font: font,
+                        trailing: GestureDetector(
+                          onTap: _pickTime,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: pillBg,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _formatTime(_selectedDateTime),
+                              style: font(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: textColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Divider(height: 1, thickness: 0.5,
+                          indent: 16, color: divColor),
+                      // Steps input row — no pill, just cursor
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 2),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Steps',
+                              style: font(
+                                fontSize: 16,
+                                color: subColor,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextField(
+                                controller: _stepsController,
+                                keyboardType: TextInputType.number,
+                                textInputAction: TextInputAction.done,
+                                autofocus: true,
+                                textAlign: TextAlign.right,
+                                onChanged: (_) {
+                                  if (_error != null) {
+                                    setState(() => _error = null);
+                                  }
+                                },
+                                onSubmitted: (_) => _submit(),
+                                style: font(
+                                  fontSize: 16,
+                                  color: textColor,
+                                ),
+                                decoration: InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: '',
+                                  isDense: true,
+                                  contentPadding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // inline error
+              if (_error != null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                  child: Text(
+                    _error!,
+                    style: font(fontSize: 13, color: Colors.redAccent),
+                  ),
+                ),
+
+              const Spacer(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── small helpers ─────────────────────────────────────────────────────────────
+
+class _TopBarButton extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback? onTap;
+  final Widget child;
+
+  const _TopBarButton({
+    required this.isDark,
+    required this.onTap,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final effectiveBackground = isDark
+        ? Colors.white.withValues(alpha: 0.12)
+        : Colors.black.withValues(alpha: 0.06);
+    final effectiveBorder = isDark
+        ? Colors.white.withValues(alpha: 0.2)
+        : Colors.black.withValues(alpha: 0.08);
+
+    return SizedBox(
+      width: 40,
+      height: 40,
+      child: Material(
+        color: effectiveBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: effectiveBorder),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onTap == null ? null : () {
+            HapticFeedback.lightImpact();
+            onTap!();
+          },
+          child: Center(child: child),
+        ),
+      ),
+    );
+  }
+}
+
+class _SheetRow extends StatelessWidget {
+  final String label;
+  final Color subColor;
+  final Color textColor;
+  final TextStyle Function({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? letterSpacing,
+    double? height,
+  }) font;
+  final Widget trailing;
+
+  const _SheetRow({
+    required this.label,
+    required this.subColor,
+    required this.textColor,
+    required this.font,
+    required this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label,
+              style: font(fontSize: 16, color: subColor)),
+          trailing,
+        ],
+      ),
     );
   }
 }
@@ -632,16 +1149,11 @@ class _RingPainter extends CustomPainter {
 
     // Center dot — solid for today, small dim for others
     if (isToday) {
-      canvas.drawCircle(
-        center,
-        4,
-        Paint()..color = accentColor,
-      );
+      canvas.drawCircle(center, 4, Paint()..color = accentColor);
       canvas.drawCircle(
         center,
         2,
-        Paint()
-          ..color = isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        Paint()..color = isDark ? const Color(0xFF1C1C1E) : Colors.white,
       );
     } else if (!isFuture && progress >= 1.0) {
       // Goal met — small filled dot
@@ -1063,8 +1575,7 @@ class _StepsBarChartState extends State<_StepsBarChart>
 
   int _roundMax(int val) {
     if (val <= 0) return 5000;
-    final magnitude =
-        math.pow(10, (math.log(val) / math.ln10).floor()).toInt();
+    final magnitude = math.pow(10, (math.log(val) / math.ln10).floor()).toInt();
     return ((val / magnitude).ceil()) * magnitude;
   }
 
@@ -1101,14 +1612,16 @@ class _StepsBarChartState extends State<_StepsBarChart>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: yLabels.reversed
-                      .map((v) => Text(
-                            _fmtAxis(v),
-                            style: font(
-                              color: labelColor,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ))
+                      .map(
+                        (v) => Text(
+                          _fmtAxis(v),
+                          style: font(
+                            color: labelColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      )
                       .toList(),
                 ),
               ),
@@ -1215,8 +1728,9 @@ class _BarChartPainter extends CustomPainter {
     for (int i = 0; i < count; i++) {
       if (bars[i] <= 0) continue;
 
-      final double ratio =
-          roundedMax > 0 ? (bars[i] / roundedMax).clamp(0.0, 1.0) : 0.0;
+      final double ratio = roundedMax > 0
+          ? (bars[i] / roundedMax).clamp(0.0, 1.0)
+          : 0.0;
       final double barH = size.height * ratio * progress;
       if (barH < 1) continue;
 
@@ -1226,7 +1740,10 @@ class _BarChartPainter extends CustomPainter {
       final double bottom = size.height;
 
       final rect = RRect.fromLTRBR(
-        left, top, right, bottom,
+        left,
+        top,
+        right,
+        bottom,
         const Radius.circular(cornerRadius),
       );
 
@@ -1289,8 +1806,19 @@ class _MonthHeatmap extends StatelessWidget {
 
     // Month name
     const monthNames = [
-      '', 'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December',
+      '',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     final monthLabel = '${monthNames[month]} $year';
 
@@ -1397,19 +1925,22 @@ class _MonthHeatmap extends StatelessWidget {
                   // Day labels
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: List.generate(cols, (i) => SizedBox(
-                      width: cellSize,
-                      child: Center(
-                        child: Text(
-                          dayLabels[i],
-                          style: font(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: labelColor,
+                    children: List.generate(
+                      cols,
+                      (i) => SizedBox(
+                        width: cellSize,
+                        child: Center(
+                          child: Text(
+                            dayLabels[i],
+                            style: font(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: labelColor,
+                            ),
                           ),
                         ),
                       ),
-                    )),
+                    ),
                   ),
 
                   const SizedBox(height: 6),
@@ -1418,9 +1949,7 @@ class _MonthHeatmap extends StatelessWidget {
                   isLoading
                       ? const SizedBox(
                           height: 80,
-                          child: Center(
-                            child: BouncingDotsLoader(),
-                          ),
+                          child: Center(child: BouncingDotsLoader()),
                         )
                       : Column(
                           children: List.generate(rows, (row) {
@@ -1438,14 +1967,17 @@ class _MonthHeatmap extends StatelessWidget {
 
                                   if (!isValid) {
                                     return SizedBox(
-                                        width: cellSize, height: cellSize);
+                                      width: cellSize,
+                                      height: cellSize,
+                                    );
                                   }
 
                                   final steps = monthlySteps[day];
                                   final Color cellColor = isFuture
                                       ? emptyColor
                                       : accentColor.withValues(
-                                          alpha: _cellOpacity(steps));
+                                          alpha: _cellOpacity(steps),
+                                        );
 
                                   return buildCell(
                                     cellColor,
@@ -1464,4 +1996,21 @@ class _MonthHeatmap extends StatelessWidget {
       ),
     );
   }
+}
+
+ThemeData _pickerTheme(BuildContext context) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  if (!isDark) return Theme.of(context);
+  const bg = Color(0xFF252528);
+  return Theme.of(context).copyWith(
+    colorScheme: Theme.of(context).colorScheme.copyWith(
+      surface: bg,
+      surfaceContainerHigh: bg,
+      surfaceContainerHighest: bg,
+      surfaceContainer: bg,
+    ),
+    dialogTheme: const DialogThemeData(backgroundColor: bg),
+    datePickerTheme: const DatePickerThemeData(backgroundColor: bg),
+    timePickerTheme: const TimePickerThemeData(backgroundColor: bg),
+  );
 }

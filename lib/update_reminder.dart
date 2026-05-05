@@ -13,14 +13,14 @@
 
 class UpdateReminder {
   /// Must match pubspec.yaml version exactly, e.g. "1.0.0+3"
-  static const String currentVersion = '1.6.0+10';
+  static const String currentVersion = '1.8.0+12';
 
   /// What to show the user when they open the app on this version for the first time.
-  static const String updateMessage = """Version 1.6.0+10 introduces a powerful expansion to your health tracking experience, with a strong focus on deeper insights and clearer data visualization. This update brings a fully redesigned heart rate detailed view, now featuring a daily plot graph, weekly bar graph, heart rate zones, and clear tracking of your lowest and highest heart rate values, giving you a much better understanding of your cardiovascular activity.
+  static const String updateMessage = """Version 1.7.0+11 refines your health tracking experience with a cleaner and more intuitive interface. The dashboard has been simplified by removing manual adjustments and percentage comparisons, making it easier to focus on what matters.
 
-We’ve also enhanced the dashboard with a new calorie overview that clearly displays burned, eaten, and net calories in one place, making it easier to track your daily balance at a glance.
+A new “Tap to Explore” prompt guides you to detailed views, while “+ Add Data” allows you to manually log your metrics with ease.
 
-The calorie detailed view has been significantly upgraded with a new ring-style burned calorie tracker, a full calorie balance breakdown with individual graphs, and a calorie heatmap to visualize your patterns over time. These additions provide a more complete and intuitive way to monitor your energy intake and expenditure.
+Sleep tracking now includes a new “Asleep” phase for more flexible logging. Health Connect has been temporarily removed to improve data stability, with plans for a better implementation in the future.
 
-Overall, this update focuses on turning raw data into meaningful insights, helping you stay more aware, consistent, and in control of your health.""";
+Overall, this update focuses on simplicity, clarity, and giving you more control over your data.""";
 }

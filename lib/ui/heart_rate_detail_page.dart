@@ -1,21 +1,25 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:health/health.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/ui/components/metric_add_data_sheet.dart';
 
 class HeartRateDetailPage extends StatefulWidget {
   final int currentBpm;
+  final ValueChanged<int>? onManualHeartRateAdded;
 
-  const HeartRateDetailPage({super.key, required this.currentBpm});
+  const HeartRateDetailPage({
+    super.key,
+    required this.currentBpm,
+    this.onManualHeartRateAdded,
+  });
 
   @override
   State<HeartRateDetailPage> createState() => _HeartRateDetailPageState();
@@ -23,6 +27,7 @@ class HeartRateDetailPage extends StatefulWidget {
 
 class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
   int _tab = 0; // 0 = Daily, 1 = Weekly
+  late int _currentBpm;
 
   // Daily: full intraday readings for today
   List<({int bpm, DateTime time})> _dailyHistory = [];
@@ -32,12 +37,78 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
   List<int> _weeklyAvg = List.filled(7, 0);
   bool _loadingWeekly = true;
 
-
   @override
   void initState() {
     super.initState();
+    _currentBpm = widget.currentBpm;
     _fetchDailyHr();
     _fetchWeeklyHr();
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  Future<void> _addManualHeartRate({
+    required DateTime when,
+    required int bpm,
+  }) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final dayKey = _dateKey(when);
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('dashboardDaily')
+        .doc(dayKey)
+        .set({
+          'heartRate': bpm,
+          'hrHistory': FieldValue.arrayUnion([
+            {'bpm': bpm, 'time': Timestamp.fromDate(when)},
+          ]),
+          'dateKey': dayKey,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+    if (!mounted) return;
+    setState(() {
+      if (_isSameDay(when, DateTime.now())) {
+        _currentBpm = bpm;
+      }
+      _dailyHistory.add((bpm: bpm, time: when));
+      _dailyHistory.sort((a, b) => a.time.compareTo(b.time));
+      final idx = (when.weekday - 1).clamp(0, 6);
+      _weeklyAvg[idx] = bpm;
+    });
+    if (_isSameDay(when, DateTime.now())) {
+      widget.onManualHeartRateAdded?.call(bpm);
+    }
+  }
+
+  Future<void> _showAddDataSheet({
+    required Color accentColor,
+    required bool isDark,
+    required Color textColor,
+    required Color cardColor,
+  }) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => MetricAddDataSheet(
+        title: 'Heart Rate',
+        valueLabel: 'BPM',
+        valueHint: 'Enter BPM',
+        accentColor: accentColor,
+        isDark: isDark,
+        textColor: textColor,
+        cardColor: cardColor,
+        icon: Icons.favorite_border,
+        iconColor: Colors.redAccent,
+        onSave: ({required when, required value}) =>
+            _addManualHeartRate(when: when, bpm: value),
+      ),
+    );
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
@@ -54,109 +125,36 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
   }
 
   // ── Daily fetch ───────────────────────────────────────────────────────────
-  // 1. Load persisted readings from Firestore (survives restarts)
-  // 2. Merge with fresh HealthKit/Health Connect readings
-  // 3. Save merged result back
+  // Loads persisted readings from Firestore (survives restarts)
 
   Future<void> _fetchDailyHr() async {
     setState(() => _loadingDaily = true);
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
       final now = DateTime.now();
       final todayStart = DateTime(now.year, now.month, now.day);
       final dayKey = _dateKey(now);
 
-      // 1. Load from Firestore
-      List<({int bpm, DateTime time})> stored = [];
-      if (uid != null) {
-        final doc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .collection('dashboardDaily')
-            .doc(dayKey)
-            .get();
-        final raw = doc.data()?['hrHistory'] as List<dynamic>?;
-        if (raw != null) {
-          stored = raw.map((e) {
-            final bpm = (e['bpm'] as num?)?.toInt() ?? 0;
-            final ts = (e['time'] as Timestamp?)?.toDate() ?? now;
-            return (bpm: bpm, time: ts);
-          }).where((r) => r.bpm > 0 && !r.time.isBefore(todayStart)).toList();
-        }
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('dashboardDaily')
+          .doc(dayKey)
+          .get();
+      final raw = doc.data()?['hrHistory'] as List<dynamic>?;
+      if (raw != null) {
+        final stored = raw
+            .map((e) {
+              final bpm = (e['bpm'] as num?)?.toInt() ?? 0;
+              final ts = (e['time'] as Timestamp?)?.toDate() ?? now;
+              return (bpm: bpm, time: ts);
+            })
+            .where((r) => r.bpm > 0 && !r.time.isBefore(todayStart))
+            .toList()
+          ..sort((a, b) => a.time.compareTo(b.time));
+        if (mounted) setState(() => _dailyHistory = stored);
       }
-
-      // 2. Fetch fresh from health platform
-      List<({int bpm, DateTime time})> fresh = [];
-      try {
-        final health = Health();
-        await health.configure();
-        bool canRead = false;
-        if (Platform.isAndroid) {
-          final avail = await health.isHealthConnectAvailable();
-          if (avail) {
-            final hasPerm = await health.hasPermissions(
-                [HealthDataType.HEART_RATE],
-                permissions: [HealthDataAccess.READ]);
-            canRead = hasPerm == true;
-          }
-        } else {
-          final hasPerm = await health.hasPermissions(
-              [HealthDataType.HEART_RATE],
-              permissions: [HealthDataAccess.READ]);
-          if (hasPerm != true) {
-            await health.requestAuthorization([HealthDataType.HEART_RATE],
-                permissions: [HealthDataAccess.READ]);
-          }
-          canRead = true;
-        }
-        if (canRead) {
-          final points = await health.getHealthDataFromTypes(
-            startTime: todayStart,
-            endTime: now,
-            types: [HealthDataType.HEART_RATE],
-          );
-          final deduped = health.removeDuplicates(points);
-          fresh = deduped
-              .where((p) => p.type == HealthDataType.HEART_RATE)
-              .map((p) => (
-                    bpm: p.value is NumericHealthValue
-                        ? (p.value as NumericHealthValue).numericValue.round()
-                        : 0,
-                    time: p.dateFrom,
-                  ))
-              .where((r) => r.bpm > 0)
-              .toList();
-        }
-      } catch (_) {}
-
-      // 3. Merge: combine stored + fresh, deduplicate by minute
-      final Map<int, ({int bpm, DateTime time})> merged = {};
-      for (final r in [...stored, ...fresh]) {
-        final minuteKey = r.time.millisecondsSinceEpoch ~/ 60000;
-        merged[minuteKey] = r;
-      }
-      final result = merged.values.toList()
-        ..sort((a, b) => a.time.compareTo(b.time));
-
-      // 4. Persist merged back to Firestore
-      if (uid != null && result.isNotEmpty) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .collection('dashboardDaily')
-            .doc(dayKey)
-            .set({
-          'hrHistory': result
-              .map((r) => {
-                    'bpm': r.bpm,
-                    'time': Timestamp.fromDate(r.time),
-                  })
-              .toList(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-      }
-
-      if (mounted) setState(() => _dailyHistory = result);
     } catch (_) {
     } finally {
       if (mounted) setState(() => _loadingDaily = false);
@@ -180,7 +178,7 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
       final List<int> avgs = List.filled(7, 0);
 
       // Seed today's slot with currentBpm immediately so it always shows
-      avgs[daysSinceMonday] = widget.currentBpm;
+      avgs[daysSinceMonday] = _currentBpm;
 
       final futures = <Future<void>>[];
       for (int i = 0; i <= daysSinceMonday; i++) {
@@ -194,26 +192,26 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
               .doc(key)
               .get()
               .then((doc) {
-            final data = doc.data();
-            if (data == null) return;
-            // Try stored heartRate field first (fast path)
-            final hr = (data['heartRate'] as num?)?.toInt();
-            if (hr != null && hr > 0) {
-              avgs[i] = hr;
-              return;
-            }
-            // Fall back to computing avg from hrHistory
-            final raw = data['hrHistory'] as List<dynamic>?;
-            if (raw != null && raw.isNotEmpty) {
-              final bpms = raw
-                  .map((e) => (e['bpm'] as num?)?.toInt() ?? 0)
-                  .where((b) => b > 0)
-                  .toList();
-              if (bpms.isNotEmpty) {
-                avgs[i] = bpms.reduce((a, b) => a + b) ~/ bpms.length;
-              }
-            }
-          }),
+                final data = doc.data();
+                if (data == null) return;
+                // Try stored heartRate field first (fast path)
+                final hr = (data['heartRate'] as num?)?.toInt();
+                if (hr != null && hr > 0) {
+                  avgs[i] = hr;
+                  return;
+                }
+                // Fall back to computing avg from hrHistory
+                final raw = data['hrHistory'] as List<dynamic>?;
+                if (raw != null && raw.isNotEmpty) {
+                  final bpms = raw
+                      .map((e) => (e['bpm'] as num?)?.toInt() ?? 0)
+                      .where((b) => b > 0)
+                      .toList();
+                  if (bpms.isNotEmpty) {
+                    avgs[i] = bpms.reduce((a, b) => a + b) ~/ bpms.length;
+                  }
+                }
+              }),
         );
       }
       await Future.wait(futures);
@@ -324,14 +322,14 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
 
     final validHistory = _dailyHistory.where((r) => r.bpm > 0).toList();
     final int avg = validHistory.isEmpty
-        ? widget.currentBpm
+        ? _currentBpm
         : validHistory.map((r) => r.bpm).reduce((a, b) => a + b) ~/
-            validHistory.length;
+              validHistory.length;
     final int lowest = validHistory.isEmpty
-        ? widget.currentBpm
+        ? _currentBpm
         : validHistory.map((r) => r.bpm).reduce(math.min);
     final int highest = validHistory.isEmpty
-        ? widget.currentBpm
+        ? _currentBpm
         : validHistory.map((r) => r.bpm).reduce(math.max);
 
     final dimColor = textColor.withValues(alpha: 0.4);
@@ -343,7 +341,7 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
     const weekLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final int weekMax = math.max(
       _weeklyAvg.reduce(math.max),
-      math.max(widget.currentBpm, 1),
+      math.max(_currentBpm, 1),
     );
 
     return ValueListenableBuilder<Color>(
@@ -362,7 +360,10 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
               children: [
                 // Accent glow
                 Positioned(
-                  top: 0, left: 0, right: 0, height: 260,
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 260,
                   child: IgnorePointer(
                     child: Container(
                       decoration: BoxDecoration(
@@ -370,12 +371,9 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            accentColor.withValues(
-                                alpha: isDark ? 0.60 : 0.45),
-                            accentColor.withValues(
-                                alpha: isDark ? 0.32 : 0.22),
-                            accentColor.withValues(
-                                alpha: isDark ? 0.10 : 0.06),
+                            accentColor.withValues(alpha: isDark ? 0.60 : 0.45),
+                            accentColor.withValues(alpha: isDark ? 0.32 : 0.22),
+                            accentColor.withValues(alpha: isDark ? 0.10 : 0.06),
                             accentColor.withValues(alpha: 0.0),
                           ],
                           stops: const [0.0, 0.40, 0.72, 1.0],
@@ -392,9 +390,44 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(left: 8, top: 8),
-                          child: UniversalBackButton(
-                            onPressed: () => Navigator.of(context).pop(),
+                          padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
+                          child: Row(
+                            children: [
+                              UniversalBackButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                              const Spacer(),
+                              OutlinedButton.icon(
+                                onPressed: () => _showAddDataSheet(
+                                  accentColor: accentColor,
+                                  isDark: isDark,
+                                  textColor: textColor,
+                                  cardColor: cardColor,
+                                ),
+                                icon: Icon(Icons.add_rounded,
+                                    size: 16, color: textColor),
+                                label: Text(
+                                  'Add data',
+                                  style: font(
+                                    fontWeight: FontWeight.w700,
+                                    color: textColor,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.2)
+                                        : Colors.black.withValues(alpha: 0.15),
+                                  ),
+                                  shape: const StadiumBorder(),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 8),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
 
@@ -403,29 +436,36 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
                         // Insight
                         Padding(
                           padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
-                          child: Builder(builder: (_) {
-                            final insight = _buildInsight(
-                                validHistory, avg, lowest, highest);
-                            return RichText(
-                              text: TextSpan(
-                                style: GoogleFonts.plusJakartaSans(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w800,
-                                  color: textColor,
-                                  height: 1.3,
-                                ),
-                                children: [
-                                  TextSpan(text: insight.prefix),
-                                  TextSpan(
-                                    text: insight.keyword,
-                                    style: TextStyle(
-                                        color: Colors.red.shade400),
+                          child: Builder(
+                            builder: (_) {
+                              final insight = _buildInsight(
+                                validHistory,
+                                avg,
+                                lowest,
+                                highest,
+                              );
+                              return RichText(
+                                text: TextSpan(
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                    color: textColor,
+                                    height: 1.3,
                                   ),
-                                  TextSpan(text: insight.suffix),
-                                ],
-                              ),
-                            );
-                          }),
+                                  children: [
+                                    TextSpan(text: insight.prefix),
+                                    TextSpan(
+                                      text: insight.keyword,
+                                      style: TextStyle(
+                                        color: Colors.red.shade400,
+                                      ),
+                                    ),
+                                    TextSpan(text: insight.suffix),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                         ),
 
                         const SizedBox(height: 24),
@@ -437,8 +477,7 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
                               color: cardColor,
                               borderRadius: BorderRadius.circular(24),
                             ),
-                            padding:
-                                const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -457,45 +496,50 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
 
                                 // Header: Heart Rate | Avg today
                                 Row(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text('Heart Rate',
-                                              style: font(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: textColor)),
+                                          Text(
+                                            'Heart Rate',
+                                            style: font(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700,
+                                              color: textColor,
+                                            ),
+                                          ),
                                           const SizedBox(height: 4),
                                           Row(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.end,
                                             children: [
                                               Text(
-                                                widget.currentBpm > 0
-                                                    ? '${widget.currentBpm}'
+                                                _currentBpm > 0
+                                                    ? '$_currentBpm'
                                                     : '--',
                                                 style: font(
-                                                    fontSize: 52,
-                                                    fontWeight:
-                                                        FontWeight.w800,
-                                                    color: textColor,
-                                                    height: 1.0),
+                                                  fontSize: 52,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: textColor,
+                                                  height: 1.0,
+                                                ),
                                               ),
                                               Padding(
-                                                padding:
-                                                    const EdgeInsets.only(
-                                                        bottom: 8, left: 4),
-                                                child: Text('BPM',
-                                                    style: font(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color: subColor)),
+                                                padding: const EdgeInsets.only(
+                                                  bottom: 8,
+                                                  left: 4,
+                                                ),
+                                                child: Text(
+                                                  'BPM',
+                                                  style: font(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: subColor,
+                                                  ),
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -506,11 +550,14 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.end,
                                       children: [
-                                        Text('Avg today',
-                                            style: font(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w500,
-                                                color: dimColor)),
+                                        Text(
+                                          'Avg today',
+                                          style: font(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: dimColor,
+                                          ),
+                                        ),
                                         const SizedBox(height: 4),
                                         Row(
                                           crossAxisAlignment:
@@ -519,20 +566,25 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
                                             Text(
                                               avg > 0 ? '$avg' : '--',
                                               style: font(
-                                                  fontSize: 32,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: textColor,
-                                                  height: 1.0),
+                                                fontSize: 32,
+                                                fontWeight: FontWeight.w700,
+                                                color: textColor,
+                                                height: 1.0,
+                                              ),
                                             ),
                                             Padding(
                                               padding: const EdgeInsets.only(
-                                                  bottom: 4, left: 3),
-                                              child: Text('BPM',
-                                                  style: font(
-                                                      fontSize: 11,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: subColor)),
+                                                bottom: 4,
+                                                left: 3,
+                                              ),
+                                              child: Text(
+                                                'BPM',
+                                                style: font(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: subColor,
+                                                ),
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -552,34 +604,34 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
                                         ),
                                       )
                                     : isDaily
-                                        ? (validHistory.isEmpty
-                                            ? SizedBox(
-                                                height: 160,
-                                                child: Center(
-                                                  child: Text(
-                                                    'No heart rate data today',
-                                                    style: font(
-                                                        fontSize: 13,
-                                                        color: dimColor),
+                                    ? (validHistory.isEmpty
+                                          ? SizedBox(
+                                              height: 160,
+                                              child: Center(
+                                                child: Text(
+                                                  'No heart rate data today',
+                                                  style: font(
+                                                    fontSize: 13,
+                                                    color: dimColor,
                                                   ),
                                                 ),
-                                              )
-                                            : _HrRangeChart(
-                                                history: validHistory,
-                                                isDark: isDark,
-                                                textColor: textColor,
-                                              ))
-                                        : _WeeklyHrChart(
-                                            weeklyAvg: _weeklyAvg,
-                                            weekMax: weekMax,
-                                            accentColor: accentColor,
-                                            isDark: isDark,
-                                            textColor: textColor,
-                                            weekLabels: weekLabels,
-                                          ),
+                                              ),
+                                            )
+                                          : _HrRangeChart(
+                                              history: validHistory,
+                                              isDark: isDark,
+                                              textColor: textColor,
+                                            ))
+                                    : _WeeklyHrChart(
+                                        weeklyAvg: _weeklyAvg,
+                                        weekMax: weekMax,
+                                        accentColor: accentColor,
+                                        isDark: isDark,
+                                        textColor: textColor,
+                                        weekLabels: weekLabels,
+                                      ),
 
                                 const SizedBox(height: 20),
-
                               ],
                             ),
                           ),
@@ -642,7 +694,6 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
                             ],
                           ),
                         ),
-
                       ],
                     ),
                   ),
@@ -690,7 +741,9 @@ class _WeeklyHrChartState extends State<_WeeklyHrChart>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 700));
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
     _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic);
     _ctrl.forward();
   }
@@ -730,21 +783,20 @@ class _WeeklyHrChartState extends State<_WeeklyHrChart>
         Container(height: 1, color: axisColor),
         const SizedBox(height: 6),
         Row(
-          children: List.generate(7, (i) => Expanded(
-            child: Text(
-              widget.weekLabels[i],
-              textAlign: TextAlign.center,
-              style: font(
-                fontSize: 10,
-                fontWeight: i == todayIdx
-                    ? FontWeight.w700
-                    : FontWeight.w500,
-                color: i == todayIdx
-                    ? widget.accentColor
-                    : labelColor,
+          children: List.generate(
+            7,
+            (i) => Expanded(
+              child: Text(
+                widget.weekLabels[i],
+                textAlign: TextAlign.center,
+                style: font(
+                  fontSize: 10,
+                  fontWeight: i == todayIdx ? FontWeight.w700 : FontWeight.w500,
+                  color: i == todayIdx ? widget.accentColor : labelColor,
+                ),
               ),
             ),
-          )),
+          ),
         ),
       ],
     );
@@ -781,8 +833,9 @@ class _WeeklyHrPainter extends CustomPainter {
     final double slotW = size.width / bars.length;
     for (int i = 0; i < bars.length; i++) {
       if (bars[i] <= 0) continue;
-      final double ratio =
-          roundedMax > 0 ? (bars[i] / roundedMax).clamp(0.0, 1.0) : 0.0;
+      final double ratio = roundedMax > 0
+          ? (bars[i] / roundedMax).clamp(0.0, 1.0)
+          : 0.0;
       final double barH = size.height * ratio * progress;
       if (barH < 1) continue;
 
@@ -793,8 +846,13 @@ class _WeeklyHrPainter extends CustomPainter {
           : accentColor.withValues(alpha: 0.5);
 
       canvas.drawRRect(
-        RRect.fromLTRBR(left, size.height - barH, right, size.height,
-            const Radius.circular(5)),
+        RRect.fromLTRBR(
+          left,
+          size.height - barH,
+          right,
+          size.height,
+          const Radius.circular(5),
+        ),
         Paint()..color = color,
       );
     }
@@ -840,28 +898,37 @@ class _StatTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style: font(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: dimColor)),
+          Text(
+            label,
+            style: font(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: dimColor,
+            ),
+          ),
           const SizedBox(height: 8),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(value,
-                  style: font(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w800,
-                      color: textColor,
-                      height: 1.0)),
+              Text(
+                value,
+                style: font(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                  height: 1.0,
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 4, left: 3),
-                child: Text(unit,
-                    style: font(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: dimColor)),
+                child: Text(
+                  unit,
+                  style: font(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: dimColor,
+                  ),
+                ),
               ),
             ],
           ),
@@ -902,12 +969,14 @@ class _HrRangeChartState extends State<_HrRangeChart> {
     for (int h = 0; h < 24; h++) {
       final readings = byHour[h];
       if (readings != null && readings.isNotEmpty) {
-        buckets.add(_HourBucket(
-          hour: h,
-          min: readings.reduce(math.min),
-          max: readings.reduce(math.max),
-          avg: readings.reduce((a, b) => a + b) ~/ readings.length,
-        ));
+        buckets.add(
+          _HourBucket(
+            hour: h,
+            min: readings.reduce(math.min),
+            max: readings.reduce(math.max),
+            avg: readings.reduce((a, b) => a + b) ~/ readings.length,
+          ),
+        );
       }
     }
     return buckets;
@@ -932,60 +1001,64 @@ class _HrRangeChartState extends State<_HrRangeChart> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Reserved tooltip slot
-        LayoutBuilder(builder: (context, constraints) {
-          final chartWidth = constraints.maxWidth;
-          const tooltipW = 160.0;
-          double? left;
-          if (_selected != null) {
-            final slotW = chartWidth / 24;
-            final barCx = slotW * _selected!.hour + slotW / 2;
-            left = (barCx - tooltipW / 2).clamp(0.0, chartWidth - tooltipW);
-          }
-          return SizedBox(
-            height: 56,
-            child: _selected == null
-                ? null
-                : Stack(
-                    children: [
-                      Positioned(
-                        left: left,
-                        top: 0,
-                        width: tooltipW,
-                        child: _TooltipBubble(
-                          key: ValueKey(_selected!.hour),
-                          bucket: _selected!,
-                          isDark: widget.isDark,
-                          textColor: widget.textColor,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final chartWidth = constraints.maxWidth;
+            const tooltipW = 160.0;
+            double? left;
+            if (_selected != null) {
+              final slotW = chartWidth / 24;
+              final barCx = slotW * _selected!.hour + slotW / 2;
+              left = (barCx - tooltipW / 2).clamp(0.0, chartWidth - tooltipW);
+            }
+            return SizedBox(
+              height: 56,
+              child: _selected == null
+                  ? null
+                  : Stack(
+                      children: [
+                        Positioned(
+                          left: left,
+                          top: 0,
+                          width: tooltipW,
+                          child: _TooltipBubble(
+                            key: ValueKey(_selected!.hour),
+                            bucket: _selected!,
+                            isDark: widget.isDark,
+                            textColor: widget.textColor,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-          );
-        }),
+                      ],
+                    ),
+            );
+          },
+        ),
 
         const SizedBox(height: 8),
 
-        LayoutBuilder(builder: (context, constraints) {
-          final chartWidth = constraints.maxWidth;
-          return GestureDetector(
-            onTapDown: (d) => _handlePos(d.localPosition, chartWidth),
-            onHorizontalDragUpdate: (d) =>
-                _handlePos(d.localPosition, chartWidth),
-            onTapUp: (_) => setState(() => _selected = null),
-            onHorizontalDragEnd: (_) => setState(() => _selected = null),
-            child: SizedBox(
-              height: 150,
-              child: CustomPaint(
-                painter: _HrRangePainter(
-                  buckets: buckets,
-                  isDark: widget.isDark,
-                  selectedHour: _selected?.hour,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final chartWidth = constraints.maxWidth;
+            return GestureDetector(
+              onTapDown: (d) => _handlePos(d.localPosition, chartWidth),
+              onHorizontalDragUpdate: (d) =>
+                  _handlePos(d.localPosition, chartWidth),
+              onTapUp: (_) => setState(() => _selected = null),
+              onHorizontalDragEnd: (_) => setState(() => _selected = null),
+              child: SizedBox(
+                height: 150,
+                child: CustomPaint(
+                  painter: _HrRangePainter(
+                    buckets: buckets,
+                    isDark: widget.isDark,
+                    selectedHour: _selected?.hour,
+                  ),
+                  size: Size(chartWidth, 150),
                 ),
-                size: Size(chartWidth, 150),
               ),
-            ),
-          );
-        }),
+            );
+          },
+        ),
 
         const SizedBox(height: 6),
         Row(
@@ -999,11 +1072,14 @@ class _HrRangeChartState extends State<_HrRangeChart> {
             } else {
               label = '$h';
             }
-            return Text(label,
-                style: font(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: labelColor));
+            return Text(
+              label,
+              style: font(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: labelColor,
+              ),
+            );
           }).toList(),
         ),
       ],
@@ -1054,41 +1130,53 @@ class _TooltipBubble extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('RANGE',
-                  style: font(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: dimColor,
-                      letterSpacing: 0.8)),
+              Text(
+                'RANGE',
+                style: font(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  color: dimColor,
+                  letterSpacing: 0.8,
+                ),
+              ),
               const SizedBox(height: 1),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('${bucket.min}–${bucket.max}',
-                      style: font(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: textColor,
-                          height: 1.0)),
+                  Text(
+                    '${bucket.min}–${bucket.max}',
+                    style: font(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                      height: 1.0,
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 2, left: 3),
-                    child: Text('BPM',
-                        style: font(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: dimColor)),
+                    child: Text(
+                      'BPM',
+                      style: font(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: dimColor,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ],
           ),
           const SizedBox(width: 10),
-          Text(_hourLabel(bucket.hour),
-              style: font(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: dimColor)),
+          Text(
+            _hourLabel(bucket.hour),
+            style: font(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: dimColor,
+            ),
+          ),
         ],
       ),
     );
@@ -1101,11 +1189,12 @@ class _TooltipBubble extends StatelessWidget {
 
 class _HourBucket {
   final int hour, min, max, avg;
-  const _HourBucket(
-      {required this.hour,
-      required this.min,
-      required this.max,
-      required this.avg});
+  const _HourBucket({
+    required this.hour,
+    required this.min,
+    required this.max,
+    required this.avg,
+  });
 }
 
 // ─────────────────────────────────────────────
@@ -1139,8 +1228,7 @@ class _HrRangePainter extends CustomPainter {
       ..strokeWidth = 0.5;
     final labelStyle = GoogleFonts.plusJakartaSans(
       fontSize: 10,
-      color:
-          (isDark ? Colors.white : Colors.black).withValues(alpha: 0.35),
+      color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.35),
       fontWeight: FontWeight.w500,
     );
 
@@ -1165,41 +1253,43 @@ class _HrRangePainter extends CustomPainter {
         Offset(cx, 0),
         Offset(cx, size.height),
         Paint()
-          ..color = (isDark ? Colors.white : Colors.black)
-              .withValues(alpha: 0.25)
+          ..color = (isDark ? Colors.white : Colors.black).withValues(
+            alpha: 0.25,
+          )
           ..strokeWidth = 1.0,
       );
     }
 
     for (final b in buckets) {
       final double cx = slotW * b.hour + slotW / 2;
-      final double yTop =
-          size.height - (b.max - yMin) / yRange * size.height;
+      final double yTop = size.height - (b.max - yMin) / yRange * size.height;
       final double yBottom =
           size.height - (b.min - yMin) / yRange * size.height;
 
       canvas.drawRRect(
-        RRect.fromLTRBR(cx - barW / 2, yTop, cx + barW / 2, yBottom,
-            const Radius.circular(barRadius)),
+        RRect.fromLTRBR(
+          cx - barW / 2,
+          yTop,
+          cx + barW / 2,
+          yBottom,
+          const Radius.circular(barRadius),
+        ),
         Paint()..color = _barColor,
       );
 
-      final double yAvg =
-          size.height - (b.avg - yMin) / yRange * size.height;
+      final double yAvg = size.height - (b.avg - yMin) / yRange * size.height;
       canvas.drawCircle(Offset(cx, yAvg), dotR, Paint()..color = _barColor);
       canvas.drawCircle(
         Offset(cx, yAvg),
         dotR * 0.45,
-        Paint()
-          ..color = isDark ? const Color(0xFF1C1C1E) : Colors.white,
+        Paint()..color = isDark ? const Color(0xFF1C1C1E) : Colors.white,
       );
     }
   }
 
   @override
   bool shouldRepaint(_HrRangePainter old) =>
-      old.buckets.length != buckets.length ||
-      old.selectedHour != selectedHour;
+      old.buckets.length != buckets.length || old.selectedHour != selectedHour;
 }
 
 // ─────────────────────────────────────────────
@@ -1288,15 +1378,17 @@ class _HrZones extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        ...zones.map((z) => Padding(
-              padding: const EdgeInsets.only(bottom: 14),
-              child: _ZoneRow(
-                zone: z,
-                isDark: isDark,
-                textColor: textColor,
-                dimColor: dimColor,
-              ),
-            )),
+        ...zones.map(
+          (z) => Padding(
+            padding: const EdgeInsets.only(bottom: 14),
+            child: _ZoneRow(
+              zone: z,
+              isDark: isDark,
+              textColor: textColor,
+              dimColor: dimColor,
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -1398,16 +1490,22 @@ class _ZoneRowState extends State<_ZoneRow>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(z.label,
-                      style: font(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: widget.textColor)),
-                  Text('${z.pct}%',
-                      style: font(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: widget.textColor)),
+                  Text(
+                    z.label,
+                    style: font(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: widget.textColor,
+                    ),
+                  ),
+                  Text(
+                    '${z.pct}%',
+                    style: font(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: widget.textColor,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -1481,6 +1579,5 @@ class _MiniRingPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_MiniRingPainter old) =>
-      old.progress != progress;
+  bool shouldRepaint(_MiniRingPainter old) => old.progress != progress;
 }
