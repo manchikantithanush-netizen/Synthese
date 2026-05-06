@@ -508,6 +508,7 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: _DistanceCard(
                             steps: _todaySteps,
+                            stepGoal: 10000,
                             accentColor: accentColor,
                             cardColor: cardColor,
                             textColor: textColor,
@@ -1178,6 +1179,7 @@ class _RingPainter extends CustomPainter {
 
 class _DistanceCard extends StatelessWidget {
   final int steps;
+  final int stepGoal;
   final Color accentColor;
   final Color cardColor;
   final Color textColor;
@@ -1188,6 +1190,7 @@ class _DistanceCard extends StatelessWidget {
 
   const _DistanceCard({
     required this.steps,
+    required this.stepGoal,
     required this.accentColor,
     required this.cardColor,
     required this.textColor,
@@ -1197,6 +1200,9 @@ class _DistanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double km = (steps * _strideM) / 1000.0;
+    final double goalKm = (stepGoal * _strideM) / 1000.0;
+    // Round goal km to nearest whole number for display
+    final int goalKmDisplay = goalKm.round();
     final String distStr = km >= 10
         ? km.toStringAsFixed(1)
         : km.toStringAsFixed(2);
@@ -1205,8 +1211,8 @@ class _DistanceCard extends StatelessWidget {
     final dimColor = textColor.withValues(alpha: 0.35);
     final subColor = textColor.withValues(alpha: 0.55);
 
-    // Progress along a 5 km "daily route" goal
-    final double routeProgress = (km / 5.0).clamp(0.0, 1.0);
+    // Progress toward the dynamic goal distance
+    final double routeProgress = goalKm > 0 ? (km / goalKm).clamp(0.0, 1.0) : 0.0;
 
     return Container(
       decoration: BoxDecoration(
@@ -1294,7 +1300,7 @@ class _DistanceCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '5 km',
+                '$goalKmDisplay km',
                 style: font(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
@@ -1562,10 +1568,10 @@ class _StepsBarChartState extends State<_StepsBarChart>
   }
 
   String _hourLabel(int hour) {
-    if (hour == 0) return '12a';
-    if (hour < 12) return '${hour}a';
-    if (hour == 12) return '12p';
-    return '${hour - 12}p';
+    if (hour == 0) return '12 AM';
+    if (hour < 12) return '$hour AM';
+    if (hour == 12) return '12 PM';
+    return '${hour - 12} PM';
   }
 
   String _fmtAxis(int n) {
@@ -1581,6 +1587,54 @@ class _StepsBarChartState extends State<_StepsBarChart>
 
   @override
   Widget build(BuildContext context) {
+    final axisColor = widget.textColor.withValues(alpha: 0.15);
+    final labelColor = widget.textColor.withValues(alpha: 0.45);
+    final font = GoogleFonts.plusJakartaSans;
+    final int barCount = widget.bars.length;
+    final bool manyBars = barCount > 12;
+
+    // No data yet — show clean empty state
+    final bool hasData = widget.bars.any((v) => v > 0);
+    if (!hasData && widget.isDaily) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 200,
+            alignment: Alignment.center,
+            child: Text(
+              'No steps recorded yet today',
+              style: font(
+                fontSize: 13,
+                color: labelColor,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 40),
+            child: Container(height: 1, color: axisColor),
+          ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 40),
+            child: LayoutBuilder(
+              builder: (ctx, bc) {
+                final List<int> indices = [0, (barCount * 1 / 3).round().clamp(0, barCount - 1), (barCount * 2 / 3).round().clamp(0, barCount - 1), barCount - 1];
+                return Row(
+                  children: List.generate(barCount, (i) => Expanded(
+                    child: indices.contains(i)
+                        ? Text(_hourLabel(i), textAlign: TextAlign.center,
+                            style: font(color: labelColor, fontSize: 9, fontWeight: FontWeight.w500))
+                        : const SizedBox.shrink(),
+                  )),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+    }
+
     final int roundedMax = _roundMax(widget.maxVal);
     final yLabels = [
       0,
@@ -1589,13 +1643,6 @@ class _StepsBarChartState extends State<_StepsBarChart>
       (roundedMax * 0.75).round(),
       roundedMax,
     ];
-
-    final axisColor = widget.textColor.withValues(alpha: 0.15);
-    final labelColor = widget.textColor.withValues(alpha: 0.45);
-    final font = GoogleFonts.plusJakartaSans;
-
-    final int barCount = widget.bars.length;
-    final bool manyBars = barCount > 12;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1657,27 +1704,56 @@ class _StepsBarChartState extends State<_StepsBarChart>
         // X-axis labels
         Padding(
           padding: const EdgeInsets.only(left: 40),
-          child: Row(
-            children: List.generate(barCount, (i) {
-              final label = widget.isDaily
-                  ? _hourLabel(i)
-                  : (i < widget.weekLabels.length ? widget.weekLabels[i] : '');
-              final show = widget.isDaily ? (i % 3 == 0) : true;
-              return Expanded(
-                child: show
-                    ? Text(
+          child: widget.isDaily
+              ? LayoutBuilder(
+                  builder: (ctx, bc) {
+                    // 4 evenly-spaced labels across the bar range
+                    final int count = barCount;
+                    if (count == 0) return const SizedBox.shrink();
+                    final List<int> indices = [
+                      0,
+                      (count * 1 / 3).round().clamp(0, count - 1),
+                      (count * 2 / 3).round().clamp(0, count - 1),
+                      count - 1,
+                    ];
+                    return Row(
+                      children: List.generate(count, (i) {
+                        final show = indices.contains(i);
+                        return Expanded(
+                          child: show
+                              ? Text(
+                                  _hourLabel(i),
+                                  textAlign: TextAlign.center,
+                                  style: font(
+                                    color: labelColor,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        );
+                      }),
+                    );
+                  },
+                )
+              : Row(
+                  children: List.generate(barCount, (i) {
+                    final label = i < widget.weekLabels.length
+                        ? widget.weekLabels[i]
+                        : '';
+                    return Expanded(
+                      child: Text(
                         label,
                         textAlign: TextAlign.center,
                         style: font(
                           color: labelColor,
-                          fontSize: manyBars ? 9 : 10,
+                          fontSize: 10,
                           fontWeight: FontWeight.w500,
                         ),
-                      )
-                    : const SizedBox.shrink(),
-              );
-            }),
-          ),
+                      ),
+                    );
+                  }),
+                ),
         ),
       ],
     );

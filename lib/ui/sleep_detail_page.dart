@@ -65,12 +65,18 @@ enum _SleepPhase { inBed, asleep, awake, light, deep, rem }
 extension _SleepPhaseX on _SleepPhase {
   String get label {
     switch (this) {
-      case _SleepPhase.inBed:   return 'In Bed';
-      case _SleepPhase.asleep:  return 'Asleep';
-      case _SleepPhase.awake:   return 'Awake';
-      case _SleepPhase.light:   return 'Core';
-      case _SleepPhase.deep:    return 'Deep';
-      case _SleepPhase.rem:     return 'REM';
+      case _SleepPhase.inBed:
+        return 'In Bed';
+      case _SleepPhase.asleep:
+        return 'Asleep';
+      case _SleepPhase.awake:
+        return 'Awake';
+      case _SleepPhase.light:
+        return 'Core';
+      case _SleepPhase.deep:
+        return 'Deep';
+      case _SleepPhase.rem:
+        return 'REM';
     }
   }
 }
@@ -82,6 +88,7 @@ class _SleepDetailPageState extends State<SleepDetailPage>
 
   _SleepData _data = const _SleepData();
   bool _loading = true;
+  bool _clearing = false;
   List<_SleepSegment> _segments = [];
 
   // Goal: 8 hours
@@ -120,34 +127,40 @@ class _SleepDetailPageState extends State<SleepDetailPage>
 
       // Load phase totals
       final phases = data?['manualSleepPhases'] as Map<String, dynamic>?;
-      final rem    = (phases?['rem']    as num?)?.toInt() ?? 0;
-      final light  = (phases?['light']  as num?)?.toInt() ?? 0;
-      final deep   = (phases?['deep']   as num?)?.toInt() ?? 0;
-      final awake  = (phases?['awake']  as num?)?.toInt() ?? 0;
+      final rem = (phases?['rem'] as num?)?.toInt() ?? 0;
+      final light = (phases?['light'] as num?)?.toInt() ?? 0;
+      final deep = (phases?['deep'] as num?)?.toInt() ?? 0;
+      final awake = (phases?['awake'] as num?)?.toInt() ?? 0;
       final asleep = (phases?['asleep'] as num?)?.toInt() ?? 0;
-      final inBed  = (phases?['inBed']  as num?)?.toInt() ?? 0;
-      final total  = rem + light + deep + awake + asleep + inBed;
+      final inBed = (phases?['inBed'] as num?)?.toInt() ?? 0;
+      final total = rem + light + deep + awake + asleep + inBed;
 
       // Load segments for the chart
       final rawSegs = data?['manualSleepSegments'] as List<dynamic>?;
-      final loadedSegments = rawSegs == null ? <_SleepSegment>[] :
-          rawSegs.map((e) => _SleepSegment(
-            from:  (e['from'] as Timestamp).toDate(),
-            to:    (e['to']   as Timestamp).toDate(),
-            stage: e['stage'] as String? ?? 'asleep',
-          )).toList()
+      final loadedSegments =
+          rawSegs == null
+                ? <_SleepSegment>[]
+                : rawSegs
+                      .map(
+                        (e) => _SleepSegment(
+                          from: (e['from'] as Timestamp).toDate(),
+                          to: (e['to'] as Timestamp).toDate(),
+                          stage: e['stage'] as String? ?? 'asleep',
+                        ),
+                      )
+                      .toList()
             ..sort((a, b) => a.from.compareTo(b.from));
 
       if (mounted) {
         setState(() {
           _data = _SleepData(
-            totalMinutes:  total,
-            remMinutes:    rem,
-            coreMinutes:   light,
-            deepMinutes:   deep,
-            awakeMinutes:  awake,
+            totalMinutes: total,
+            remMinutes: rem,
+            coreMinutes: light,
+            deepMinutes: deep,
+            awakeMinutes: awake,
             asleepMinutes: asleep,
-            inBedMinutes:  inBed,
+            inBedMinutes: inBed,
           );
           _segments = loadedSegments;
         });
@@ -184,12 +197,12 @@ class _SleepDetailPageState extends State<SleepDetailPage>
     final phases = doc.data()?['manualSleepPhases'] as Map<String, dynamic>?;
     if (phases == null) return <String, int>{};
     return <String, int>{
-      'rem':    (phases['rem']    as num?)?.toInt() ?? 0,
-      'light':  (phases['light']  as num?)?.toInt() ?? 0,
-      'deep':   (phases['deep']   as num?)?.toInt() ?? 0,
-      'awake':  (phases['awake']  as num?)?.toInt() ?? 0,
+      'rem': (phases['rem'] as num?)?.toInt() ?? 0,
+      'light': (phases['light'] as num?)?.toInt() ?? 0,
+      'deep': (phases['deep'] as num?)?.toInt() ?? 0,
+      'awake': (phases['awake'] as num?)?.toInt() ?? 0,
       'asleep': (phases['asleep'] as num?)?.toInt() ?? 0,
-      'inBed':  (phases['inBed']  as num?)?.toInt() ?? 0,
+      'inBed': (phases['inBed'] as num?)?.toInt() ?? 0,
     };
   }
 
@@ -212,38 +225,50 @@ class _SleepDetailPageState extends State<SleepDetailPage>
     final current =
         (snapshot.data()?['manualSleepPhases'] as Map<String, dynamic>?) ??
         const <String, dynamic>{};
-    int rem    = (current['rem']    as num?)?.toInt() ?? 0;
-    int light  = (current['light']  as num?)?.toInt() ?? 0;
-    int deep   = (current['deep']   as num?)?.toInt() ?? 0;
-    int awake  = (current['awake']  as num?)?.toInt() ?? 0;
+    int rem = (current['rem'] as num?)?.toInt() ?? 0;
+    int light = (current['light'] as num?)?.toInt() ?? 0;
+    int deep = (current['deep'] as num?)?.toInt() ?? 0;
+    int awake = (current['awake'] as num?)?.toInt() ?? 0;
     int asleep = (current['asleep'] as num?)?.toInt() ?? 0;
-    int inBed  = (current['inBed']  as num?)?.toInt() ?? 0;
+    int inBed = (current['inBed'] as num?)?.toInt() ?? 0;
     switch (phase) {
-      case _SleepPhase.rem:    rem    = (rem    + minutes).clamp(0, 1440).toInt(); break;
-      case _SleepPhase.light:  light  = (light  + minutes).clamp(0, 1440).toInt(); break;
-      case _SleepPhase.deep:   deep   = (deep   + minutes).clamp(0, 1440).toInt(); break;
-      case _SleepPhase.awake:  awake  = (awake  + minutes).clamp(0, 1440).toInt(); break;
-      case _SleepPhase.asleep: asleep = (asleep + minutes).clamp(0, 1440).toInt(); break;
-      case _SleepPhase.inBed:  inBed  = (inBed  + minutes).clamp(0, 1440).toInt(); break;
+      case _SleepPhase.rem:
+        rem = (rem + minutes).clamp(0, 1440).toInt();
+        break;
+      case _SleepPhase.light:
+        light = (light + minutes).clamp(0, 1440).toInt();
+        break;
+      case _SleepPhase.deep:
+        deep = (deep + minutes).clamp(0, 1440).toInt();
+        break;
+      case _SleepPhase.awake:
+        awake = (awake + minutes).clamp(0, 1440).toInt();
+        break;
+      case _SleepPhase.asleep:
+        asleep = (asleep + minutes).clamp(0, 1440).toInt();
+        break;
+      case _SleepPhase.inBed:
+        inBed = (inBed + minutes).clamp(0, 1440).toInt();
+        break;
     }
 
     await docRef.set({
       'manualSleepPhases': <String, int>{
-        'rem':    rem,
-        'light':  light,
-        'deep':   deep,
-        'awake':  awake,
+        'rem': rem,
+        'light': light,
+        'deep': deep,
+        'awake': awake,
         'asleep': asleep,
-        'inBed':  inBed,
+        'inBed': inBed,
       },
       'manualSleepTotal': rem + light + deep + awake + asleep + inBed,
       // Append this segment to the chart list
       'manualSleepSegments': FieldValue.arrayUnion([
         {
-          'from':  Timestamp.fromDate(start),
-          'to':    Timestamp.fromDate(end),
+          'from': Timestamp.fromDate(start),
+          'to': Timestamp.fromDate(end),
           'stage': phase.name,
-        }
+        },
       ]),
       'dateKey': key,
       'updatedAt': FieldValue.serverTimestamp(),
@@ -253,16 +278,28 @@ class _SleepDetailPageState extends State<SleepDetailPage>
     final newSegment = _SleepSegment(from: start, to: end, stage: phase.name);
     setState(() {
       _data = _SleepData(
-        totalMinutes:  _data.totalMinutes  + minutes,
-        remMinutes:    phase == _SleepPhase.rem    ? _data.remMinutes    + minutes : _data.remMinutes,
-        coreMinutes:   phase == _SleepPhase.light  ? _data.coreMinutes   + minutes : _data.coreMinutes,
-        deepMinutes:   phase == _SleepPhase.deep   ? _data.deepMinutes   + minutes : _data.deepMinutes,
-        awakeMinutes:  phase == _SleepPhase.awake  ? _data.awakeMinutes  + minutes : _data.awakeMinutes,
-        asleepMinutes: phase == _SleepPhase.asleep ? _data.asleepMinutes + minutes : _data.asleepMinutes,
-        inBedMinutes:  phase == _SleepPhase.inBed  ? _data.inBedMinutes  + minutes : _data.inBedMinutes,
+        totalMinutes: _data.totalMinutes + minutes,
+        remMinutes: phase == _SleepPhase.rem
+            ? _data.remMinutes + minutes
+            : _data.remMinutes,
+        coreMinutes: phase == _SleepPhase.light
+            ? _data.coreMinutes + minutes
+            : _data.coreMinutes,
+        deepMinutes: phase == _SleepPhase.deep
+            ? _data.deepMinutes + minutes
+            : _data.deepMinutes,
+        awakeMinutes: phase == _SleepPhase.awake
+            ? _data.awakeMinutes + minutes
+            : _data.awakeMinutes,
+        asleepMinutes: phase == _SleepPhase.asleep
+            ? _data.asleepMinutes + minutes
+            : _data.asleepMinutes,
+        inBedMinutes: phase == _SleepPhase.inBed
+            ? _data.inBedMinutes + minutes
+            : _data.inBedMinutes,
       );
       _segments = [..._segments, newSegment]
-          ..sort((a, b) => a.from.compareTo(b.from));
+        ..sort((a, b) => a.from.compareTo(b.from));
     });
 
     if (_isSameDay(end, DateTime.now())) {
@@ -293,13 +330,60 @@ class _SleepDetailPageState extends State<SleepDetailPage>
         textColor: textColor,
         cardColor: cardColor,
         onSave: ({required start, required end, required phase}) =>
-            _addManualSleepPhaseMinutes(
-              start: start,
-              end: end,
-              phase: phase,
-            ),
+            _addManualSleepPhaseMinutes(start: start, end: end, phase: phase),
       ),
     );
+  }
+
+  Future<void> _clearTodaySleepData() async {
+    if (_clearing) return;
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    final key = _dateKey(DateTime.now());
+    final int previouslyLogged = _data.totalMinutes;
+    setState(() => _clearing = true);
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('dashboardDaily')
+          .doc(key)
+          .set({
+            'manualSleepPhases': const <String, int>{
+              'rem': 0,
+              'light': 0,
+              'deep': 0,
+              'awake': 0,
+              'asleep': 0,
+              'inBed': 0,
+            },
+            'manualSleepTotal': 0,
+            'manualSleepSegments': const <Map<String, dynamic>>[],
+            'dateKey': key,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+
+      if (!mounted) return;
+      setState(() {
+        _data = const _SleepData();
+        _segments = <_SleepSegment>[];
+      });
+      if (previouslyLogged > 0) {
+        widget.onTodaySleepMinutesAdded?.call(-previouslyLogged);
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Sleep data cleared.')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to clear sleep data.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _clearing = false);
+      }
+    }
   }
 
   ({String prefix, String keyword, String suffix}) _buildInsight() {
@@ -417,8 +501,11 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                   textColor: textColor,
                                   cardColor: cardColor,
                                 ),
-                                icon: Icon(Icons.add_rounded,
-                                    size: 16, color: textColor),
+                                icon: Icon(
+                                  Icons.add_rounded,
+                                  size: 16,
+                                  color: textColor,
+                                ),
                                 label: Text(
                                   'Add data',
                                   style: font(
@@ -434,11 +521,54 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                   ),
                                   shape: const StadiumBorder(),
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 8),
+                                    horizontal: 14,
+                                    vertical: 8,
+                                  ),
                                   minimumSize: Size.zero,
                                   tapTargetSize:
                                       MaterialTapTargetSize.shrinkWrap,
                                 ),
+                              ),
+                              const SizedBox(width: 8),
+                              OutlinedButton(
+                                onPressed:
+                                    (_loading ||
+                                        _clearing ||
+                                        (!_data.hasData && _segments.isEmpty))
+                                    ? null
+                                    : _clearTodaySleepData,
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.2)
+                                        : Colors.black.withValues(alpha: 0.15),
+                                  ),
+                                  shape: const StadiumBorder(),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 8,
+                                  ),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: _clearing
+                                    ? SizedBox(
+                                        width: 12,
+                                        height: 12,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: textColor,
+                                        ),
+                                      )
+                                    : Text(
+                                        'Clear',
+                                        style: font(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: textColor,
+                                        ),
+                                      ),
                               ),
                             ],
                           ),
@@ -556,7 +686,9 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                           if (_data.remMinutes > 0)
                                             _StageChip(
                                               label: 'REM',
-                                              value: _fmtHours(_data.remMinutes),
+                                              value: _fmtHours(
+                                                _data.remMinutes,
+                                              ),
                                               color: remColor,
                                               isDark: isDark,
                                               textColor: textColor,
@@ -564,7 +696,9 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                           if (_data.coreMinutes > 0)
                                             _StageChip(
                                               label: 'Core',
-                                              value: _fmtHours(_data.coreMinutes),
+                                              value: _fmtHours(
+                                                _data.coreMinutes,
+                                              ),
                                               color: coreColor,
                                               isDark: isDark,
                                               textColor: textColor,
@@ -572,7 +706,9 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                           if (_data.deepMinutes > 0)
                                             _StageChip(
                                               label: 'Deep',
-                                              value: _fmtHours(_data.deepMinutes),
+                                              value: _fmtHours(
+                                                _data.deepMinutes,
+                                              ),
                                               color: deepColor,
                                               isDark: isDark,
                                               textColor: textColor,
@@ -580,7 +716,9 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                           if (_data.awakeMinutes > 0)
                                             _StageChip(
                                               label: 'Awake',
-                                              value: _fmtHours(_data.awakeMinutes),
+                                              value: _fmtHours(
+                                                _data.awakeMinutes,
+                                              ),
                                               color: awakeColor,
                                               isDark: isDark,
                                               textColor: textColor,
@@ -588,7 +726,9 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                           if (_data.asleepMinutes > 0)
                                             _StageChip(
                                               label: 'Asleep',
-                                              value: _fmtHours(_data.asleepMinutes),
+                                              value: _fmtHours(
+                                                _data.asleepMinutes,
+                                              ),
                                               color: const Color(0xFF5E5CE6),
                                               isDark: isDark,
                                               textColor: textColor,
@@ -596,7 +736,9 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                           if (_data.inBedMinutes > 0)
                                             _StageChip(
                                               label: 'In Bed',
-                                              value: _fmtHours(_data.inBedMinutes),
+                                              value: _fmtHours(
+                                                _data.inBedMinutes,
+                                              ),
                                               color: const Color(0xFF636366),
                                               isDark: isDark,
                                               textColor: textColor,
@@ -684,7 +826,8 @@ class _SleepPhaseAddSheet extends StatefulWidget {
     required DateTime start,
     required DateTime end,
     required _SleepPhase phase,
-  }) onSave;
+  })
+  onSave;
 
   @override
   State<_SleepPhaseAddSheet> createState() => _SleepPhaseAddSheetState();
@@ -702,32 +845,59 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
     super.initState();
     final now = DateTime.now();
     // Default: end = now, start = 8h ago (typical sleep)
-    _end   = now;
+    _end = now;
     _start = now.subtract(const Duration(hours: 8));
   }
 
-  Future<void> _pickDateTime({required bool isStart}) async {
+  Future<void> _pickDate({required bool isStart}) async {
     final initial = isStart ? _start : _end;
     final date = await showDatePicker(
       context: context,
       initialDate: initial,
       firstDate: DateTime(2020),
       lastDate: DateTime(2100),
-      builder: (context, child) => Theme(data: _pickerTheme(context), child: child!),
+      builder: (context, child) =>
+          Theme(data: _pickerTheme(context), child: child!),
     );
     if (!mounted || date == null) return;
+    setState(() {
+      final updated = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        initial.hour,
+        initial.minute,
+      );
+      if (isStart) {
+        _start = updated;
+      } else {
+        _end = updated;
+      }
+      _error = null;
+    });
+  }
+
+  Future<void> _pickTime({required bool isStart}) async {
+    final initial = isStart ? _start : _end;
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(initial),
-      builder: (context, child) => Theme(data: _pickerTheme(context), child: child!),
+      builder: (context, child) =>
+          Theme(data: _pickerTheme(context), child: child!),
     );
     if (!mounted || time == null) return;
-    final picked = DateTime(date.year, date.month, date.day, time.hour, time.minute);
     setState(() {
+      final updated = DateTime(
+        initial.year,
+        initial.month,
+        initial.day,
+        time.hour,
+        time.minute,
+      );
       if (isStart) {
-        _start = picked;
+        _start = updated;
       } else {
-        _end = picked;
+        _end = updated;
       }
       _error = null;
     });
@@ -738,23 +908,50 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
       setState(() => _error = 'End time must be after start time.');
       return;
     }
-    setState(() { _error = null; _saving = true; });
+    setState(() {
+      _error = null;
+      _saving = true;
+    });
     try {
       await widget.onSave(start: _start, end: _end, phase: _selectedPhase);
       if (!mounted) return;
       Navigator.of(context).pop();
     } catch (e) {
       if (!mounted) return;
-      setState(() { _error = 'Failed to save. Please try again.'; _saving = false; });
+      setState(() {
+        _error = 'Failed to save. Please try again.';
+        _saving = false;
+      });
     }
   }
 
   String _fmt(DateTime dt) {
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    final h = dt.hour == 0 ? 12 : dt.hour > 12 ? dt.hour - 12 : dt.hour;
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${dt.day} ${months[dt.month - 1]}';
+  }
+
+  String _fmtTime(DateTime dt) {
+    final h = dt.hour == 0
+        ? 12
+        : dt.hour > 12
+        ? dt.hour - 12
+        : dt.hour;
     final m = dt.minute.toString().padLeft(2, '0');
     final period = dt.hour < 12 ? 'AM' : 'PM';
-    return '${dt.day} ${months[dt.month - 1]}  $h:$m $period';
+    return '$h:$m $period';
   }
 
   String _duration() {
@@ -775,7 +972,9 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
     final textColor = widget.textColor;
     final subColor = isDark ? Colors.white38 : Colors.black38;
     final pillBg = isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA);
-    final divColor = isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07);
+    final divColor = isDark
+        ? Colors.white12
+        : Colors.black.withValues(alpha: 0.07);
     final font = GoogleFonts.plusJakartaSans;
 
     return FractionallySizedBox(
@@ -800,19 +999,28 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
                     _SleepSheetTopButton(
                       isDark: isDark,
                       onTap: () => Navigator.of(context).pop(),
-                      child: Icon(Icons.close_rounded, size: 18, color: textColor),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: textColor,
+                      ),
                     ),
                     _SleepSheetTopButton(
                       isDark: isDark,
                       onTap: _saving ? null : _submit,
                       child: _saving
                           ? SizedBox(
-                              width: 24, height: 12,
+                              width: 24,
+                              height: 12,
                               child: BouncingDotsLoader.compact(
                                 color: isDark ? Colors.white : Colors.black,
                               ),
                             )
-                          : Icon(Icons.check_rounded, size: 18, color: textColor),
+                          : Icon(
+                              Icons.check_rounded,
+                              size: 18,
+                              color: textColor,
+                            ),
                     ),
                   ],
                 ),
@@ -823,13 +1031,17 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
               // ── icon ──
               Center(
                 child: Container(
-                  width: 72, height: 72,
+                  width: 72,
+                  height: 72,
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.bedtime_rounded, size: 34,
-                      color: widget.accentColor),
+                  child: Icon(
+                    Icons.bedtime_rounded,
+                    size: 34,
+                    color: widget.accentColor,
+                  ),
                 ),
               ),
 
@@ -837,15 +1049,26 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
 
               // ── title + duration ──
               Center(
-                child: Text('Sleep',
-                    style: font(fontSize: 26, fontWeight: FontWeight.w800,
-                        color: textColor, letterSpacing: -0.5)),
+                child: Text(
+                  'Sleep',
+                  style: font(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: textColor,
+                    letterSpacing: -0.5,
+                  ),
+                ),
               ),
               const SizedBox(height: 4),
               Center(
-                child: Text(_duration(),
-                    style: font(fontSize: 15, fontWeight: FontWeight.w500,
-                        color: widget.accentColor)),
+                child: Text(
+                  _duration(),
+                  style: font(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: widget.accentColor,
+                  ),
+                ),
               ),
 
               const SizedBox(height: 24),
@@ -855,7 +1078,9 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
                   decoration: BoxDecoration(
-                      color: cardColor, borderRadius: BorderRadius.circular(16)),
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: Column(
                     children: _SleepPhase.values.map((p) {
                       final isLast = p == _SleepPhase.values.last;
@@ -865,22 +1090,33 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
                             onTap: () => setState(() => _selectedPhase = p),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 16),
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
                               child: Row(
                                 children: [
-                                  Text(p.label,
-                                      style: font(fontSize: 16, color: textColor)),
+                                  Text(
+                                    p.label,
+                                    style: font(fontSize: 16, color: textColor),
+                                  ),
                                   const Spacer(),
                                   if (_selectedPhase == p)
-                                    Icon(Icons.check_rounded,
-                                        color: widget.accentColor, size: 20),
+                                    Icon(
+                                      Icons.check_rounded,
+                                      color: widget.accentColor,
+                                      size: 20,
+                                    ),
                                 ],
                               ),
                             ),
                           ),
                           if (!isLast)
-                            Divider(height: 1, thickness: 0.5,
-                                indent: 20, color: divColor),
+                            Divider(
+                              height: 1,
+                              thickness: 0.5,
+                              indent: 20,
+                              color: divColor,
+                            ),
                         ],
                       );
                     }).toList(),
@@ -895,7 +1131,9 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
                   decoration: BoxDecoration(
-                      color: cardColor, borderRadius: BorderRadius.circular(16)),
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: Column(
                     children: [
                       _SleepSheetRow(
@@ -903,40 +1141,113 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
                         subColor: subColor,
                         textColor: textColor,
                         font: font,
-                        trailing: GestureDetector(
-                          onTap: () => _pickDateTime(isStart: true),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 6),
-                            decoration: BoxDecoration(
-                                color: pillBg,
-                                borderRadius: BorderRadius.circular(20)),
-                            child: Text(_fmt(_start),
-                                style: font(fontSize: 15,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onTap: () => _pickDate(isStart: true),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: pillBg,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  _fmt(_start),
+                                  style: font(
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w500,
-                                    color: textColor)),
-                          ),
+                                    color: textColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            GestureDetector(
+                              onTap: () => _pickTime(isStart: true),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: pillBg,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  _fmtTime(_start),
+                                  style: font(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: textColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      Divider(height: 1, thickness: 0.5, indent: 16, color: divColor),
+                      Divider(
+                        height: 1,
+                        thickness: 0.5,
+                        indent: 16,
+                        color: divColor,
+                      ),
                       _SleepSheetRow(
                         label: 'Ends',
                         subColor: subColor,
                         textColor: textColor,
                         font: font,
-                        trailing: GestureDetector(
-                          onTap: () => _pickDateTime(isStart: false),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 6),
-                            decoration: BoxDecoration(
-                                color: pillBg,
-                                borderRadius: BorderRadius.circular(20)),
-                            child: Text(_fmt(_end),
-                                style: font(fontSize: 15,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onTap: () => _pickDate(isStart: false),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: pillBg,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  _fmt(_end),
+                                  style: font(
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w500,
-                                    color: textColor)),
-                          ),
+                                    color: textColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            GestureDetector(
+                              onTap: () => _pickTime(isStart: false),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: pillBg,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  _fmtTime(_end),
+                                  style: font(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: textColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
@@ -948,8 +1259,10 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
               if (_error != null)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                  child: Text(_error!,
-                      style: font(fontSize: 13, color: Colors.redAccent)),
+                  child: Text(
+                    _error!,
+                    style: font(fontSize: 13, color: Colors.redAccent),
+                  ),
                 ),
 
               const Spacer(),
@@ -1126,37 +1439,58 @@ class _SleepTimeline extends StatelessWidget {
   // Stage depth level: higher = deeper sleep (drawn lower on chart)
   static int _stageLevel(String stage) {
     switch (stage) {
-      case 'inBed':   return 0;
-      case 'awake':   return 1;
-      case 'asleep':  return 2;
-      case 'light':   return 3;
-      case 'rem':     return 4;
-      case 'deep':    return 5;
-      default:        return 2;
+      case 'inBed':
+        return 0;
+      case 'awake':
+        return 1;
+      case 'asleep':
+        return 2;
+      case 'light':
+        return 3;
+      case 'rem':
+        return 4;
+      case 'deep':
+        return 5;
+      default:
+        return 2;
     }
   }
 
   static Color _stageColor(String stage) {
     switch (stage) {
-      case 'inBed':   return const Color(0xFF636366); // grey
-      case 'awake':   return const Color(0xFF5B8DEF); // blue
-      case 'asleep':  return const Color(0xFF5E5CE6); // indigo
-      case 'light':   return const Color(0xFF9B59B6); // purple
-      case 'rem':     return const Color(0xFFE74C8B); // pink
-      case 'deep':    return const Color(0xFF2ECC71); // green
-      default:        return const Color(0xFF5E5CE6);
+      case 'inBed':
+        return const Color(0xFF636366); // grey
+      case 'awake':
+        return const Color(0xFF5B8DEF); // blue
+      case 'asleep':
+        return const Color(0xFF5E5CE6); // indigo
+      case 'light':
+        return const Color(0xFF9B59B6); // purple
+      case 'rem':
+        return const Color(0xFFE74C8B); // pink
+      case 'deep':
+        return const Color(0xFF2ECC71); // green
+      default:
+        return const Color(0xFF5E5CE6);
     }
   }
 
   static String _stageLabel(String stage) {
     switch (stage) {
-      case 'awake':   return 'Awake';
-      case 'light':   return 'Core';
-      case 'rem':     return 'REM';
-      case 'deep':    return 'Deep';
-      case 'asleep':  return 'Asleep';
-      case 'inBed':   return 'In Bed';
-      default:        return stage;
+      case 'awake':
+        return 'Awake';
+      case 'light':
+        return 'Core';
+      case 'rem':
+        return 'REM';
+      case 'deep':
+        return 'Deep';
+      case 'asleep':
+        return 'Asleep';
+      case 'inBed':
+        return 'In Bed';
+      default:
+        return stage;
     }
   }
 
@@ -1165,125 +1499,107 @@ class _SleepTimeline extends StatelessWidget {
     final font = GoogleFonts.plusJakartaSans;
     final labelColor = textColor.withValues(alpha: 0.4);
 
-    // Empty state — show placeholder
-    if (segments.isEmpty) {
+    // Filter to today's segments only
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+    final todayEnd   = todayStart.add(const Duration(days: 1));
+    final todaySegs  = segments.where((s) =>
+        s.to.isAfter(todayStart) && s.from.isBefore(todayEnd)).toList()
+      ..sort((a, b) => a.from.compareTo(b.from));
+
+    // Empty state
+    if (todaySegs.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Sleep Stages',
-            style: font(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: textColor,
-            ),
-          ),
+          Text('Sleep Stages',
+              style: font(fontSize: 15, fontWeight: FontWeight.w700,
+                  color: textColor)),
           const SizedBox(height: 40),
-          Center(
-            child: Text(
-              'Add a sleep entry to see your chart',
-              style: font(fontSize: 13, color: labelColor),
-            ),
-          ),
+          Center(child: Text('Add a sleep entry to see your chart',
+              style: font(fontSize: 13, color: labelColor))),
           const SizedBox(height: 40),
         ],
       );
     }
 
-    final DateTime start = segments.first.from;
-    final DateTime end = segments.last.to;
-    // For a single segment, give it at least 1 minute of span so the chart renders
-    final int totalMins = math.max(end.difference(start).inMinutes, 1);
+    final DateTime chartStart = todaySegs.first.from;
+    final DateTime chartEnd   = todaySegs.last.to;
+    final int totalMins = math.max(chartEnd.difference(chartStart).inMinutes, 1);
 
-    // Unique stages in data
-    final usedStages = segments.map((s) => s.stage).toSet().toList();
+    // Build exactly 4 evenly-spaced X-axis labels across the range
+    String _hourLabel(DateTime dt) {
+      final h = dt.hour == 0 ? 12 : dt.hour > 12 ? dt.hour - 12 : dt.hour;
+      final period = dt.hour < 12 ? 'AM' : 'PM';
+      return '$h $period';
+    }
 
-    // X-axis hour labels
     final List<String> xLabels = [];
     final List<double> xPositions = [];
-    final int startHour = start.hour;
-    final int endHour = end.hour + (end.minute > 0 ? 1 : 0);
-    for (int h = startHour; h <= endHour; h++) {
-      final hh = h % 24;
-      String label;
-      if (hh == 0)
-        label = '12a';
-      else if (hh < 12)
-        label = '${hh}a';
-      else if (hh == 12)
-        label = '12p';
-      else
-        label = '${hh - 12}p';
-      xLabels.add(label);
-      final mins = DateTime(
-        start.year,
-        start.month,
-        start.day,
-        h,
-      ).difference(start).inMinutes.toDouble();
-      xPositions.add((mins / totalMins).clamp(0.0, 1.0));
+    for (int i = 0; i < 4; i++) {
+      final frac = i / 3.0;
+      final dt = chartStart.add(Duration(
+          minutes: (totalMins * frac).round()));
+      xLabels.add(_hourLabel(dt));
+      xPositions.add(frac);
     }
+
+    // Unique stages for legend
+    final usedStages = todaySegs.map((s) => s.stage).toSet().toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Sleep Stages',
-          style: font(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: textColor,
-          ),
-        ),
+        Text('Sleep Stages',
+            style: font(fontSize: 15, fontWeight: FontWeight.w700,
+                color: textColor)),
 
         const SizedBox(height: 16),
 
-        // Chart
         LayoutBuilder(
           builder: (context, constraints) {
             final double w = constraints.maxWidth;
             return Column(
               children: [
                 SizedBox(
-                  height: 120,
+                  height: 160,
                   child: CustomPaint(
-                    size: Size(w, 120),
+                    size: Size(w, 160),
                     painter: _SleepGanttPainter(
-                      segments: segments,
+                      segments: todaySegs,
                       totalMins: totalMins,
-                      start: start,
+                      start: chartStart,
                       isDark: isDark,
                     ),
                   ),
                 ),
-                Container(height: 1, color: textColor.withValues(alpha: 0.08)),
+                Container(height: 1,
+                    color: textColor.withValues(alpha: 0.08)),
                 const SizedBox(height: 6),
-                // X-axis labels
+                // X-axis: 4 labels
                 SizedBox(
-                  height: 16,
-                  width: double.infinity,
+                  height: 18,
                   child: LayoutBuilder(
                     builder: (ctx, bc) {
-                      const double leftMargin = 36.0;
+                      const double leftMargin = 52.0;
                       const double rightPad = 8.0;
                       final double chartW = bc.maxWidth - leftMargin - rightPad;
                       return Stack(
                         clipBehavior: Clip.none,
-                        children: List.generate(xLabels.length, (i) {
-                          if (xLabels.length > 8 && i % 2 != 0) {
-                            return const SizedBox.shrink();
-                          }
+                        children: List.generate(4, (i) {
                           final double x = leftMargin + xPositions[i] * chartW;
+                          const double labelW = 48.0;
                           return Positioned(
-                            left: (x - 14).clamp(0.0, bc.maxWidth - 28),
+                            left: (x - labelW / 2).clamp(0.0,
+                                bc.maxWidth - labelW),
                             top: 0,
                             child: SizedBox(
-                              width: 28,
+                              width: labelW,
                               child: Text(
                                 xLabels[i],
                                 textAlign: TextAlign.center,
                                 style: font(
-                                  fontSize: 9,
+                                  fontSize: 10,
                                   color: labelColor,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -1307,26 +1623,27 @@ class _SleepTimeline extends StatelessWidget {
           spacing: 16,
           runSpacing: 8,
           children: usedStages.map((stage) {
-            final mins = segments
+            final mins = todaySegs
                 .where((s) => s.stage == stage)
                 .fold(0, (a, s) => a + s.minutes);
             final h = mins ~/ 60;
             final m = mins % 60;
-            final timeStr = h > 0 ? '${h}h${m > 0 ? ' ${m}m' : ''}' : '${m}m';
+            final timeStr = h > 0
+                ? '${h}h${m > 0 ? ' ${m}m' : ''}'
+                : '${m}m';
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 10,
-                  height: 10,
+                  width: 10, height: 10,
                   decoration: BoxDecoration(
-                    color: _SleepTimeline._stageColor(stage),
+                    color: _stageColor(stage),
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: 5),
                 Text(
-                  '$timeStr  ${_SleepTimeline._stageLabel(stage)}',
+                  '$timeStr  ${_stageLabel(stage)}',
                   style: font(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -1355,7 +1672,8 @@ class _SleepGanttPainter extends CustomPainter {
     required this.isDark,
   });
 
-  static const int _levels = 6; // inBed=0, awake=1, asleep=2, light=3, rem=4, deep=5
+  static const int _levels =
+      6; // inBed=0, awake=1, asleep=2, light=3, rem=4, deep=5
   static const double _barH = 14.0;
   static const double _barR = 5.0;
 
@@ -1364,7 +1682,7 @@ class _SleepGanttPainter extends CustomPainter {
     if (totalMins <= 0) return;
 
     // Reserve left margin for Y labels, right padding
-    const double leftMargin = 36.0;
+    const double leftMargin = 52.0;
     const double rightPad = 8.0;
     final double chartW = size.width - leftMargin - rightPad;
 
@@ -1524,9 +1842,11 @@ class _SleepHeatmapState extends State<_SleepHeatmap> {
                   return;
                 }
                 // Fallback: sum manualSleepPhases
-                final phases = data?['manualSleepPhases'] as Map<String, dynamic>?;
+                final phases =
+                    data?['manualSleepPhases'] as Map<String, dynamic>?;
                 if (phases != null) {
-                  final total = ((phases['rem'] as num?)?.toInt() ?? 0) +
+                  final total =
+                      ((phases['rem'] as num?)?.toInt() ?? 0) +
                       ((phases['light'] as num?)?.toInt() ?? 0) +
                       ((phases['deep'] as num?)?.toInt() ?? 0) +
                       ((phases['awake'] as num?)?.toInt() ?? 0) +
@@ -1813,7 +2133,8 @@ class _SleepSheetRow extends StatelessWidget {
     Color? color,
     double? letterSpacing,
     double? height,
-  }) font;
+  })
+  font;
   final Widget trailing;
 
   const _SleepSheetRow({

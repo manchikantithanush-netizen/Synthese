@@ -264,10 +264,6 @@ class _DashboardPageState extends State<DashboardPage>
       final data = doc.data();
       if (data == null || !mounted) return;
 
-      final loadedSleep = (data['sleepData'] as List<dynamic>?)
-          ?.map((e) => (e as num).toInt())
-          .toList();
-
       final loadedExHistory = (data['exHistory'] as List<dynamic>?)
           ?.map((e) => (e as num).toInt())
           .toList();
@@ -278,8 +274,21 @@ class _DashboardPageState extends State<DashboardPage>
         return (bpm: bpm, time: ts);
       }).toList();
 
-      // Load today's sleep from manualSleepTotal (single source of truth)
-      final todayManualSleep = _manualSleepTotalFromData(data);
+      // Load sleep for the full week from manualSleepTotal per day
+      final now = DateTime.now();
+      final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+      final List<int> weeklySleep = List.filled(7, 0);
+      final sleepFutures = <Future<void>>[];
+      for (int i = 0; i < 7; i++) {
+        final day = monday.add(Duration(days: i));
+        final idx = i; // Mon=0 … Sun=6
+        sleepFutures.add(
+          _fetchManualSleepTotalForDay(day).then((mins) {
+            weeklySleep[idx] = mins;
+          }),
+        );
+      }
+      await Future.wait(sleepFutures);
       final todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
 
       setState(() {
@@ -292,11 +301,8 @@ class _DashboardPageState extends State<DashboardPage>
             _manualStepAdjustments;
         _exerciseMinutes =
             (data['exerciseMinutes'] as num?)?.toInt() ?? _exerciseMinutes;
-        // Load sleep: use manualSleepTotal for today's slot
-        if (loadedSleep != null && loadedSleep.length == 7) {
-          _sleepData = loadedSleep;
-        }
-        _sleepData[todayIdx] = todayManualSleep;
+        // Load sleep: full week from manualSleepTotal per day
+        _sleepData = weeklySleep;
         if (loadedExHistory != null && loadedExHistory.length == 7) {
           _exHistory.setAll(0, loadedExHistory);
         } else {
