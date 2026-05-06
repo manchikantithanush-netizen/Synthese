@@ -6,6 +6,7 @@ import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 
 class DailyLoggingScreen extends StatefulWidget {
@@ -614,16 +615,11 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                                   width: 1.1,
                                 ),
                               ),
-                              child: Center(
-                                child: SizedBox(
-                                  height: 18,
-                                  width: 18,
-                                  child: CircularProgressIndicator(
-                                    color: pinkColor,
-                                    strokeWidth: 2,
-                                  ),
+                               child: Center(
+                                child: BouncingDotsLoader.compact(
+                                  color: pinkColor,
                                 ),
-                              ),
+                               ),
                             ),
                           ),
                         )

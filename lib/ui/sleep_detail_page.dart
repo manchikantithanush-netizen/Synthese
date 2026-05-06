@@ -88,7 +88,6 @@ class _SleepDetailPageState extends State<SleepDetailPage>
 
   _SleepData _data = const _SleepData();
   bool _loading = true;
-  bool _clearing = false;
   List<_SleepSegment> _segments = [];
 
   // Goal: 8 hours
@@ -335,57 +334,6 @@ class _SleepDetailPageState extends State<SleepDetailPage>
     );
   }
 
-  Future<void> _clearTodaySleepData() async {
-    if (_clearing) return;
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-    final key = _dateKey(DateTime.now());
-    final int previouslyLogged = _data.totalMinutes;
-    setState(() => _clearing = true);
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .collection('dashboardDaily')
-          .doc(key)
-          .set({
-            'manualSleepPhases': const <String, int>{
-              'rem': 0,
-              'light': 0,
-              'deep': 0,
-              'awake': 0,
-              'asleep': 0,
-              'inBed': 0,
-            },
-            'manualSleepTotal': 0,
-            'manualSleepSegments': const <Map<String, dynamic>>[],
-            'dateKey': key,
-            'updatedAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
-
-      if (!mounted) return;
-      setState(() {
-        _data = const _SleepData();
-        _segments = <_SleepSegment>[];
-      });
-      if (previouslyLogged > 0) {
-        widget.onTodaySleepMinutesAdded?.call(-previouslyLogged);
-      }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Sleep data cleared.')));
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to clear sleep data.')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _clearing = false);
-      }
-    }
-  }
-
   ({String prefix, String keyword, String suffix}) _buildInsight() {
     final int mins = _data.totalMinutes;
     if (mins == 0) {
@@ -528,47 +476,6 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                   tapTargetSize:
                                       MaterialTapTargetSize.shrinkWrap,
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              OutlinedButton(
-                                onPressed:
-                                    (_loading ||
-                                        _clearing ||
-                                        (!_data.hasData && _segments.isEmpty))
-                                    ? null
-                                    : _clearTodaySleepData,
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(
-                                    color: isDark
-                                        ? Colors.white.withValues(alpha: 0.2)
-                                        : Colors.black.withValues(alpha: 0.15),
-                                  ),
-                                  shape: const StadiumBorder(),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 8,
-                                  ),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: _clearing
-                                    ? SizedBox(
-                                        width: 12,
-                                        height: 12,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: textColor,
-                                        ),
-                                      )
-                                    : Text(
-                                        'Clear',
-                                        style: font(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                          color: textColor,
-                                        ),
-                                      ),
                               ),
                             ],
                           ),

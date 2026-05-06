@@ -1757,13 +1757,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                       child: _isWeatherLoading
                                           ? Row(
                                               children: [
-                                                SizedBox(
-                                                  width: 18,
-                                                  height: 18,
-                                                  child: CircularProgressIndicator(
-                                                    strokeWidth: 2.2,
-                                                    color: textColor.withValues(alpha: 0.75),
-                                                  ),
+                                                BouncingDotsLoader.compact(
+                                                  color: textColor.withValues(alpha: 0.75),
                                                 ),
                                                 const SizedBox(width: 10),
                                                 Text(
@@ -2184,13 +2179,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                 child: _isWeatherLoading
                                     ? Row(
                                         children: [
-                                          SizedBox(
-                                            width: 14,
-                                            height: 14,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: textColor.withValues(alpha: 0.7),
-                                            ),
+                                          BouncingDotsLoader.compact(
+                                            color: textColor.withValues(alpha: 0.7),
                                           ),
                                           const SizedBox(width: 8),
                                           Text(

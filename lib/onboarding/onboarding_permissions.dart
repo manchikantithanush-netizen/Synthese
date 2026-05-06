@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:synthese/ui/auth/login_page.dart';
 import 'package:synthese/ui/dashboard.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/services/first_launch_permissions_service.dart';
 
@@ -857,8 +858,7 @@ class _AgreeButtonState extends State<_AgreeButton> with SingleTickerProviderSta
               borderRadius: BorderRadius.circular(50),
             ),
             child: Center(child: widget.isSaving
-                ? SizedBox(width: 20, height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: isDark ? Colors.black : Colors.white))
+                ? BouncingDotsLoader.compact(color: isDark ? Colors.black : Colors.white)
                 : Text("I Agree",
                     style: TextStyle(color: isDark ? Colors.black : Colors.white, fontSize: 15, fontWeight: FontWeight.w600))),
           ),
@@ -908,8 +908,7 @@ class _DeclineButtonState extends State<_DeclineButton> with SingleTickerProvide
             border: Border.all(color: Colors.redAccent.withOpacity(0.4), width: 1.5),
           ),
           child: Center(child: widget.isSaving
-              ? const SizedBox(width: 20, height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.redAccent))
+              ? const BouncingDotsLoader.compact(color: Colors.redAccent)
               : const Text("I Do Not Agree",
                   style: TextStyle(color: Colors.redAccent, fontSize: 15, fontWeight: FontWeight.w600))),
         ),
@@ -959,8 +958,7 @@ class _InlineLoadingButtonState extends State<_InlineLoadingButton> with SingleT
             borderRadius: BorderRadius.circular(50),
           ),
           child: Center(child: widget.isLoading
-              ? SizedBox(width: 20, height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: isDark ? Colors.black : Colors.white))
+              ? BouncingDotsLoader.compact(color: isDark ? Colors.black : Colors.white)
               : Text(widget.text,
                   style: TextStyle(color: isDark ? Colors.black : Colors.white, fontSize: 15, fontWeight: FontWeight.w600))),
         ),
@@ -1070,5 +1068,4 @@ class _PolicyContent extends StatelessWidget {
     ]);
   }
 }
-
 
