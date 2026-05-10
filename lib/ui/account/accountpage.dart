@@ -14,6 +14,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'about_app_page.dart';
+import 'account_log_sheets.dart';
 import 'package:synthese/ui/components/app_toast.dart';
 class AccountPageModal extends StatefulWidget {
   const AccountPageModal({super.key});
@@ -382,6 +383,21 @@ class _AccountPageModalState extends State<AccountPageModal> {
                                 _slideForward(_buildHealthDetails());
                             },
                           ),
+                          if (_userData?['isAthlete'] == true) ...[
+                            Padding(
+                              padding: const EdgeInsets.only(left: 20.0),
+                              child: Container(height: 0.5, color: hlColor),
+                            ),
+                            _InstantRow(
+                              title: "Athlete Details",
+                              isDark: isDark,
+                              hlColor: hlColor,
+                              onTap: () {
+                                if (_userData != null)
+                                  _slideForward(_buildAthleteDetails());
+                              },
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -500,7 +516,6 @@ class _AccountPageModalState extends State<AccountPageModal> {
         const SizedBox(height: 24),
         _buildDataGroup({
           "Country": _userData?['country'],
-          "Timezone": _userData?['timeZone'],
         }),
       ],
     );
@@ -511,10 +526,14 @@ class _AccountPageModalState extends State<AccountPageModal> {
       padding: const EdgeInsets.only(left: 12, bottom: 8),
       child: Text(t, style: const TextStyle(fontSize: 13, color: Colors.grey)),
     );
-    String formatSports(dynamic s) =>
-        (s is List && s.isNotEmpty) ? s.join(', ') : "None selected";
+    String formatGoals(dynamic g) =>
+        (g is List && g.isNotEmpty) ? g.join(', ') : "None selected";
     final bool hasSupp = _userData?['hasSupplements'] == true;
     final bool hasDis = _userData?['hasDisabilities'] == true;
+    final sleep = _userData?['sleepDuration'];
+    final water = _userData?['waterIntake'];
+    final sleepStr = sleep is num ? '${sleep.toStringAsFixed(1)} h' : '--';
+    final waterStr = water is num ? '${water.toStringAsFixed(2)} L' : '--';
 
     return _DetailLayout(
       title: "Health Details",
@@ -524,8 +543,8 @@ class _AccountPageModalState extends State<AccountPageModal> {
         _buildDataGroup({
           "Height": "${_userData?['height'] ?? '--'} cm",
           "Weight": "${_userData?['weight'] ?? '--'} kg",
-          "Body Fat %": "${_userData?['bodyFatPercentage'] ?? '--'}%",
-          "Waist": "${_userData?['waistCircumference'] ?? '--'} cm",
+          "Avg sleep": sleepStr,
+          "Daily water": waterStr,
         }),
         const SizedBox(height: 24),
         title("MEDICAL"),
@@ -542,12 +561,88 @@ class _AccountPageModalState extends State<AccountPageModal> {
               : _userData?['injuryHistory'],
         }),
         const SizedBox(height: 24),
-        title("SPORTS"),
+        title("YOUR GOALS"),
         _buildDataGroup({
-          "Selected Sports": formatSports(_userData?['selectedSports']),
+          "Selected goals": formatGoals(_userData?['goals']),
         }),
+        const SizedBox(height: 28),
+        _LogInfoButton(
+          label: "Log additional info",
+          icon: Icons.edit_note_rounded,
+          onTap: _openHealthLogSheet,
+        ),
       ],
     );
+  }
+
+  Widget _buildAthleteDetails() {
+    Widget title(String t) => Padding(
+      padding: const EdgeInsets.only(left: 12, bottom: 8),
+      child: Text(t, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+    );
+    String formatList(dynamic v) =>
+        (v is List && v.isNotEmpty) ? v.join(', ') : "Not provided";
+
+    final athleteType = _userData?['athleteType']?.toString();
+    final experience = _userData?['experienceLevel']?.toString();
+
+    return _DetailLayout(
+      title: "Athlete Details",
+      onBack: _slideBack,
+      children: [
+        title("PROFILE"),
+        _buildDataGroup({
+          "Type of athlete":
+              (athleteType?.isEmpty ?? true) ? "Not provided" : athleteType,
+          "Experience level":
+              (experience?.isEmpty ?? true) ? "Not provided" : experience,
+        }),
+        const SizedBox(height: 24),
+        title("SPORTS"),
+        _buildDataGroup({
+          "Sports profile": formatList(_userData?['selectedSports']),
+        }),
+        const SizedBox(height: 28),
+        _LogInfoButton(
+          label: "Log athlete info",
+          icon: Icons.sports_score_rounded,
+          onTap: _openAthleteLogSheet,
+        ),
+      ],
+    );
+  }
+
+  Future<void> _openHealthLogSheet() async {
+    final updated = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => HealthLogSheet(initial: _userData),
+    );
+    if (updated == true) {
+      await _fetchUserData();
+      if (mounted) {
+        // Rebuild the currently open detail view with fresh data.
+        setState(() => _currentDetailView = _buildHealthDetails());
+      }
+    }
+  }
+
+  Future<void> _openAthleteLogSheet() async {
+    final updated = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => AthleteLogSheet(initial: _userData),
+    );
+    if (updated == true) {
+      await _fetchUserData();
+      if (mounted) {
+        setState(() => _currentDetailView = _buildAthleteDetails());
+      }
+    }
   }
 
   // ================= REUSABLE BUILDERS =================
@@ -609,6 +704,101 @@ class _AccountPageModalState extends State<AccountPageModal> {
             ],
           );
         }),
+      ),
+    );
+  }
+}
+
+// ================= LOG INFO BUTTON =================
+class _LogInfoButton extends StatefulWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  const _LogInfoButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  State<_LogInfoButton> createState() => _LogInfoButtonState();
+}
+
+class _LogInfoButtonState extends State<_LogInfoButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 0.97)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final accent = AccentColor.notifier.value;
+
+    return GestureDetector(
+      onTapDown: (_) {
+        HapticFeedback.lightImpact();
+        _ctrl.forward();
+      },
+      onTapUp: (_) => _ctrl.reverse(),
+      onTapCancel: () => _ctrl.reverse(),
+      onTap: widget.onTap,
+      child: ScaleTransition(
+        scale: _scale,
+        child: Container(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF2C2C2E) : Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: accent.withOpacity(0.35), width: 1.5),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(widget.icon, color: accent, size: 18),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  widget.label,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              Icon(
+                CupertinoIcons.chevron_forward,
+                color: textColor.withOpacity(0.35),
+                size: 18,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

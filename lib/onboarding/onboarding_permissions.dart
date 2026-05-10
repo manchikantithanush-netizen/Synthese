@@ -7,6 +7,7 @@ import 'package:synthese/ui/auth/login_page.dart';
 import 'package:synthese/ui/dashboard.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/services/first_launch_permissions_service.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -114,10 +115,10 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).colorScheme.onSurface;
-    // 3 intro + 6 permission + privacy + finish = 11
-    const totalPages = 11;
-    // Back is blocked on the last 2 slides (privacy agreed, finish)
-    const blockBackFrom = 9;
+    // 1 welcome + 5 permissions + privacy + finish = 8
+    const totalPages = 8;
+    // Back is blocked on the Finish slide only.
+    const blockBackFrom = 7;
 
     return PopScope(
       canPop: false,
@@ -135,20 +136,42 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
             child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(28, 16, 28, 0),
+                padding: const EdgeInsets.fromLTRB(28, 12, 28, 0),
                 child: Row(
-                  children: List.generate(totalPages, (i) => Expanded(
-                    child: Container(
-                      height: 4,
-                      margin: const EdgeInsets.symmetric(horizontal: 2),
-                      decoration: BoxDecoration(
-                        color: i <= _currentPage
-                            ? textColor
-                            : textColor.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(2),
+                  children: [
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeInOut,
+                      alignment: Alignment.centerLeft,
+                      child: (_currentPage > 0 &&
+                              _currentPage < blockBackFrom)
+                          ? Padding(
+                              padding: const EdgeInsets.only(right: 16),
+                              child: UniversalBackButton(onPressed: _prev),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                    Expanded(
+                      child: Row(
+                        children: List.generate(
+                          totalPages,
+                          (i) => Expanded(
+                            child: Container(
+                              height: 4,
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 2),
+                              decoration: BoxDecoration(
+                                color: i <= _currentPage
+                                    ? textColor
+                                    : textColor.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  )),
+                  ],
                 ),
               ),
               Expanded(
@@ -157,10 +180,8 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
                   physics: const NeverScrollableScrollPhysics(),
                   onPageChanged: (i) => setState(() => _currentPage = i),
                   children: [
-                    // ── Intro slides ──────────────────────────────────────
-                    _SlideIntro(onContinue: _next),
-                    _SlideAppOverview(onContinue: _next),
-                    _SlideWhatToExpect(onContinue: _next),
+                    // ── Combined welcome slide ────────────────────────────
+                    _SlideWelcome(onContinue: _next),
 
                     // ── Individual permission slides ──────────────────────
                     _SlidePermissionRequest(
@@ -249,11 +270,13 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SLIDE 1 — Intro
+// SLIDE 1 — Combined welcome (replaces the old Intro / App Overview / What
+// to Expect trio with a single, scannable card so users don't tap through
+// three near-identical screens before reaching the permission flow).
 // ─────────────────────────────────────────────────────────────────────────────
-class _SlideIntro extends StatelessWidget {
+class _SlideWelcome extends StatelessWidget {
   final VoidCallback onContinue;
-  const _SlideIntro({required this.onContinue});
+  const _SlideWelcome({required this.onContinue});
 
   @override
   Widget build(BuildContext context) {
@@ -265,154 +288,235 @@ class _SlideIntro extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 48),
-          Text("Before you begin,",
-              style: TextStyle(color: textColor, fontSize: 38, fontWeight: FontWeight.w700, letterSpacing: -1.2)),
+          const SizedBox(height: 32),
+          Text(
+            "Welcome to\nSynthese.",
+            style: TextStyle(
+              color: textColor,
+              fontSize: 38,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -1.2,
+              height: 1.15,
+            ),
+          ),
           const SizedBox(height: 12),
-          Text("We want to be fully transparent about how we use your data and what permissions we need.",
-              style: TextStyle(color: textColor.withOpacity(0.6), fontSize: 18, height: 1.5, letterSpacing: -0.3)),
-          const SizedBox(height: 40),
-          _Card(icon: Icons.lock_outline_rounded, title: "Your data stays yours",
-              body: "We never sell, share, or use your data for advertising. Everything is used solely to power your experience.",
-              isDark: isDark, textColor: textColor),
-          const SizedBox(height: 14),
-          _Card(icon: Icons.health_and_safety_outlined, title: "Health & fitness permissions",
-              body: "We request access to location, activity recognition, camera, and notifications — only to deliver the features you use.",
-              isDark: isDark, textColor: textColor),
-          const SizedBox(height: 14),
-          _Card(icon: Icons.gavel_rounded, title: "UAE PDPL compliant",
-              body: "Synthese operates under UAE Federal Decree-Law No. 45 of 2021 on the Protection of Personal Data.",
-              isDark: isDark, textColor: textColor),
-          const SizedBox(height: 48),
-          PremiumButton(text: "Let's go", onPressed: onContinue),
-          const SizedBox(height: 36),
-        ],
-      ),
-    );
-  }
-}
+          Text(
+            "A private, ad-free home for every part of your wellbeing — physical, mental, and financial.",
+            style: TextStyle(
+              color: textColor.withOpacity(0.55),
+              fontSize: 16,
+              height: 1.45,
+              letterSpacing: -0.2,
+            ),
+          ),
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SLIDE 2 — App Overview
-// ─────────────────────────────────────────────────────────────────────────────
-class _SlideAppOverview extends StatelessWidget {
-  final VoidCallback onContinue;
-  const _SlideAppOverview({required this.onContinue});
+          const SizedBox(height: 24),
 
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = Theme.of(context).colorScheme.onSurface;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 48),
-          Text("One app,\nsix dimensions.",
-              style: TextStyle(color: textColor, fontSize: 38, fontWeight: FontWeight.w700,
-                  letterSpacing: -1.2, height: 1.15)),
-          const SizedBox(height: 14),
-          Text("Synthese brings together every part of your wellbeing — physical, mental, and financial — in one place.",
-              style: TextStyle(color: textColor.withOpacity(0.55), fontSize: 17, height: 1.5, letterSpacing: -0.2)),
-          const SizedBox(height: 36),
           Container(
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(22),
               border: Border.all(color: textColor.withOpacity(0.07)),
             ),
-            child: Column(children: [
-              _SectionRow(icon: Icons.home_rounded, title: "Home", desc: "Your daily metrics at a glance — steps, heart rate, calories, sleep, and more.", textColor: textColor, isLast: false),
-              _SectionRow(icon: Icons.restaurant_menu_rounded, title: "Diet", desc: "AI-powered nutrition tracking, water intake, and personalised macro goals.", textColor: textColor, isLast: false),
-              _SectionRow(icon: Icons.directions_run_rounded, title: "Workout", desc: "GPS-tracked sessions across running, cycling, swimming, and more.", textColor: textColor, isLast: false),
-              _SectionRow(icon: Icons.self_improvement_rounded, title: "Mindfulness", desc: "Mood check-ins, breathing exercises, and mental health assessments.", textColor: textColor, isLast: false),
-              _SectionRow(icon: Icons.favorite_rounded, title: "Cycles", desc: "Cycle tracking and symptom logging — available for female users.", textColor: textColor, isLast: false),
-              _SectionRow(icon: Icons.account_balance_wallet_rounded, title: "Finance", desc: "Expense tracking, budgeting, and debt management in one view.", textColor: textColor, isLast: true),
-            ]),
+            child: Column(
+              children: [
+                _DimensionRow(
+                  icon: Icons.home_rounded,
+                  title: "Home",
+                  desc: "Daily metrics — steps, heart rate, sleep.",
+                  textColor: textColor,
+                  isLast: false,
+                ),
+                _DimensionRow(
+                  icon: Icons.restaurant_menu_rounded,
+                  title: "Diet",
+                  desc: "AI nutrition tracking and water intake.",
+                  textColor: textColor,
+                  isLast: false,
+                ),
+                _DimensionRow(
+                  icon: Icons.directions_run_rounded,
+                  title: "Workout",
+                  desc: "GPS-tracked runs, rides, swims and more.",
+                  textColor: textColor,
+                  isLast: false,
+                ),
+                _DimensionRow(
+                  icon: Icons.self_improvement_rounded,
+                  title: "Mindfulness",
+                  desc: "Mood check-ins and breathing exercises.",
+                  textColor: textColor,
+                  isLast: false,
+                ),
+                _DimensionRow(
+                  icon: Icons.favorite_rounded,
+                  title: "Cycles",
+                  desc: "Cycle tracking for female users.",
+                  textColor: textColor,
+                  isLast: false,
+                ),
+                _DimensionRow(
+                  icon: Icons.account_balance_wallet_rounded,
+                  title: "Finance",
+                  desc: "Expenses, budgeting, and debts.",
+                  textColor: textColor,
+                  isLast: true,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 36),
-          PremiumButton(text: "Got it", onPressed: onContinue),
-          const SizedBox(height: 36),
+
+          const SizedBox(height: 18),
+
+          Row(
+            children: [
+              Expanded(
+                child: _TrustChip(
+                  icon: Icons.block_outlined,
+                  label: "No ads",
+                  textColor: textColor,
+                  isDark: isDark,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _TrustChip(
+                  icon: Icons.gavel_rounded,
+                  label: "PDPL",
+                  textColor: textColor,
+                  isDark: isDark,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _TrustChip(
+                  icon: Icons.lock_outline_rounded,
+                  label: "Your data",
+                  textColor: textColor,
+                  isDark: isDark,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 26),
+          PremiumButton(text: "Let's go", onPressed: onContinue),
+          const SizedBox(height: 24),
         ],
       ),
     );
   }
 }
 
-class _SectionRow extends StatelessWidget {
+class _DimensionRow extends StatelessWidget {
   final IconData icon;
   final String title, desc;
   final Color textColor;
   final bool isLast;
-  const _SectionRow({required this.icon, required this.title, required this.desc, required this.textColor, required this.isLast});
+  const _DimensionRow({
+    required this.icon,
+    required this.title,
+    required this.desc,
+    required this.textColor,
+    required this.isLast,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(
-            padding: const EdgeInsets.all(9),
-            decoration: BoxDecoration(
-              color: textColor.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Icon(icon, color: textColor, size: 20),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: textColor.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: textColor, size: 18),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      desc,
+                      style: TextStyle(
+                        color: textColor.withOpacity(0.5),
+                        fontSize: 12.5,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 16),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title, style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 3),
-            Text(desc, style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 13, height: 1.45)),
-          ])),
-        ]),
-      ),
-      if (!isLast) Divider(height: 1, thickness: 0.5, indent: 20, endIndent: 20, color: textColor.withOpacity(0.07)),
-    ]);
+        ),
+        if (!isLast)
+          Divider(
+            height: 1,
+            thickness: 0.5,
+            indent: 18,
+            endIndent: 18,
+            color: textColor.withOpacity(0.07),
+          ),
+      ],
+    );
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SLIDE 3 — What to expect
-// ─────────────────────────────────────────────────────────────────────────────
-class _SlideWhatToExpect extends StatelessWidget {
-  final VoidCallback onContinue;
-  const _SlideWhatToExpect({required this.onContinue});
+class _TrustChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color textColor;
+  final bool isDark;
+  const _TrustChip({
+    required this.icon,
+    required this.label,
+    required this.textColor,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = Theme.of(context).colorScheme.onSurface;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: textColor.withOpacity(0.07)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 48),
-          Text("What to expect.",
-              style: TextStyle(color: textColor, fontSize: 38, fontWeight: FontWeight.w700, letterSpacing: -1.2)),
-          const SizedBox(height: 14),
-          Text("A few things worth knowing before you dive in.",
-              style: TextStyle(color: textColor.withOpacity(0.55), fontSize: 17, height: 1.5, letterSpacing: -0.2)),
-          const SizedBox(height: 32),
-          _Card(icon: Icons.tune_rounded, title: "Personalised from day one",
-              body: "The data you entered during setup shapes your nutrition targets, workout suggestions, and health insights. Update it anytime from Account Details.",
-              isDark: isDark, textColor: textColor),
-          const SizedBox(height: 14),
-          _Card(icon: Icons.location_on_outlined, title: "Permissions are feature-gated",
-              body: "Location is only used during active workout sessions. Camera is only used when you choose to upload a photo. You stay in control.",
-              isDark: isDark, textColor: textColor),
-          const SizedBox(height: 14),
-          _Card(icon: Icons.block_outlined, title: "No ads, ever",
-              body: "Synthese does not show ads, sell your data, or share it with third parties. Your health information is yours alone.",
-              isDark: isDark, textColor: textColor),
-          const SizedBox(height: 36),
-          PremiumButton(text: "Continue", onPressed: onContinue),
-          const SizedBox(height: 36),
+          Icon(icon, size: 14, color: textColor.withOpacity(0.7)),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: textColor.withOpacity(0.8),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -775,42 +879,6 @@ class _CheckItem extends StatelessWidget {
       const SizedBox(width: 12),
       Text(label, style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w500)),
     ]);
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared card widget
-// ─────────────────────────────────────────────────────────────────────────────
-class _Card extends StatelessWidget {
-  final IconData icon;
-  final String title, body;
-  final bool isDark;
-  final Color textColor;
-  const _Card({required this.icon, required this.title, required this.body, required this.isDark, required this.textColor});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: textColor.withOpacity(0.08)),
-      ),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: textColor.withOpacity(0.08), borderRadius: BorderRadius.circular(12)),
-          child: Icon(icon, color: textColor, size: 22),
-        ),
-        const SizedBox(width: 16),
-        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(title, style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 6),
-          Text(body, style: TextStyle(color: textColor.withOpacity(0.55), fontSize: 13, height: 1.5)),
-        ])),
-      ]),
-    );
   }
 }
 

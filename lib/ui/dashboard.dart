@@ -86,6 +86,14 @@ class _DashboardPageState extends State<DashboardPage>
   bool _stepsGoalToasted = false;
   bool _caloriesGoalToasted = false;
 
+  // User-configured daily goals (set during onboarding stage 2; fall back
+  // to the previous hardcoded defaults if Firestore has no value yet).
+  int _goalSteps = 10000;
+  int _goalCaloriesBurnt = 500;
+  int _goalCaloriesEaten = 2000;
+  int _goalExerciseMinutes = 60;
+  double _goalSleepHours = 8.0;
+
   @override
   void initState() {
     super.initState();
@@ -119,6 +127,7 @@ class _DashboardPageState extends State<DashboardPage>
     unawaited(_loadPersistedDashboardMetrics());
     _fetchUserGender();
     _fetchUserProfile();
+    _fetchUserGoals();
     _fetchMindfulnessOnboarding();
     unawaited(_fetchEatenCalories());
     _listenEatenCalories();
@@ -433,6 +442,34 @@ class _DashboardPageState extends State<DashboardPage>
     }
   }
 
+  Future<void> _fetchUserGoals() async {
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) return;
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .get();
+      if (!doc.exists || !mounted) return;
+      final data = doc.data();
+      if (data == null) return;
+      setState(() {
+        _goalSteps = (data['goalSteps'] as num?)?.toInt() ?? _goalSteps;
+        _goalCaloriesBurnt =
+            (data['goalCaloriesBurnt'] as num?)?.toInt() ?? _goalCaloriesBurnt;
+        _goalCaloriesEaten =
+            (data['dailyCalorieGoal'] as num?)?.toInt() ?? _goalCaloriesEaten;
+        _goalExerciseMinutes =
+            (data['goalExerciseMinutes'] as num?)?.toInt() ?? _goalExerciseMinutes;
+        _goalSleepHours =
+            (data['goalSleepHours'] as num?)?.toDouble() ?? _goalSleepHours;
+      });
+      _updateScore();
+    } catch (e) {
+      debugPrint('Error fetching user goals: $e');
+    }
+  }
+
   Future<void> _fetchMindfulnessOnboarding() async {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -493,11 +530,16 @@ class _DashboardPageState extends State<DashboardPage>
 
   void _updateScore() {
     double avgSleepMinutes = _sleepData.reduce((a, b) => a + b) / 7.0;
+    final double sleepGoalMinutes = _goalSleepHours * 60.0;
 
-    double stepsScore = math.min(_steps / 10000.0, 1.0) * 100.0;
-    double calScore = math.min(_activeCalories / 500.0, 1.0) * 100.0;
-    double exerciseScore = math.min(_exerciseMinutes / 60.0, 1.0) * 100.0;
-    double sleepScore = math.min(avgSleepMinutes / 480.0, 1.0) * 100.0;
+    double stepsScore = math.min(_steps / _goalSteps.toDouble(), 1.0) * 100.0;
+    double calScore =
+        math.min(_activeCalories / _goalCaloriesBurnt.toDouble(), 1.0) * 100.0;
+    double exerciseScore =
+        math.min(_exerciseMinutes / _goalExerciseMinutes.toDouble(), 1.0) *
+            100.0;
+    double sleepScore =
+        math.min(avgSleepMinutes / sleepGoalMinutes, 1.0) * 100.0;
 
     double healthScore =
         (stepsScore * 0.25) +
@@ -509,19 +551,19 @@ class _DashboardPageState extends State<DashboardPage>
 
     // Goal-reached toasts — fire only once per session per goal
     if (mounted && context.mounted) {
-      if (!_stepsGoalToasted && _steps >= 10000) {
+      if (!_stepsGoalToasted && _steps >= _goalSteps) {
         _stepsGoalToasted = true;
         AppToast.success(
           context,
-          'Steps goal reached! 10,000 steps 🎉',
+          'Steps goal reached! ${_formatNumber(_goalSteps)} steps 🎉',
           icon: Icons.directions_walk_rounded,
         );
       }
-      if (!_caloriesGoalToasted && _activeCalories >= 500) {
+      if (!_caloriesGoalToasted && _activeCalories >= _goalCaloriesBurnt) {
         _caloriesGoalToasted = true;
         AppToast.success(
           context,
-          'Calories burned goal reached! 500 kcal 🔥',
+          'Calories burned goal reached! $_goalCaloriesBurnt kcal 🔥',
           icon: Icons.local_fire_department_rounded,
         );
       }
@@ -941,12 +983,14 @@ class _DashboardPageState extends State<DashboardPage>
                 unit: "steps",
                 valueInlineUnit: true,
                 compact: false,
-                stepsProgress: _steps / 10000.0,
+                stepsProgress: _steps / _goalSteps.toDouble(),
+                stepsGoalLabel: 'Goal ${_formatNumber(_goalSteps)}',
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => StepsDetailPage(
                         todaySteps: _steps,
+                        stepGoal: _goalSteps,
                         onTodayManualStepsAdded: (addedSteps) {
                           setState(() {
                             _manualStepAdjustments =
@@ -1013,6 +1057,7 @@ class _DashboardPageState extends State<DashboardPage>
                 subTextColor: subTextColor,
                 activeCalories: _activeCalories,
                 eatenCalories: _eatenCalories,
+                burnGoal: _goalCaloriesBurnt,
                 trendText: 'Tap for more',
                 trendColor: subTextColor,
                 onTap: () => Navigator.of(context).push(
@@ -1020,6 +1065,8 @@ class _DashboardPageState extends State<DashboardPage>
                     builder: (_) => CaloriesDetailPage(
                       activeCalories: _activeCalories,
                       eatenCalories: _eatenCalories,
+                      burnGoal: _goalCaloriesBurnt,
+                      eatGoal: _goalCaloriesEaten,
                       onManualBurnedCaloriesAdded: (delta) {
                           setState(() {
                             _activeCalories = (_activeCalories + delta).clamp(0, 1000000).toInt();
@@ -1051,6 +1098,7 @@ class _DashboardPageState extends State<DashboardPage>
                   MaterialPageRoute(
                     builder: (_) => ExerciseDetailPage(
                       exerciseMinutes: _exerciseMinutes,
+                      goalMinutes: _goalExerciseMinutes,
                       onManualExerciseMinutesAdded: (delta) {
                           setState(() {
                             _exerciseMinutes = (_exerciseMinutes + delta).clamp(0, 1000000).toInt();
@@ -1077,6 +1125,7 @@ class _DashboardPageState extends State<DashboardPage>
               sleepData: _sleepData,
               avgSleepMinutes: avgSleepMinutes,
               todaySleepMinutes: todaySleepMinutes,
+              goalMinutes: (_goalSleepHours * 60).round(),
               trendText: 'Tap for more',
               trendColor: subTextColor,
               isDark: isDark,
@@ -1086,6 +1135,7 @@ class _DashboardPageState extends State<DashboardPage>
                     builder: (_) => SleepDetailPage(
                       todaySleepMinutes:
                           _sleepData[(DateTime.now().weekday - 1).clamp(0, 6)],
+                      goalMinutes: (_goalSleepHours * 60).round(),
                       onTodaySleepMinutesAdded: (delta) => _onSleepDetailAdded(delta),
                     ),
                   ),
@@ -1282,6 +1332,8 @@ class MetricCard extends StatelessWidget {
   final bool compact;
   // Optional pill progress bar (0.0 – 1.0)
   final double? stepsProgress;
+  // Optional label rendered above the steps pill bar (e.g. "Goal 10,000")
+  final String? stepsGoalLabel;
   final VoidCallback? onTap;
 
   const MetricCard({
@@ -1299,6 +1351,7 @@ class MetricCard extends StatelessWidget {
     this.valueInlineUnit = false,
     this.compact = false,
     this.stepsProgress,
+    this.stepsGoalLabel,
     this.onTap,
   });
 
@@ -1418,7 +1471,10 @@ class MetricCard extends StatelessWidget {
             const Spacer(),
             if (stepsProgress != null) ...[
               const SizedBox(height: 8),
-              _StepsPillBar(progress: stepsProgress!.clamp(0.0, 1.0)),
+              _StepsPillBar(
+                progress: stepsProgress!.clamp(0.0, 1.0),
+                goalLabel: stepsGoalLabel ?? 'Goal',
+              ),
               const SizedBox(height: 2),
             ],
           ],
@@ -1430,8 +1486,9 @@ class MetricCard extends StatelessWidget {
 
 class _StepsPillBar extends StatelessWidget {
   final double progress; // 0.0 – 1.0
+  final String goalLabel;
 
-  const _StepsPillBar({required this.progress});
+  const _StepsPillBar({required this.progress, required this.goalLabel});
 
   @override
   Widget build(BuildContext context) {
@@ -1445,7 +1502,7 @@ class _StepsPillBar extends StatelessWidget {
         Align(
           alignment: Alignment.centerRight,
           child: Text(
-            'Goal 10,000',
+            goalLabel,
             style: TextStyle(
               color: pillColor.withOpacity(0.7),
               fontSize: 10,
@@ -2017,10 +2074,9 @@ class CaloriesCard extends StatelessWidget {
   final String trendText;
   final int activeCalories;
   final int eatenCalories;
+  final int burnGoal;
   final bool compact;
   final VoidCallback? onTap;
-
-  static const int _burnGoal = 500;
 
   const CaloriesCard({
     super.key,
@@ -2031,6 +2087,7 @@ class CaloriesCard extends StatelessWidget {
     required this.trendText,
     required this.activeCalories,
     this.eatenCalories = 0,
+    this.burnGoal = 500,
     this.compact = false,
     this.onTap,
   });
@@ -2053,7 +2110,8 @@ class CaloriesCard extends StatelessWidget {
       netColor = const Color(0xFF30D158);
     }
     final String netStr = net >= 0 ? '+$net' : '$net';
-    final double burnProgress = (activeCalories / _burnGoal).clamp(0.0, 1.0);
+    final double burnProgress =
+        (activeCalories / burnGoal.toDouble()).clamp(0.0, 1.0);
 
     return GestureDetector(
       onTap: onTap,
@@ -2407,6 +2465,7 @@ class SleepCard extends StatelessWidget {
   final List<int> sleepData;
   final int avgSleepMinutes;
   final int todaySleepMinutes;
+  final int goalMinutes;
   final bool isDark;
   final VoidCallback? onTap;
 
@@ -2420,6 +2479,7 @@ class SleepCard extends StatelessWidget {
     required this.sleepData,
     required this.avgSleepMinutes,
     required this.todaySleepMinutes,
+    required this.goalMinutes,
     required this.isDark,
     this.onTap,
   });
@@ -2438,8 +2498,8 @@ class SleepCard extends StatelessWidget {
     final color = AccentColor.notifier.value;
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
-    // Max hours to show on the bar = 10h
-    const maxMins = 600.0;
+    // Bar fills relative to the user's sleep goal so reaching the goal = full bar.
+    final double maxMins = goalMinutes > 0 ? goalMinutes.toDouble() : 480.0;
 
     return GestureDetector(
       onTap: onTap,

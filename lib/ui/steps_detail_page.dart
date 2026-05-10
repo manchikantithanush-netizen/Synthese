@@ -13,11 +13,13 @@ import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class StepsDetailPage extends StatefulWidget {
   final int todaySteps;
+  final int stepGoal;
   final ValueChanged<int>? onTodayManualStepsAdded;
 
   const StepsDetailPage({
     super.key,
     required this.todaySteps,
+    this.stepGoal = 10000,
     this.onTodayManualStepsAdded,
   });
 
@@ -469,10 +471,9 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
 
                                 // Energy bar
                                 _EnergyBar(
-                                  progress: (_todaySteps / 10000.0).clamp(
-                                    0.0,
-                                    1.0,
-                                  ),
+                                  progress: (_todaySteps /
+                                          widget.stepGoal.toDouble())
+                                      .clamp(0.0, 1.0),
                                   accentColor: accentColor,
                                   isDark: isDark,
                                   textColor: textColor,
@@ -508,7 +509,7 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: _DistanceCard(
                             steps: _todaySteps,
-                            stepGoal: 10000,
+                            stepGoal: widget.stepGoal,
                             accentColor: accentColor,
                             cardColor: cardColor,
                             textColor: textColor,
@@ -527,7 +528,7 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                             cardColor: cardColor,
                             textColor: textColor,
                             isDark: isDark,
-                            stepGoal: 10000,
+                            stepGoal: widget.stepGoal,
                           ),
                         ),
 
@@ -543,7 +544,7 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                             cardColor: cardColor,
                             textColor: textColor,
                             isDark: isDark,
-                            stepGoal: 10000,
+                            stepGoal: widget.stepGoal,
                           ),
                         ),
                       ],

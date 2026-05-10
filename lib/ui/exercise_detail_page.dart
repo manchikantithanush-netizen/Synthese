@@ -10,11 +10,13 @@ import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class ExerciseDetailPage extends StatefulWidget {
   final int exerciseMinutes;
+  final int goalMinutes;
   final ValueChanged<int>? onManualExerciseMinutesAdded;
 
   const ExerciseDetailPage({
     super.key,
     this.exerciseMinutes = 0,
+    this.goalMinutes = 60,
     this.onManualExerciseMinutesAdded,
   });
 
@@ -32,7 +34,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
   Map<int, int> _monthlyMinutes = {};
   bool _loadingMonthly = true;
 
-  static const int _goalMinutes = 60;
+  int get _goalMinutes => widget.goalMinutes;
 
   @override
   void initState() {

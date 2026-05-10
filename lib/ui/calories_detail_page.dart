@@ -11,12 +11,16 @@ import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 class CaloriesDetailPage extends StatefulWidget {
   final int activeCalories;
   final int eatenCalories;
+  final int burnGoal;
+  final int eatGoal;
   final ValueChanged<int>? onManualBurnedCaloriesAdded;
 
   const CaloriesDetailPage({
     super.key,
     required this.activeCalories,
     this.eatenCalories = 0,
+    this.burnGoal = 500,
+    this.eatGoal = 2000,
     this.onManualBurnedCaloriesAdded,
   });
 
@@ -30,8 +34,8 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
   late Animation<double> _anim;
   late int _activeCalories;
 
-  static const int _burnGoal = 500;
-  static const int _eatGoal = 2000;
+  int get _burnGoal => widget.burnGoal;
+  int get _eatGoal => widget.eatGoal;
 
   // Weekly trend: Mon–Sun (index 0=Mon)
   List<int> _weeklyBurned = List.filled(7, 0);

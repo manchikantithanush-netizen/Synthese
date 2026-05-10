@@ -16,11 +16,17 @@ class UpdateReminder {
   static const String currentVersion = '1.8.0+12';
 
   /// What to show the user when they open the app on this version for the first time.
-  static const String updateMessage = """Version 1.7.0+11 refines your health tracking experience with a cleaner and more intuitive interface. The dashboard has been simplified by removing manual adjustments and percentage comparisons, making it easier to focus on what matters.
+static const String updateMessage = """Version 1.8.0+12 brings a major refinement to your health tracking experience, focusing on simplicity, clarity, and stability.
 
-A new “Tap to Explore” prompt guides you to detailed views, while “+ Add Data” allows you to manually log your metrics with ease.
+The dashboard has been streamlined by removing manual adjustment controls and percentage comparisons, replacing them with a cleaner layout and a new “Tap to Explore” prompt that guides you into detailed metric views.
 
-Sleep tracking now includes a new “Asleep” phase for more flexible logging. Health Connect has been temporarily removed to improve data stability, with plans for a better implementation in the future.
+You can now log your own data easily using the new “+ Add Data” option available across all metrics, giving you full control over your tracking.
 
-Overall, this update focuses on simplicity, clarity, and giving you more control over your data.""";
+Sleep tracking has been improved with the addition of a new “Asleep” phase, along with fixes to the sleep chart, which now works smoothly even without external data sources.
+
+To improve reliability, Health Connect has been temporarily removed and will return later with a more stable implementation. All data is currently managed manually to ensure consistency.
+
+This update also includes multiple bug fixes and enhancements, including improved graph behavior, dynamic goal adjustments, better data syncing, and a smoother loading experience.
+
+Overall, this version marks the completion of the dashboard with a more polished, stable, and user-friendly experience.""";
 }

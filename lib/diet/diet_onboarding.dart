@@ -18,7 +18,6 @@ class DietOnboarding extends StatefulWidget {
 class _DietOnboardingState extends State<DietOnboarding> {
   int _currentPage = 0;
 
-  int _dailyCalorieGoal = 2000; // Default: 2000 calories
   double _currentWaterIntake = 2.0; // Fetched from first onboarding
   double _dailyWaterGoalLitres = 2.0; // Default: 2L
   int _dailyWaterGoalGlasses = 8; // Calculated from litres
@@ -82,7 +81,6 @@ class _DietOnboardingState extends State<DietOnboarding> {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid != null) {
         await FirebaseFirestore.instance.collection('users').doc(uid).set({
-          'dailyCalorieGoal': _dailyCalorieGoal,
           'dailyWaterGoalLitres': _dailyWaterGoalLitres,
           'dailyWaterGoalGlasses': _dailyWaterGoalGlasses,
           'dietSetupCompleted': true,
@@ -136,8 +134,6 @@ class _DietOnboardingState extends State<DietOnboarding> {
       case 1:
         return _buildDisclaimerPage(isDark, textColor);
       case 2:
-        return _buildCalorieGoalPage(isDark, textColor);
-      case 3:
         return _buildWaterGoalPage(isDark, textColor);
       default:
         return const SizedBox.shrink();
@@ -389,65 +385,6 @@ class _DietOnboardingState extends State<DietOnboarding> {
             onPressed: _nextPage,
             color: orangeColor,
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCalorieGoalPage(bool isDark, Color textColor) {
-    final isCompact = MediaQuery.of(context).size.height < 760;
-    return _buildScrollablePage(
-      key: const ValueKey('calorie-goal'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 8),
-          UniversalBackButton(onPressed: _previousPage),
-          const SizedBox(height: 24),
-          Text(
-            "What's your daily calorie goal?",
-            style: TextStyle(
-              color: textColor,
-              fontSize: isCompact ? 28 : 32,
-              fontWeight: FontWeight.bold,
-              height: 1.2,
-              letterSpacing: -1,
-            ),
-          ),
-          const Spacer(),
-          SizedBox(
-            height: isCompact ? 210 : 250,
-            child: CupertinoPicker(
-              itemExtent: 60,
-              diameterRatio: 1.5,
-              squeeze: 1.2,
-              scrollController: FixedExtentScrollController(
-                initialItem: (_dailyCalorieGoal - 1000) ~/ 100,
-              ),
-              selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-                background: orangeColor.withOpacity(0.15),
-              ),
-              onSelectedItemChanged: (int index) {
-                setState(() => _dailyCalorieGoal = 1000 + (index * 100));
-                HapticFeedback.selectionClick();
-              },
-              children: List.generate(
-                31,
-                (index) => Center(
-                  child: Text(
-                    "${1000 + (index * 100)} cal",
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 26,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const Spacer(),
-          PremiumButton(text: "Next", onPressed: _nextPage, color: orangeColor),
         ],
       ),
     );

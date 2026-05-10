@@ -10,11 +10,13 @@ import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
 class SleepDetailPage extends StatefulWidget {
   final int todaySleepMinutes;
+  final int goalMinutes;
   final ValueChanged<int>? onTodaySleepMinutesAdded;
 
   const SleepDetailPage({
     super.key,
     this.todaySleepMinutes = 0,
+    this.goalMinutes = 480,
     this.onTodaySleepMinutesAdded,
   });
 
@@ -90,8 +92,8 @@ class _SleepDetailPageState extends State<SleepDetailPage>
   bool _loading = true;
   List<_SleepSegment> _segments = [];
 
-  // Goal: 8 hours
-  static const int _goalMinutes = 480;
+  // Sleep goal in minutes (sourced from onboarding stage 2; default 480 = 8h)
+  int get _goalMinutes => widget.goalMinutes;
 
   @override
   void initState() {
@@ -556,6 +558,18 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                               ],
                                             ),
                                           ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            'Goal ${_fmtHours(_goalMinutes)}',
+                                            style: font(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: textColor.withValues(
+                                                alpha: 0.45,
+                                              ),
+                                              letterSpacing: 0.3,
+                                            ),
+                                          ),
                                         ],
                                       ),
 
@@ -701,6 +715,7 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                             accentColor: accentColor,
                             isDark: isDark,
                             todaySleepMinutes: _data.totalMinutes,
+                            goalMinutes: _goalMinutes,
                           ),
                         ),
                       ],
@@ -1690,6 +1705,7 @@ class _SleepHeatmap extends StatefulWidget {
   final Color accentColor;
   final bool isDark;
   final int todaySleepMinutes;
+  final int goalMinutes;
 
   const _SleepHeatmap({
     required this.cardColor,
@@ -1697,6 +1713,7 @@ class _SleepHeatmap extends StatefulWidget {
     required this.accentColor,
     required this.isDark,
     required this.todaySleepMinutes,
+    required this.goalMinutes,
   });
 
   @override
@@ -1707,7 +1724,7 @@ class _SleepHeatmapState extends State<_SleepHeatmap> {
   Map<int, int> _monthlyMinutes = {};
   bool _loading = true;
 
-  static const int _goalMinutes = 480; // 8 hours
+  int get _goalMinutes => widget.goalMinutes;
 
   @override
   void initState() {
