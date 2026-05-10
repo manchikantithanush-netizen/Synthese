@@ -876,48 +876,60 @@ class _ExerciseAddSheetState extends State<_ExerciseAddSheet> {
     final divColor = isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.07);
     final font = GoogleFonts.plusJakartaSans;
 
-    return FractionallySizedBox(
-      heightFactor: 0.93,
-      child: Container(
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(38)),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── top bar ──
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _ExSheetTopButton(
-                      isDark: isDark,
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Icon(Icons.close_rounded, size: 18, color: textColor),
-                    ),
-                    _ExSheetTopButton(
-                      isDark: isDark,
-                      onTap: _saving ? null : _submit,
-                      child: _saving
-                          ? SizedBox(
-                              width: 24,
-                              height: 12,
-                              child: BouncingDotsLoader.compact(
-                                color: isDark ? Colors.white : Colors.black,
-                              ),
-                            )
-                          : Icon(Icons.check_rounded, size: 18, color: textColor),
-                    ),
-                  ],
+    return Padding(
+      padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: FractionallySizedBox(
+        heightFactor: 0.93,
+        child: Container(
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(38)),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── top bar (fixed) ──
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _ExSheetTopButton(
+                        isDark: isDark,
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Icon(Icons.close_rounded,
+                            size: 18, color: textColor),
+                      ),
+                      _ExSheetTopButton(
+                        isDark: isDark,
+                        onTap: _saving ? null : _submit,
+                        child: _saving
+                            ? SizedBox(
+                                width: 24,
+                                height: 12,
+                                child: BouncingDotsLoader.compact(
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                              )
+                            : Icon(Icons.check_rounded,
+                                size: 18, color: textColor),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 20),
 
               // ── icon ──
               Center(
@@ -1076,8 +1088,12 @@ class _ExerciseAddSheetState extends State<_ExerciseAddSheet> {
                   ),
                 ),
 
-              const Spacer(),
-            ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

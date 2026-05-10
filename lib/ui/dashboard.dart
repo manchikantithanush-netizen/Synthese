@@ -555,7 +555,7 @@ class _DashboardPageState extends State<DashboardPage>
         _stepsGoalToasted = true;
         AppToast.success(
           context,
-          'Steps goal reached! ${_formatNumber(_goalSteps)} steps 🎉',
+          'Steps goal reached — ${_formatNumber(_goalSteps)} steps',
           icon: Icons.directions_walk_rounded,
         );
       }
@@ -563,7 +563,7 @@ class _DashboardPageState extends State<DashboardPage>
         _caloriesGoalToasted = true;
         AppToast.success(
           context,
-          'Calories burned goal reached! $_goalCaloriesBurnt kcal 🔥',
+          'Calories burned goal reached — $_goalCaloriesBurnt kcal',
           icon: Icons.local_fire_department_rounded,
         );
       }
@@ -2665,3 +2665,4 @@ class SleepCard extends StatelessWidget {
     );
   }
 }
+

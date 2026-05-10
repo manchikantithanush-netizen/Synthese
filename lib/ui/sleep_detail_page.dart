@@ -599,10 +599,13 @@ class _SleepDetailPageState extends State<SleepDetailPage>
 
                                       const SizedBox(height: 28),
 
-                                      // Stage breakdown row
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
+                                      // Stage breakdown — wraps to multiple
+                                      // rows so 6 stages with minute-precision
+                                      // values stay readable.
+                                      Wrap(
+                                        alignment: WrapAlignment.center,
+                                        spacing: 4,
+                                        runSpacing: 18,
                                         children: [
                                           if (_data.remMinutes > 0)
                                             _StageChip(
@@ -899,56 +902,66 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
         : Colors.black.withValues(alpha: 0.07);
     final font = GoogleFonts.plusJakartaSans;
 
-    return FractionallySizedBox(
-      heightFactor: 0.93,
-      child: Container(
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(38)),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── top bar ──
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _SleepSheetTopButton(
-                      isDark: isDark,
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Icon(
-                        Icons.close_rounded,
-                        size: 18,
-                        color: textColor,
+    return Padding(
+      padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: FractionallySizedBox(
+        heightFactor: 0.93,
+        child: Container(
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(38)),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── top bar (fixed) ──
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _SleepSheetTopButton(
+                        isDark: isDark,
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: textColor,
+                        ),
                       ),
-                    ),
-                    _SleepSheetTopButton(
-                      isDark: isDark,
-                      onTap: _saving ? null : _submit,
-                      child: _saving
-                          ? SizedBox(
-                              width: 24,
-                              height: 12,
-                              child: BouncingDotsLoader.compact(
-                                color: isDark ? Colors.white : Colors.black,
+                      _SleepSheetTopButton(
+                        isDark: isDark,
+                        onTap: _saving ? null : _submit,
+                        child: _saving
+                            ? SizedBox(
+                                width: 24,
+                                height: 12,
+                                child: BouncingDotsLoader.compact(
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                              )
+                            : Icon(
+                                Icons.check_rounded,
+                                size: 18,
+                                color: textColor,
                               ),
-                            )
-                          : Icon(
-                              Icons.check_rounded,
-                              size: 18,
-                              color: textColor,
-                            ),
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.only(bottom: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 20),
 
               // ── icon ──
               Center(
@@ -1187,8 +1200,12 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
                   ),
                 ),
 
-              const Spacer(),
-            ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1218,43 +1235,50 @@ class _StageChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final font = GoogleFonts.plusJakartaSans;
-    return Column(
-      children: [
-        Text(
-          label,
-          style: font(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: textColor.withValues(alpha: 0.45),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: font(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: textColor,
-            height: 1.0,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.18),
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: Container(
-              width: 14,
-              height: 14,
-              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    return SizedBox(
+      width: 96,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: font(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: textColor.withValues(alpha: 0.5),
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: font(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: textColor,
+                height: 1.0,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.18),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -33,8 +33,8 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
   List<({int bpm, DateTime time})> _dailyHistory = [];
   bool _loadingDaily = true;
 
-  // Weekly: Mon–Sun avg BPM (index 0 = Mon)
-  List<int> _weeklyAvg = List.filled(7, 0);
+  // Weekly: Mon–Sun *max* BPM per day (index 0 = Mon)
+  List<int> _weeklyMax = List.filled(7, 0);
   bool _loadingWeekly = true;
 
   @override
@@ -77,7 +77,7 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
       _dailyHistory.add((bpm: bpm, time: when));
       _dailyHistory.sort((a, b) => a.time.compareTo(b.time));
       final idx = (when.weekday - 1).clamp(0, 6);
-      _weeklyAvg[idx] = bpm;
+      _weeklyMax[idx] = math.max(_weeklyMax[idx], bpm);
     });
     if (_isSameDay(when, DateTime.now())) {
       widget.onManualHeartRateAdded?.call(bpm);
@@ -175,10 +175,10 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
       final now = DateTime.now();
       final monday = _thisMonday;
       final int daysSinceMonday = now.weekday - 1;
-      final List<int> avgs = List.filled(7, 0);
+      final List<int> maxes = List.filled(7, 0);
 
       // Seed today's slot with currentBpm immediately so it always shows
-      avgs[daysSinceMonday] = _currentBpm;
+      maxes[daysSinceMonday] = _currentBpm;
 
       final futures = <Future<void>>[];
       for (int i = 0; i <= daysSinceMonday; i++) {
@@ -194,13 +194,7 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
               .then((doc) {
                 final data = doc.data();
                 if (data == null) return;
-                // Try stored heartRate field first (fast path)
-                final hr = (data['heartRate'] as num?)?.toInt();
-                if (hr != null && hr > 0) {
-                  avgs[i] = hr;
-                  return;
-                }
-                // Fall back to computing avg from hrHistory
+                // Compute peak BPM from hrHistory (preferred — full picture)
                 final raw = data['hrHistory'] as List<dynamic>?;
                 if (raw != null && raw.isNotEmpty) {
                   final bpms = raw
@@ -208,14 +202,20 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
                       .where((b) => b > 0)
                       .toList();
                   if (bpms.isNotEmpty) {
-                    avgs[i] = bpms.reduce((a, b) => a + b) ~/ bpms.length;
+                    maxes[i] = bpms.reduce(math.max);
+                    return;
                   }
+                }
+                // Fallback to stored heartRate field
+                final hr = (data['heartRate'] as num?)?.toInt();
+                if (hr != null && hr > 0) {
+                  maxes[i] = hr;
                 }
               }),
         );
       }
       await Future.wait(futures);
-      if (mounted) setState(() => _weeklyAvg = avgs);
+      if (mounted) setState(() => _weeklyMax = maxes);
     } catch (_) {
     } finally {
       if (mounted) setState(() => _loadingWeekly = false);
@@ -340,7 +340,7 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
     // Weekly bar data
     const weekLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final int weekMax = math.max(
-      _weeklyAvg.reduce(math.max),
+      _weeklyMax.reduce(math.max),
       math.max(_currentBpm, 1),
     );
 
@@ -623,7 +623,7 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
                                               textColor: textColor,
                                             ))
                                     : _WeeklyHrChart(
-                                        weeklyAvg: _weeklyAvg,
+                                        weeklyMax: _weeklyMax,
                                         weekMax: weekMax,
                                         accentColor: accentColor,
                                         isDark: isDark,
@@ -712,7 +712,7 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
 // ─────────────────────────────────────────────
 
 class _WeeklyHrChart extends StatefulWidget {
-  final List<int> weeklyAvg;
+  final List<int> weeklyMax;
   final int weekMax;
   final Color accentColor;
   final bool isDark;
@@ -720,7 +720,7 @@ class _WeeklyHrChart extends StatefulWidget {
   final List<String> weekLabels;
 
   const _WeeklyHrChart({
-    required this.weeklyAvg,
+    required this.weeklyMax,
     required this.weekMax,
     required this.accentColor,
     required this.isDark,
@@ -757,9 +757,14 @@ class _WeeklyHrChartState extends State<_WeeklyHrChart>
   @override
   Widget build(BuildContext context) {
     final font = GoogleFonts.plusJakartaSans;
-    final labelColor = widget.textColor.withValues(alpha: 0.45);
+    final labelColor = widget.textColor.withValues(alpha: 0.55);
+    final scaleColor = widget.textColor.withValues(alpha: 0.35);
     final axisColor = widget.textColor.withValues(alpha: 0.12);
     final int todayIdx = DateTime.now().weekday - 1;
+
+    // Reserved column on the right for Y-axis BPM labels so the last bar
+    // (Sunday) doesn't share horizontal space with them.
+    const double yLabelInset = 28.0;
 
     return Column(
       children: [
@@ -770,29 +775,38 @@ class _WeeklyHrChartState extends State<_WeeklyHrChart>
             builder: (_, __) => CustomPaint(
               size: Size.infinite,
               painter: _WeeklyHrPainter(
-                bars: widget.weeklyAvg,
+                bars: widget.weeklyMax,
                 roundedMax: widget.weekMax,
                 accentColor: widget.accentColor,
                 gridColor: axisColor,
+                scaleColor: scaleColor,
                 progress: _anim.value,
                 todayIdx: todayIdx,
+                rightInset: yLabelInset,
               ),
             ),
           ),
         ),
-        Container(height: 1, color: axisColor),
-        const SizedBox(height: 6),
-        Row(
-          children: List.generate(
-            7,
-            (i) => Expanded(
-              child: Text(
-                widget.weekLabels[i],
-                textAlign: TextAlign.center,
-                style: font(
-                  fontSize: 10,
-                  fontWeight: i == todayIdx ? FontWeight.w700 : FontWeight.w500,
-                  color: i == todayIdx ? widget.accentColor : labelColor,
+        Padding(
+          padding: const EdgeInsets.only(right: yLabelInset),
+          child: Container(height: 1, color: axisColor),
+        ),
+        const SizedBox(height: 12),
+        Padding(
+          padding: const EdgeInsets.only(right: yLabelInset),
+          child: Row(
+            children: List.generate(
+              7,
+              (i) => Expanded(
+                child: Text(
+                  widget.weekLabels[i],
+                  textAlign: TextAlign.center,
+                  style: font(
+                    fontSize: 11,
+                    fontWeight:
+                        i == todayIdx ? FontWeight.w700 : FontWeight.w500,
+                    color: i == todayIdx ? widget.accentColor : labelColor,
+                  ),
                 ),
               ),
             ),
@@ -808,29 +822,58 @@ class _WeeklyHrPainter extends CustomPainter {
   final int roundedMax;
   final Color accentColor;
   final Color gridColor;
+  final Color scaleColor;
   final double progress;
   final int todayIdx;
+  final double rightInset;
 
   const _WeeklyHrPainter({
     required this.bars,
     required this.roundedMax,
     required this.accentColor,
     required this.gridColor,
+    required this.scaleColor,
     required this.progress,
     required this.todayIdx,
+    required this.rightInset,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
+    // Bars + grid live in the left portion; Y-axis labels in the right inset.
+    final double chartW = (size.width - rightInset).clamp(0.0, size.width);
+
     final gridPaint = Paint()
       ..color = gridColor
       ..strokeWidth = 0.5;
     for (int i = 1; i <= 4; i++) {
       final y = size.height * (1 - i / 4);
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+      canvas.drawLine(Offset(0, y), Offset(chartW, y), gridPaint);
     }
 
-    final double slotW = size.width / bars.length;
+    // Y-axis BPM scale labels (right column)
+    if (roundedMax > 0) {
+      final labelStyle = GoogleFonts.plusJakartaSans(
+        fontSize: 10,
+        color: scaleColor,
+        fontWeight: FontWeight.w500,
+      );
+      for (final yVal in [0, roundedMax ~/ 2, roundedMax]) {
+        final y = size.height * (1 - yVal / roundedMax);
+        final tp = TextPainter(
+          text: TextSpan(text: '$yVal', style: labelStyle),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        // Center the label vertically on the grid line, and place it inside
+        // the reserved right column so it never overlaps the last bar.
+        tp.paint(
+          canvas,
+          Offset(chartW + 6, y - tp.height / 2),
+        );
+      }
+    }
+
+    final double slotW = chartW / bars.length;
     for (int i = 0; i < bars.length; i++) {
       if (bars[i] <= 0) continue;
       final double ratio = roundedMax > 0
@@ -1122,13 +1165,12 @@ class _TooltipBubble extends StatelessWidget {
         color: bg,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'RANGE',
@@ -1139,43 +1181,42 @@ class _TooltipBubble extends StatelessWidget {
                   letterSpacing: 0.8,
                 ),
               ),
-              const SizedBox(height: 1),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${bucket.min}–${bucket.max}',
-                    style: font(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                      color: textColor,
-                      height: 1.0,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 2, left: 3),
-                    child: Text(
-                      'BPM',
-                      style: font(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: dimColor,
-                      ),
-                    ),
-                  ),
-                ],
+              Text(
+                _hourLabel(bucket.hour),
+                style: font(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: dimColor,
+                ),
               ),
             ],
           ),
-          const SizedBox(width: 10),
-          Text(
-            _hourLabel(bucket.hour),
-            style: font(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: dimColor,
-            ),
+          const SizedBox(height: 2),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${bucket.min}–${bucket.max}',
+                style: font(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                  height: 1.0,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2, left: 3),
+                child: Text(
+                  'BPM',
+                  style: font(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: dimColor,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

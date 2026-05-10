@@ -13,20 +13,20 @@
 
 class UpdateReminder {
   /// Must match pubspec.yaml version exactly, e.g. "1.0.0+3"
-  static const String currentVersion = '1.8.0+12';
+  static const String currentVersion = '1.9.0+13';
 
   /// What to show the user when they open the app on this version for the first time.
-static const String updateMessage = """Version 1.8.0+12 brings a major refinement to your health tracking experience, focusing on simplicity, clarity, and stability.
+  static const String updateMessage = """Version 1.9.0+13 brings a completely redesigned onboarding experience, a new Athlete Details section, and a fresh notification design.
 
-The dashboard has been streamlined by removing manual adjustment controls and percentage comparisons, replacing them with a cleaner layout and a new “Tap to Explore” prompt that guides you into detailed metric views.
+Getting started is now faster and simpler than ever. The onboarding flow has been fully reworked — the first stage has been updated, and the original first three slides of the second stage have been merged into a single screen, cutting out unnecessary steps so you can get into the app quicker.
 
-You can now log your own data easily using the new “+ Add Data” option available across all metrics, giving you full control over your tracking.
+Only the essentials are asked upfront. Extra details that aren't immediately needed have been removed from onboarding entirely. Things like health details and athlete-specific information can now be filled in at any time from the Account Details section, at your own pace.
 
-Sleep tracking has been improved with the addition of a new “Asleep” phase, along with fixes to the sleep chart, which now works smoothly even without external data sources.
+Speaking of which, a new Athlete Details section has been added under Account Details, giving athletes a dedicated place to log and manage their specific information whenever it suits them.
 
-To improve reliability, Health Connect has been temporarily removed and will return later with a more stable implementation. All data is currently managed manually to ensure consistency.
+The dashboard has also received bug fixes and stability improvements for a smoother experience.
 
-This update also includes multiple bug fixes and enhancements, including improved graph behavior, dynamic goal adjustments, better data syncing, and a smoother loading experience.
+Finally, notifications have a brand new design that's cleaner and more polished.
 
-Overall, this version marks the completion of the dashboard with a more polished, stable, and user-friendly experience.""";
+This update is all about getting out of your way — less friction, more focus on what matters.""";
 }

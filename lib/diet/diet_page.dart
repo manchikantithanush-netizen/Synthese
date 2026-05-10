@@ -556,7 +556,7 @@ class _DietPageState extends State<DietPage> {
     final totalCals = _foodLog.fold<int>(0, (sum, e) => sum + e.calories);
     if (!_calorieGoalToasted && totalCals >= _dailyCalorieGoal) {
       _calorieGoalToasted = true;
-      if (mounted) AppToast.success(context, 'Daily calorie goal reached! 🎯', icon: Icons.local_fire_department_rounded);
+      if (mounted) AppToast.success(context, 'Daily calorie goal reached', icon: Icons.local_fire_department_rounded);
     }
 
     _loadFrequentFoods();

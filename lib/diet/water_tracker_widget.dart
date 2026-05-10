@@ -214,7 +214,7 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
                                     if (newCount >= widget.dailyGoal) {
                                       AppToast.success(
                                         context,
-                                        'Water goal reached! 💧',
+                                        'Water goal reached',
                                         icon: Icons.water_drop_rounded,
                                       );
                                     }
