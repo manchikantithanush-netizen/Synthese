@@ -23,6 +23,7 @@ import 'package:synthese/services/data_aggregation_service.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/services/update_reminder_service.dart';
+import 'package:synthese/services/review_service.dart';
 import 'package:synthese/ui/steps_detail_page.dart';
 import 'package:synthese/ui/heart_rate_detail_page.dart';
 import 'package:synthese/ui/calories_detail_page.dart';
@@ -558,6 +559,7 @@ class _DashboardPageState extends State<DashboardPage>
           'Steps goal reached — ${_formatNumber(_goalSteps)} steps',
           icon: Icons.directions_walk_rounded,
         );
+        ReviewService.instance.maybeRequestAfterGoal();
       }
       if (!_caloriesGoalToasted && _activeCalories >= _goalCaloriesBurnt) {
         _caloriesGoalToasted = true;
@@ -566,6 +568,7 @@ class _DashboardPageState extends State<DashboardPage>
           'Calories burned goal reached — $_goalCaloriesBurnt kcal',
           icon: Icons.local_fire_department_rounded,
         );
+        ReviewService.instance.maybeRequestAfterGoal();
       }
     }
   }

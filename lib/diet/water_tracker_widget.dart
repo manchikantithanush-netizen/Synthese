@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:synthese/ui/components/app_toast.dart';
+import 'package:synthese/services/review_service.dart';
 
 /// Water tracker section with animated water tank
 class WaterTrackerSection extends StatefulWidget {
@@ -217,6 +218,8 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
                                         'Water goal reached',
                                         icon: Icons.water_drop_rounded,
                                       );
+                                      ReviewService.instance
+                                          .maybeRequestAfterGoal();
                                     }
                                   },
                                   child: Container(

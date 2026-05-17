@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/ui/components/app_toast.dart';
 import 'package:synthese/services/app_notifications_service.dart';
+import 'package:synthese/services/review_service.dart';
 import 'package:synthese/services/home_widget_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
@@ -540,6 +541,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
             'Workout goal complete: ${_estimatedCalories} kcal and ${_activeMinutes} min.',
         cooldown: const Duration(minutes: 5),
       );
+      ReviewService.instance.maybeRequestAfterGoal();
     }
   }
 

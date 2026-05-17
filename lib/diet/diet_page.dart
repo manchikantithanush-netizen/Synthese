@@ -17,6 +17,7 @@ import '../ui/components/universalresetbutton.dart';
 import '../ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/services/data_aggregation_service.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
+import 'package:synthese/services/review_service.dart';
 import 'package:synthese/ui/components/app_toast.dart';
 
 class DietPage extends StatefulWidget {
@@ -557,6 +558,7 @@ class _DietPageState extends State<DietPage> {
     if (!_calorieGoalToasted && totalCals >= _dailyCalorieGoal) {
       _calorieGoalToasted = true;
       if (mounted) AppToast.success(context, 'Daily calorie goal reached', icon: Icons.local_fire_department_rounded);
+      ReviewService.instance.maybeRequestAfterGoal();
     }
 
     _loadFrequentFoods();
