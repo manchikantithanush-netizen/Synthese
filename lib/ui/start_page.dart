@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/ui/auth/login_page.dart';
 import 'package:synthese/ui/auth/signup_page.dart';
+import 'package:synthese/onboarding/onboarding_intro.dart';
 
 class StartPage extends StatefulWidget {
   const StartPage({super.key});
@@ -35,6 +39,7 @@ class _StartPageState extends State<StartPage> {
   int _phase = 0; // 0: Typing Intro, 1: Backspacing Intro, 2: Typing Dictionary, 3: Backspacing Dictionary
   bool _showLogo = false;
   bool _logoVisible = false;
+  bool _isGuestLoading = false;
 
   ModalRoute<dynamic>? _route;
 
@@ -228,6 +233,46 @@ class _StartPageState extends State<StartPage> {
     }
   }
 
+  Future<void> _continueAsGuest() async {
+    if (_isGuestLoading) return;
+    setState(() => _isGuestLoading = true);
+    try {
+      HapticFeedback.lightImpact();
+      final cred = await FirebaseAuth.instance.signInAnonymously();
+      final user = cred.user;
+      if (user == null) throw Exception('Anonymous sign-in failed');
+
+      final firestore = FirebaseFirestore.instance;
+      final counterRef = firestore.collection('metadata').doc('guest_counter');
+      final guestNumber = await firestore.runTransaction<int>((tx) async {
+        final snap = await tx.get(counterRef);
+        final current = (snap.exists && snap.data()?['count'] is int)
+            ? snap.data()!['count'] as int
+            : 0;
+        final next = current + 1;
+        tx.set(counterRef, {'count': next}, SetOptions(merge: true));
+        return next;
+      });
+
+      await firestore.collection('users').doc(user.uid).set({
+        'fullName': 'GUEST#$guestNumber',
+        'isGuest': true,
+        'guestNumber': guestNumber,
+        'createdAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      if (!mounted) return;
+      Navigator.pushReplacement(context, _fadeRoute(const OnboardingIntro()));
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isGuestLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Guest access failed: $e')),
+        );
+      }
+    }
+  }
+
   Route _fadeRoute(Widget page) {
     return PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 500),
@@ -356,7 +401,41 @@ class _StartPageState extends State<StartPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 14),
+                      GestureDetector(
+                        onTap: _isGuestLoading ? null : _continueAsGuest,
+                        behavior: HitTestBehavior.opaque,
+                        child: Container(
+                          height: 44,
+                          alignment: Alignment.center,
+                          child: _isGuestLoading
+                              ? const BouncingDotsLoader()
+                              : Text(
+                                  'Continue as Guest',
+                                  style: TextStyle(
+                                    color: textColor.withOpacity(0.75),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor:
+                                        textColor.withOpacity(0.45),
+                                  ),
+                                ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          'For testing only — data may be reset at any time.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: textColor.withOpacity(0.45),
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
                       RichText(
                         textAlign: TextAlign.center,
                         text: TextSpan(

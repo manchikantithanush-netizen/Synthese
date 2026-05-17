@@ -12,6 +12,7 @@ import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:io';
 import 'about_app_page.dart';
 import 'account_log_sheets.dart';
@@ -416,6 +417,9 @@ class _AccountPageModalState extends State<AccountPageModal> {
                         onTap: () => _slideForward(_SettingsPage(onBack: _slideBack, onNavigate: _slideForward2, onNavigateBack: _slideBack2)),
                       ),
                     ),
+                    const SizedBox(height: 32),
+                    _BmcSupportButton(),
+                    const SizedBox(height: 32),
                   ],
                 ),
               ),
@@ -425,7 +429,7 @@ class _AccountPageModalState extends State<AccountPageModal> {
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+                    padding: const EdgeInsets.only(top: 0, bottom: 8.0),
                     child: PremiumButton(
                       text: "Sign Out",
                       isLoading: _isSigningOut,
@@ -1335,5 +1339,80 @@ class _ThemeModeRowState extends State<_ThemeModeRow> {
           child: Container(height: 0.5, color: widget.isDark ? Colors.white12 : Colors.black12),
         ),
     ]);
+  }
+}
+
+// ── Buy Me a Coffee support button ──────────────────────────────────────────
+class _BmcSupportButton extends StatefulWidget {
+  @override
+  State<_BmcSupportButton> createState() => _BmcSupportButtonState();
+}
+
+class _BmcSupportButtonState extends State<_BmcSupportButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 120),
+    );
+    _scale = Tween<double>(begin: 1.0, end: 0.96)
+        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _openBmc() async {
+    HapticFeedback.lightImpact();
+    final uri = Uri.parse('https://buymeacoffee.com/Synthese');
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      await launchUrl(uri, mode: LaunchMode.platformDefault);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final subColor = isDark ? Colors.white54 : Colors.black45;
+    return Column(
+      children: [
+        Text(
+          'Enjoying Synthese? Support development',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: subColor,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 12),
+        GestureDetector(
+          onTapDown: (_) => _ctrl.forward(),
+          onTapUp: (_) => _ctrl.reverse(),
+          onTapCancel: () => _ctrl.reverse(),
+          onTap: _openBmc,
+          child: ScaleTransition(
+            scale: _scale,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 56),
+              child: Image.asset(
+                'assets/bmc-button.png',
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

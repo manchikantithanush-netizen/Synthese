@@ -68,18 +68,26 @@ class _OnboardingDataState extends State<OnboardingData> {
           .collection('users')
           .doc(user.uid)
           .get();
-      if (doc.exists && (doc.data() as Map)['onboardingCompleted'] == true) {
-        if (mounted) {
-          final data = doc.data() as Map<String, dynamic>;
-          final dest = data['privacyPolicyAccepted'] == true
-              ? const DashboardPage()
-              : const OnboardingPermissions();
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => dest),
-            (route) => false,
-          );
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        if (data['onboardingCompleted'] == true) {
+          if (mounted) {
+            final dest = data['privacyPolicyAccepted'] == true
+                ? const DashboardPage()
+                : const OnboardingPermissions();
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => dest),
+              (route) => false,
+            );
+          }
+          return;
         }
-        return;
+        // Pre-fill the name field for guest accounts so GUEST#N carries through.
+        final existingName = data['fullName'];
+        if (existingName is String && existingName.isNotEmpty &&
+            nameController.text.isEmpty) {
+          nameController.text = existingName;
+        }
       }
     }
     if (mounted) setState(() => _isLoading = false);
