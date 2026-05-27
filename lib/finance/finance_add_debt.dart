@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -199,21 +200,21 @@ class _AddDebtModalState extends State<AddDebtModal> {
 
     // Validation
     if (_titleController.text.trim().isEmpty) {
-      _showError('Please enter a title');
+      _showError(AppLocalizations.of(context).finAddDebtEnterTitle);
       return;
     }
 
     final amount = double.tryParse(_amountController.text.replaceAll(',', '.'));
     if (amount == null || amount <= 0) {
-      _showError('Please enter a valid amount');
+      _showError(AppLocalizations.of(context).finTrInvalidAmount);
       return;
     }
     if (_selectedAccount == null) {
-      _showError('Please select an account');
+      _showError(AppLocalizations.of(context).finTxSelectAccount);
       return;
     }
     if (_selectedCategory == null) {
-      _showError('Please select a category');
+      _showError(AppLocalizations.of(context).finTxSelectCategory);
       return;
     }
 
@@ -223,11 +224,11 @@ class _AddDebtModalState extends State<AddDebtModal> {
         _installmentController.text.replaceAll(',', '.'),
       );
       if (installmentAmount == null || installmentAmount <= 0) {
-        _showError('Please enter a valid installment amount');
+        _showError(AppLocalizations.of(context).finAddDebtValidInstallment);
         return;
       }
       if (installmentAmount > amount) {
-        _showError('Installment cannot exceed total amount');
+        _showError(AppLocalizations.of(context).finAddDebtInstallmentExceed);
         return;
       }
     }
@@ -261,12 +262,12 @@ class _AddDebtModalState extends State<AddDebtModal> {
       HapticFeedback.mediumImpact();
 
       if (mounted) {
-        AppToast.success(context, 'Debt added', icon: Icons.account_balance_outlined);
+        AppToast.success(context, AppLocalizations.of(context).finAddDebtAdded, icon: Icons.account_balance_outlined);
         Navigator.pop(context, true);
       }
     } catch (e) {
       debugPrint('Error saving debt: $e');
-      _showError('Failed to save debt');
+      _showError(AppLocalizations.of(context).finAddDebtFailed);
     }
 
     if (mounted) {
@@ -361,7 +362,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
                   Align(
                     alignment: Alignment.center,
                     child: Text(
-                      "Add Debt",
+                      AppLocalizations.of(context).finDebtAddDebt,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -370,7 +371,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
                     ),
                   ),
                   Align(
-                    alignment: Alignment.centerRight,
+                    alignment: AlignmentDirectional.centerEnd,
                     child: UniversalCloseButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -424,7 +425,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // --- TITLE INPUT ---
-                          _buildSectionLabel('Title', subtextColor),
+                          _buildSectionLabel(AppLocalizations.of(context).finAddDebtTitleLabel, subtextColor),
                           const SizedBox(height: 8),
                           _buildTitleInput(isDark, cardColor, textColor),
 
@@ -436,14 +437,14 @@ class _AddDebtModalState extends State<AddDebtModal> {
                           const SizedBox(height: 24),
 
                           // --- AMOUNT INPUT ---
-                          _buildSectionLabel('Total Amount', subtextColor),
+                          _buildSectionLabel(AppLocalizations.of(context).finAddDebtTotalAmount, subtextColor),
                           const SizedBox(height: 8),
                           _buildAmountInput(isDark, cardColor, textColor),
 
                           const SizedBox(height: 20),
 
                           // --- ACCOUNT SELECTOR ---
-                          _buildSectionLabel('Account', subtextColor),
+                          _buildSectionLabel(AppLocalizations.of(context).finTxAccount, subtextColor),
                           const SizedBox(height: 8),
                           _buildAccountSelector(isDark, cardColor, textColor),
 
@@ -456,7 +457,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
 
                           // --- DUE DATE PICKER ---
                           _buildSectionLabel(
-                            'Due Date (optional)',
+                            AppLocalizations.of(context).finAddDebtDueDateOptional,
                             subtextColor,
                           ),
                           const SizedBox(height: 8),
@@ -474,7 +475,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
                           const SizedBox(height: 20),
 
                           // --- NOTES FIELD ---
-                          _buildSectionLabel('Notes (optional)', subtextColor),
+                          _buildSectionLabel(AppLocalizations.of(context).finAddDebtNotesOptional, subtextColor),
                           const SizedBox(height: 8),
                           _buildNotesField(isDark, cardColor, textColor),
 
@@ -488,7 +489,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
             Padding(
               padding: EdgeInsets.fromLTRB(20, 10, 20, bottomActionPadding),
               child: PremiumButton(
-                text: 'Add Debt',
+                text: AppLocalizations.of(context).finDebtAddDebt,
                 isLoading: _isSaving,
                 onPressed: _saveDebt,
               ),
@@ -522,7 +523,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
         controller: _titleController,
         style: TextStyle(fontSize: 16, color: textColor),
         decoration: InputDecoration(
-          hintText: 'e.g., Car Loan, Credit Card Balance...',
+          hintText: AppLocalizations.of(context).finAddDebtTitleHint,
           hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
           border: InputBorder.none,
           contentPadding: EdgeInsets.zero,
@@ -537,7 +538,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
   Widget _buildDebtTypeToggle(bool isDark, Color cardColor) {
     return UniversalSegmentedControl<int>(
       items: const [0, 1],
-      labels: const ['I Owe', 'Owe Me'],
+      labels: [AppLocalizations.of(context).finDebtIOwe, AppLocalizations.of(context).finDebtOweMe],
       selectedItem: _debtType,
       onSelectionChanged: (value) {
         HapticFeedback.selectionClick();
@@ -607,7 +608,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
         ),
         child: Center(
           child: Text(
-            'No accounts available',
+            AppLocalizations.of(context).finTxNoAccounts,
             style: TextStyle(color: isDark ? Colors.white54 : Colors.black54),
           ),
         ),
@@ -653,7 +654,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    account.name,
+                    financeDefaultName(AppLocalizations.of(context), account.id, account.name),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isSelected
@@ -678,7 +679,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Category',
+          AppLocalizations.of(context).finTxCategory,
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -726,7 +727,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      category.name,
+                      financeDefaultName(AppLocalizations.of(context), category.id, category.name),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: isSelected
@@ -749,8 +750,8 @@ class _AddDebtModalState extends State<AddDebtModal> {
 
   Widget _buildDueDatePicker(bool isDark, Color cardColor, Color textColor) {
     final formattedDate = _dueDate != null
-        ? DateFormat('EEEE, MMM d, yyyy').format(_dueDate!)
-        : 'No due date';
+        ? DateFormat('EEEE, MMM d, yyyy', Localizations.localeOf(context).toString()).format(_dueDate!)
+        : AppLocalizations.of(context).finAddDebtNoDueDate;
 
     return GestureDetector(
       onTap: _showDueDatePicker,
@@ -819,7 +820,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Installments',
+                  AppLocalizations.of(context).finAddDebtInstallments,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -837,7 +838,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
         if (_hasInstallment) ...[
           const SizedBox(height: 12),
           _buildSectionLabel(
-            'Installment Amount',
+            AppLocalizations.of(context).finAddDebtInstallmentAmount,
             isDark ? Colors.white54 : Colors.black54,
           ),
           const SizedBox(height: 8),
@@ -913,7 +914,7 @@ class _AddDebtModalState extends State<AddDebtModal> {
         controller: _notesController,
         style: TextStyle(fontSize: 16, color: textColor),
         decoration: InputDecoration(
-          hintText: 'Add notes...',
+          hintText: AppLocalizations.of(context).finAddDebtAddNotes,
           hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
           border: InputBorder.none,
           contentPadding: EdgeInsets.zero,

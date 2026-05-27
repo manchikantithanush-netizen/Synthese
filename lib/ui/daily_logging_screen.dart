@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/ui/components/app_toast.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class DailyLoggingScreen extends StatefulWidget {
   final DateTime? selectedDate;
@@ -109,12 +110,103 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
   DateTime _dateOnly(DateTime date) =>
       DateTime(date.year, date.month, date.day);
 
+  String _flowLabel(AppLocalizations t, String v) {
+    switch (v) {
+      case 'None':
+        return t.dlogFlowNone;
+      case 'Spotting':
+        return t.dlogFlowSpotting;
+      case 'Light':
+        return t.dlogFlowLight;
+      case 'Medium':
+        return t.dlogFlowMedium;
+      case 'Heavy':
+        return t.dlogFlowHeavy;
+      case 'Very Heavy':
+        return t.dlogFlowVeryHeavy;
+      default:
+        return v;
+    }
+  }
+
+  String _sympLabel(AppLocalizations t, String v) {
+    switch (v) {
+      case 'Cramps (mild)':
+        return t.dlogSympCrampsMild;
+      case 'Cramps (severe)':
+        return t.dlogSympCrampsSevere;
+      case 'Bloating':
+        return t.dlogSympBloating;
+      case 'Breast tenderness':
+        return t.dlogSympBreastTenderness;
+      case 'Headache':
+        return t.dlogSympHeadache;
+      case 'Fatigue':
+        return t.dlogSympFatigue;
+      case 'Lower back pain':
+        return t.dlogSympLowerBackPain;
+      case 'Nausea':
+        return t.dlogSympNausea;
+      case 'Acne':
+        return t.dlogSympAcne;
+      case 'Food cravings':
+        return t.dlogSympFoodCravings;
+      default:
+        return v;
+    }
+  }
+
+  String _moodLabel(AppLocalizations t, String v) {
+    switch (v) {
+      case 'Happy':
+        return t.dlogMoodHappy;
+      case 'Calm':
+        return t.dlogMoodCalm;
+      case 'Confident':
+        return t.dlogMoodConfident;
+      case 'Irritable':
+        return t.dlogMoodIrritable;
+      case 'Anxious':
+        return t.dlogMoodAnxious;
+      case 'Sad':
+        return t.dlogMoodSad;
+      case 'Sensitive':
+        return t.dlogMoodSensitive;
+      case 'Stressed':
+        return t.dlogMoodStressed;
+      case 'Brain fog':
+        return t.dlogMoodBrainFog;
+      case 'Tired':
+        return t.dlogMoodTired;
+      default:
+        return v;
+    }
+  }
+
+  String _mucusLabel(AppLocalizations t, String v) {
+    switch (v) {
+      case 'Dry':
+        return t.dlogMucusDry;
+      case 'Sticky':
+        return t.dlogMucusSticky;
+      case 'Creamy':
+        return t.dlogMucusCreamy;
+      case 'Egg white':
+        return t.dlogMucusEggWhite;
+      case 'Watery':
+        return t.dlogMucusWatery;
+      default:
+        return v;
+    }
+  }
+
   // --- LOGIC REMAINS 100% UNTOUCHED ---
   Future<void> _saveLog() async {
     setState(() => _isSaving = true);
     HapticFeedback.mediumImpact();
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final t = AppLocalizations.of(context);
 
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -155,13 +247,13 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
             builder: (context) => AlertDialog(
               backgroundColor: isDark ? const Color(0xFF1C1C1E) : Colors.white,
               title: Text(
-                "Did your period start early?",
+                t.dlogEarlyTitle,
                 style: TextStyle(color: isDark ? Colors.white : Colors.black),
               ),
               content: Text(
                 _flow == 'Spotting'
-                    ? "You logged spotting. Is this the start of a new period?"
-                    : "You logged bleeding, but your period isn't due yet.",
+                    ? t.dlogEarlySpotting
+                    : t.dlogEarlyBleeding,
                 style: TextStyle(
                   color: isDark ? Colors.white70 : Colors.black87,
                 ),
@@ -170,7 +262,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                 TextButton(
                   onPressed: () => Navigator.pop(context, false),
                   child: Text(
-                    "No, just spotting",
+                    t.dlogNoJustSpotting,
                     style: TextStyle(
                       color: isDark ? Colors.white70 : Colors.black54,
                     ),
@@ -178,9 +270,9 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
-                  child: const Text(
-                    "Yes, it started",
-                    style: TextStyle(
+                  child: Text(
+                    t.dlogYesStarted,
+                    style: const TextStyle(
                       color: Color(0xFFEC548A),
                       fontWeight: FontWeight.bold,
                     ),
@@ -211,11 +303,11 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                     ? const Color(0xFF1C1C1E)
                     : Colors.white,
                 title: Text(
-                  "Did your period start?",
+                  t.dlogDueTitle,
                   style: TextStyle(color: isDark ? Colors.white : Colors.black),
                 ),
                 content: Text(
-                  "You logged spotting around the time your period is due. Is this the start of your period?",
+                  t.dlogDueBody,
                   style: TextStyle(
                     color: isDark ? Colors.white70 : Colors.black87,
                   ),
@@ -224,7 +316,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                   TextButton(
                     onPressed: () => Navigator.pop(context, false),
                     child: Text(
-                      "No, just spotting",
+                      t.dlogNoJustSpotting,
                       style: TextStyle(
                         color: isDark ? Colors.white70 : Colors.black54,
                       ),
@@ -232,8 +324,8 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(context, true),
-                    child: const Text(
-                      "Yes, it started",
+                    child: Text(
+                      t.dlogYesStarted,
                       style: TextStyle(
                         color: Color(0xFFEC548A),
                         fontWeight: FontWeight.bold,
@@ -346,7 +438,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
           _isSaving = false;
         });
         _checkmarkController.forward();
-        AppToast.success(context, 'Cycle log saved', icon: Icons.favorite_rounded);
+        AppToast.success(context, t.dlogSaved, icon: Icons.favorite_rounded);
 
         // Wait and then close
         await Future.delayed(const Duration(milliseconds: 1500));
@@ -363,11 +455,13 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
   String get _formattedHeaderDate {
     final now = DateTime.now();
     final isToday = _dateOnly(_logDate).isAtSameMomentAs(_dateOnly(now));
+    final localeName = Localizations.localeOf(context).toString();
 
     if (isToday) {
-      return "Today, ${DateFormat('d MMMM').format(_logDate)}";
+      return AppLocalizations.of(context)
+          .dlogTodayPrefix(DateFormat('d MMMM', localeName).format(_logDate));
     } else {
-      return DateFormat('EEEE, d MMMM').format(_logDate);
+      return DateFormat('EEEE, d MMMM', localeName).format(_logDate);
     }
   }
 
@@ -449,6 +543,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
     final navButtonWidth = isNarrow ? 70.0 : 95.0;
     final dashWidth = isNarrow ? 14.0 : 24.0;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final t = AppLocalizations.of(context);
     final screenBgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
     final textColor = isDark ? Colors.white : Colors.black;
 
@@ -461,7 +556,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
         // --- LIQUID GLASS X MARK ICON ON THE TOP RIGHT ---
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: const EdgeInsetsDirectional.only(end: 16.0),
             child: Center(
               child: Theme(
                 data: Theme.of(context).copyWith(
@@ -508,7 +603,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                     FadeTransition(
                       opacity: _checkmarkAnimation,
                       child: Text(
-                        'Logged',
+                        t.dlogLoggedOverlay,
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -547,19 +642,21 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                     },
                     children: [
                       _buildCarouselSlide(
-                        title: "FLOW LEVEL",
+                        title: t.dlogFlowLevel,
                         isDark: isDark,
                         options: _flowOptions,
                         isMultiSelect: false,
                         selectedSingle: _flow,
                         onSelect: (val) => setState(() => _flow = val),
+                        labelOf: (v) => _flowLabel(t, v),
                       ),
                       _buildCarouselSlide(
-                        title: "SYMPTOMS",
+                        title: t.dlogSymptoms,
                         isDark: isDark,
                         options: _symptomOptions,
                         isMultiSelect: true,
                         selectedList: _selectedSymptoms,
+                        labelOf: (v) => _sympLabel(t, v),
                         onSelect: (val) {
                           setState(() {
                             if (_selectedSymptoms.contains(val))
@@ -570,11 +667,12 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                         },
                       ),
                       _buildCarouselSlide(
-                        title: "MOOD",
+                        title: t.dlogMood,
                         isDark: isDark,
                         options: _moodOptions,
                         isMultiSelect: true,
                         selectedList: _selectedMoods,
+                        labelOf: (v) => _moodLabel(t, v),
                         onSelect: (val) {
                           setState(() {
                             if (_selectedMoods.contains(val))
@@ -585,7 +683,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                         },
                       ),
                       _buildCarouselSlide(
-                        title: "CERVICAL MUCUS",
+                        title: t.dlogCervicalMucus,
                         isDark: isDark,
                         options: _mucusOptions,
                         isMultiSelect: false,
@@ -595,6 +693,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                               ? null
                               : val,
                         ),
+                        labelOf: (v) => _mucusLabel(t, v),
                       ),
                     ],
                   ),
@@ -616,7 +715,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                             height: 40,
                             width: navButtonWidth,
                             child: _liquidGlassPillButton(
-                              label: "Back",
+                              label: t.commonBack,
                               onPressed: _prevPage,
                               isDark: isDark,
                             ),
@@ -682,7 +781,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                                 ),
                               )
                             : _liquidGlassPillButton(
-                                label: _currentPage == 3 ? "Save" : "Next",
+                                label: _currentPage == 3 ? t.commonSave : t.commonNext,
                                 onPressed: _nextPage,
                                 isDark: isDark,
                                 accentColor: pinkColor,
@@ -705,6 +804,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
     required Function(String) onSelect,
     String? selectedSingle,
     List<String>? selectedList,
+    String Function(String)? labelOf,
   }) {
     final pillBgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
@@ -770,7 +870,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        option,
+                        labelOf?.call(option) ?? option,
                         style: TextStyle(
                           color: textColor,
                           fontSize: 16,

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:async';
 import 'login_page.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class VerificationPage extends StatefulWidget {
   const VerificationPage({super.key});
@@ -20,6 +21,7 @@ class _VerificationPageState extends State<VerificationPage>
 
   // Inline Notification State
   String? _errorMessage;
+  bool _notificationIsError = true;
   Timer? _errorTimer;
 
   late AnimationController _pulseController;
@@ -96,6 +98,7 @@ class _VerificationPageState extends State<VerificationPage>
     if (isError) HapticFeedback.heavyImpact();
     setState(() {
       _errorMessage = message;
+      _notificationIsError = isError;
     });
 
     _errorTimer?.cancel();
@@ -108,9 +111,14 @@ class _VerificationPageState extends State<VerificationPage>
     setState(() => _isResending = true);
     try {
       await FirebaseAuth.instance.currentUser?.sendEmailVerification();
-      _triggerNotification('Verification email resent!', isError: false);
+      if (mounted) {
+        _triggerNotification(AppLocalizations.of(context).verifyResent,
+            isError: false);
+      }
     } catch (e) {
-      _triggerNotification('Wait a moment before resending.');
+      if (mounted) {
+        _triggerNotification(AppLocalizations.of(context).verifyWaitResend);
+      }
     } finally {
       if (mounted) setState(() => _isResending = false);
     }
@@ -140,6 +148,7 @@ class _VerificationPageState extends State<VerificationPage>
   Widget _buildWaitingView() {
     // DYNAMIC TEXT COLOR
     final textColor = Theme.of(context).colorScheme.onSurface;
+    final t = AppLocalizations.of(context);
 
     return Padding(
       key: const ValueKey('WaitingView'),
@@ -158,7 +167,7 @@ class _VerificationPageState extends State<VerificationPage>
           const SizedBox(height: 32),
 
           Text(
-            'Verify your email',
+            t.verifyTitle,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: textColor, // DYNAMIC
@@ -178,9 +187,9 @@ class _VerificationPageState extends State<VerificationPage>
                       _errorMessage!,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: _errorMessage!.contains('resent') 
-                            ? const Color(0xFF4CD964) 
-                            : const Color(0xFFFF3B30),
+                        color: _notificationIsError
+                            ? const Color(0xFFFF3B30)
+                            : const Color(0xFF4CD964),
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -192,7 +201,7 @@ class _VerificationPageState extends State<VerificationPage>
           const SizedBox(height: 12),
           
           Text(
-            'We sent a verification link to your email.\nPlease click it to continue.',
+            t.verifyBody,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: textColor.withOpacity(0.54), // DYNAMIC
@@ -217,7 +226,7 @@ class _VerificationPageState extends State<VerificationPage>
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Checking for verification...',
+                  t.verifyChecking,
                   style: TextStyle(
                     color: textColor.withOpacity(0.54), // DYNAMIC
                     fontSize: 15,
@@ -243,10 +252,10 @@ class _VerificationPageState extends State<VerificationPage>
                 const Icon(Icons.warning_amber_rounded,
                     color: Color(0xFFFF3B30), size: 20),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Can\'t find the email? Check your spam or junk folder.',
-                    style: TextStyle(
+                    t.verifySpamNotice,
+                    style: const TextStyle(
                       color: Color(0xFFFF3B30),
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -264,7 +273,7 @@ class _VerificationPageState extends State<VerificationPage>
           _isResending
               ? const Center(child: BouncingDotsLoader())
               : _PremiumButton(
-                  text: 'Resend Email',
+                  text: t.verifyResendButton,
                   isSecondary: true,
                   onPressed: _resendEmail,
                 ),
@@ -276,6 +285,7 @@ class _VerificationPageState extends State<VerificationPage>
   Widget _buildSuccessView() {
     // DYNAMIC TEXT COLOR
     final textColor = Theme.of(context).colorScheme.onSurface;
+    final t = AppLocalizations.of(context);
 
     return Center(
       key: const ValueKey('SuccessView'),
@@ -291,7 +301,7 @@ class _VerificationPageState extends State<VerificationPage>
           ),
           const SizedBox(height: 24),
           Text(
-            'Verified!',
+            t.verifyVerified,
             style: TextStyle(color: textColor, fontSize: 32, fontWeight: FontWeight.w700, letterSpacing: -1.0), // DYNAMIC
           ),
         ],

@@ -20,6 +20,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 LatLngBounds _boundsForRoutePoints(List<LatLng> points) {
   double minLat = points.first.latitude;
@@ -239,18 +240,18 @@ class _WorkoutPageState extends State<WorkoutPage> {
     return speedKmPerHour;
   }
 
-  String get _paceOrSpeedLabel {
+  String _paceOrSpeedLabel(AppLocalizations t) {
     switch (_selectedMode) {
       case WorkoutMode.swimming:
       case WorkoutMode.trailRun:
-        return 'Pace';
+        return t.woPace;
       case WorkoutMode.running:
       case WorkoutMode.cycling:
       case WorkoutMode.mountainBikeRide:
       case WorkoutMode.eBikeRide:
       case WorkoutMode.outdoorWalking:
       case null:
-        return 'Speed';
+        return t.woSpeed;
     }
   }
 
@@ -357,13 +358,15 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 
   Future<void> _updateTrackingNotification() async {
-    if (!_isTracking || !Platform.isAndroid) {
+    if (!_isTracking || !Platform.isAndroid || !mounted) {
       return;
     }
+    final t = AppLocalizations.of(context);
     await _ensureNotificationsInitialized();
 
-    final notificationTitle =
-        '${_modeLabel(_selectedMode ?? WorkoutMode.outdoorWalking)} in progress';
+    final notificationTitle = t.woNotifInProgress(
+      _modeLabel(_selectedMode ?? WorkoutMode.outdoorWalking, t),
+    );
     final notificationBody =
         '${formatWorkoutDistance(_selectedMode, _totalDistanceMeters)} | ${_formatDuration(_elapsed)} | $_estimatedCalories kcal | $_paceOrSpeedValueText';
 
@@ -463,24 +466,27 @@ class _WorkoutPageState extends State<WorkoutPage> {
       if (!mounted) return;
       setState(() {
         _isWeatherLoading = false;
-        _weatherError = 'Unable to load weather';
+        _weatherError = AppLocalizations.of(context).woWeatherLoadError;
       });
       debugPrint('Workout weather load failed: $error');
     }
   }
 
   Future<void> _notifyWorkoutStarted() async {
+    if (!mounted) return;
+    final t = AppLocalizations.of(context);
     final mode = _selectedMode ?? WorkoutMode.outdoorWalking;
     await AppNotificationsService.instance.showWithCooldown(
       uniqueKey: 'workout_started_${mode.name}',
-      title: 'Workout started',
-      body: '${_modeLabel(mode)} tracking is live. Keep your pace steady.',
+      title: t.woNotifStartedTitle,
+      body: t.woNotifStartedBody(_modeLabel(mode, t)),
       cooldown: const Duration(minutes: 2),
     );
   }
 
   Future<void> _maybeNotifyWeatherAdvisory() async {
-    if (_weatherError != null) return;
+    if (_weatherError != null || !mounted) return;
+    final t = AppLocalizations.of(context);
     final temp = _weatherTempC;
     final wind = _weatherWindKph;
     final condition = (_weatherCondition ?? '').toLowerCase();
@@ -494,26 +500,27 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
     await AppNotificationsService.instance.showWithCooldown(
       uniqueKey: 'workout_weather_advisory',
-      title: 'Workout weather advisory',
+      title: t.woNotifWeatherTitle,
       body: hot
-          ? 'High heat detected (${temp!.toStringAsFixed(1)}°C). Hydrate and ease intensity.'
+          ? t.woNotifWeatherHot(temp!.toStringAsFixed(1))
           : severeCondition
-          ? 'Current weather is ${_weatherCondition ?? 'unfavorable'}. Consider safer indoor training.'
-          : 'Strong wind detected (${wind!.toStringAsFixed(1)} kph). Adjust your route and effort.',
+          ? t.woNotifWeatherSevere(_weatherCondition ?? t.woWeatherUnfavorable)
+          : t.woNotifWeatherWind(wind!.toStringAsFixed(1)),
       cooldown: const Duration(hours: 4),
     );
   }
 
   Future<void> _checkWorkoutMilestoneNotifications() async {
-    if (!_isTracking || _isPaused) return;
+    if (!_isTracking || _isPaused || !mounted) return;
+    final t = AppLocalizations.of(context);
 
     final distanceKm = (_totalDistanceMeters / 1000).floor();
     if (distanceKm > 0 && distanceKm > _lastDistanceMilestoneKm) {
       _lastDistanceMilestoneKm = distanceKm;
       await AppNotificationsService.instance.showWithCooldown(
         uniqueKey: 'workout_distance_milestone_$distanceKm',
-        title: 'Distance milestone',
-        body: 'Great work! You just crossed ${distanceKm} km.',
+        title: t.woNotifDistanceTitle,
+        body: t.woNotifDistanceBody(distanceKm),
         cooldown: const Duration(minutes: 1),
       );
     }
@@ -525,8 +532,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
       _lastDurationMilestoneMinutes = milestoneMinutes;
       await AppNotificationsService.instance.showWithCooldown(
         uniqueKey: 'workout_time_milestone_$milestoneMinutes',
-        title: 'Time milestone',
-        body: 'You have trained for $milestoneMinutes minutes.',
+        title: t.woNotifTimeTitle,
+        body: t.woNotifTimeBody(milestoneMinutes),
         cooldown: const Duration(minutes: 1),
       );
     }
@@ -536,9 +543,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
       _goalReachedNotified = true;
       await AppNotificationsService.instance.showWithCooldown(
         uniqueKey: 'workout_goal_reached',
-        title: 'Goal reached',
-        body:
-            'Workout goal complete: ${_estimatedCalories} kcal and ${_activeMinutes} min.',
+        title: t.woNotifGoalTitle,
+        body: t.woNotifGoalBody(_estimatedCalories, _activeMinutes),
         cooldown: const Duration(minutes: 5),
       );
       ReviewService.instance.maybeRequestAfterGoal();
@@ -578,14 +584,17 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 
   void _syncWorkoutWidget() {
-    final mode = _selectedMode == null ? 'Workout' : _modeLabel(_selectedMode!);
+    if (!mounted) return;
+    final t = AppLocalizations.of(context);
+    final mode =
+        _selectedMode == null ? t.woTitle : _modeLabel(_selectedMode!, t);
     unawaited(
       HomeWidgetService.updateWorkoutSummary(
         mode: mode,
         distance: formatWorkoutDistance(_selectedMode, _totalDistanceMeters),
         duration: _formatDuration(_elapsed),
         calories: _estimatedCalories,
-        paceLabel: _paceOrSpeedLabel,
+        paceLabel: _paceOrSpeedLabel(t),
         paceValue: _paceOrSpeedValueText,
         routePoints: _sampleRoutePointsForWidget(),
       ),
@@ -605,8 +614,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         return null;
       }
       setState(() {
-        _statusMessage =
-            'Location plugin not loaded. Fully restart the app (stop and run again).';
+        _statusMessage = AppLocalizations.of(context).woStatusPluginNotLoaded;
       });
       return null;
     } on PlatformException catch (error) {
@@ -614,8 +622,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
         return null;
       }
       setState(() {
-        _statusMessage =
-            'Location platform error: ${error.message ?? error.code}';
+        _statusMessage = AppLocalizations.of(context)
+            .woStatusPlatformError(error.message ?? error.code);
       });
       return null;
     } on TimeoutException {
@@ -623,7 +631,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         return null;
       }
       setState(() {
-        _statusMessage = 'Timed out while getting your current location.';
+        _statusMessage = AppLocalizations.of(context).woStatusTimeout;
       });
       return null;
     } on LocationServiceDisabledException {
@@ -631,7 +639,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         return null;
       }
       setState(() {
-        _statusMessage = 'Location services are disabled.';
+        _statusMessage = AppLocalizations.of(context).woStatusServicesDisabled;
       });
       return null;
     } on PermissionDeniedException catch (error) {
@@ -639,7 +647,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
         return null;
       }
       setState(() {
-        _statusMessage = 'Unable to get current location: ${error.message}';
+        _statusMessage = AppLocalizations.of(context)
+            .woStatusUnableLocation(error.message ?? '');
       });
       return null;
     }
@@ -652,7 +661,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         return false;
       }
       setState(() {
-        _statusMessage = 'Location services are disabled.';
+        _statusMessage = AppLocalizations.of(context).woStatusServicesDisabled;
       });
       return false;
     }
@@ -667,7 +676,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         return false;
       }
       setState(() {
-        _statusMessage = 'Location permission denied.';
+        _statusMessage = AppLocalizations.of(context).woStatusPermissionDenied;
       });
       return false;
     }
@@ -677,7 +686,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
         return false;
       }
       setState(() {
-        _statusMessage = 'Location permission permanently denied.';
+        _statusMessage =
+            AppLocalizations.of(context).woStatusPermissionPermanent;
       });
       return false;
     }
@@ -686,7 +696,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 
   Future<void> _primeLiveLocation({
-    String loadingMessage = 'Getting your live location...',
+    String? loadingMessage,
   }) async {
     if (!mounted) {
       return;
@@ -694,7 +704,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
     setState(() {
       _isPreparingLocation = true;
-      _statusMessage = loadingMessage;
+      _statusMessage =
+          loadingMessage ?? AppLocalizations.of(context).woStatusGettingLocation;
     });
 
     final hasAccess = await _ensureLocationAccess();
@@ -722,7 +733,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       _isPreparingLocation = false;
       _currentPosition = point;
       if (!_isTracking) {
-        _statusMessage = 'Live location ready.';
+        _statusMessage = AppLocalizations.of(context).woStatusLiveReady;
       }
     });
     unawaited(_moveWorkoutMapCamera(point, 17));
@@ -808,8 +819,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }) {
     return Tooltip(
       message: _mapFollowsUserLocation
-          ? 'Map follows your location (pan map to explore freely)'
-          : 'Recenter map on your location',
+          ? AppLocalizations.of(context).woMapFollows
+          : AppLocalizations.of(context).woRecenterTooltip,
       child: Material(
         elevation: 2,
         shadowColor: Colors.black26,
@@ -867,7 +878,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       final nextPoint = LatLng(position.latitude, position.longitude);
       setState(() {
         _currentPosition = nextPoint;
-        _statusMessage = 'Live location ready.';
+        _statusMessage = AppLocalizations.of(context).woStatusLiveReady;
       });
       _followMapCameraToUser(nextPoint);
     });
@@ -876,9 +887,10 @@ class _WorkoutPageState extends State<WorkoutPage> {
   Future<void> _startTracking() async {
     try {
       final hasAccess = await _ensureLocationAccess();
-      if (!hasAccess) {
+      if (!hasAccess || !mounted) {
         return;
       }
+      final t = AppLocalizations.of(context);
 
       final locationSettings = Platform.isAndroid
           ? AndroidSettings(
@@ -887,9 +899,10 @@ class _WorkoutPageState extends State<WorkoutPage> {
               intervalDuration: const Duration(seconds: 1),
               forceLocationManager: true,
               foregroundNotificationConfig: ForegroundNotificationConfig(
-                notificationTitle: 'Synthese workout tracking',
-                notificationText:
-                    'Tracking your ${_modeLabel(_selectedMode ?? WorkoutMode.outdoorWalking)} in background',
+                notificationTitle: t.woNotifForegroundTitle,
+                notificationText: t.woNotifForegroundBody(
+                  _modeLabel(_selectedMode ?? WorkoutMode.outdoorWalking, t),
+                ),
                 enableWakeLock: true,
                 setOngoing: true,
               ),
@@ -927,7 +940,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                 return;
               }
               setState(() {
-                _statusMessage = 'Location stream error: $error';
+                _statusMessage = t.woStatusStreamError('$error');
                 _isTracking = false;
                 if (_trackingStartAt != null) {
                   _elapsedBeforeCurrentRun += DateTime.now().difference(
@@ -955,7 +968,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       setState(() {
         _isTracking = true;
         _isManuallyPaused = false;
-        _statusMessage = 'Tracking started.';
+        _statusMessage = t.woStatusTrackingStarted;
         _sessionStartedAt = DateTime.now();
         _trackingStartAt = DateTime.now();
         _lastDistanceMilestoneKm = 0;
@@ -968,7 +981,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       _notifyMetricsChangedIfNeeded();
       unawaited(_updateTrackingNotification());
       unawaited(_notifyWorkoutStarted());
-      if (mounted) AppToast.success(context, 'Workout started — let\'s go!', icon: Icons.play_arrow_rounded);
+      if (mounted) AppToast.success(context, t.woToastStarted, icon: Icons.play_arrow_rounded);
 
       _durationTicker?.cancel();
       _durationTicker = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -985,16 +998,15 @@ class _WorkoutPageState extends State<WorkoutPage> {
         return;
       }
       setState(() {
-        _statusMessage =
-            'Location plugin not loaded. Fully restart the app (stop and run again).';
+        _statusMessage = AppLocalizations.of(context).woStatusPluginNotLoaded;
       });
     } on PlatformException catch (error) {
       if (!mounted) {
         return;
       }
       setState(() {
-        _statusMessage =
-            'Location platform error: ${error.message ?? error.code}';
+        _statusMessage = AppLocalizations.of(context)
+            .woStatusPlatformError(error.message ?? error.code);
       });
     }
   }
@@ -1048,7 +1060,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     setState(() {
       _isCountdownActive = false;
       _countdownValue = 3;
-      _statusMessage = 'Start cancelled.';
+      _statusMessage = AppLocalizations.of(context).woStatusStartCancelled;
     });
   }
 
@@ -1061,6 +1073,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     final bgColor = isDark ? const Color(0xFF252528) : const Color(0xFFEDEDEF);
     final textColor = isDark ? Colors.white : Colors.black;
     final mutedColor = textColor.withValues(alpha: 0.65);
+    final t = AppLocalizations.of(context);
 
     final shouldStop = await showDialog<bool>(
       context: context,
@@ -1077,7 +1090,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'End route?',
+                  t.woEndRouteTitle,
                   style: TextStyle(
                     color: textColor,
                     fontSize: 20,
@@ -1087,7 +1100,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Your current tracking session will stop.',
+                  t.woEndRouteBody,
                   style: TextStyle(
                     color: mutedColor,
                     fontSize: 14,
@@ -1100,14 +1113,14 @@ class _WorkoutPageState extends State<WorkoutPage> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('Cancel'),
+                        child: Text(t.commonCancel),
                       ),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: FilledButton(
                         onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text('End Route'),
+                        child: Text(t.woEndRouteConfirm),
                       ),
                     ),
                   ],
@@ -1156,7 +1169,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     unawaited(_cancelTrackingNotification());
     unawaited(_startPreviewLocationUpdates());
     if (saveSession && mounted) {
-      AppToast.success(context, 'Workout saved', icon: Icons.check_circle_outline_rounded);
+      AppToast.success(context, AppLocalizations.of(context).woToastSaved, icon: Icons.check_circle_outline_rounded);
     }
     final canSaveSession = modeSnapshot != null &&
         startedAt != null &&
@@ -1207,19 +1220,23 @@ class _WorkoutPageState extends State<WorkoutPage> {
     required List<LatLng> routePoints,
   }) async {
     try {
-      unawaited(
-        HomeWidgetService.updateWorkoutSummary(
-          mode: _modeLabel(mode),
-          distance: formatWorkoutDistance(mode, distanceMeters),
-          duration: _formatDuration(Duration(minutes: activeMinutes)),
-          calories: calories,
-          paceLabel: _paceOrSpeedLabel,
-          paceValue: _paceOrSpeedValueText,
-          routePoints: routePoints
-              .map((p) => <String, double>{'lat': p.latitude, 'lng': p.longitude})
-              .toList(),
-        ),
-      );
+      if (mounted) {
+        final t = AppLocalizations.of(context);
+        unawaited(
+          HomeWidgetService.updateWorkoutSummary(
+            mode: _modeLabel(mode, t),
+            distance: formatWorkoutDistance(mode, distanceMeters),
+            duration: _formatDuration(Duration(minutes: activeMinutes)),
+            calories: calories,
+            paceLabel: _paceOrSpeedLabel(t),
+            paceValue: _paceOrSpeedValueText,
+            routePoints: routePoints
+                .map((p) =>
+                    <String, double>{'lat': p.latitude, 'lng': p.longitude})
+                .toList(),
+          ),
+        );
+      }
 
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) {
@@ -1307,7 +1324,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
         _trackingStartAt = null;
       }
       _isManuallyPaused = true;
-      _statusMessage = 'Paused. Tap Resume to continue.';
+      _statusMessage = AppLocalizations.of(context).woStatusPaused;
     });
     _notifyMetricsChangedIfNeeded();
   }
@@ -1320,7 +1337,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     setState(() {
       _isManuallyPaused = false;
       _trackingStartAt ??= DateTime.now();
-      _statusMessage = 'Tracking resumed.';
+      _statusMessage = AppLocalizations.of(context).woStatusResumed;
     });
     _notifyMetricsChangedIfNeeded();
   }
@@ -1353,7 +1370,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       }
 
       if (_isManuallyPaused) {
-        _statusMessage = 'Paused. Tap Resume to continue.';
+        _statusMessage = AppLocalizations.of(context).woStatusPaused;
       } else if (clearStatus) {
         _statusMessage = null;
       }
@@ -1374,22 +1391,22 @@ class _WorkoutPageState extends State<WorkoutPage> {
         '${seconds.toString().padLeft(2, '0')}';
   }
 
-  String _modeLabel(WorkoutMode mode) {
+  String _modeLabel(WorkoutMode mode, AppLocalizations t) {
     switch (mode) {
       case WorkoutMode.running:
-        return 'Running';
+        return t.woModeRunning;
       case WorkoutMode.trailRun:
-        return 'Trail Run';
+        return t.woModeTrailRun;
       case WorkoutMode.outdoorWalking:
-        return 'Outdoor Walking';
+        return t.woModeOutdoorWalking;
       case WorkoutMode.cycling:
-        return 'Cycling';
+        return t.woModeCycling;
       case WorkoutMode.mountainBikeRide:
-        return 'Mountain Bike Ride';
+        return t.woModeMountainBike;
       case WorkoutMode.eBikeRide:
-        return 'E-Bike Ride';
+        return t.woModeEBike;
       case WorkoutMode.swimming:
-        return 'Swimming';
+        return t.woModeSwimming;
     }
   }
 
@@ -1410,22 +1427,22 @@ class _WorkoutPageState extends State<WorkoutPage> {
     }
   }
 
-  String _modeSubtitle(WorkoutMode mode) {
+  String _modeSubtitle(WorkoutMode mode, AppLocalizations t) {
     switch (mode) {
       case WorkoutMode.running:
-        return 'GPS route, speed (km/h), calories, and active time.';
+        return t.woSubRunning;
       case WorkoutMode.trailRun:
-        return 'Trail run with GPS, pace (min/km), and higher-intensity calorie estimate.';
+        return t.woSubTrailRun;
       case WorkoutMode.outdoorWalking:
-        return 'Outdoor walk with live GPS route and speed.';
+        return t.woSubOutdoorWalking;
       case WorkoutMode.cycling:
-        return 'Ride with GPS speed (km/h), distance, and calorie estimate.';
+        return t.woSubCycling;
       case WorkoutMode.mountainBikeRide:
-        return 'Off-road ride with GPS; calories tuned for higher MTB effort.';
+        return t.woSubMountainBike;
       case WorkoutMode.eBikeRide:
-        return 'Assisted ride with GPS; calories reflect lighter effort vs. standard cycling.';
+        return t.woSubEBike;
       case WorkoutMode.swimming:
-        return 'Open-water or pool-side GPS; distance in meters, swim pace (/100m), time-based calories.';
+        return t.woSubSwimming;
     }
   }
 
@@ -1436,9 +1453,12 @@ class _WorkoutPageState extends State<WorkoutPage> {
       _showMetricsFullscreen = false;
     });
     widget.onWorkoutModeChanged?.call(true);
-    await _primeLiveLocation(
-      loadingMessage: 'Getting your live location for ${_modeLabel(mode)}...',
-    );
+    if (mounted) {
+      await _primeLiveLocation(
+        loadingMessage: AppLocalizations.of(context)
+            .woStatusGettingLocationMode(_modeLabel(mode, AppLocalizations.of(context))),
+      );
+    }
     unawaited(_loadWorkoutWeather());
   }
 
@@ -1456,6 +1476,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final mediaQuery = MediaQuery.of(context);
     final clampedTextScale = mediaQuery.textScaler.scale(1.0).clamp(0.9, 1.0);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1516,7 +1537,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                     children: [
                       Expanded(
                         child: Text(
-                          'Workout',
+                          t.woTitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -1533,13 +1554,13 @@ class _WorkoutPageState extends State<WorkoutPage> {
                         isNarrowLayout: isNarrowLayout,
                         icon: Icons.history_rounded,
                         onTap: _openHistoryScreen,
-                        tooltip: 'History',
+                        tooltip: t.woHistory,
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Choose an activity',
+                    t.woChooseActivity,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -1590,7 +1611,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      _modeLabel(mode),
+                                      _modeLabel(mode, t),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
@@ -1601,7 +1622,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      _modeSubtitle(mode),
+                                      _modeSubtitle(mode, t),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
@@ -1653,7 +1674,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Text(
-                                      _modeLabel(_selectedMode!),
+                                      _modeLabel(_selectedMode!, t),
                                       style: TextStyle(
                                         color: textColor.withValues(alpha: 0.8),
                                         fontSize: 16,
@@ -1673,7 +1694,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                       ),
                                     ),
                                     Text(
-                                      'Distance',
+                                      t.woDistance,
                                       style: TextStyle(
                                         color: textColor.withValues(alpha: 0.6),
                                         fontSize: 14,
@@ -1693,7 +1714,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                       ),
                                     ),
                                     Text(
-                                      'Duration',
+                                      t.woDuration,
                                       style: TextStyle(
                                         color: textColor.withValues(alpha: 0.6),
                                         fontSize: 14,
@@ -1713,7 +1734,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                       ),
                                     ),
                                     Text(
-                                      _paceOrSpeedLabel,
+                                      _paceOrSpeedLabel(t),
                                       style: TextStyle(
                                         color: textColor.withValues(alpha: 0.6),
                                         fontSize: 14,
@@ -1723,7 +1744,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                     ),
                                     const SizedBox(height: 16),
                                     Text(
-                                      '$displayedCalories kcal',
+                                      t.woKcalValue(displayedCalories),
                                       style: TextStyle(
                                         color: textColor,
                                         fontSize: isNarrowLayout ? 40 : 48,
@@ -1733,7 +1754,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                       ),
                                     ),
                                     Text(
-                                      'Calories',
+                                      t.woCalories,
                                       style: TextStyle(
                                         color: textColor.withValues(alpha: 0.6),
                                         fontSize: 14,
@@ -1764,7 +1785,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                                 ),
                                                 const SizedBox(width: 10),
                                                 Text(
-                                                  'Loading weather...',
+                                                  t.woLoadingWeather,
                                                   style: TextStyle(
                                                     color: textColor.withValues(alpha: 0.75),
                                                     fontSize: 13,
@@ -1790,7 +1811,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                                     Expanded(
                                                       child: Text(
                                                         _weatherError ??
-                                                            '${_weatherTempC?.toStringAsFixed(1) ?? '--'}°C • ${_weatherCondition ?? 'Unknown'}',
+                                                            t.woTempCondition(_weatherTempC?.toStringAsFixed(1) ?? '--', _weatherCondition ?? t.woUnknown),
                                                         maxLines: 1,
                                                         overflow:
                                                             TextOverflow.ellipsis,
@@ -1826,8 +1847,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                                 if (_weatherError == null) ...[
                                                   const SizedBox(height: 6),
                                                   Text(
-                                                    _weatherLocationLabel ??
-                                                        'Location unavailable',
+                                                    _weatherLocationLabel ?? t.woLocationUnavailable,
                                                     maxLines: 1,
                                                     overflow:
                                                         TextOverflow.ellipsis,
@@ -1841,7 +1861,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                                   ),
                                                   const SizedBox(height: 4),
                                                   Text(
-                                                    'Lat ${_currentPosition?.latitude.toStringAsFixed(6) ?? '--'} • Lng ${_currentPosition?.longitude.toStringAsFixed(6) ?? '--'}',
+                                                    t.woLatLng(_currentPosition?.latitude.toStringAsFixed(6) ?? '--', _currentPosition?.longitude.toStringAsFixed(6) ?? '--'),
                                                     maxLines: 1,
                                                     overflow:
                                                         TextOverflow.ellipsis,
@@ -1855,7 +1875,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                                   ),
                                                   const SizedBox(height: 3),
                                                   Text(
-                                                    'Feels ${_weatherFeelsLikeC?.toStringAsFixed(1) ?? '--'}°C • Humidity ${_weatherHumidity ?? '--'}% • Wind ${_weatherWindKph?.toStringAsFixed(1) ?? '--'} kph',
+                                                    t.woWeatherFull(_weatherFeelsLikeC?.toStringAsFixed(1) ?? '--', '${_weatherHumidity ?? '--'}', _weatherWindKph?.toStringAsFixed(1) ?? '--'),
                                                     maxLines: 1,
                                                     overflow:
                                                         TextOverflow.ellipsis,
@@ -1916,7 +1936,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            _modeLabel(_selectedMode!),
+                            _modeLabel(_selectedMode!, t),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -1933,7 +1953,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                         isNarrowLayout: isNarrowLayout,
                         icon: Icons.history_rounded,
                         onTap: _openHistoryScreen,
-                        tooltip: 'History',
+                        tooltip: t.woHistory,
                       ),
                       const SizedBox(width: 8),
                       _buildHeaderCircleButton(
@@ -1947,7 +1967,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                             _hideTrackingUi = !_hideTrackingUi;
                           });
                         },
-                        tooltip: _hideTrackingUi ? 'Show UI' : 'Hide UI',
+                        tooltip: _hideTrackingUi ? t.woShowUi : t.woHideUi,
                       ),
                       if (_showMetricsFullscreen) ...[
                         const SizedBox(width: 8),
@@ -1986,7 +2006,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                         if (!_showMetricsFullscreen) ...[
                         if (_currentPosition != null)
                           Align(
-                            alignment: Alignment.centerRight,
+                            alignment: AlignmentDirectional.centerEnd,
                             child: _buildRecenterMapChip(
                               textColor: textColor,
                               cardColor: cardColor,
@@ -2012,7 +2032,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                           child: Stack(
                             children: [
                               Padding(
-                                padding: const EdgeInsets.only(right: 32),
+                                padding: const EdgeInsetsDirectional.only(end: 32),
                                 child: Row(
                                   children: [
                                     Expanded(
@@ -2021,7 +2041,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'Distance',
+                                            t.woDistance,
                                             style: TextStyle(
                                               color: textColor.withValues(
                                                 alpha: 0.6,
@@ -2055,7 +2075,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'Duration',
+                                            t.woDuration,
                                             style: TextStyle(
                                               color: textColor.withValues(
                                                 alpha: 0.6,
@@ -2089,7 +2109,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            _paceOrSpeedLabel,
+                                            _paceOrSpeedLabel(t),
                                             style: TextStyle(
                                               color: textColor.withValues(
                                                 alpha: 0.6,
@@ -2156,7 +2176,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                           children: [
                             if (!_showMetricsFullscreen)
                               Text(
-                                'Calories: $displayedCalories kcal',
+                                t.woCaloriesLine(displayedCalories),
                                 style: TextStyle(
                                   color: textColor,
                                   fontSize: 14,
@@ -2186,7 +2206,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                           ),
                                           const SizedBox(width: 8),
                                           Text(
-                                            'Loading weather...',
+                                            t.woLoadingWeather,
                                             style: TextStyle(
                                               color: textColor.withValues(alpha: 0.7),
                                               fontSize: 12,
@@ -2209,7 +2229,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                               Expanded(
                                                 child: Text(
                                                   _weatherError ??
-                                                      '${_weatherTempC?.round() ?? '--'}°C • ${_weatherCondition ?? 'Unknown'}',
+                                                      t.woTempCondition('${_weatherTempC?.round() ?? '--'}', _weatherCondition ?? t.woUnknown),
                                                   maxLines: 1,
                                                   overflow: TextOverflow.ellipsis,
                                                   style: TextStyle(
@@ -2238,7 +2258,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                           if (_weatherError == null) ...[
                                             const SizedBox(height: 4),
                                             Text(
-                                              _weatherLocationLabel ?? 'Location unavailable',
+                                              _weatherLocationLabel ?? t.woLocationUnavailable,
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
@@ -2249,7 +2269,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
-                                              'Feels ${_weatherFeelsLikeC?.round() ?? '--'}° • Hum ${_weatherHumidity ?? '--'}% • Wind ${_weatherWindKph?.round() ?? '--'} kph',
+                                              t.woWeatherCompact('${_weatherFeelsLikeC?.round() ?? '--'}', '${_weatherHumidity ?? '--'}', '${_weatherWindKph?.round() ?? '--'}'),
                                               maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
@@ -2292,10 +2312,10 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                   ),
                                   label: Text(
                                     _isTracking
-                                        ? 'Stop Route'
+                                        ? t.woStopRoute
                                         : (_isPreparingLocation
-                                              ? 'Preparing GPS...'
-                                              : 'Start Route'),
+                                              ? t.woPreparingGps
+                                              : t.woStartRoute),
                                   ),
                                 ),
                                 OutlinedButton.icon(
@@ -2307,13 +2327,13 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                   icon: Icon(
                                     _isPaused ? Icons.play_arrow : Icons.pause,
                                   ),
-                                  label: Text(_isPaused ? 'Resume' : 'Pause'),
+                                  label: Text(_isPaused ? t.woResume : t.woPause),
                                 ),
                                 OutlinedButton.icon(
                                   onPressed:
                                       _canResetRoute ? _resetRoute : null,
                                   icon: const Icon(Icons.replay),
-                                  label: const Text('Reset'),
+                                  label: Text(t.woReset),
                                 ),
                               ],
                             ),
@@ -2379,7 +2399,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                             },
                                             child: Text(
                                               _countdownValue == 0
-                                                  ? 'Go'
+                                                  ? t.woGo
                                                   : _countdownValue.toString(),
                                               key: ValueKey<int>(_countdownValue),
                                               style: TextStyle(
@@ -2411,7 +2431,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                               ),
                             ),
                             icon: const Icon(Icons.close_rounded),
-                            label: const Text('Cancel'),
+                            label: Text(t.commonCancel),
                           ),
                         ],
                       ),
@@ -2440,7 +2460,8 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
   }
 
   String _formatDateTime(DateTime value) {
-    return DateFormat('MMM d, yyyy  h:mm a').format(value);
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat('MMM d, yyyy  h:mm a', localeName).format(value);
   }
 
   String _formatDuration(Duration duration) {
@@ -2452,29 +2473,30 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
         '${seconds.toString().padLeft(2, '0')}';
   }
 
-  String _modeLabel(String mode) {
+  String _modeLabel(String mode, AppLocalizations t) {
     switch (mode) {
       case 'running':
-        return 'Running';
+        return t.woModeRunning;
       case 'trailRun':
-        return 'Trail Run';
+        return t.woModeTrailRun;
       case 'cycling':
-        return 'Cycling';
+        return t.woModeCycling;
       case 'mountainBikeRide':
-        return 'Mountain Bike Ride';
+        return t.woModeMountainBike;
       case 'eBikeRide':
-        return 'E-Bike Ride';
+        return t.woModeEBike;
       case 'swimming':
-        return 'Swimming';
+        return t.woModeSwimming;
       case 'outdoorWalking':
       default:
-        return 'Outdoor Walking';
+        return t.woModeOutdoorWalking;
     }
   }
 
   bool _sessionMatchesSearch(
     QueryDocumentSnapshot<Map<String, dynamic>> doc,
     String query,
+    AppLocalizations t,
   ) {
     final q = query.trim().toLowerCase();
     if (q.isEmpty) {
@@ -2486,7 +2508,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
     if (modeLc.contains(q)) {
       return true;
     }
-    final label = _modeLabel(mode).toLowerCase();
+    final label = _modeLabel(mode, t).toLowerCase();
     if (label.contains(q)) {
       return true;
     }
@@ -2539,7 +2561,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
         onChanged: (_) => setState(() {}),
         style: TextStyle(color: textColor, fontSize: 16),
         decoration: InputDecoration(
-          hintText: 'Search workouts...',
+          hintText: AppLocalizations.of(context).woSearchHint,
           hintStyle: TextStyle(color: subTextColor, fontSize: 16),
           prefixIcon: Icon(
             CupertinoIcons.search,
@@ -2574,25 +2596,26 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
     final dialogBg = isDark ? const Color(0xFF252528) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final mutedText = isDark ? Colors.white70 : Colors.black54;
+    final t = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: dialogBg,
-        title: Text('Delete workout?', style: TextStyle(color: textColor)),
+        title: Text(t.woDeleteTitle, style: TextStyle(color: textColor)),
         content: Text(
-          'This workout session will be removed from your history.',
+          t.woDeleteBody,
           style: TextStyle(color: mutedText),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel', style: TextStyle(color: textColor)),
+            child: Text(t.commonCancel, style: TextStyle(color: textColor)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(
+            child: Text(
+              t.commonDelete,
+              style: const TextStyle(
                 color: Colors.redAccent,
                 fontWeight: FontWeight.bold,
               ),
@@ -2618,6 +2641,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF111111) : Colors.white;    final textColor = isDark ? Colors.white : Colors.black;
@@ -2631,15 +2655,15 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
     if (uid == null) {
       return Scaffold(
         backgroundColor: bgColor,
-        appBar: AppBar(title: const Text('Workout History')),
-        body: const Center(child: Text('Please sign in to view history.')),
+        appBar: AppBar(title: Text(t.woHistoryTitle)),
+        body: Center(child: Text(t.woSignInHistory)),
       );
     }
 
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        title: const Text('Workout History'),
+        title: Text(t.woHistoryTitle),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2677,7 +2701,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                 if (docs.isEmpty) {
                   return Center(
                     child: Text(
-                      'No workout history yet.',
+                      t.woNoHistory,
                       style: TextStyle(
                         color: textColor.withValues(alpha: 0.7),
                         fontSize: 16,
@@ -2689,13 +2713,13 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
 
                 final query = _searchController.text;
                 final filteredDocs = docs
-                    .where((d) => _sessionMatchesSearch(d, query))
+                    .where((d) => _sessionMatchesSearch(d, query, t))
                     .toList();
 
                 if (filteredDocs.isEmpty) {
                   return Center(
                     child: Text(
-                      'No workouts match your search.',
+                      t.woNoMatch,
                       style: TextStyle(
                         color: textColor.withValues(alpha: 0.7),
                         fontSize: 16,
@@ -2746,8 +2770,8 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                 key: Key(sessionId),
                 direction: DismissDirection.endToStart,
                 background: Container(
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 20),
+                  alignment: AlignmentDirectional.centerEnd,
+                  padding: const EdgeInsetsDirectional.only(end: 20),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFF3B30),
                     borderRadius: BorderRadius.circular(18),
@@ -2761,7 +2785,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                 confirmDismiss: (_) => _showDeleteConfirmation(context),
                 onDismissed: (_) {
                   _deleteWorkoutSession(uid: uid, sessionId: sessionId);
-                  AppToast.info(context, 'Workout deleted', icon: Icons.delete_outline_rounded);
+                  AppToast.info(context, t.woToastDeleted, icon: Icons.delete_outline_rounded);
                 },
                 child: Container(
                   decoration: BoxDecoration(
@@ -2798,7 +2822,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                       ),
                       childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
                       title: Text(
-                        _modeLabel(mode),
+                        _modeLabel(mode, t),
                         style: TextStyle(
                           color: textColor,
                           fontSize: 17,
@@ -2818,7 +2842,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                           children: [
                             Expanded(
                               child: _HistoryMetricChip(
-                                label: 'Distance',
+                                label: t.woDistance,
                                 value: formatWorkoutDistance(
                                   modeEnum,
                                   distanceMeters,
@@ -2828,7 +2852,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: _HistoryMetricChip(
-                                label: 'Duration',
+                                label: t.woDuration,
                                 value: _formatDuration(duration),
                               ),
                             ),
@@ -2839,15 +2863,15 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                           children: [
                             Expanded(
                               child: _HistoryMetricChip(
-                                label: 'Calories',
-                                value: '$calories kcal',
+                                label: t.woCalories,
+                                value: t.woKcalValue(calories),
                               ),
                             ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: _HistoryMetricChip(
-                                label: 'Active',
-                                value: '$activeMinutes min',
+                                label: t.woActive,
+                                value: t.woMinValue(activeMinutes),
                               ),
                             ),
                           ],

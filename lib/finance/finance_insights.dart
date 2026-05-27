@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/finance_charts.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
@@ -24,7 +25,7 @@ Widget buildInsightsSection({
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
-        "Insights",
+        AppLocalizations.of(context).finInsightsTitle,
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
@@ -121,13 +122,13 @@ Widget buildMonthlySummary({
           ? const Color(0xFF34C759)
           : const Color(0xFFFF3B30);
 
-      final monthName = DateFormat('MMMM yyyy').format(selectedMonth);
+      final monthName = DateFormat('MMMM yyyy', Localizations.localeOf(context).toString()).format(selectedMonth);
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Monthly Summary",
+            AppLocalizations.of(context).finInsightsMonthlySummary,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -159,7 +160,7 @@ Widget buildMonthlySummary({
                       child: Column(
                         children: [
                           Text(
-                            "Spent",
+                            AppLocalizations.of(context).finInsightsSpent,
                             style: TextStyle(
                               color: subTextColor,
                               fontSize: 13,
@@ -182,7 +183,7 @@ Widget buildMonthlySummary({
                       child: Column(
                         children: [
                           Text(
-                            "Earned",
+                            AppLocalizations.of(context).finInsightsEarned,
                             style: TextStyle(
                               color: subTextColor,
                               fontSize: 13,
@@ -205,7 +206,7 @@ Widget buildMonthlySummary({
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Net: ${net >= 0 ? '+' : ''}${formatCurrency(net)}',
+                  '${AppLocalizations.of(context).finInsightsNetPrefix} ${net >= 0 ? '+' : ''}${formatCurrency(net)}',
                   style: TextStyle(
                     color: netColor,
                     fontSize: 20,
@@ -270,7 +271,7 @@ Widget buildMonthlyTrendsChart({
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Monthly Trends",
+            AppLocalizations.of(context).finInsightsMonthlyTrends,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -292,7 +293,7 @@ Widget buildMonthlyTrendsChart({
                     height: 200,
                     child: Center(
                       child: Text(
-                        'No transaction data yet',
+                        AppLocalizations.of(context).finInsightsNoData,
                         style: TextStyle(color: subTextColor),
                       ),
                     ),
@@ -327,7 +328,7 @@ Widget buildMonthlyTrendsChart({
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Income',
+                      AppLocalizations.of(context).finTxIncome,
                       style: TextStyle(color: subTextColor, fontSize: 12),
                     ),
                     const SizedBox(width: 20),
@@ -341,7 +342,7 @@ Widget buildMonthlyTrendsChart({
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Expense',
+                      AppLocalizations.of(context).finTxExpense,
                       style: TextStyle(color: subTextColor, fontSize: 12),
                     ),
                   ],
@@ -396,7 +397,7 @@ Widget buildIncomeExpenseChart({
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Income vs Expense",
+            AppLocalizations.of(context).finInsightsIncomeVsExpense,
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -418,7 +419,7 @@ Widget buildIncomeExpenseChart({
                     SizedBox(
                       width: 70,
                       child: Text(
-                        'Income',
+                        AppLocalizations.of(context).finTxIncome,
                         style: TextStyle(
                           color: textColor,
                           fontSize: 14,
@@ -462,7 +463,7 @@ Widget buildIncomeExpenseChart({
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                'Income',
+                                AppLocalizations.of(context).finTxIncome,
                                 style: TextStyle(
                                   color: subTextColor,
                                   fontSize: 12,
@@ -505,7 +506,7 @@ Widget buildIncomeExpenseChart({
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                'Expense',
+                                AppLocalizations.of(context).finTxExpense,
                                 style: TextStyle(
                                   color: subTextColor,
                                   fontSize: 12,
@@ -719,7 +720,7 @@ Widget buildSpendingInsights({
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Spending Insights",
+                    AppLocalizations.of(context).finInsightsSpendingInsights,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -740,8 +741,8 @@ Widget buildSpendingInsights({
                           _buildInsightRow(
                             icon: biggestCategory.icon,
                             iconColor: biggestCategory.color,
-                            label: "Biggest Expense",
-                            value: biggestCategory.name,
+                            label: AppLocalizations.of(context).finInsightsBiggestExpense,
+                            value: financeDefaultName(AppLocalizations.of(context), biggestCategory.id, biggestCategory.name),
                             subValue: formatCurrency(biggestAmount),
                             textColor: textColor,
                             subTextColor: subTextColor,
@@ -756,10 +757,10 @@ Widget buildSpendingInsights({
                             iconColor: isSpendingUp
                                 ? const Color(0xFFFF3B30)
                                 : const Color(0xFF34C759),
-                            label: "vs Last Month",
+                            label: AppLocalizations.of(context).finInsightsVsLastMonth,
                             value: isSpendingUp
-                                ? "↑${trendPercent.abs().toStringAsFixed(0)}% more"
-                                : "↓${trendPercent.abs().toStringAsFixed(0)}% less",
+                                ? AppLocalizations.of(context).finInsightsTrendMore(trendPercent.abs().toStringAsFixed(0))
+                                : AppLocalizations.of(context).finInsightsTrendLess(trendPercent.abs().toStringAsFixed(0)),
                             valueColor: isSpendingUp
                                 ? const Color(0xFFFF3B30)
                                 : const Color(0xFF34C759),
@@ -770,6 +771,7 @@ Widget buildSpendingInsights({
                         ],
                         if (monthlyBudget > 0) ...[
                           _buildBudgetProgress(
+                            context: context,
                             used: totalCurrentMonth,
                             total: monthlyBudget,
                             textColor: textColor,
@@ -783,7 +785,7 @@ Widget buildSpendingInsights({
                           _buildInsightRow(
                             icon: Icons.credit_card,
                             iconColor: const Color(0xFFFF3B30),
-                            label: "Total Debt Load",
+                            label: AppLocalizations.of(context).finInsightsTotalDebtLoad,
                             value: formatCurrency(totalDebtLoad),
                             valueColor: const Color(0xFFFF3B30),
                             textColor: textColor,
@@ -796,7 +798,7 @@ Widget buildSpendingInsights({
                           _buildInsightRow(
                             icon: Icons.percent,
                             iconColor: debtRatioColor,
-                            label: "Debt-to-Income Ratio",
+                            label: AppLocalizations.of(context).finInsightsDebtToIncome,
                             value: "${debtToIncomeRatio.toStringAsFixed(1)}%",
                             valueColor: debtRatioColor,
                             textColor: textColor,
@@ -822,7 +824,7 @@ Widget buildSpendingInsights({
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
-                                    "You've paid off ${debtPayoffPercent.toStringAsFixed(0)}% of your debt this month 🎉",
+                                    AppLocalizations.of(context).finInsightsDebtPaidOff(debtPayoffPercent.toStringAsFixed(0)),
                                     style: TextStyle(
                                       color: textColor,
                                       fontSize: 13,
@@ -855,7 +857,7 @@ Widget buildSpendingInsights({
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "Spending Alert",
+                                        AppLocalizations.of(context).finInsightsSpendingAlert,
                                         style: TextStyle(
                                           color: textColor,
                                           fontSize: 13,
@@ -866,7 +868,7 @@ Widget buildSpendingInsights({
                                       Text(
                                         spikeCategories.take(2).map((e) {
                                           final cat = localCategoriesMap[e.key];
-                                          return "${cat?.name ?? 'Unknown'} +${e.value.toStringAsFixed(0)}%";
+                                          return AppLocalizations.of(context).finInsightsAlertItem(cat != null ? financeDefaultName(AppLocalizations.of(context), cat.id, cat.name) : AppLocalizations.of(context).finUnknown, e.value.toStringAsFixed(0));
                                         }).join(", "),
                                         style: TextStyle(
                                           color: subTextColor,
@@ -885,7 +887,7 @@ Widget buildSpendingInsights({
                             monthlyBudget == 0 &&
                             totalDebtLoad == 0)
                           Text(
-                            "Add transactions to see insights",
+                            AppLocalizations.of(context).finInsightsAddToSee,
                             style: TextStyle(
                               color: subTextColor,
                               fontSize: 14,
@@ -966,6 +968,7 @@ Widget _buildInsightRow({
 }
 
 Widget _buildBudgetProgress({
+  required BuildContext context,
   required double used,
   required double total,
   required Color textColor,
@@ -1006,7 +1009,7 @@ Widget _buildBudgetProgress({
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Budget",
+                  AppLocalizations.of(context).finInsightsBudget,
                   style: TextStyle(
                     color: subTextColor,
                     fontSize: 12,
@@ -1097,15 +1100,15 @@ Widget buildNetWorthTracker({
       Color trendColor;
       
       if (healthRatio >= 0.7) {
-        trendText = 'Healthy';
+        trendText = AppLocalizations.of(context).finInsightsHealthy;
         trendIcon = Icons.trending_up;
         trendColor = const Color(0xFF34C759);
       } else if (healthRatio >= 0.4) {
-        trendText = 'Stable';
+        trendText = AppLocalizations.of(context).finInsightsStable;
         trendIcon = Icons.remove;
         trendColor = const Color(0xFFFF9500);
       } else {
-        trendText = 'Needs Attention';
+        trendText = AppLocalizations.of(context).finInsightsNeedsAttention;
         trendIcon = Icons.trending_down;
         trendColor = const Color(0xFFFF3B30);
       }
@@ -1123,7 +1126,7 @@ Widget buildNetWorthTracker({
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Net Worth',
+                  AppLocalizations.of(context).finInsightsNetWorth,
                   style: TextStyle(
                     color: textColor,
                     fontSize: 18,
@@ -1168,7 +1171,7 @@ Widget buildNetWorthTracker({
             const SizedBox(height: 8),
             Center(
               child: Text(
-                'Total across ${accounts.length} account${accounts.length != 1 ? 's' : ''}',
+                AppLocalizations.of(context).finInsightsTotalAccounts(accounts.length),
                 style: TextStyle(
                   color: subTextColor,
                   fontSize: 12,
@@ -1207,7 +1210,7 @@ Widget buildNetWorthTracker({
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          account.name,
+                          financeDefaultName(AppLocalizations.of(context), account.id, account.name),
                           style: TextStyle(
                             color: textColor,
                             fontSize: 14,
@@ -1300,7 +1303,7 @@ Widget buildCategoryPieChart({
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Spending by Category",
+                AppLocalizations.of(context).finInsightsSpendingByCategory,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -1346,7 +1349,7 @@ Widget buildCategoryPieChart({
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                category?.name ?? 'Unknown',
+                                category != null ? financeDefaultName(AppLocalizations.of(context), category.id, category.name) : AppLocalizations.of(context).finUnknown,
                                 style: TextStyle(
                                   color: textColor,
                                   fontSize: 14,
@@ -1354,7 +1357,7 @@ Widget buildCategoryPieChart({
                               ),
                             ),
                             Text(
-                              '${formatCurrency(entry.value)} ($percentage%)',
+                              AppLocalizations.of(context).finInsightsCategoryAmount(formatCurrency(entry.value), '$percentage'),
                               style: TextStyle(
                                 color: subTextColor,
                                 fontSize: 13,

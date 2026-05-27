@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -49,6 +50,7 @@ Widget buildContextualInsights({
                         builder: (context, streakSnapshot) {
                           // Compute all insights
                           final insights = _computeInsights(
+                            t: AppLocalizations.of(context),
                             selectedMonth: selectedMonth,
                             txnSnapshot: txnSnapshot,
                             debtSnapshot: debtSnapshot,
@@ -66,7 +68,7 @@ Widget buildContextualInsights({
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "For You",
+                            AppLocalizations.of(context).finInsForYou,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -110,6 +112,7 @@ Widget buildContextualInsights({
 
 /// Computes all applicable insights based on current data
 List<FinanceInsight> _computeInsights({
+  required AppLocalizations t,
   required DateTime selectedMonth,
   required AsyncSnapshot<QuerySnapshot> txnSnapshot,
   required AsyncSnapshot<QuerySnapshot> debtSnapshot,
@@ -205,15 +208,15 @@ List<FinanceInsight> _computeInsights({
   for (var i = 0; i < spikeCategories.length && i < 2; i++) {
     final entry = spikeCategories[i];
     final category = categoriesMap[entry.key];
-    final categoryName = category?.name ?? 'Unknown';
+    final categoryName = category?.name ?? t.finUnknown;
     final increasePercent = entry.value.toStringAsFixed(0);
     final hash = _generateHash('spending_spike_${entry.key}_$increasePercent');
 
     if (!financeService.isInsightDismissed(dismissedInsights, 'spending_spike_${entry.key}', hash)) {
       insights.add(FinanceInsight(
         id: 'spending_spike_${entry.key}',
-        title: 'Spending Spike',
-        message: 'You spent $increasePercent% more on $categoryName this month compared to last month.',
+        title: t.finInsSpendingSpikeTitle,
+        message: t.finInsSpendingSpikeBody(increasePercent, categoryName),
         severity: InsightSeverity.warning,
         dataHash: hash,
         icon: Icons.trending_up,
@@ -235,8 +238,8 @@ List<FinanceInsight> _computeInsights({
       if (!financeService.isInsightDismissed(dismissedInsights, 'budget_burn', hash)) {
         insights.add(FinanceInsight(
           id: 'budget_burn',
-          title: 'Budget Alert',
-          message: "You've used ${burnPercent.toStringAsFixed(0)}% of your monthly budget with $daysRemaining days left.",
+          title: t.finInsBudgetAlertTitle,
+          message: t.finInsBudgetAlertBody(burnPercent.toStringAsFixed(0), '$daysRemaining'),
           severity: InsightSeverity.warning,
           dataHash: hash,
           icon: Icons.local_fire_department,
@@ -258,15 +261,15 @@ List<FinanceInsight> _computeInsights({
 
     if (topCategoryId != null && totalExpenses > 0) {
       final category = categoriesMap[topCategoryId];
-      final categoryName = category?.name ?? 'Unknown';
+      final categoryName = category?.name ?? t.finUnknown;
       final percent = ((topAmount / totalExpenses) * 100).toStringAsFixed(0);
       final hash = _generateHash('top_category_${topCategoryId}_$percent');
 
       if (!financeService.isInsightDismissed(dismissedInsights, 'top_category', hash)) {
         insights.add(FinanceInsight(
           id: 'top_category',
-          title: 'Top Spending',
-          message: '$categoryName is your biggest expense this month — $percent% of total spending.',
+          title: t.finInsTopSpendingTitle,
+          message: t.finInsTopSpendingBody(categoryName, percent),
           severity: InsightSeverity.info,
           dataHash: hash,
           icon: Icons.pie_chart,
@@ -284,8 +287,8 @@ List<FinanceInsight> _computeInsights({
       if (!financeService.isInsightDismissed(dismissedInsights, 'income_health', hash)) {
         insights.add(FinanceInsight(
           id: 'income_health',
-          title: 'Overspending Alert',
-          message: 'You spent more than you earned this month. Consider reducing expenses.',
+          title: t.finInsOverspendTitle,
+          message: t.finInsOverspendBody,
           severity: InsightSeverity.warning,
           dataHash: hash,
           icon: Icons.warning_amber_rounded,
@@ -296,8 +299,8 @@ List<FinanceInsight> _computeInsights({
       if (!financeService.isInsightDismissed(dismissedInsights, 'income_health', hash)) {
         insights.add(FinanceInsight(
           id: 'income_health',
-          title: 'Great Savings!',
-          message: 'You saved ${savingsRate.toStringAsFixed(0)}% of your income this month — keep it up! 🎉',
+          title: t.finInsGreatSavingsTitle,
+          message: t.finInsGreatSavingsBody(savingsRate.toStringAsFixed(0)),
           severity: InsightSeverity.positive,
           dataHash: hash,
           icon: Icons.verified,
@@ -317,15 +320,15 @@ List<FinanceInsight> _computeInsights({
 
       if (latestAmount > avgAmount * 2.5) {
         final category = categoriesMap[categoryId];
-        final categoryName = category?.name ?? 'Unknown';
+        final categoryName = category?.name ?? t.finUnknown;
         final multiplier = (latestAmount / avgAmount).toStringAsFixed(1);
         final hash = _generateHash('unusual_txn_${categoryId}_${latestAmount.toStringAsFixed(0)}');
 
         if (!financeService.isInsightDismissed(dismissedInsights, 'unusual_txn_$categoryId', hash)) {
           insights.add(FinanceInsight(
             id: 'unusual_txn_$categoryId',
-            title: 'Unusual Spending',
-            message: 'Your ${formatCurrency(latestAmount)} $categoryName purchase was ${multiplier}x your usual spending there.',
+            title: t.finInsUnusualTitle,
+            message: t.finInsUnusualBody(formatCurrency(latestAmount), categoryName, multiplier),
             severity: InsightSeverity.warning,
             dataHash: hash,
             icon: Icons.bolt,
@@ -344,8 +347,8 @@ List<FinanceInsight> _computeInsights({
     if (!financeService.isInsightDismissed(dismissedInsights, 'debt_overdue', hash)) {
       insights.add(FinanceInsight(
         id: 'debt_overdue',
-        title: 'Payment Overdue',
-        message: 'Your payment for "${debt.title}" was due $daysPastDue days ago.',
+        title: t.finInsOverdueTitle,
+        message: t.finInsOverdueBody(debt.title, '$daysPastDue'),
         severity: InsightSeverity.warning,
         dataHash: hash,
         icon: Icons.access_time,
@@ -364,8 +367,8 @@ List<FinanceInsight> _computeInsights({
       if (!financeService.isInsightDismissed(dismissedInsights, 'debt_ratio', hash)) {
         insights.add(FinanceInsight(
           id: 'debt_ratio',
-          title: 'High Debt Load',
-          message: 'Your total debt is ${debtRatio.toStringAsFixed(0)}% of your monthly income. Consider paying down debt.',
+          title: t.finInsHighDebtTitle,
+          message: t.finInsHighDebtBody(debtRatio.toStringAsFixed(0)),
           severity: severity,
           dataHash: hash,
           icon: Icons.credit_card,
@@ -381,8 +384,8 @@ List<FinanceInsight> _computeInsights({
     if (!financeService.isInsightDismissed(dismissedInsights, 'budget_streak', hash)) {
       insights.add(FinanceInsight(
         id: 'budget_streak',
-        title: 'Budget Streak!',
-        message: "You've stayed under budget for $underBudgetStreak months in a row 🎉",
+        title: t.finInsBudgetStreakTitle,
+        message: t.finInsBudgetStreakBody('$underBudgetStreak'),
         severity: InsightSeverity.positive,
         dataHash: hash,
         icon: Icons.local_fire_department,
@@ -409,8 +412,8 @@ List<FinanceInsight> _computeInsights({
     if (!financeService.isInsightDismissed(dismissedInsights, 'no_spend', hash)) {
       insights.add(FinanceInsight(
         id: 'no_spend',
-        title: 'No-Spend Days',
-        message: "You've had $noSpendDays no-spend days this week — nice discipline!",
+        title: t.finInsNoSpendTitle,
+        message: t.finInsNoSpendBody('$noSpendDays'),
         severity: InsightSeverity.positive,
         dataHash: hash,
         icon: Icons.thumb_up,
@@ -511,7 +514,7 @@ class _InsightCardState extends State<_InsightCard> with SingleTickerProviderSta
               ),
               const SizedBox(height: 16),
               Align(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerEnd,
                 child: GestureDetector(
                   onTap: () async {
                     setState(() => _isDismissing = true);
@@ -519,7 +522,7 @@ class _InsightCardState extends State<_InsightCard> with SingleTickerProviderSta
                     widget.onDismiss();
                   },
                   child: Text(
-                    'Dismiss',
+                    AppLocalizations.of(context).finInsDismiss,
                     style: TextStyle(
                       color: widget.subTextColor,
                       fontSize: 14,

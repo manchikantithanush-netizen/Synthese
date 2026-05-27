@@ -11,6 +11,7 @@ import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/ui/auth/login_page.dart';
 import 'package:synthese/ui/auth/signup_page.dart';
 import 'package:synthese/onboarding/onboarding_intro.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class StartPage extends StatefulWidget {
   const StartPage({super.key});
@@ -28,9 +29,9 @@ class _StartPageState extends State<StartPage> {
   final String _defPron = '/ˈsɪnθɪsiːz/\n';
   final String _defPos = 'noun\n\n';
   final String _defMeaning =
-      'The synthesis of athletic health data into clear, instantly understandable insights, designed to help young athletes view performance, recovery, and lifestyle information without unnecessary complexity.\n\n';
+      "The synthesis of an athlete's performance, recovery, and lifestyle data into clear, intuitive insights — built for the next generation of athletes.\n\n";
   final String _defOrigin =
-      'From Greek: synthesis — a combining of elements to form a unified whole.';
+      'From Greek: synthesis — a bringing together of distinct elements into a unified whole.';
 
   late final String _dictText;
 
@@ -68,11 +69,11 @@ class _StartPageState extends State<StartPage> {
         HapticFeedback.lightImpact();
       }
 
-      int delay = (char == ',' || char == '\n') ? 400 : 50;
+      int delay = (char == ',' || char == '\n') ? 520 : 75;
       await Future.delayed(Duration(milliseconds: delay));
     }
 
-    await Future.delayed(const Duration(milliseconds: 1600));
+    await Future.delayed(const Duration(milliseconds: 2200));
 
     // PHASE 1: Backspace Intro
     _phase = 1;
@@ -99,16 +100,16 @@ class _StartPageState extends State<StartPage> {
         HapticFeedback.lightImpact();
       }
 
-      int delay = 15;
+      int delay = 28;
       if (char == '.' || char == ',')
-        delay = 150;
+        delay = 220;
       else if (char == '\n')
-        delay = 200;
+        delay = 300;
 
       await Future.delayed(Duration(milliseconds: delay));
     }
 
-    await Future.delayed(const Duration(milliseconds: 700));
+    await Future.delayed(const Duration(milliseconds: 1400));
 
     // PHASE 3: Backspace Dictionary
     _phase = 3;
@@ -240,7 +241,11 @@ class _StartPageState extends State<StartPage> {
       HapticFeedback.lightImpact();
       final cred = await FirebaseAuth.instance.signInAnonymously();
       final user = cred.user;
-      if (user == null) throw Exception('Anonymous sign-in failed');
+      if (user == null) {
+        throw Exception(mounted
+            ? AppLocalizations.of(context).startAnonFailed
+            : 'Anonymous sign-in failed');
+      }
 
       final firestore = FirebaseFirestore.instance;
       final counterRef = firestore.collection('metadata').doc('guest_counter');
@@ -267,7 +272,9 @@ class _StartPageState extends State<StartPage> {
       if (mounted) {
         setState(() => _isGuestLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Guest access failed: $e')),
+          SnackBar(
+              content: Text(
+                  AppLocalizations.of(context).startGuestFailed('$e'))),
         );
       }
     }
@@ -290,6 +297,7 @@ class _StartPageState extends State<StartPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final textColor = Theme.of(context).colorScheme.onSurface;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -366,7 +374,7 @@ class _StartPageState extends State<StartPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       PremiumButton(
-                        text: 'Continue with Sign Up',
+                        text: t.startSignUp,
                         onPressed: () {
                           HapticFeedback.lightImpact();
                           Navigator.push(
@@ -388,7 +396,7 @@ class _StartPageState extends State<StartPage> {
                               ).colorScheme.copyWith(primary: Colors.green),
                             ),
                             child: CNButton(
-                              label: 'Continue with Sign In',
+                              label: t.startSignIn,
                               style: CNButtonStyle.bordered,
                               onPressed: () {
                                 HapticFeedback.lightImpact();
@@ -411,7 +419,7 @@ class _StartPageState extends State<StartPage> {
                           child: _isGuestLoading
                               ? const BouncingDotsLoader()
                               : Text(
-                                  'Continue as Guest',
+                                  t.startGuest,
                                   style: TextStyle(
                                     color: textColor.withOpacity(0.75),
                                     fontSize: 14,
@@ -426,7 +434,7 @@ class _StartPageState extends State<StartPage> {
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
-                          'For testing only — data may be reset at any time.',
+                          t.startTestingNote,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: textColor.withOpacity(0.45),
@@ -446,8 +454,8 @@ class _StartPageState extends State<StartPage> {
                             letterSpacing: 0.2,
                           ),
                           children: [
-                            const TextSpan(
-                              text: 'By pressing Continue you agree with our\n',
+                            TextSpan(
+                              text: t.startLegalPrefix,
                             ),
                             WidgetSpan(
                               alignment: PlaceholderAlignment.baseline,
@@ -462,7 +470,7 @@ class _StartPageState extends State<StartPage> {
                                   }
                                 },
                                 child: Text(
-                                  'privacy policy',
+                                  t.startPrivacyPolicy,
                                   style: TextStyle(
                                     color: textColor,
                                     fontWeight: FontWeight.bold,
@@ -471,9 +479,9 @@ class _StartPageState extends State<StartPage> {
                                 ),
                               ),
                             ),
-                            const TextSpan(text: ' and '),
+                            TextSpan(text: t.startAnd),
                             TextSpan(
-                              text: 'terms and conditions',
+                              text: t.startTerms,
                               style: TextStyle(
                                 color: textColor,
                                 fontWeight: FontWeight.bold,

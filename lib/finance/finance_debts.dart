@@ -4,6 +4,7 @@ import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/services/finance_service.dart';
@@ -158,18 +159,17 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
     bool result = false;
     await AdaptiveAlertDialog.show(
       context: context,
-      title: 'Delete Debt',
-      message:
-          'Are you sure you want to delete this debt? This action cannot be undone.',
+      title: AppLocalizations.of(context).finDebtDeleteTitle,
+      message: AppLocalizations.of(context).finDebtDeleteConfirm,
       icon: 'trash.fill',
       actions: [
         AlertAction(
-          title: 'Cancel',
+          title: AppLocalizations.of(context).commonCancel,
           style: AlertActionStyle.cancel,
           onPressed: () {},
         ),
         AlertAction(
-          title: 'Delete',
+          title: AppLocalizations.of(context).commonDelete,
           style: AlertActionStyle.destructive,
           onPressed: () {
             HapticFeedback.lightImpact();
@@ -218,14 +218,14 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
           ),
           // Header
           Padding(
-            padding: const EdgeInsets.only(top: 16.0, left: 20.0, right: 20.0),
+            padding: const EdgeInsetsDirectional.only(top: 16.0, start: 20.0, end: 20.0),
             child: Stack(
               alignment: Alignment.center,
               children: [
                 Align(
                   alignment: Alignment.center,
                   child: Text(
-                    'Debts',
+                    AppLocalizations.of(context).finDebts,
                     style: TextStyle(
                       color: textColor,
                       fontSize: 18,
@@ -234,7 +234,7 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
                   ),
                 ),
                 Align(
-                  alignment: Alignment.centerRight,
+                  alignment: AlignmentDirectional.centerEnd,
                   child: UniversalCloseButton(
                     onPressed: () {
                       Navigator.pop(context);
@@ -255,7 +255,7 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
                   _buildTabSelector(isDark, cardColor),
                   const SizedBox(height: 20),
                   // Add Debt button
-                  PremiumButton(text: 'Add Debt', onPressed: _showAddDebtModal),
+                  PremiumButton(text: AppLocalizations.of(context).finDebtAddDebt, onPressed: _showAddDebtModal),
                   const SizedBox(height: 20),
                   // Debts list
                   Expanded(
@@ -278,7 +278,7 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
   Widget _buildTabSelector(bool isDark, Color cardColor) {
     return UniversalSegmentedControl<int>(
       items: const [0, 1],
-      labels: const ['I Owe', 'Owe Me'],
+      labels: [AppLocalizations.of(context).finDebtIOwe, AppLocalizations.of(context).finDebtOweMe],
       selectedItem: _selectedTab,
       onSelectionChanged: (value) {
         HapticFeedback.selectionClick();
@@ -297,7 +297,7 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
     if (uid == null) {
       return Center(
         child: Text(
-          'Please sign in to view debts',
+          AppLocalizations.of(context).finDebtSignIn,
           style: TextStyle(color: subTextColor, fontSize: 16),
         ),
       );
@@ -365,9 +365,9 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
               if (paidDebts.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 Padding(
-                  padding: const EdgeInsets.only(left: 4, bottom: 8),
+                  padding: const EdgeInsetsDirectional.only(start: 4, bottom: 8),
                   child: Text(
-                    'Paid',
+                    AppLocalizations.of(context).finDebtPaid,
                     style: TextStyle(
                       color: subTextColor,
                       fontSize: 14,
@@ -393,12 +393,13 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
   }
 
   Widget _buildEmptyState(bool isDark, Color cardColor, Color subTextColor) {
+    final t = AppLocalizations.of(context);
     final emptyMessage = _selectedTab == 0
-        ? "No debts you owe"
-        : "No debts owed to you";
+        ? t.finDebtNoneYouOwe
+        : t.finDebtNoneOwedToYou;
     final emptySubMessage = _selectedTab == 0
-        ? "Tap 'Add Debt' to track money you owe"
-        : "Tap 'Add Debt' to track money owed to you";
+        ? t.finDebtTapAddOwe
+        : t.finDebtTapAddOwedToYou;
 
     return Container(
       width: double.infinity,
@@ -494,8 +495,8 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
       key: Key(doc.id),
       direction: DismissDirection.endToStart,
       background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
+        alignment: AlignmentDirectional.centerEnd,
+        padding: const EdgeInsetsDirectional.only(end: 20),
         color: const Color(0xFFFF3B30),
         child: const Icon(
           Icons.delete,
@@ -509,7 +510,7 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
       },
       onDismissed: (direction) {
         _deleteDebt(doc.id);
-        AppToast.info(context, 'Debt deleted', icon: Icons.delete_outline_rounded);
+        AppToast.info(context, AppLocalizations.of(context).finDebtDeleted, icon: Icons.delete_outline_rounded);
       },
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -575,7 +576,7 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
     bool isOverdue,
     bool isPaidSection,
   ) {
-    final dateStr = DateFormat('MMM d').format(dueDate);
+    final dateStr = DateFormat('MMM d', Localizations.localeOf(context).toString()).format(dueDate);
     final chipColor = isOverdue && !isPaidSection
         ? const Color(0xFFFF3B30)
         : const Color(0xFF8E8E93);

@@ -5,10 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 
+import 'package:synthese/l10n/generated/app_localizations.dart';
+import 'package:synthese/services/locale_service.dart';
 import 'package:synthese/ui/dashboard.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'onboarding_language.dart';
 import 'onboarding_stage1.dart';
 import 'onboarding_stage2.dart';
 import 'onboarding_stage3.dart';
@@ -53,7 +56,7 @@ class _OnboardingDataState extends State<OnboardingData> {
   final TextEditingController injuryHistoryController =
       TextEditingController();
 
-  static const int _totalSteps = 3;
+  static const int _totalSteps = 4;
 
   @override
   void initState() {
@@ -115,13 +118,15 @@ class _OnboardingDataState extends State<OnboardingData> {
   }
 
   void _nextStep() {
-    if (_currentStep == 0) {
+    // Stage 0 is the language picker — a default is always selected, so no validation.
+    if (_currentStep == 1) {
       if (nameController.text.trim().isEmpty ||
           dob == null ||
           gender == null ||
           selectedGoals.isEmpty ||
           isAthlete == null) {
-        return _triggerError("Please complete all fields");
+        return _triggerError(
+            AppLocalizations.of(context).commonCompleteAllFields);
       }
     }
 
@@ -141,6 +146,8 @@ class _OnboardingDataState extends State<OnboardingData> {
     try {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
+        // Stage 0
+        'language': LocaleService.localeNotifier.value.languageCode,
         // Stage 1
         'fullName': nameController.text.trim(),
         'dob': dob,
@@ -177,7 +184,7 @@ class _OnboardingDataState extends State<OnboardingData> {
         );
       }
     } catch (e) {
-      _triggerError("Save failed");
+      _triggerError(AppLocalizations.of(context).commonSaveFailed);
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -282,6 +289,7 @@ class _OnboardingDataState extends State<OnboardingData> {
                   physics: const NeverScrollableScrollPhysics(),
                   onPageChanged: (i) => setState(() => _currentStep = i),
                   children: [
+                    const OnboardingLanguage(),
                     OnboardingStage1(
                       nameController: nameController,
                       dob: dob,
@@ -341,7 +349,9 @@ class _OnboardingDataState extends State<OnboardingData> {
               Padding(
                 padding: const EdgeInsets.all(28),
                 child: PremiumButton(
-                  text: _currentStep == _totalSteps - 1 ? "Finish" : "Continue",
+                  text: _currentStep == _totalSteps - 1
+                      ? AppLocalizations.of(context).commonFinish
+                      : AppLocalizations.of(context).commonContinue,
                   isLoading: _isSaving,
                   onPressed: _nextStep,
                 ),
@@ -353,3 +363,4 @@ class _OnboardingDataState extends State<OnboardingData> {
     );
   }
 }
+

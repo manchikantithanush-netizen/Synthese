@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 /// Slide-up sheet for logging height, weight, average sleep duration and
 /// daily water intake. These are *current values*, not goals — the goals
@@ -57,6 +58,7 @@ class _HealthLogSheetState extends State<HealthLogSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
     final bg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
@@ -90,7 +92,7 @@ class _HealthLogSheetState extends State<HealthLogSheet> {
                   children: [
                     Expanded(
                       child: Text(
-                        "Log additional info",
+                        t.acctLogTitle,
                         style: TextStyle(
                           color: textColor,
                           fontSize: 22,
@@ -108,7 +110,7 @@ class _HealthLogSheetState extends State<HealthLogSheet> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                 child: Text(
-                  "These are your current readings, not your goals.",
+                  t.acctLogSubtitle,
                   style: TextStyle(
                     color: textColor.withOpacity(0.55),
                     fontSize: 13.5,
@@ -122,7 +124,7 @@ class _HealthLogSheetState extends State<HealthLogSheet> {
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   children: [
                     _IntWheelCard(
-                      label: "Height",
+                      label: t.acctLogHeight,
                       icon: Icons.straighten_rounded,
                       accent: const Color(0xFF5E5CE6),
                       min: 100,
@@ -134,7 +136,7 @@ class _HealthLogSheetState extends State<HealthLogSheet> {
                     ),
                     const SizedBox(height: 14),
                     _IntWheelCard(
-                      label: "Weight",
+                      label: t.acctLogWeight,
                       icon: Icons.monitor_weight_rounded,
                       accent: const Color(0xFF34C759),
                       min: 30,
@@ -146,7 +148,7 @@ class _HealthLogSheetState extends State<HealthLogSheet> {
                     ),
                     const SizedBox(height: 14),
                     _DoubleWheelCard(
-                      label: "Average sleep duration",
+                      label: t.acctLogSleep,
                       icon: Icons.nightlight_round,
                       accent: const Color(0xFF32ADE6),
                       min: 3.0,
@@ -159,7 +161,7 @@ class _HealthLogSheetState extends State<HealthLogSheet> {
                     ),
                     const SizedBox(height: 14),
                     _DoubleWheelCard(
-                      label: "Daily water intake",
+                      label: t.acctLogWater,
                       icon: Icons.water_drop_rounded,
                       accent: const Color(0xFF4FC3F7),
                       min: 0.5,
@@ -178,7 +180,7 @@ class _HealthLogSheetState extends State<HealthLogSheet> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
                   child: PremiumButton(
-                    text: "Save",
+                    text: t.commonSave,
                     isLoading: _saving,
                     onPressed: _saving ? () {} : _save,
                   ),
@@ -264,6 +266,73 @@ class _AthleteLogSheetState extends State<AthleteLogSheet> {
     }
   }
 
+  String _typeLabel(AppLocalizations t, String v) {
+    switch (v) {
+      case 'Student':
+        return t.acctLogTypeStudent;
+      case 'Club':
+        return t.acctLogTypeClub;
+      case 'Casual':
+        return t.acctLogTypeCasual;
+      case 'Competitive':
+        return t.acctLogTypeCompetitive;
+      default:
+        return v;
+    }
+  }
+
+  String _levelLabel(AppLocalizations t, String v) {
+    switch (v) {
+      case 'Beginner':
+        return t.acctLogExpBeginner;
+      case 'Intermediate':
+        return t.acctLogExpIntermediate;
+      case 'Advanced':
+        return t.acctLogExpAdvanced;
+      default:
+        return v;
+    }
+  }
+
+  String _sportLabel(AppLocalizations t, String v) {
+    switch (v) {
+      case 'Football':
+        return t.acctLogSportFootball;
+      case 'Track':
+        return t.acctLogSportTrack;
+      case 'Cricket':
+        return t.acctLogSportCricket;
+      case 'Basketball':
+        return t.acctLogSportBasketball;
+      case 'Motor sport':
+        return t.acctLogSportMotorSport;
+      case 'Golf':
+        return t.acctLogSportGolf;
+      case 'Badminton':
+        return t.acctLogSportBadminton;
+      case 'Tennis':
+        return t.acctLogSportTennis;
+      case 'Gymnastics':
+        return t.acctLogSportGymnastics;
+      case 'Volleyball':
+        return t.acctLogSportVolleyball;
+      case 'Martial arts':
+        return t.acctLogSportMartialArts;
+      case 'Swimming':
+        return t.acctLogSportSwimming;
+      case 'Cycling':
+        return t.acctLogSportCycling;
+      case 'Running':
+        return t.acctLogSportRunning;
+      case 'Rugby':
+        return t.acctLogSportRugby;
+      case 'Hockey':
+        return t.acctLogSportHockey;
+      default:
+        return v;
+    }
+  }
+
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
@@ -284,6 +353,7 @@ class _AthleteLogSheetState extends State<AthleteLogSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
     final bg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
@@ -317,7 +387,7 @@ class _AthleteLogSheetState extends State<AthleteLogSheet> {
                   children: [
                     Expanded(
                       child: Text(
-                        "Athlete profile",
+                        t.acctLogAthleteProfile,
                         style: TextStyle(
                           color: textColor,
                           fontSize: 22,
@@ -335,7 +405,7 @@ class _AthleteLogSheetState extends State<AthleteLogSheet> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                 child: Text(
-                  "Tell us about your training so we can tailor your experience.",
+                  t.acctLogAthleteSubtitle,
                   style: TextStyle(
                     color: textColor.withOpacity(0.55),
                     fontSize: 13.5,
@@ -348,7 +418,7 @@ class _AthleteLogSheetState extends State<AthleteLogSheet> {
                   controller: controller,
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                   children: [
-                    _SectionLabel("Type of athlete", textColor: textColor),
+                    _SectionLabel(t.acctLogTypeOfAthlete, textColor: textColor),
                     const SizedBox(height: 10),
                     _PillGrid(
                       options: _athleteTypes,
@@ -361,9 +431,10 @@ class _AthleteLogSheetState extends State<AthleteLogSheet> {
                       multiSelect: false,
                       isDark: isDark,
                       textColor: textColor,
+                      labelOf: (v) => _typeLabel(t, v),
                     ),
                     const SizedBox(height: 22),
-                    _SectionLabel("Experience level", textColor: textColor),
+                    _SectionLabel(t.acctLogExperienceLevel, textColor: textColor),
                     const SizedBox(height: 10),
                     _PillGrid(
                       options: _experienceLevels,
@@ -377,12 +448,13 @@ class _AthleteLogSheetState extends State<AthleteLogSheet> {
                       multiSelect: false,
                       isDark: isDark,
                       textColor: textColor,
+                      labelOf: (v) => _levelLabel(t, v),
                     ),
                     const SizedBox(height: 22),
                     _SectionLabel(
-                      "Sports profile",
+                      t.acctLogSportsProfile,
                       textColor: textColor,
-                      hint: "Select all you train in",
+                      hint: t.acctLogSelectAll,
                     ),
                     const SizedBox(height: 10),
                     _PillGrid(
@@ -398,6 +470,7 @@ class _AthleteLogSheetState extends State<AthleteLogSheet> {
                       multiSelect: true,
                       isDark: isDark,
                       textColor: textColor,
+                      labelOf: (v) => _sportLabel(t, v),
                     ),
                   ],
                 ),
@@ -407,7 +480,7 @@ class _AthleteLogSheetState extends State<AthleteLogSheet> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
                   child: PremiumButton(
-                    text: "Save",
+                    text: t.commonSave,
                     isLoading: _saving,
                     onPressed: _saving ? () {} : _save,
                   ),
@@ -468,6 +541,9 @@ class _PillGrid extends StatelessWidget {
   final bool isDark;
   final Color textColor;
 
+  /// Maps a stable option value (stored in Firestore) to its localized label.
+  final String Function(String)? labelOf;
+
   const _PillGrid({
     required this.options,
     required this.selected,
@@ -475,6 +551,7 @@ class _PillGrid extends StatelessWidget {
     required this.multiSelect,
     required this.isDark,
     required this.textColor,
+    this.labelOf,
   });
 
   @override
@@ -510,7 +587,7 @@ class _PillGrid extends StatelessWidget {
                   const SizedBox(width: 6),
                 ],
                 Text(
-                  opt,
+                  labelOf?.call(opt) ?? opt,
                   style: TextStyle(
                     color: textColor,
                     fontSize: 14,

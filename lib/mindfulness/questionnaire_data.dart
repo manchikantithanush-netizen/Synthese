@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 /// Represents a single questionnaire question
 class Question {
@@ -31,7 +32,7 @@ class Dimension {
 /// Risk level classification
 enum RiskLevel { low, moderate, high }
 
-/// All scoring dimensions
+/// All scoring dimensions (English fallback - canonical IDs)
 const List<Dimension> dimensions = [
   Dimension(id: 'depression', name: 'Depression', color: Color(0xFF5C6BC0)),
   Dimension(id: 'anxiety', name: 'Anxiety', color: Color(0xFFFF7043)),
@@ -43,6 +44,42 @@ const List<Dimension> dimensions = [
   Dimension(id: 'crisis', name: 'Crisis Indicators', color: Color(0xFFE53935)),
   Dimension(id: 'coping', name: 'Coping & Resilience', color: Color(0xFF26A69A)),
 ];
+
+String dimensionName(AppLocalizations t, String id) {
+  switch (id) {
+    case 'depression': return t.dimDepression;
+    case 'anxiety': return t.dimAnxiety;
+    case 'sleep': return t.dimSleep;
+    case 'stress': return t.dimStress;
+    case 'social': return t.dimSocial;
+    case 'energy': return t.dimEnergy;
+    case 'selfEsteem': return t.dimSelfEsteem;
+    case 'crisis': return t.dimCrisis;
+    case 'coping': return t.dimCoping;
+    default: return id;
+  }
+}
+
+List<Question> questionsFor(AppLocalizations t) {
+  final freq = [t.questFreqRarely, t.questFreqSeveral, t.questFreqMoreHalf, t.questFreqNearly];
+  return [
+    Question(id: 1, text: t.questQ1Text, options: freq, dimensions: const ['depression']),
+    Question(id: 2, text: t.questQ2Text, options: freq, dimensions: const ['depression']),
+    Question(id: 3, text: t.questQ3Text, options: freq, dimensions: const ['anxiety']),
+    Question(id: 4, text: t.questQ4Text, options: [t.questQ4O1, t.questQ4O2, t.questQ4O3, t.questQ4O4], dimensions: const ['anxiety', 'coping']),
+    Question(id: 5, text: t.questQ5Text, options: [t.questQ5O1, t.questQ5O2, t.questQ5O3, t.questQ5O4], dimensions: const ['sleep']),
+    Question(id: 6, text: t.questQ6Text, options: [t.questQ6O1, t.questQ6O2, t.questQ6O3, t.questQ6O4], dimensions: const ['stress']),
+    Question(id: 7, text: t.questQ7Text, options: [t.questQ7O1, t.questQ7O2, t.questQ7O3, t.questQ7O4], dimensions: const ['social']),
+    Question(id: 8, text: t.questQ8Text, options: [t.questQ8O1, t.questQ8O2, t.questQ8O3, t.questQ8O4], dimensions: const ['energy']),
+    Question(id: 9, text: t.questQ9Text, options: [t.questQ9O1, t.questQ9O2, t.questQ9O3, t.questQ9O4], dimensions: const ['selfEsteem']),
+    Question(id: 10, text: t.questQ10Text, options: [t.questQ10O1, t.questQ10O2, t.questQ10O3, t.questQ10O4], dimensions: const ['anxiety']),
+    Question(id: 11, text: t.questQ11Text, options: [t.questQ11O1, t.questQ11O2, t.questQ11O3, t.questQ11O4], dimensions: const ['energy', 'burnout']),
+    Question(id: 12, text: t.questQ12Text, options: [t.questQ12O1, t.questQ12O2, t.questQ12O3, t.questQ12O4], dimensions: const ['crisis']),
+    Question(id: 13, text: t.questQ13Text, options: [t.questQ13O1, t.questQ13O2, t.questQ13O3, t.questQ13O4], dimensions: const ['coping']),
+    Question(id: 14, text: t.questQ14Text, options: [t.questQ14O1, t.questQ14O2, t.questQ14O3, t.questQ14O4], dimensions: const ['coping']),
+    Question(id: 15, text: t.questQ15Text, options: [t.questQ15O1, t.questQ15O2, t.questQ15O3, t.questQ15O4], dimensions: const ['coping', 'resilience']),
+  ];
+}
 
 /// All 15 questionnaire questions
 const List<Question> questions = [

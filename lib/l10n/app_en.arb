@@ -1,0 +1,2490 @@
+{
+  "@@locale": "en",
+  "appTitle": "Synthese",
+  "commonContinue": "Continue",
+  "commonGoBack": "Go Back",
+  "commonFinish": "Finish",
+  "commonYes": "Yes",
+  "commonNo": "No",
+  "commonSkipForNow": "Skip for now",
+  "commonLetsGo": "Let's go",
+  "commonDetails": "Details",
+  "commonSelectDate": "Select date",
+  "commonCompleteAllFields": "Please complete all fields",
+  "commonSaveFailed": "Save failed",
+  "onboardingIntroTitle": "Hello,",
+  "onboardingIntroBody": "We are going to collect some data so that you can get the best out of your app.",
+  "onboardingIntroPrivacyTitle": "Privacy First",
+  "onboardingIntroPrivacyBody": "Your data is yours, we will not be using your data for any purpose other than improving your experience.",
+  "onboardingLanguageTitle": "Choose your\nlanguage",
+  "onboardingLanguageBody": "You can change this any time from Account → Language.",
+  "onboardingStage1Title": "Let's get\nstarted",
+  "onboardingStage1Body": "Just the basics so we can personalize your experience.",
+  "onboardingStage1FullName": "Full name",
+  "onboardingStage1Dob": "Date of birth",
+  "onboardingStage1MinorNotice": "You're under 16. Parental guidance is required when using this app.",
+  "onboardingStage1Gender": "Gender",
+  "onboardingStage1GenderHint": "Used to enable cycle tracking for female users.",
+  "onboardingStage1Male": "Male",
+  "onboardingStage1Female": "Female",
+  "onboardingStage1Goals": "Your goals",
+  "onboardingStage1GoalsHint": "Pick all that apply",
+  "onboardingStage1AthleteQuestion": "Are you an athlete?",
+  "onboardingStage1AthleteNotice": "Add your sport, experience level and training details from Account → Athlete Details after onboarding.",
+  "goalEndurance": "Endurance",
+  "goalStrength": "Strength",
+  "goalLoseFat": "Lose Fat",
+  "goalGainMuscle": "Gain Muscle",
+  "goalSpeed": "Speed",
+  "goalRecovery": "Recovery",
+  "goalBetterSleep": "Better Sleep",
+  "goalConsistency": "Consistency",
+  "onboardingStage2Title": "Set your\ndaily goals",
+  "onboardingStage2Body": "Pick targets that feel right. You can change them anytime.",
+  "goalDailySteps": "Daily Steps",
+  "goalCaloriesBurnt": "Calories Burnt",
+  "goalCaloriesEaten": "Calories Eaten",
+  "goalExerciseTime": "Exercise Time",
+  "goalSleep": "Sleep",
+  "unitSteps": "steps",
+  "unitKcal": "kcal",
+  "unitMin": "min",
+  "unitHrs": "hrs",
+  "onboardingStage3Title": "Anything else\nwe should know?",
+  "onboardingStage3Body": "Optional details that help us tailor your experience.",
+  "onboardingStage3Supplements": "Prescription Supplements",
+  "onboardingStage3Disabilities": "Physical Disabilities",
+  "onboardingStage3InjuryHistory": "Injury & Health History",
+  "onboardingStage3InjuryHint": "Describe past injuries or conditions",
+  "onboardingStage3AiTitle": "A note on AI",
+  "onboardingStage3AiBody": "We're not using AI on this information today. In the future, we may add AI-powered insights to help you better understand your goals, spot patterns in your training, and get personalized suggestions.",
+  "onboardingStage3AiConsent": "If we ever do, you'll see a clear consent prompt first — fully opt-in, your data stays yours.",
+  "permWelcomeTitle": "Welcome to\nSynthese.",
+  "permWelcomeBody": "A private, ad-free home for every part of your wellbeing — physical, mental, and financial.",
+  "permWelcomeDimHome": "Home",
+  "permWelcomeDimHomeDesc": "Daily metrics — steps, heart rate, sleep.",
+  "permWelcomeDimDiet": "Diet",
+  "permWelcomeDimDietDesc": "AI nutrition tracking and water intake.",
+  "permWelcomeDimWorkout": "Workout",
+  "permWelcomeDimWorkoutDesc": "GPS-tracked runs, rides, swims and more.",
+  "permWelcomeDimMindfulness": "Mindfulness",
+  "permWelcomeDimMindfulnessDesc": "Mood check-ins and breathing exercises.",
+  "permWelcomeDimCycles": "Cycles",
+  "permWelcomeDimCyclesDesc": "Cycle tracking for female users.",
+  "permWelcomeDimFinance": "Finance",
+  "permWelcomeDimFinanceDesc": "Expenses, budgeting, and debts.",
+  "permTrustNoAds": "No ads",
+  "permTrustPdpl": "PDPL",
+  "permTrustYourData": "Your data",
+  "permNotificationTitle": "Stay in the loop",
+  "permNotificationBody": "Synthese sends you workout reminders, hydration nudges, and important health alerts. We never send marketing or spam — only things that help you stay on track.",
+  "permNotificationAllow": "Allow Notifications",
+  "permLocationTitle": "Track your route",
+  "permLocationBody": "Location access (coarse + fine) is used only during active workout sessions to map your run, cycle, or walk. Background location keeps your session running even when the screen is off — no interruptions mid-workout.",
+  "permLocationAllow": "Allow Location",
+  "permActivityTitle": "Count every step",
+  "permActivityBody": "Activity Recognition lets Synthese detect your movement and automatically count your steps throughout the day — no manual logging needed.",
+  "permActivityAllow": "Allow Activity Recognition",
+  "permCameraTitle": "AI calorie analysis",
+  "permCameraBody": "Camera access powers the AI food analyser — snap a photo of your meal and Synthese instantly estimates calories, protein, carbs, and fats. Camera is only activated when you choose to use this feature.",
+  "permCameraAllow": "Allow Camera",
+  "permPhotosTitle": "Photos & media",
+  "permPhotosBody": "Photo library access lets you upload a profile picture and pick meal images for AI analysis. We only read images you explicitly select — we never scan your gallery.",
+  "permPhotosAllow": "Allow Photos & Media",
+  "permPrivacyTitle": "Privacy Policy",
+  "permPrivacyBody": "Please read and agree to continue using Synthese.",
+  "permPrivacyAgreeCheckbox": "I have read and agree to the Privacy Policy",
+  "permPrivacyAgree": "I Agree",
+  "permPrivacyDecline": "I Do Not Agree",
+  "permFinishTitle": "Thank you for\ntrusting Synthese.",
+  "permFinishBody": "You're all set. We hope Synthese helps you build a healthier, more balanced life.",
+  "permFinishCheck1": "Privacy Policy agreed",
+  "permFinishCheck2": "Permissions configured",
+  "permFinishCheck3": "Account created & verified",
+  "permFinishCheck4": "Profile set up",
+  "permFinishFooter": "You can review your permissions and privacy settings anytime in the Settings page.",
+  "accountLanguage": "Language",
+  "accountLanguageSheetTitle": "Choose Language",
+  "commonCancel": "Cancel",
+  "commonDelete": "Delete",
+  "commonTryAgain": "Try Again",
+  "commonNext": "Next",
+  "dietOnboardingWelcomeTitle": "Welcome to\nDiet Tracker",
+  "dietOnboardingFeature1Title": "AI-Powered Analysis",
+  "dietOnboardingFeature1Desc": "Snap a photo of your food and get instant calorie estimates powered by advanced AI.",
+  "dietOnboardingFeature2Title": "Daily Tracking",
+  "dietOnboardingFeature2Desc": "Effortlessly monitor your calorie intake throughout the day with a simple food log.",
+  "dietOnboardingFeature3Title": "Smart Insights",
+  "dietOnboardingFeature3Desc": "Understand your eating patterns over time and make informed nutrition choices.",
+  "dietOnboardingFeature4Title": "Goal Setting",
+  "dietOnboardingFeature4Desc": "Set daily calorie targets and track your progress toward your health goals.",
+  "dietOnboardingDisclaimerTitle": "Important Notice",
+  "dietOnboardingDisclaimerPara1": "This app uses AI to analyze food images and estimate calorie counts. These estimates are approximations and may not be 100% accurate.",
+  "dietOnboardingDisclaimerPara2": "AI recognition can be affected by image quality, portion sizes, food preparation methods, and other factors. The calorie estimates provided should be used as a general guide only.",
+  "dietOnboardingDisclaimerPara3": "This app is not a substitute for professional nutritional advice. For personalized dietary guidance, consult a registered dietitian or healthcare professional.",
+  "dietOnboardingDisclaimerPara4": "Calorie needs vary based on age, gender, activity level, metabolism, and health conditions. Always consult a professional before making significant dietary changes.",
+  "dietOnboardingDisclaimerAck": "By continuing, you acknowledge that this app provides estimates for informational purposes only and does not replace professional nutritional advice.",
+  "dietOnboardingUnderstand": "I Understand",
+  "dietOnboardingWaterGoalTitle": "Water Intake Goal",
+  "dietOnboardingWaterLoggedDaily": "You logged {litres}L of water intake daily",
+  "@dietOnboardingWaterLoggedDaily": {
+    "placeholders": {
+      "litres": {
+        "type": "String"
+      }
+    }
+  },
+  "dietOnboardingWaterGoalQuestion": "What's your daily water goal?",
+  "dietOnboardingGlassesCount": "{count} glasses",
+  "@dietOnboardingGlassesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dietOnboardingFinishSetup": "Finish Setup",
+  "dietPageTitle": "Food Tracker",
+  "dietPageSubtitle": "Track your calories with AI",
+  "dietPageCalorieGoalLabel": "Calorie Goal",
+  "dietPageWaterGoalLabel": "Water Goal",
+  "dietPageTodaysIntake": "Today's Intake",
+  "dietPageGoal": "Goal: {value}",
+  "@dietPageGoal": {
+    "placeholders": {
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "dietPageCaloriesUnit": "calories",
+  "dietPageAiInaccurateLabel": "AI estimates may be inaccurate",
+  "dietPageProgressNoGoal": "Set a goal to track progress",
+  "dietPageProgressRemaining": "{count} cal remaining",
+  "@dietPageProgressRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dietPageProgressGoalReached": "Goal reached!",
+  "dietPageProgressOver": "{count} cal over goal",
+  "@dietPageProgressOver": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dietPageMacroProtein": "Protein",
+  "dietPageMacroCarbs": "Carbs",
+  "dietPageMacroFats": "Fats",
+  "dietPageMicrosTitle": "Micronutrients",
+  "dietPageMicroFiber": "Fiber",
+  "dietPageMicroSugar": "Sugar",
+  "dietPageMicroSodium": "Sodium",
+  "dietPageMicroIron": "Iron",
+  "dietPageMicroCalcium": "Calcium",
+  "dietPageMicroPotassium": "Potassium",
+  "dietPageMicroVitaminC": "Vitamin C",
+  "dietPageMicroVitaminD": "Vitamin D",
+  "dietPageHide": "Hide",
+  "dietPageShow": "Show",
+  "dietPageFrequentFoods": "Frequent Foods",
+  "dietPageFrequentFoodsHint": "Tap to quickly re-log recent meals",
+  "dietPageAnalyzeFood": "Analyze Food",
+  "dietPageAnalyzingFood": "Analyzing your food...",
+  "dietPageAnalyzingMealText": "Analyzing your meal text...",
+  "dietPageAiNutritionalInfo": "AI-Estimated Nutritional Info",
+  "dietPageKcal": "kcal",
+  "dietPageAddToLog": "Add to Log",
+  "dietPageChooseDifferentImage": "Choose Different Image",
+  "dietPageTypeAnotherMeal": "Type Another Meal",
+  "dietPageTypeFoodInstead": "Type Food Instead",
+  "dietPageTapToUpload": "Tap to upload food image",
+  "dietPageCameraOrPhotoLibrary": "Camera or Photo Library",
+  "dietPageAnalysisFailed": "Analysis failed",
+  "dietPageFoodLog": "Food Log",
+  "dietPageResetDietDataTitle": "Reset Diet Data?",
+  "dietPageResetDietDataMsg": "This will clear your calorie goal and food log, and send you back to the onboarding screen. This cannot be undone.",
+  "dietPageResetData": "Reset Data",
+  "dietPageDeleteFoodLogTitle": "Delete Food Log",
+  "dietPageDeleteFoodLogMsg": "Are you sure you want to delete this food entry? This will remove it from your calorie count.",
+  "dietPageCamera": "Camera",
+  "dietPagePhotoLibrary": "Photo Library",
+  "dietPageTypeYourMeal": "Type your meal",
+  "dietPageMealHint": "Example: 2 eggs, 2 slices toast with butter, and a banana",
+  "dietPageAnalyze": "Analyze",
+  "dietPageManualEntry": "Manual Entry",
+  "dietPageManualEntryHint": "All fields are optional. Fill in at least one.",
+  "dietPageName": "Name",
+  "dietPageManuallyAdded": "Manually Added",
+  "dietPageCaloriesLabel": "Calories",
+  "dietPageAddMicros": "Add micronutrients",
+  "dietPageFillAtLeastOne": "Fill in at least one field",
+  "dietPageFoodAddedToast": "{food} added to log",
+  "@dietPageFoodAddedToast": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "dietPageCalorieGoalReached": "Daily calorie goal reached",
+  "dietPageFoodEntryRemoved": "Food entry removed",
+  "dietPageTimeToday": "Today at {time}",
+  "@dietPageTimeToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "dietPageTimeYesterday": "Yesterday at {time}",
+  "@dietPageTimeYesterday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "dietPageTimeOnDate": "{date} at {time}",
+  "@dietPageTimeOnDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "waterIntakeTitle": "Water Intake",
+  "waterGlassCount": "{current} / {total} glasses",
+  "@waterGlassCount": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "waterOfDailyGoal": "of daily goal",
+  "waterStatusGoalReached": "Goal reached!",
+  "waterStatus1Glass": "1 glass to go!",
+  "waterStatusAlmostThere": "Almost there!",
+  "waterStatusGlassesToGo": "{count} glasses to go",
+  "@waterStatusGlassesToGo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "waterAddGlass": "+ Add Glass",
+  "waterGoalReachedToast": "Water goal reached",
+  "waterWeeklyTrend": "Weekly Trend",
+  "dayMon": "Mon",
+  "dayTue": "Tue",
+  "dayWed": "Wed",
+  "dayThu": "Thu",
+  "dayFri": "Fri",
+  "daySat": "Sat",
+  "daySun": "Sun",
+  "foodErrorImageFailed": "Failed to analyze image. Please try again.",
+  "foodErrorConnection": "An error occurred. Please check your connection.",
+  "foodErrorEmptyText": "Please enter what you ate.",
+  "foodErrorTextFailed": "Failed to analyze text. Please try again.",
+  "foodErrorParseFailed": "Could not parse the analysis result.",
+  "cyclesTitle": "Cycles",
+  "cyclesResetTitle": "Reset All Data?",
+  "cyclesResetMsg": "This will wipe all your daily logs and send you back to the onboarding screen. This cannot be undone.",
+  "cyclesWipeData": "Wipe Data",
+  "cyclesPleaseLogIn": "Please log in",
+  "cyclesPleaseLogInHistory": "Please log in to view history.",
+  "cyclesToday": "Today",
+  "cyclesSimulatedDate": "Simulated Date",
+  "cyclesResetToPresent": "Reset to Present",
+  "cyclesTodaysLogSummary": "Today's Log Summary",
+  "cyclesFlow": "Flow",
+  "cyclesMucus": "Mucus",
+  "cyclesSymptoms": "Symptoms",
+  "cyclesMood": "Mood",
+  "cyclesWhatsHappening": "What's happening right now?",
+  "cyclesEditTodaysLog": "Edit Today's Log",
+  "cyclesLogSymptomsToday": "Log Symptoms Today",
+  "cyclesDismiss": "Dismiss",
+  "cyclesLearnMore": "Learn more",
+  "cyclePhasePeriod": "Period",
+  "cyclePhaseFollicular": "Follicular",
+  "cyclePhaseOvulation": "Ovulation",
+  "cyclePhaseLuteal": "Luteal",
+  "cyclePhasePeriodDueSoon": "Period due soon",
+  "cycleHormonePeriod": "Estrogen & progesterone dropping",
+  "cycleHormoneFollicular": "Estrogen rising",
+  "cycleHormoneOvulation": "LH surge · Estrogen peak",
+  "cycleHormoneLuteal": "Progesterone dominant",
+  "cycleHormoneLateLuteal": "Progesterone dropping",
+  "cyclePhaseTextPeriod": "Your period is here",
+  "cyclePhaseTextFollicular": "Your egg is growing",
+  "cyclePhaseTextOvulation": "Ovulation today",
+  "cyclePhaseTextLuteal": "Body is waiting",
+  "cyclePhaseTextPeriodDueSoon": "Period due soon",
+  "cycleHealthScore": "Health Score: {value}",
+  "@cycleHealthScore": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "cycleCurrentDay": "Current Cycle Day",
+  "cycleNextLabel": "Next: {date}",
+  "@cycleNextLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "cycleCalLegendPeriod": "Period",
+  "cycleCalLegendPredicted": "Predicted",
+  "cycleCalLegendOvulation": "Ovulation",
+  "cycleCalLegendFertile": "Fertile",
+  "cycleHistoryTitle": "Cycle History",
+  "cycleHistoryEmpty": "No cycles logged yet.",
+  "cycleHistoryAvgCycle": "Avg Cycle",
+  "cycleHistoryAvgPeriod": "Avg Period",
+  "cycleHistoryLongest": "Longest",
+  "cycleHistoryShortest": "Shortest",
+  "cycleHistoryRecentCycles": "Recent Cycles",
+  "cycleHistoryAverageDays": "Average ({days} d)",
+  "@cycleHistoryAverageDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "cycleHistoryUnknownDate": "Unknown Date",
+  "cycleHistoryShortCycle": "Short Cycle",
+  "cycleHistoryLongCycle": "Long Cycle",
+  "cycleHistoryNormalCycle": "Normal Cycle",
+  "cycleHistoryNoSymptoms": "No symptoms logged",
+  "cycleHistoryDaysSummary": "Cycle: {cycleDays} days  •  Period: {periodDays} days",
+  "@cycleHistoryDaysSummary": {
+    "placeholders": {
+      "cycleDays": {
+        "type": "int"
+      },
+      "periodDays": {
+        "type": "int"
+      }
+    }
+  },
+  "cycleHistoryTopSymptoms": "Top Symptoms: {symptoms}",
+  "@cycleHistoryTopSymptoms": {
+    "placeholders": {
+      "symptoms": {
+        "type": "String"
+      }
+    }
+  },
+  "cycleHelpLearn": "Learn",
+  "cycleHelpArticleTitle": "Article Title",
+  "cycleHelpArticle1Title": "What is a menstrual cycle?",
+  "cycleHelpArticle1Desc": "The complete beginner's guide to understanding your body and what is actually happening every month.",
+  "cycleHelpArticle2Title": "The four phases of your cycle",
+  "cycleHelpArticle2Desc": "Breaking down the menstrual, follicular, ovulation, and luteal phases. What your body is doing and what you might feel.",
+  "cycleHelpArticle3Title": "Hormones and your cycle",
+  "cycleHelpArticle3Desc": "What estrogen, progesterone, LH, and FSH actually do. How hormone levels rise and fall and cause symptoms.",
+  "cycleHelpArticle4Title": "What is spotting?",
+  "cycleHelpArticle4Desc": "The difference between spotting and a period. Common causes like ovulation and stress, and when to mention it.",
+  "cycleHelpArticle5Title": "Things that affect your cycle",
+  "cycleHelpArticle5Desc": "Stress, sleep, exercise, diet, and travel. Why your cycle is a reflection of your overall health.",
+  "cycleHelpArticle6Title": "Why cycle tracking matters",
+  "cycleHelpArticle6Desc": "What tracking tells you beyond predicting your period. How to use your logs to understand your baseline.",
+  "cycleConfidenceHigh": "High Confidence",
+  "cycleConfidenceMedium": "Medium Confidence",
+  "cycleConfidenceLow": "Low Confidence",
+  "cycleCountdownInDays": "Your next period is in {days} days",
+  "@cycleCountdownInDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "cycleCountdownDueToday": "Your period is due today",
+  "cycleCountdownDaysLate": "Your period is {days} days late",
+  "@cycleCountdownDaysLate": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "cycleInsightLate": "Your period is running late. This is more common than you think and doesn't always mean something is wrong. Stress, changes in sleep, illness, sudden weight changes, and intense exercise can all delay your cycle by several days or even weeks. If it's been over 2 weeks, it's worth taking a moment to check in with a trusted adult or doctor.",
+  "cycleInsightPeriodSoon": "Your period could arrive any day now. Progesterone levels are dropping which is what triggers menstruation to begin. You might feel more emotional, tired, or notice lower back discomfort — these are signs your body is getting ready. Keep a pad or period product nearby just in case.",
+  "cycleInsightPeriod": "Your period is here because your body didn't need the uterine lining it built up this month, so it's shedding it. This is driven by a drop in estrogen and progesterone — your two main cycle hormones. Cramps happen because your uterus is contracting to push the lining out. Rest, heat pads, and staying hydrated can genuinely help right now.",
+  "cycleInsightFollicular": "Your body is now growing and maturing an egg inside your ovaries. Rising estrogen levels are doing a lot of good work — rebuilding your uterine lining and boosting your mood and energy. Most people feel their best during this phase. It's a great time to be active, social, and take on things that need focus.",
+  "cycleInsightOvulation": "Your body is releasing an egg today. A surge in a hormone called LH triggered this, and your estrogen is at its peak. You might notice clearer, stretchy discharge — this is completely normal and actually helps the reproductive system function. Some people feel a slight twinge or pain on one side of their lower abdomen during ovulation, which is also normal.",
+  "cycleInsightLuteal": "After ovulation, your body produces more progesterone to prepare for a possible pregnancy. This hormone is responsible for most PMS symptoms — bloating, breast tenderness, mood swings, and fatigue are all very common in this phase. If your period isn't coming, these symptoms will peak around 5 to 7 days before it arrives. You're not imagining it, it's hormonal.",
+  "cycleAlertMissing90Title": "Period Over 3 Months Late",
+  "cycleAlertMissing90Msg": "Your period is over 3 months late. This could indicate PCOS or hormonal changes. Please consult a healthcare provider.",
+  "cycleAlertLate14Title": "Period 14 Days Late",
+  "cycleAlertLate14Msg": "Your period is 14 days late. You may want to speak to a doctor if this is unusual for you.",
+  "cycleAlertLate7Title": "Period 7 Days Late",
+  "cycleAlertLate7Msg": "Your period is 7 days late. This can happen due to stress, illness or changes in routine.",
+  "cycleAlertIrregularTitle": "Highly Irregular Cycles",
+  "cycleAlertIrregularMsg": "Your cycles have been highly irregular recently. While this can be normal, consider speaking to a doctor if concerned.",
+  "cycleAlertShortCycleTitle": "Unusually Short Cycles",
+  "cycleAlertShortCycleMsg": "Your last 3 cycles have been unusually short. Stress, travel, and illness can affect this.",
+  "cycleAlertLongCycleTitle": "Unusually Long Cycles",
+  "cycleAlertLongCycleMsg": "Your last 3 cycles have been unusually long. If this keeps happening, mention it to a doctor.",
+  "cycleAlertLongPeriodTitle": "Long Periods",
+  "cycleAlertLongPeriodMsg": "Your period has been lasting longer than usual (over 8 days). If this continues, check in with a doctor.",
+  "cycleAlertHeavyBleedingTitle": "Very Heavy Bleeding",
+  "cycleAlertHeavyBleedingMsg": "Your last period had 5 or more days of very heavy bleeding. If this is unusual or causes fatigue, consult a doctor.",
+  "cycleDeviationInsightTitle": "Cycle Insight",
+  "cycleDeviationSources": "Sources",
+  "cycleDeviationFallbackBody": "More information about this insight will be available soon.",
+  "mindfulnessOnboardingTitle": "Welcome to Mindfulness",
+  "mindfulnessOnboardingFeature1Title": "Guided Meditations",
+  "mindfulnessOnboardingFeature1Desc": "Relax and refocus with science-backed sessions.",
+  "mindfulnessOnboardingFeature2Title": "Mindful Reminders",
+  "mindfulnessOnboardingFeature2Desc": "Gentle nudges to help you stay present throughout your day.",
+  "mindfulnessOnboardingFeature3Title": "Mood & Reflection",
+  "mindfulnessOnboardingFeature3Desc": "Track your mood and reflect on your mental well-being.",
+  "mindfulnessOnboardingFeature4Title": "Progress Insights",
+  "mindfulnessOnboardingFeature4Desc": "See your mindfulness journey and growth over time.",
+  "mindfulnessOnboardingBegin": "Begin",
+  "mindfulnessPageTitle": "Mental Health",
+  "mindfulnessResetTitle": "Reset Mental Health Data?",
+  "mindfulnessResetMsg": "This will delete all your mood check-ins and mental health history. This cannot be undone.",
+  "mindfulnessDeleteAll": "Delete All",
+  "mindfulnessDeletedSnackbar": "All mental health data has been deleted",
+  "mindfulnessMoodHistory": "Mood History",
+  "mindfulnessMorningReadiness": "Morning Readiness",
+  "mindfulnessReadinessSummary": "Sleep {sleep} · Energy {energy} · Stress {stress}",
+  "@mindfulnessReadinessSummary": {
+    "placeholders": {
+      "sleep": {
+        "type": "String"
+      },
+      "energy": {
+        "type": "String"
+      },
+      "stress": {
+        "type": "String"
+      }
+    }
+  },
+  "mindfulnessReadinessPrompt": "How ready are you today?",
+  "mindfulnessEdit": "Edit",
+  "mindfulnessTodaysCheckin": "Today's Check-in",
+  "mindfulnessDailyCheckin": "Daily Check-in",
+  "mindfulnessFeelingLabel": "Feeling {label}",
+  "@mindfulnessFeelingLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "mindfulnessHowFeeling": "How are you feeling?",
+  "mindfulnessLogButton": "Log",
+  "mindfulnessBreathing": "Breathing",
+  "mindfulnessBreathingPrompt": "Take a moment to breathe",
+  "mindfulnessAssessmentTitle": "Mental Health Assessment",
+  "mindfulnessAssessmentSubtitle": "15 questions inspired by PHQ-9, GAD-7, and Maslach Burnout Inventory",
+  "mindfulnessStartAssessment": "Start Assessment",
+  "mindfulnessMoodInsights": "Mood Insights",
+  "mindfulnessLast30Days": "Last 30 days",
+  "mindfulnessLogMoodPrompt": "Log your mood to see insights",
+  "mindfulnessNoMoodData": "No mood data yet",
+  "mindfulnessLegendVeryHappy": "Very Happy",
+  "mindfulnessLegendNeutral": "Neutral",
+  "mindfulnessLegendUnpleasant": "Unpleasant",
+  "disclaimerTitle": "Before You Begin",
+  "disclaimerBody": "This assessment is designed for personal reflection and self-awareness. It is not a clinical diagnosis tool and should not replace professional mental health advice.",
+  "disclaimerCredits": "This questionnaire covers 15 carefully researched questions inspired by validated tools like the PHQ-9, GAD-7, and Maslach Burnout Inventory.",
+  "disclaimerDuration": "Takes about 3-5 minutes to complete.",
+  "disclaimerStartTest": "Start Test",
+  "questionnaireTitle": "Mental Health Assessment",
+  "questionnaireProgress": "QUESTION {current} OF {total}",
+  "@questionnaireProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "questionnaireViewResults": "View Results",
+  "questionnaireBack": "Back",
+  "resultsTitle": "Results",
+  "resultsWellbeingSnapshot": "Your Wellbeing Snapshot",
+  "resultsWellbeingBody": "Based on your responses, here's a breakdown across eight dimensions of mental health.",
+  "resultsDisclaimer": "This assessment is for personal reflection only and does not constitute a clinical diagnosis. If you are experiencing distress, please speak with a qualified mental health professional.",
+  "resultsRetake": "Retake Assessment",
+  "resultsInsightCrisisTitle": "A note of care",
+  "resultsInsightCrisisBody": "Some of your responses suggest you may be experiencing thoughts that are difficult to carry. Please consider reaching out to a mental health professional, a trusted person, or a crisis line — you don't have to manage this alone.",
+  "resultsInsightHighTitle": "Where to focus",
+  "resultsInsightHighBody": "Your results suggest elevated indicators in: {areas}. These areas may benefit from intentional support — whether through rest, professional guidance, or mindfulness practice.",
+  "@resultsInsightHighBody": {
+    "placeholders": {
+      "areas": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsInsightModerateTitle": "Worth watching",
+  "resultsInsightModerateBody": "You're showing moderate indicators in: {areas}. Small, consistent habits — quality sleep, connection, movement — can make a meaningful difference.",
+  "@resultsInsightModerateBody": {
+    "placeholders": {
+      "areas": {
+        "type": "String"
+      }
+    }
+  },
+  "resultsInsightGoodTitle": "Looking good overall",
+  "resultsInsightGoodBody": "Your responses suggest a relatively balanced state of mental wellbeing. Keep up your healthy habits, and check in regularly — mental health can shift with life circumstances.",
+  "resultsRiskIndicator": "RISK INDICATOR",
+  "resultsRiskLow": "Low Risk",
+  "resultsRiskModerate": "Moderate Risk",
+  "resultsRiskHigh": "High Risk",
+  "dimDepression": "Depression",
+  "dimAnxiety": "Anxiety",
+  "dimSleep": "Sleep Quality",
+  "dimStress": "Stress",
+  "dimSocial": "Social Connection",
+  "dimEnergy": "Energy & Burnout",
+  "dimSelfEsteem": "Self-Esteem",
+  "dimCrisis": "Crisis Indicators",
+  "dimCoping": "Coping & Resilience",
+  "questFreqRarely": "Rarely or not at all",
+  "questFreqSeveral": "Several days",
+  "questFreqMoreHalf": "More than half the days",
+  "questFreqNearly": "Nearly every day",
+  "questQ1Text": "Over the past two weeks, how often have you felt little interest or pleasure in doing things you normally enjoy?",
+  "questQ2Text": "How often have you felt down, hopeless, or like things will never improve?",
+  "questQ3Text": "How often have you felt nervous, on edge, or unable to stop worrying?",
+  "questQ4Text": "When faced with a challenging situation, how do you typically respond?",
+  "questQ4O1": "I stay calm and handle it well",
+  "questQ4O2": "I feel some stress but manage",
+  "questQ4O3": "I feel quite anxious and overwhelmed",
+  "questQ4O4": "I avoid the situation entirely",
+  "questQ5Text": "How would you describe your sleep over the past month?",
+  "questQ5O1": "Restful, 7-9 hours most nights",
+  "questQ5O2": "Occasionally disrupted but manageable",
+  "questQ5O3": "Frequently poor - trouble falling or staying asleep",
+  "questQ5O4": "Very poor - consistently exhausted",
+  "questQ6Text": "How would you rate your overall stress level in your daily life right now?",
+  "questQ6O1": "Low - I feel mostly at ease",
+  "questQ6O2": "Moderate - manageable most days",
+  "questQ6O3": "High - it's affecting my routine",
+  "questQ6O4": "Very high - I feel overwhelmed regularly",
+  "questQ7Text": "How connected do you feel to the people around you - friends, family, teammates?",
+  "questQ7O1": "Very connected and supported",
+  "questQ7O2": "Mostly connected, with some distance",
+  "questQ7O3": "Often isolated or misunderstood",
+  "questQ7O4": "Very alone and disconnected",
+  "questQ8Text": "How would you describe your energy and motivation levels lately?",
+  "questQ8O1": "High - I feel driven and engaged",
+  "questQ8O2": "Steady - some ups and downs",
+  "questQ8O3": "Low - getting started is a struggle",
+  "questQ8O4": "Very low - I feel fatigued most of the time",
+  "questQ9Text": "How often do you catch yourself thinking negatively about yourself or your abilities?",
+  "questQ9O1": "Rarely - I generally feel confident",
+  "questQ9O2": "Occasionally, but I brush it off",
+  "questQ9O3": "Often - I doubt myself frequently",
+  "questQ9O4": "Almost always - it holds me back",
+  "questQ10Text": "Do you experience physical symptoms - like a racing heart, tightness in your chest, or shortness of breath - during everyday situations?",
+  "questQ10O1": "Never or very rarely",
+  "questQ10O2": "Sometimes, but only under real pressure",
+  "questQ10O3": "Fairly often, even in routine situations",
+  "questQ10O4": "Very often - it disrupts my day",
+  "questQ11Text": "How often do you feel emotionally drained or used up by the end of the day?",
+  "questQ11O1": "Rarely - I usually have energy left",
+  "questQ11O2": "Sometimes after tough days",
+  "questQ11O3": "Often - I feel depleted most days",
+  "questQ11O4": "Almost always - I'm running on empty",
+  "questQ12Text": "In the past two weeks, have you had thoughts that you'd be better off not being here, or of hurting yourself?",
+  "questQ12O1": "Not at all",
+  "questQ12O2": "Briefly, but it passed quickly",
+  "questQ12O3": "Somewhat - these thoughts recur",
+  "questQ12O4": "Yes, frequently or seriously",
+  "questQ13Text": "When you're going through a hard time, which of the following best describes how you cope?",
+  "questQ13O1": "I reach out for support and use healthy strategies",
+  "questQ13O2": "I manage on my own but it takes effort",
+  "questQ13O3": "I withdraw and tend to bottle things up",
+  "questQ13O4": "I turn to unhealthy habits or avoidance",
+  "questQ14Text": "How would you describe your ability to concentrate and make decisions lately?",
+  "questQ14O1": "Sharp - I feel clear and focused",
+  "questQ14O2": "Decent - occasional lapses",
+  "questQ14O3": "Struggling - my mind feels foggy often",
+  "questQ14O4": "Very difficult - I can't stay on task",
+  "questQ15Text": "When something difficult happens, how quickly do you tend to recover emotionally?",
+  "questQ15O1": "Quickly - I bounce back with perspective",
+  "questQ15O2": "Takes a day or two but I get there",
+  "questQ15O3": "Slowly - I carry it for a long time",
+  "questQ15O4": "I rarely feel like I've fully recovered",
+  "cyArtKeyPoints": "Key points:",
+  "cyArtSourcesTitle": "Reviewed sources & bibliography",
+  "cyArtPrimaryResearch": "Primary research:",
+  "cyArtClinicalResources": "Clinical and educational resources:",
+  "cyA1Title": "What Is a Menstrual Cycle?",
+  "cyA1Sub": "The complete beginner's guide to understanding your body",
+  "cyA1S1H": "What is actually happening?",
+  "cyA1S1P1": "Every month, your body goes through a series of changes designed to prepare for a possible pregnancy. This sequence of events is called the menstrual cycle. It involves your brain, your ovaries, your uterus, and a carefully timed series of hormonal signals that all work together in a coordinated rhythm.",
+  "cyA1S1P2": "The menstrual cycle is a series of natural changes in hormone production and the structures of the uterus and ovaries of the female reproductive system. The ovarian cycle controls the production and release of eggs, and the uterine cycle governs the preparation and maintenance of the lining of the uterus to receive an embryo. These two cycles run concurrently and are coordinated with each other.",
+  "cyA1S1P3": "In simple terms: your ovaries grow and release an egg. Your uterus builds up a thick, soft lining in case that egg gets fertilised. If it doesn't, the lining sheds. That shedding is your period. Then the whole process starts again.",
+  "cyA1S2H": "The organs involved",
+  "cyA1S2P1": "Understanding your cycle starts with knowing which parts of your body are involved:",
+  "cyA1S2B1T": "The ovaries",
+  "cyA1S2B1B": "Two small, almond-shaped organs on either side of your uterus. They store your eggs and produce the hormones estrogen and progesterone. You are born with all the eggs you will ever have — roughly 1 to 2 million at birth, which reduces to around 300,000 by puberty.",
+  "cyA1S2B2T": "The uterus",
+  "cyA1S2B2B": "A pear-shaped muscular organ where a baby grows during pregnancy. Its inner lining, called the endometrium, builds up and sheds every cycle.",
+  "cyA1S2B3T": "The fallopian tubes",
+  "cyA1S2B3B": "Two narrow tubes connecting the ovaries to the uterus. When an egg is released, it travels down the fallopian tube toward the uterus.",
+  "cyA1S2B4T": "The hypothalamus and pituitary gland",
+  "cyA1S2B4B": "Located in your brain. These send out the hormonal signals that start and control the entire cycle.",
+  "cyA1S3H": "When does it all begin?",
+  "cyA1S3P1": "Menarche — the first menstrual period — typically occurs between the ages of 10 and 16, with the average age of onset being 12.4 years.",
+  "cyA1S3P2": "Another way to predict when your period will come is to think back to when breast development began — menarche usually happens about 2 to 2.5 years after breasts start developing.",
+  "cyA1S3P3": "The age varies widely from person to person and is influenced by genetics, body composition, nutrition, and general health. People commonly get their periods at around the same time their mother did. Getting your first period any time between ages 9 and 15 is considered within the normal range.",
+  "cyA1S4H": "How long is a normal cycle?",
+  "cyA1S4P1": "This is where a lot of confusion starts. Most people have heard that a cycle is 28 days. That number is an average — not a rule.",
+  "cyA1S4P2": "For teenagers, a normal menstrual cycle can be anywhere between 21 and 45 days. The average menstrual cycle length is approximately 28 days.",
+  "cyA1S4P3": "A large-scale real-world study published in npj Digital Medicine analysed data from over 600,000 cycles and found that the mean cycle length across ovulatory cycles was 29.3 days, with a mean follicular phase length of 16.9 days and a mean luteal phase length of 12.4 days.",
+  "cyA1S4P4": "Research from the Apple Women's Health Study — one of the largest studies of its kind, conducted by Harvard T.H. Chan School of Public Health — analysed 165,668 cycles across 12,608 participants and found that cycle variability is considerably higher — by 46% — among those aged under 20 compared to those aged 35 to 39. In other words, irregular cycles are the norm for teenagers, not the exception.",
+  "cyA1S5H": "How long does a period last?",
+  "cyA1S5P1": "According to the International Federation of Gynecology and Obstetrics (FIGO), normal menstrual cycles should have consistent frequency, regularity, duration, and volume of flow.",
+  "cyA1S5P2": "A period typically lasts between 3 and 7 days, though anywhere in that range is normal. The amount of blood lost during a typical period is around 30 to 80 mL — roughly 2 to 6 tablespoons.",
+  "cyA1S6H": "Why are teenage cycles so irregular?",
+  "cyA1S6P1": "In the first 1 to 2 years following your first period, it is very common and normal to have irregular cycles. In fact, in the first year after your first period, up to 80% of your menstrual cycles may be anovulatory — meaning no egg is released.",
+  "cyA1S6P2": "This happens because the hormonal communication system between your brain and ovaries — called the HPO axis — is still maturing. It takes time for this system to find its rhythm. During the first two years following menarche, ovulation is absent in around half of cycles. Five years after menarche, ovulation occurs in around 75% of cycles.",
+  "cyA1S6P3": "A 2024 study published in ScienceDirect, analysing 38,916 cycles from 6,486 adolescents aged 13–18 using the Clue app, found that individuals less than 1 year post-menarche had a 2.6 times higher odds of having a highly variable cycle and 5 times higher odds of short cycles compared to those further along in their reproductive development.",
+  "cyA1S6KP1": "Irregular cycles in your teens are biological, not a sign something is wrong.",
+  "cyA1S6KP2": "It can take 2 to 5 years after your first period for cycles to stabilise.",
+  "cyA1S6KP3": "The 28-day average applies to adults, not teenagers.",
+  "cyA1S6KP4": "Your cycle length may vary by several days from month to month and that is completely normal.",
+  "cyA1S7H": "What does \"Day 1\" mean?",
+  "cyA1S7P1": "When discussing timing within the menstrual cycle, the first day of heavy menstrual flow is considered Day 1. This is the standard used by doctors and researchers worldwide. Every cycle is measured from Day 1 of one period to Day 1 of the next.",
+  "cyA1S8H": "When should you talk to a doctor?",
+  "cyA1S8P1": "Most cycle irregularities in teenagers are normal. However, there are specific situations where it is worth speaking to a doctor or a trusted adult:",
+  "cyA1S8L1": "Your first period has not arrived by age 15.",
+  "cyA1S8L2": "Your periods stop for 3 or more months in a row and you are not pregnant.",
+  "cyA1S8L3": "Your cycle is consistently shorter than 21 days or longer than 45 days.",
+  "cyA1S8L4": "Your period lasts longer than 7 days regularly.",
+  "cyA1S8L5": "You are soaking through a pad or tampon in under 2 hours.",
+  "cyA1S8L6": "Your periods cause pain severe enough to miss school or daily activities.",
+  "cyA1GraphTitle": "Average cycle length by age group — Apple Women's Health Study, 2023 (n = 165,668 cycles)",
+  "cyA1GraphUnder20": "Under\n20",
+  "cyA1GraphYourAge": "Your age group",
+  "cyA1GraphOtherAge": "Other age groups",
+  "cyA1GraphCaption": "Cycles are longest and most variable in the teenage years and gradually shorten and stabilise into the late twenties and thirties.",
+  "cyA2Title": "The Four Phases of Your Cycle",
+  "cyA2Sub": "What your body is doing every single day of the month",
+  "cyA2OvH": "Overview",
+  "cyA2OvP1": "Most people think of their menstrual cycle as just their period — a few uncomfortable days every month. But your period is only one of four distinct phases that your body moves through every single cycle. Each phase has its own hormonal environment, its own physical changes, and its own emotional signature.",
+  "cyA2OvP2": "The menstrual cycle comprises two distinct cycles — one within the ovary and another within the endometrium. The phases of the ovarian cycle include the follicular phase, ovulation, and the luteal phase, while the endometrial cycle consists of the proliferative phase, the secretory phase, and the menstrual phase. These phases are coordinated with each other and run simultaneously.",
+  "cyA2OvP3": "In everyday language, these are grouped into four phases: menstrual, follicular, ovulation, and the luteal phase. Here is what happens in each one.",
+  "cyA2P1H": "Phase 1 — The Menstrual Phase",
+  "cyA2P1Meta": "Days 1 to 3–7  |  Hormone profile: Estrogen low, progesterone low",
+  "cyA2P1P1": "This is Day 1. The first day of your period is officially the first day of your entire cycle — not the end of it.",
+  "cyA2P1P2": "The menstrual phase starts with the shedding of the uterine lining, which occurs when a drop in estrogen and progesterone signals the uterus to shed its endometrial lining. The average blood loss during a period is around 2 to 3 tablespoons.",
+  "cyA2P1P3": "How long a period lasts varies by person, but most periods last 3 to 7 days, with 5 to 6 days being most common. If your period consistently lasts longer than 8 days or is very heavy, consult your healthcare provider.",
+  "cyA2PhysLabel": "What you might feel physically:",
+  "cyA2P1Phys1": "Cramping in the lower abdomen and back — caused by prostaglandins, chemicals that trigger uterine contractions.",
+  "cyA2P1Phys2": "Fatigue and low energy — your body is doing real physiological work.",
+  "cyA2P1Phys3": "Flow that is heavier at the start and lighter toward the end.",
+  "cyA2EmoLabel": "What you might feel emotionally:",
+  "cyA2P1Emo1": "Lower mood and reduced motivation as both estrogen and progesterone are at their lowest point.",
+  "cyA2P1Emo2": "Increased sensitivity and a desire to rest and withdraw.",
+  "cyA2P2H": "Phase 2 — The Follicular Phase",
+  "cyA2P2Meta": "Days 1 to ~14  |  Hormone profile: Estrogen rising, FSH active",
+  "cyA2P2P1": "The follicular phase begins on the same day as your period and runs until ovulation. The name comes from follicles: tiny fluid-filled sacs in your ovaries, each containing an immature egg.",
+  "cyA2P2P2": "This phase starts when the brain releases follicle-stimulating hormone (FSH). This stimulates the ovaries to produce around 5 to 20 small follicles. Only the healthiest egg will eventually mature — the rest are reabsorbed. The average follicular phase lasts about 16 days, ranging from 11 to 27 days depending on the cycle.",
+  "cyA2P2P3": "The development of the dominant follicle happens in three stages: recruitment (days 1 to 4), selection (days 5 to 7), and dominance (from day 8 onward). By cycle day 8, one follicle exerts dominance by promoting its own growth and suppressing others.",
+  "cyA2P2P4": "A groundbreaking 2024 study found that during the pre-ovulatory phase (the end of the follicular phase), brain network connectivity and complexity are at their highest. You're not just having a good week by chance — your brain is operating in its most responsive state.",
+  "cyA2P2KeyT": "Key point",
+  "cyA2P2KeyB": "The length of this phase varies most between individuals. The luteal phase is usually stable at 14 days — so variability in overall cycle length comes almost entirely from the follicular phase.",
+  "cyA2P3H": "Phase 3 — Ovulation",
+  "cyA2P3Meta": "Day ~14  |  Hormone profile: LH surge, estrogen peaks then drops",
+  "cyA2P3P1": "Ovulation is a single event, not a phase — it lasts only 12 to 24 hours. But it is the central event of the entire cycle. Everything before it builds toward it, and everything after is a response to it.",
+  "cyA2P3P2": "Ovulation typically occurs approximately 36 to 44 hours after the onset of the LH surge. At the end of ovulation, levels of estradiol decrease. Cervical changes result in increased, watery cervical mucus to facilitate sperm entry.",
+  "cyA2P3P3": "In the middle of the cycle, a surge of luteinizing hormone triggers the release of a mature egg from the dominant follicle in one of the ovaries. The egg travels down the fallopian tube where it stays for 12 to 24 hours.",
+  "cyA2P3P4": "Only about 13% of people have exactly 28-day cycles, so significant variation in ovulation timing is completely normal.",
+  "cyA2P4H": "Phase 4 — The Luteal Phase",
+  "cyA2P4Meta": "Days ~15 to 28  |  Hormone profile: Progesterone dominant",
+  "cyA2P4P1": "After ovulation, the follicle that released the egg transforms into a temporary gland called the corpus luteum, which begins producing progesterone. This is the phase most people feel the most.",
+  "cyA2P4P2": "The empty follicle produces progesterone and some estrogen to support a potential pregnancy. If no pregnancy occurs, it breaks down after about 9 to 11 days. The luteal phase often lasts about 14 days but can range between 9 and 16 days.",
+  "cyA2P4P3": "PMS is likely influenced by the action of progesterone on neurotransmitters including GABA, serotonin, and dopamine. Clinical trials show that serotonin levels shift significantly during this phase, linking PMS to mood changes.",
+  "cyA2P4P4": "A 2024 study published in Nature Neuroscience found measurable structural changes in the brain during the luteal phase. Luteal phase symptoms aren't \"all in your head\" — they're rooted in real neurobiological changes driven by hormones.",
+  "cyA2P4P5": "Food cravings, especially for carbohydrates and sugar, are common as progesterone and serotonin fluctuations drive appetite during this phase.",
+  "cyA2P4P6": "Large surveys show up to 90% of people who menstruate experience at least one PMS symptom like anger, irritability, or bloating.",
+  "cyA2S8H": "When should you talk to a doctor?",
+  "cyA2S8L1": "Your periods are consistently causing pain severe enough to miss school or daily activities.",
+  "cyA2S8L2": "Luteal phase mood symptoms are significantly affecting your relationships or mental health.",
+  "cyA2S8L3": "You experience no recognisable phase pattern (no energy shifts or mucus changes).",
+  "cyA2S8P1": "In some cases, ovulation may not occur, resulting in anovulatory cycles. These are common in the first 12 to 18 months after the first period. If you are well past your first year and symptoms suggest you aren't ovulating, a doctor can investigate.",
+  "cyA2GraphTitle": "Hormone levels across a 28-day menstrual cycle",
+  "cyA2GraphMenstrual": "Menstrual",
+  "cyA2GraphFollicular": "Follicular",
+  "cyA2GraphOv": "Ov.",
+  "cyA2GraphLuteal": "Luteal",
+  "cyA2GraphEstrogen": "Estrogen",
+  "cyA2GraphProgesterone": "Progesterone",
+  "cyA2GraphLH": "LH surge",
+  "cyA2GraphCaption": "Estrogen peaks just before ovulation, the LH surge triggers egg release, then progesterone takes over for the luteal phase.",
+  "cyA3Title": "Hormones and Your Cycle",
+  "cyA3Sub": "What estrogen, progesterone, LH, and FSH actually do — and why they affect your entire life",
+  "cyA3S1H": "Why hormones matter beyond reproduction",
+  "cyA3S1P1": "Most people think of reproductive hormones as purely physical — they control your period, full stop. The reality is far more interesting. The hormones that drive your menstrual cycle are neuroactive steroids: they cross the blood-brain barrier, act directly on the brain, and shape your mood, memory, motivation, sleep, appetite, and pain sensitivity throughout the month.",
+  "cyA3S1P2": "The menstrual cycle is an intricate biological process governed by hormonal changes that affect different facets of the female reproductive system — but also broad effects on psychology, cognition, and emotional experience across each phase.",
+  "cyA3S1P3": "There are four primary hormones to understand. Two are produced in the brain. Two are produced in the ovaries. Together they form a continuous feedback loop that runs without stopping from your first period to your last.",
+  "cyA3S2H": "The hormonal command chain",
+  "cyA3S2P1": "Before getting to the four main hormones, it helps to understand that the system has a clear hierarchy. It starts in the brain, not the ovaries.",
+  "cyA3S2P2": "Hormonal regulation begins in the hypothalamus, where gonadotropin-releasing hormone (GnRH) is secreted in a pulsatile fashion starting at puberty. GnRH is transported to the anterior pituitary, where it signals the pituitary gland to release follicle-stimulating hormone (FSH) and luteinizing hormone (LH). FSH and LH then travel through the bloodstream to the ovaries, stimulating the production of sex steroid hormones from follicular cells.",
+  "cyA3S2P3": "In plain terms: your brain sends a signal, which tells your pituitary gland to release two hormones, which travel to your ovaries, which produce estrogen and progesterone, which feed back to the brain to regulate the next signal. This loop repeats every cycle.",
+  "cyA3FshH": "Hormone 1 — FSH (Follicle-Stimulating Hormone)",
+  "cyA3FshMeta": "Produced by: The pituitary gland, located at the base of the brain\nPrimary role: Stimulating egg development",
+  "cyA3FshP1": "FSH's main function is to help regulate the menstrual cycle. Specifically, FSH stimulates follicles on the ovary to grow and prepare the eggs for ovulation. As the follicles increase in size, they begin to release estrogen and a low level of progesterone into the bloodstream.",
+  "cyA3FshP2": "FSH is highest at the very start of your cycle, when estrogen is at its lowest. This is the brain's response to the hormonal drop at the end of the previous cycle — it detects low estrogen and sends FSH to restart follicle development.",
+  "cyA3FshP3": "One follicle will soon begin to grow faster than the others. This is called the dominant follicle. As the follicle grows, blood levels of estrogen rise significantly by cycle day seven. This increase in estrogen begins to inhibit the secretion of FSH. The fall in FSH allows smaller follicles to die off — they are, in effect, starved of FSH.",
+  "cyA3FshL1": "FSH rises at the start of each cycle to kickstart follicle growth.",
+  "cyA3FshL2": "Only the strongest follicle survives the natural FSH drop — all others are reabsorbed.",
+  "cyA3FshL3": "FSH also induces the development of LH receptors within the dominant follicle, preparing it for the next step — ovulation.",
+  "cyA3FshL4": "Abnormally high FSH levels can indicate reduced ovarian reserve — something doctors check during fertility investigations.",
+  "cyA3LhH": "Hormone 2 — LH (Luteinizing Hormone)",
+  "cyA3LhMeta": "Produced by: The pituitary gland\nPrimary role: Triggering ovulation and supporting the corpus luteum",
+  "cyA3LhP1": "LH is the hormone responsible for the single most important event in the cycle: the release of the egg.",
+  "cyA3LhP2": "Levels of estrogen, particularly estradiol, increase exponentially in the late follicular phase. When high levels of estradiol trigger LH secretion by gonadotropes — a positive feedback mechanism — this results in a massive LH surge, usually over 36 to 48 hours.",
+  "cyA3LhP3": "The onset of the LH surge usually precedes ovulation by 36 hours. The peak of the LH surge precedes ovulation by 10 to 12 hours. The LH surge stimulates luteinization of the granulosa cells and stimulates the synthesis of progesterone.",
+  "cyA3LhP4": "This is why ovulation predictor kits (OPKs) work — they detect the LH surge in urine, giving you a 24 to 36 hour window of advance warning before ovulation occurs.",
+  "cyA3LhP5": "After ovulation, LH's role shifts. After ovulation, the ruptured follicle forms a corpus luteum — a temporary endocrine gland — that produces high levels of progesterone. Progesterone blocks the release of FSH and helps prepare the uterine lining.",
+  "cyA3LhL1": "The LH surge is the direct trigger for ovulation.",
+  "cyA3LhL2": "It can be detected in urine using OPK tests 24 to 36 hours before egg release.",
+  "cyA3LhL3": "After ovulation, LH maintains the corpus luteum and its progesterone production.",
+  "cyA3LhL4": "If no pregnancy occurs, LH drops, the corpus luteum dies, and the cycle resets.",
+  "cyA3EstH": "Hormone 3 — Estrogen (Estradiol)",
+  "cyA3EstMeta": "Produced by: The ovarian follicles, and later the corpus luteum\nPrimary role: Building uterine lining and acting as a powerful brain modulator",
+  "cyA3EstP1": "Estrogen is the hormone most people have heard of, but its effects are far broader than most people realise. It does not just prepare the uterus — it acts directly on the brain, influencing mood, cognition, and emotional regulation.",
+  "cyA3EstP2": "During the follicular phase, rising estrogen levels increase serotonin synthesis, enhancing mood, cognition, and pain tolerance. Estrogen may also influence dopamine levels, promoting motivation and reward sensitivity. GABA, involved in anxiety regulation, may be modulated by estrogen, inducing relaxation.",
+  "cyA3EstP3": "A landmark 2024 study published in Frontiers in Neuroscience confirmed that estradiol functions as a neuroactive steroid, playing a crucial role in modulating neurotransmitter systems affecting neuronal circuits and brain functions including learning, memory, reward, and social behaviour.",
+  "cyA3EstP4": "A separate study published in Nature Neuroscience in 2025 found that estrogen boosts dopamine-driven learning signals in the brain — providing a biological reason behind why motivation, focus, and mental clarity naturally ebb and flow throughout the month.",
+  "cyA3EstBodyLabel": "What rising estrogen does to your body:",
+  "cyA3EstBody1": "Thickens and builds the uterine lining (endometrium).",
+  "cyA3EstBody2": "Changes cervical mucus from thick and sticky to clear and stretchy.",
+  "cyA3EstBody3": "Improves skin clarity in the follicular phase.",
+  "cyA3EstBody4": "Increases bone density and cardiovascular protection over time.",
+  "cyA3EstBrainLabel": "What rising estrogen does to your brain:",
+  "cyA3EstBrain1": "Boosts serotonin production — the neurotransmitter most associated with stable mood.",
+  "cyA3EstBrain2": "Increases dopamine sensitivity — driving motivation, confidence, and reward-seeking.",
+  "cyA3EstBrain3": "Enhances verbal memory, verbal fluency, and creative thinking.",
+  "cyA3EstBrain4": "Reduces anxiety through its modulation of GABA.",
+  "cyA3EstKey1": "Estrogen peaks twice: once just before ovulation (its highest point) and once mid-luteal phase.",
+  "cyA3EstKey2": "The follicular phase energy and mood boost most people feel is directly caused by rising estrogen.",
+  "cyA3EstKey3": "During the luteal phase, where estrogen levels are lower and progesterone levels are high, there is a corresponding decrease in serotonin levels — which is the neurobiological mechanism behind PMS mood symptoms.",
+  "cyA3EstKey4": "Estrogen acts on over 300 different tissues in the body — it is not just a reproductive hormone.",
+  "cyA3ProgH": "Hormone 4 — Progesterone",
+  "cyA3ProgMeta": "Produced by: The corpus luteum\nPrimary role: Maintaining uterine lining and producing most PMS symptoms",
+  "cyA3ProgP1": "Progesterone is the dominant hormone of the luteal phase and the hormone most responsible for the physical and emotional symptoms that most people associate with the days before their period.",
+  "cyA3ProgP2": "After ovulation, the empty follicle transforms into the corpus luteum, which produces progesterone and some estrogen to support a potential pregnancy. The luteal phase is characterised by changes to hormone levels including a dramatic increase in progesterone, a decrease in FSH and LH, and changes to the endometrial lining.",
+  "cyA3ProgP3": "Progesterone's effect on the brain is significant and often misunderstood. It does not simply cause bad moods — it acts on GABA receptors, the same receptors targeted by anti-anxiety medications. Progesterone and its metabolites interact with the GABAergic system, producing calming and sedating effects — which explains the fatigue and low motivation many people feel in the luteal phase.",
+  "cyA3ProgP4": "The problem occurs at the end of the luteal phase, when both progesterone and estrogen drop sharply. A 2023 study published in Biological Psychiatry found an 18% change in serotonin transporter density in the midbrain between the periovulatory and premenstrual phase — directly correlating with the severity of depressed mood premenstrually.",
+  "cyA3ProgBodyLabel": "What progesterone does to your body:",
+  "cyA3ProgBody1": "Maintains and matures the uterine lining for a possible pregnancy.",
+  "cyA3ProgBody2": "Increases basal body temperature slightly after ovulation.",
+  "cyA3ProgBody3": "Causes water retention and bloating.",
+  "cyA3ProgBody4": "Increases sebum production — often causing pre-period breakouts.",
+  "cyA3ProgBody5": "Raises appetite, particularly for carbohydrates and fats.",
+  "cyA3ProgBrainLabel": "What progesterone does to your brain:",
+  "cyA3ProgBrain1": "Acts on GABA receptors, producing sedation and fatigue.",
+  "cyA3ProgBrain2": "Reduces serotonin availability — contributing to low mood, irritability, and sensitivity.",
+  "cyA3ProgBrain3": "Interacts with the dopaminergic system in complex ways — with varying effects on executive function.",
+  "cyA3ProgBrain4": "Drives carbohydrate cravings through its influence on serotonin precursors.",
+  "cyA3ProgKey1": "Progesterone is not the villain — it is doing its biological job correctly.",
+  "cyA3ProgKey2": "PMS symptoms are the result of your brain's sensitivity to progesterone's effects on neurotransmitters, not a hormonal imbalance per se.",
+  "cyA3ProgKey3": "The drop in progesterone at the end of the cycle is what triggers menstruation.",
+  "cyA3ProgKey4": "If the corpus luteum persists (due to pregnancy), progesterone stays high — this is why periods stop during pregnancy.",
+  "cyA3FbH": "How it all connects — the feedback loop",
+  "cyA3FbP1": "The four hormones do not operate independently. They regulate each other through a continuous feedback system:",
+  "cyA3FbL1": "Low estrogen at cycle start → hypothalamus releases GnRH → pituitary releases FSH and LH.",
+  "cyA3FbL2": "FSH stimulates follicle growth → follicles produce estrogen → estrogen rises.",
+  "cyA3FbL3": "High estrogen triggers LH surge → LH triggers ovulation.",
+  "cyA3FbL4": "After ovulation, corpus luteum produces progesterone → progesterone and estrogen suppress FSH and LH.",
+  "cyA3FbL5": "If no pregnancy: corpus luteum breaks down → progesterone and estrogen drop → FSH begins rising again → cycle restarts.",
+  "cyA3FbP2": "Both estradiol and progesterone are secreted into the bloodstream and affect various tissues, including the uterus and pituitary gland. At the anterior pituitary, these hormones provide negative feedback, reducing the secretion of FSH and LH, which subsequently reduces their own production.",
+  "cyA3StressH": "Why stress, sleep, and food affect your hormones",
+  "cyA3StressP1": "The hormonal command chain starts in the hypothalamus — and the hypothalamus is directly connected to the brain's stress response system. This is why life circumstances can directly disrupt your cycle.",
+  "cyA3StressP2": "Chronic stress and dysregulation of the HPA (hypothalamic-pituitary-adrenal) axis can lead to alterations in cortisol levels, which are linked to both menstrual disorders and mood disorders. Elevated cortisol can suppress the release of GnRH, interfering with FSH and LH production and disrupting the entire hormonal cascade.",
+  "cyA3StressP3": "The same mechanism explains why extreme caloric restriction, overtraining, illness, and significant weight changes can delay or stop ovulation — the hypothalamus detects physiological stress and downregulates the reproductive system as a protective response. Your body is not malfunctioning. It is prioritising survival.",
+  "cyA3DocH": "When should you talk to a doctor?",
+  "cyA3DocL1": "You have severe mood symptoms in the 1 to 2 weeks before your period that significantly affect your daily life (possible PMDD).",
+  "cyA3DocL2": "Your periods are consistently absent.",
+  "cyA3DocL3": "You experience hot flashes, night sweats, or significant mood changes unrelated to your cycle.",
+  "cyA3DocL4": "You have been diagnosed with depression or anxiety and notice symptoms worsening significantly in the premenstrual phase.",
+  "cyA3GridTitle": "How hormones affect mood and cognition across the cycle",
+  "cyA3GridMenstrual": "Menstrual",
+  "cyA3GridFollicular": "Follicular",
+  "cyA3GridOvulation": "Ovulation",
+  "cyA3GridLuteal": "Luteal",
+  "cyA3GridEstrogenT": "Estrogen ↑",
+  "cyA3GridEst1": "↑ Serotonin synthesis",
+  "cyA3GridEst2": "↑ Dopamine sensitivity",
+  "cyA3GridEst3": "↑ Mood, memory, focus",
+  "cyA3GridEst4": "↓ Anxiety via GABA",
+  "cyA3GridProgesteroneT": "Progesterone ↑",
+  "cyA3GridProg1": "↓ Serotonin availability",
+  "cyA3GridProg2": "↑ GABA — sedating effect",
+  "cyA3GridProg3": "↑ Bloating, fatigue",
+  "cyA3GridProg4": "↑ Food cravings",
+  "cyA3GridFshT": "FSH ↑",
+  "cyA3GridFsh1": "↑ Follicle recruitment",
+  "cyA3GridFsh2": "↑ Estrogen production",
+  "cyA3GridFsh3": "Highest at cycle start",
+  "cyA3GridFsh4": "Falls as estrogen rises",
+  "cyA3GridLhT": "LH surge",
+  "cyA3GridLh1": "→ Triggers ovulation",
+  "cyA3GridLh2": "↑ Progesterone begins",
+  "cyA3GridLh3": "Detectable in urine",
+  "cyA3GridLh4": "Peaks ~10–12h pre-ovulation",
+  "cyA4Title": "What Is Spotting and Why Does It Happen?",
+  "cyA4Sub": "Everything you need to know about bleeding between periods",
+  "cyA4S1H": "What spotting actually is",
+  "cyA4S1P1": "Spotting is light vaginal bleeding that occurs outside of your normal period. It is not a flow — it is small amounts of blood, often noticed only when wiping or as light staining on underwear. The colour is usually pink, light red, or brown rather than the bright or deep red of a typical period. It does not require a pad or tampon in most cases, only a panty liner at most.",
+  "cyA4S1P2": "Spotting is one of the most common and most misunderstood experiences in the menstrual cycle. It can feel alarming the first time it happens, but in the majority of cases it has a completely benign hormonal cause. Spotting, or light vaginal discharge, can be a totally normal part of the menstrual cycle.",
+  "cyA4S1P3": "Understanding the timing and context of spotting — specifically where you are in your cycle when it occurs — is the single most useful tool for interpreting what it means.",
+  "cyA4S2H": "Spotting vs. a period — the key differences",
+  "cyA4S2P1": "Many people confuse spotting with the start of a light period. Here is how to tell them apart:",
+  "cyA4S2P2": "Spotting before your period may appear only when wiping or as a few drops on a panty liner. Menstrual bleeding, in contrast, lasts about 2 to 7 days and is continuous, often increasing in intensity before tapering off.",
+  "cyA4S3H": "The most common causes of spotting",
+  "cyA4Sub1": "1. Ovulation spotting",
+  "cyA4Sub1P1": "Mid-cycle bleeding, which generally takes the form of light spotting, is most commonly associated with ovulation. In a BioCycle Study, approximately 5% of women self-reported mid-cycle bleeding during or around the time of expected ovulation. Since ovulation bleeding is relatively uncommon, and can occur randomly or infrequently, it can easily be mistaken as a sign of something else.",
+  "cyA4Sub1P2": "Changes in estrogen levels often cause this type of bleeding — some people refer to ovulation bleeding as estrogen breakthrough bleeding. Right before ovulation, estrogen rises sharply. Then immediately after the egg is released, estrogen drops suddenly while progesterone begins rising. This rapid hormonal shift can cause a small amount of the uterine lining to shed briefly, producing light spotting.",
+  "cyA4Sub1P3": "You tend to release eggs from alternating ovaries — your left one cycle and your right the next. Some people notice spotting when they're ovulating on one side but not the other, which is why it may show up every other cycle.",
+  "cyA4LooksLabel": "What it looks like:",
+  "cyA4Sub1L1": "Light pink or red, very small amount.",
+  "cyA4Sub1L2": "Lasts a few hours to 1–2 days maximum.",
+  "cyA4Sub1L3": "Occurs around the middle of your cycle — roughly days 11 to 16 in a 28-day cycle.",
+  "cyA4Sub1L4": "May be accompanied by mild one-sided pelvic cramping (mittelschmerz) and egg-white cervical mucus.",
+  "cyA4Sub2": "2. Pre-period spotting (late luteal spotting)",
+  "cyA4Sub2P1": "Some people experience light brown or pink spotting in the 1 to 3 days before their period properly begins. This is caused by progesterone dropping at the end of the luteal phase, which causes the uterine lining to begin breaking down before the full menstrual flow starts. It is considered normal when it lasts no more than 3 days and is followed by a normal period.",
+  "cyA4Sub3": "3. Hormonal fluctuations and anovulatory cycles",
+  "cyA4Sub3P1": "In cycles where ovulation does not occur — which is common in teenagers — the hormonal patterns are less predictable. Without the LH surge and subsequent progesterone rise, estrogen can fluctuate erratically, causing what is called estrogen breakthrough bleeding. This type of spotting is common in the first 2 to 3 years after your first period as the hormonal system matures.",
+  "cyA4Sub4": "4. Stress, illness, and significant lifestyle changes",
+  "cyA4Sub4P1": "The hypothalamus — the part of the brain that controls your hormonal cycle — is highly sensitive to psychological and physiological stress. Significant stress, illness, disrupted sleep, extreme exercise, or sudden weight changes can all disrupt hormonal signalling and cause mid-cycle spotting. This is one of the most common causes of unexplained spotting in teenagers.",
+  "cyA4Sub5": "5. Cervical ectropion",
+  "cyA4Sub5P1": "Cervical ectropion is a benign gynaecological condition regarded as a normal variant that frequently occurs in women of reproductive age. It occurs due to increased exposure of the cervical epithelium to estrogen.",
+  "cyA4Sub5P2": "In simple terms: cells that are normally found inside the cervical canal migrate to the outside of the cervix, where they are more fragile and prone to light bleeding — particularly after physical activity, sex, or even a cervical exam.",
+  "cyA4Sub5P3": "Ectropion is particularly common in adolescents, pregnant women, or those taking estrogen-containing contraceptives. Vaginal discharge is the most common symptom. Postcoital bleeding may also occur.",
+  "cyA4Sub5P4": "Importantly, cervical ectropion has no links to cervical cancer or cancer-causing health problems. It is a benign condition that often resolves on its own without any treatment.",
+  "cyA4S4H": "Less common but important causes",
+  "cyA4Sub6": "Sexually transmitted infections (STIs)",
+  "cyA4Sub6P1": "Sexually transmitted infections such as gonorrhoea or chlamydia may cause the cervical tissue to become inflamed and bleed easily.",
+  "cyA4Sub6P2": "Chlamydia in particular is often completely symptomless — the only sign may be unexpected spotting or bleeding after sex. Cervical ectropion (19–34%), cervical or endometrial polyps (5–18%), and infection including vaginitis and cervicitis are common causes of irregular spotting in premenopausal patients.",
+  "cyA4Sub6P3": "This is one of the reasons why regular STI screening is recommended for sexually active teenagers — not because it assumes anything, but because chlamydia is the most commonly reported STI in the under-25 age group and is entirely treatable with a short course of antibiotics.",
+  "cyA4Sub7": "Cervical polyps",
+  "cyA4Sub7P1": "Cervical polyps are small growths that develop on the cervix. Most are benign but could cause bleeding after intercourse or between periods.",
+  "cyA4Sub7P2": "They are more common in older adults but can occasionally occur in teenagers. They are usually found incidentally during a pelvic examination and can be removed easily in a clinical setting.",
+  "cyA4Sub8": "Anovulatory cycles",
+  "cyA4Sub8P1": "In cycles where no egg is released, progesterone is not produced — because progesterone only comes from the corpus luteum that forms after ovulation. Without progesterone to stabilise the uterine lining, estrogen alone controls the endometrium, causing it to thicken unevenly and shed irregularly. This produces unpredictable spotting that does not follow a clear pattern.",
+  "cyA4S5H": "What colour is spotting and what does it mean?",
+  "cyA4S5P1": "The colour of spotting carries information:",
+  "cyA4ColorPinkT": "Light pink",
+  "cyA4ColorPinkB": "Fresh blood mixed with cervical mucus. Common with ovulation spotting or very early menstruation.",
+  "cyA4ColorRedT": "Bright red",
+  "cyA4ColorRedB": "Fresh active bleeding. More associated with the start of a period or ovulation spotting during a heavy estrogen shift.",
+  "cyA4ColorBrownT": "Brown or rust",
+  "cyA4ColorBrownB": "Older blood that has taken time to travel through the cervical canal. Very common with pre-period spotting, the end of a period, or post-ovulation spotting.",
+  "cyA4ColorDarkT": "Dark brown or almost black",
+  "cyA4ColorDarkB": "Very old blood, often from the tail end of a period or from blood that was briefly retained. Not inherently concerning on its own.",
+  "cyA4S5K1": "Brown spotting is almost always old blood — not an emergency.",
+  "cyA4S5K2": "Pink spotting mid-cycle is one of the clearest signs of ovulation spotting.",
+  "cyA4S5K3": "Bright red bleeding outside of your period window is worth noting and monitoring.",
+  "cyA4S5K4": "Colour alone is not diagnostic — timing and context matter far more.",
+  "cyA4S6H": "Spotting that is almost always normal",
+  "cyA4S6L1": "Light pink or brown spotting for 1–2 days around your expected ovulation window.",
+  "cyA4S6L2": "Brown spotting in the 1–3 days before your period begins.",
+  "cyA4S6L3": "Very light spotting in the first 1–2 days after your period ends.",
+  "cyA4S6L4": "Occasional mid-cycle spotting in the first 2–3 years after your first period.",
+  "cyA4S7H": "When should you talk to a doctor?",
+  "cyA4S7P1": "Most spotting is harmless. But there are specific patterns that are worth getting checked:",
+  "cyA4S7L1": "Spotting that lasts more than 3 days outside of your period.",
+  "cyA4S7L2": "Spotting that occurs consistently after sex — this should always be investigated, even if it turns out to be something benign like cervical ectropion.",
+  "cyA4S7L3": "Spotting accompanied by pelvic pain, unusual discharge, or an unpleasant odour — these can be signs of an infection.",
+  "cyA4S7L4": "Spotting that is getting heavier over time rather than staying light.",
+  "cyA4S7L5": "Spotting that occurs in a completely unpredictable pattern with no connection to your cycle phases across several months.",
+  "cyA4S7P2": "Any abnormal bleeding that causes significant anxiety or concern — even if the clinical cause turns out to be benign — is a valid reason to seek a medical opinion. A 2023 study reported the prevalence of abnormal uterine bleeding assessed by self-perception was 31.4%",
+  "cyA4S7P3": "Meaning nearly one in three people who menstruate report some form of abnormal bleeding at some point. You are not being dramatic by asking a doctor about it.",
+  "cyA4S7P4": "A note on spotting after sex specifically: Cervical ectropion, cervical polyps, and infection are the most common causes of postcoital bleeding in premenopausal patients — the majority of which are benign and treatable.",
+  "cyA4S7P5": "Spotting after sex once is not necessarily cause for concern. Spotting after sex repeatedly is worth mentioning to a doctor, not because it is likely to be serious, but because it is easy to assess and easy to treat.",
+  "cyA4TblSpotting": "Spotting",
+  "cyA4TblPeriod": "Period",
+  "cyA4TblVolumeF": "Volume",
+  "cyA4TblVolumeS": "Very light — only requires a panty liner",
+  "cyA4TblVolumeP": "Moderate to heavy — requires a pad or tampon",
+  "cyA4TblColourF": "Colour",
+  "cyA4TblColourS": "Light pink, brown, or rust",
+  "cyA4TblColourP": "Bright red to deep red",
+  "cyA4TblDurationF": "Duration",
+  "cyA4TblDurationS": "Hours to 1–2 days",
+  "cyA4TblDurationP": "3 to 7 days",
+  "cyA4TblClotsF": "Clots",
+  "cyA4TblClotsS": "None",
+  "cyA4TblClotsP": "Possible, especially on heavy days",
+  "cyA4TblTimingF": "Timing",
+  "cyA4TblTimingS": "Between periods, mid-cycle, or just before/after",
+  "cyA4TblTimingP": "Follows your regular cycle rhythm",
+  "cyA4TblCrampingF": "Cramping",
+  "cyA4TblCrampingS": "Minimal or none",
+  "cyA4TblCrampingP": "Common, especially day 1–2",
+  "cyA5Title": "Things That Can Affect Your Cycle",
+  "cyA5Sub": "Why your period is one of the most accurate reflections of your overall health",
+  "cyA5PracticeLabel": "What this looks like in practice:",
+  "cyA5S1H": "Your cycle as a health barometer",
+  "cyA5S1P1": "The American College of Obstetricians and Gynecologists (ACOG) officially designated the menstrual cycle as a vital sign in 2015 — placing it alongside blood pressure, heart rate, temperature, and respiratory rate as a core indicator of overall health. This is not symbolic. It reflects a clinical reality: your cycle responds to almost everything happening in your body and your life.",
+  "cyA5S1P2": "When your period is late, heavy, lighter than usual, or simply different from normal, it is almost never random. It is your body's hormonal system communicating that something has shifted — internally or externally. Understanding what can cause those shifts gives you the ability to interpret your cycle instead of just reacting to it.",
+  "cyA5S1P3": "The hormonal command chain that runs your cycle starts in the hypothalamus — a part of the brain that sits at the intersection of your nervous system, your endocrine system, and your stress response. Elevated cortisol levels suppress gonadotropin-releasing hormone (GnRH), leading to disrupted follicular development, anovulation, and alterations in cycle length. Psychological factors such as anxiety and depression further contribute to menstrual disturbances, while lifestyle factors — including poor sleep, diet, and excessive workload — exacerbate stress-related dysfunctions.",
+  "cyA5S1P4": "Everything in this article comes back to that one mechanism. Different inputs, same pathway.",
+  "cyA5StressH": "1. Stress",
+  "cyA5StressP1": "Stress is the single most well-documented disruptor of the menstrual cycle, and for good reason — the biological pathway is direct and well understood.",
+  "cyA5StressP2": "Chronic stress can interfere with the hormones that regulate the menstrual cycle, specifically gonadotropin-releasing hormone (GnRH). This disruption can lead to irregular periods or even amenorrhea. Elevated cortisol can affect ovulation by suppressing the LH surge necessary for ovulation, leading to anovulatory cycles. Under stress, the body may also divert the precursors for progesterone to produce more cortisol — a phenomenon known as pregnenolone steal — which can further disrupt menstrual regularity.",
+  "cyA5StressP3": "The research in this area is robust. A 2023 study published in the Journal of Family Medicine and Primary Care, analysing 341 participants, found that women who experienced moderate to severe stress also experienced more PMS symptoms including mood swings, anger, fatigue, and depression — a finding that was statistically significant across both the luteal and menstrual phases.",
+  "cyA5StressP4": "A 2024 study following women in the aftermath of the 2023 earthquake in Turkey demonstrated just how powerfully acute stress can disrupt cycle patterns. Earthquake-related trauma and stress affected the nervous and endocrine system, leading to increased cortisol levels that disrupted hormonal balance by acting on the hypothalamic-pituitary-ovarian axis and inducing irregular menstrual cycles in a significant proportion of women studied.",
+  "cyA5StressP5": "You do not need to experience a disaster for this to apply to you. Exam periods, family difficulties, relationship stress, bereavement, and sustained academic pressure all activate the same biological pathway. The hypothalamus does not distinguish between a natural disaster and a set of final exams. It responds to perceived threat.",
+  "cyA5StressPr1": "Period arrives later than usual or skips entirely.",
+  "cyA5StressPr2": "Cycle becomes shorter or longer than your normal pattern.",
+  "cyA5StressPr3": "Flow becomes heavier or lighter than usual.",
+  "cyA5StressPr4": "PMS symptoms intensify before the period.",
+  "cyA5StressPr5": "Spotting mid-cycle during unusually high-stress periods.",
+  "cyA5StressK1": "Short-term stress usually causes a one-cycle disruption — things return to normal once the stress resolves.",
+  "cyA5StressK2": "Chronic ongoing stress can cause sustained irregularity over multiple cycles.",
+  "cyA5StressK3": "The stress does not need to feel extreme to have a hormonal effect — sustained low-level stress (like academic pressure over weeks) is equally disruptive.",
+  "cyA5StressK4": "Stress management is not optional for cycle health — it is one of the most direct levers you have.",
+  "cyA5SleepH": "2. Sleep",
+  "cyA5SleepP1": "Sleep and the menstrual cycle are in a bidirectional relationship — each affects the other, and disruption in one reliably disrupts the other.",
+  "cyA5SleepP2": "A population-based study of 801 Korean female adolescents found that sleeping five hours or less per night was significantly associated with increased risk of menstrual cycle irregularity compared to sleeping eight or more hours, even after adjusting for age, BMI, depressive mood, and other confounding variables. The odds of irregularity increased steadily as sleep duration decreased.",
+  "cyA5SleepP3": "A systematic review published in BMC Women's Health in 2023, analysing multiple studies across different populations, confirmed the pattern: short sleep duration — typically defined as less than six hours — was consistently linked to abnormal menstrual cycle length and heavier bleeding during periods.",
+  "cyA5SleepP4": "The mechanism works through cortisol and the reproductive hormones simultaneously. Increased stress hormone production derived from sleep loss can reduce the production of FSH and LH — two hormones essential to menstrual function. If sleep disturbances persist, this may lead to irregular or even missing periods, known as Functional Hypothalamic Amenorrhoea (FHA).",
+  "cyA5SleepP5": "Women with less than 8 hours of sleep secrete 20% less FSH compared to women with longer sleep durations. FSH is the hormone that starts the follicle development process at the beginning of each cycle. Less FSH means slower, less reliable follicle development — which delays ovulation and therefore delays the period.",
+  "cyA5SleepP6": "The relationship also runs in the other direction. Sleep is most commonly disrupted in the late luteal phase — the days before a period — when progesterone drops and body temperature remains elevated. Approximately 70% of women with PMDD experience sleep disturbances during this window.",
+  "cyA5SleepPr1": "Consistently short sleep delays ovulation, which delays the period.",
+  "cyA5SleepPr2": "Poor sleep quality — even at normal duration — is associated with heavier bleeding.",
+  "cyA5SleepPr3": "Sleep disruption worsens PMS and PMDD symptoms.",
+  "cyA5SleepPr4": "Irregular sleep schedules (different bedtimes each night) are associated with more irregular cycles than simply sleeping less.",
+  "cyA5SleepK1": "The National Sleep Foundation recommends 8 to 10 hours of sleep for teenagers.",
+  "cyA5SleepK2": "Going to bed and waking at consistent times matters as much as total duration.",
+  "cyA5SleepK3": "Screen light (phones, laptops) suppresses melatonin and disrupts the hormonal signals that regulate both sleep and the cycle.",
+  "cyA5SleepK4": "Improving sleep is one of the most accessible and evidence-supported interventions for cycle regularity.",
+  "cyA5ExH": "3. Exercise",
+  "cyA5ExP1": "Exercise has a dual relationship with the menstrual cycle that is worth understanding carefully — because the type and intensity matter enormously.",
+  "cyA5ExP2": "Moderate exercise is protective. Regular moderate physical activity reduces inflammation, improves insulin sensitivity, lowers cortisol, and supports the hormonal balance needed for regular ovulation. Multiple studies show that moderate exercise reduces PMS symptom severity, decreases menstrual pain, and is associated with more regular cycles.",
+  "cyA5ExP3": "Excessive exercise is disruptive. When exercise intensity or volume becomes too high — particularly when combined with insufficient caloric intake — the body interprets this as a physiological threat and begins to downregulate the reproductive system. This is the mechanism behind what is called the Female Athlete Triad: the combination of low energy availability, disrupted menstrual function, and reduced bone density that affects athletes who train very hard without eating enough.",
+  "cyA5ExP4": "Lifestyle factors including excessive exercise exacerbate stress-related menstrual dysfunctions through the neuroendocrine pathway, contributing to elevated cortisol, suppressed GnRH, and anovulatory cycles.",
+  "cyA5ExP5": "The threshold is not fixed — it depends on your overall energy balance. Running 5km a day while eating adequately is unlikely to affect your cycle. Running 15km a day while significantly undereating can cause your period to disappear within weeks.",
+  "cyA5ExPr1": "Sudden dramatic increase in training intensity → delayed period or missed cycle.",
+  "cyA5ExPr2": "Sustained intense training combined with low caloric intake → cycle stops (amenorrhea).",
+  "cyA5ExPr3": "Starting or resuming regular moderate exercise → cycle may become more regular over time.",
+  "cyA5ExPr4": "Reducing training after a heavy athletic season → period returns within 1 to 3 cycles.",
+  "cyA5ExK1": "The key variable is energy availability, not exercise volume alone.",
+  "cyA5ExK2": "Dance, gymnastics, distance running, and rowing carry the highest risk due to combining high output with aesthetic body pressures.",
+  "cyA5ExK3": "Losing your period due to exercise is not normal and is not a sign of fitness — it is a sign of physiological stress.",
+  "cyA5ExK4": "Bone density loss from exercise-related amenorrhea can be permanent if not addressed.",
+  "cyA5DietH": "4. Diet and nutrition",
+  "cyA5DietP1": "What you eat affects your hormones more directly than most people realise. The menstrual cycle requires adequate energy, fat, and specific micronutrients to function. When any of these are deficient, the reproductive system is one of the first systems to be downregulated.",
+  "cyA5DietB1T": "Caloric restriction and low body weight",
+  "cyA5DietB1B": "The hypothalamus monitors body fat levels through hormones including leptin. When body fat drops too low — from restrictive eating, rapid weight loss, or eating disorders — leptin falls, and the hypothalamus reduces GnRH production, effectively pausing the cycle. This is the same mechanism as exercise-related amenorrhea.",
+  "cyA5MicroLabel": "Specific micronutrients that matter:",
+  "cyA5Micro1": "Iron — heavy periods deplete iron rapidly. Iron deficiency causes fatigue, brain fog, and dizziness.",
+  "cyA5Micro2": "Magnesium — low magnesium is associated with more severe PMS symptoms, particularly cramping and mood changes.",
+  "cyA5Micro3": "Omega-3 fatty acids — anti-inflammatory. Research consistently shows omega-3 supplementation reduces menstrual pain severity.",
+  "cyA5Micro4": "Vitamin D — low vitamin D is associated with more irregular cycles and more severe dysmenorrhoea.",
+  "cyA5Micro5": "Zinc — involved in progesterone production and immune function. Low zinc is linked to more severe PMS.",
+  "cyA5DietB2T": "Ultra-processed food and blood sugar",
+  "cyA5DietB2B": "Diets high in refined carbohydrates and ultra-processed foods cause rapid spikes and crashes in blood sugar, which trigger cortisol release. A 2023 study found that dietary patterns characterised by high processed food intake were independently associated with more irregular cycles and more severe menstrual symptoms in adolescents.",
+  "cyA5DietK1": "You do not need to eat a perfect diet for a regular cycle — but extreme restriction is harmful.",
+  "cyA5DietK2": "Eating enough fat is specifically important — steroid hormones including estrogen and progesterone are made from cholesterol.",
+  "cyA5DietK3": "Crash diets and cleanses are among the fastest ways to disrupt your cycle.",
+  "cyA5DietK4": "If you suspect your diet is affecting your cycle, a blood test checking iron, vitamin D, and ferritin levels is a reasonable starting point.",
+  "cyA5TravelH": "5. Travel and jet lag",
+  "cyA5TravelP1": "Travel disrupts the menstrual cycle through a specific and well-understood mechanism: circadian rhythm disruption.",
+  "cyA5TravelP2": "Your menstrual cycle is regulated by the hypothalamus, which is deeply integrated with your circadian clock — the 24-hour biological timing system that controls sleep, hormone release, digestion, and body temperature. When your circadian rhythm gets disrupted, the timing and amount of GnRH, FSH, and LH releases can change, potentially delaying ovulation or altering your cycle length. Jet lag goes beyond feeling tired after a flight — it affects multiple body systems simultaneously including sleep-wake cycles, digestion, mood, immune function, and reproductive hormones.",
+  "cyA5TravelP3": "Research shows that how long jet lag can delay your period typically ranges from 3 to 7 days, though some people experience longer delays. Eastward travel disrupts circadian rhythms more severely than westward travel — eastward jet lag can last over twice as long because shortening your day feels harder than lengthening one.",
+  "cyA5TravelP4": "A study published in PubMed on social jet lag — the mismatch between your body clock and your daily schedule, even without actual travel — found that students with larger social jet lag of 1 hour or more experienced more severe menstrual symptoms including pain, behavioural changes, and water retention, compared to those with smaller social jet lag.",
+  "cyA5TravelP5": "This means that simply having irregular sleep and wake times across the week — staying up late on weekends and waking early on weekdays — can affect your cycle.",
+  "cyA5TravelPr1": "Period arrives 3 to 7 days later than expected after a long-haul flight.",
+  "cyA5TravelPr2": "Period arrives earlier than expected in some cases — the circadian disruption can push ovulation in either direction.",
+  "cyA5TravelPr3": "Flow may be heavier or lighter than usual for one cycle after significant travel.",
+  "cyA5TravelPr4": "Things usually return to normal within one to two cycles.",
+  "cyA5TravelK1": "The disruption is almost always temporary — one to two cycles.",
+  "cyA5TravelK2": "Eastward travel (e.g. flying from Europe to Asia) causes more disruption than westward.",
+  "cyA5TravelK3": "The stress and sleep disruption of travel compound the effect — it is rarely just one mechanism.",
+  "cyA5TravelK4": "Staying hydrated, keeping to your home time zone for the first 24 hours where possible, and getting morning light exposure in the new time zone all help speed up circadian resynchronisation.",
+  "cyA5IllH": "6. Illness and fever",
+  "cyA5IllP1": "Illness disrupts the cycle through two overlapping pathways: the immune-inflammatory response and the stress response. Both activate cortisol and inflammatory cytokines that suppress GnRH and disrupt ovulation.",
+  "cyA5IllP2": "Fever specifically has a direct effect on the timing of ovulation. Elevated body temperature interferes with the precise hormonal timing required for the LH surge. A fever during the follicular phase — particularly in the week before expected ovulation — can delay ovulation by several days, pushing the period back by the same amount.",
+  "cyA5IllP3": "Common viral illnesses including influenza, COVID-19, and other febrile infections have all been associated with cycle disruption in research. A delayed or skipped period after a significant illness is extremely common and almost always resolves in the following cycle.",
+  "cyA5IllK1": "One disrupted cycle after illness is completely normal and expected.",
+  "cyA5IllK2": "The more severe the illness and the longer it lasted, the more disruption to expect.",
+  "cyA5IllK3": "COVID-19 specifically has been associated with cycle changes in multiple studies — both short-term disruption and, in some cases, longer-term changes.",
+  "cyA5IllK4": "If your cycle does not return to normal within two cycles after recovering from illness, mention it to a doctor.",
+  "cyA5MedH": "7. Medications",
+  "cyA5MedP1": "Several categories of medication can affect the menstrual cycle either directly or indirectly:",
+  "cyA5MedB1T": "Hormonal contraceptives",
+  "cyA5MedB1B": "By design, these override the natural hormonal cycle. After stopping hormonal contraception, it can take 1 to 3 months for natural cycles to resume, though this varies significantly by person and by the type of contraception used.",
+  "cyA5MedB2T": "Antidepressants and antipsychotics",
+  "cyA5MedB2B": "Some medications in these classes, particularly those that raise prolactin levels, can suppress ovulation and affect cycle regularity. If you have started a new psychiatric medication and notice cycle changes, mention it to your prescribing doctor.",
+  "cyA5MedB3T": "Corticosteroids",
+  "cyA5MedB3B": "Anti-inflammatory steroids used for conditions like asthma or eczema can affect cortisol balance and temporarily disrupt cycles with prolonged use.",
+  "cyA5MedB4T": "Chemotherapy",
+  "cyA5MedB4B": "Can temporarily or permanently disrupt cycle function depending on the type and duration.",
+  "cyA5MedB5T": "Non-prescription",
+  "cyA5MedB5B": "High doses of vitamin C, certain herbal supplements (particularly those marketed for \"hormonal balance\"), and significant changes in caffeine intake have all been anecdotally associated with cycle changes, though the research evidence is variable.",
+  "cyA5MedK1": "Always mention cycle changes to your doctor when starting a new medication.",
+  "cyA5MedK2": "Never stop a prescribed medication because of cycle changes without speaking to your doctor first.",
+  "cyA5MedK3": "The interaction between medications and cycle function is under-researched — your experience is valid even if your doctor is not immediately familiar with the connection.",
+  "cyA5DocH": "When should you talk to a doctor?",
+  "cyA5DocP1": "Most cycle disruptions caused by lifestyle factors resolve on their own within one to two cycles once the cause is addressed. However, speak to a doctor if:",
+  "cyA5DocL1": "Your period has been absent for 3 or more consecutive cycles.",
+  "cyA5DocL2": "Your cycle has been consistently irregular for more than 6 months with no identifiable lifestyle cause.",
+  "cyA5DocL3": "You have lost your period in the context of intense exercise and low food intake — bone density loss begins quickly and is partially irreversible.",
+  "cyA5DocL4": "You are experiencing significant fatigue, dizziness, or breathlessness during your period — this can indicate iron deficiency anaemia from heavy bleeding.",
+  "cyA5DocL5": "A new medication has caused your cycle to change significantly and the change is affecting your quality of life.",
+  "cyA5DocL6": "You are experiencing severe mood symptoms in the premenstrual phase that are affecting your daily functioning — this is treatable.",
+  "cyA5ChartTitle": "Relative strength of evidence linking lifestyle factors to cycle disruption",
+  "cyA5ChartSub": "Based on systematic reviews and meta-analyses 2020–2024",
+  "cyA5ChartLStress": "Chronic stress",
+  "cyA5ChartLSleep": "Sleep <6hrs",
+  "cyA5ChartLLowWt": "Low body wt.",
+  "cyA5ChartLOverEx": "Over-exercise",
+  "cyA5ChartLIllness": "Illness / fever",
+  "cyA5ChartLTravel": "Travel / jet lag",
+  "cyA5ChartLDiet": "Poor diet",
+  "cyA5ChartLMildEx": "Mild exercise",
+  "cyA5StrVeryStrong": "Very strong",
+  "cyA5StrStrong": "Strong",
+  "cyA5StrModerate": "Moderate",
+  "cyA5StrEmerging": "Emerging",
+  "cyA5StrProtective": "Protective",
+  "cyA5ChartCaption": "Stress and sleep have the strongest and most consistent evidence base. Exercise is the only factor that can be protective rather than disruptive — but only at moderate intensity.",
+  "cyA6Title": "How to Track Your Cycle and Why It Matters",
+  "cyA6Sub": "What your data is really telling you — and how to use it",
+  "cyA6S1H": "Tracking is not about predicting your period",
+  "cyA6S1P1": "Most people start tracking their cycle for one reason: to know when their period is coming. That is a completely valid reason. But it is also the least interesting thing your cycle data can tell you.",
+  "cyA6S1P2": "When you track consistently over time, you build something far more valuable than a prediction. You build a personal health baseline — a record of what is normal for your body specifically, not what is average for a population. That baseline becomes one of the most useful tools you can have in any healthcare conversation, at any age.",
+  "cyA6S1P3": "Timely self-monitoring of menstrual health is valuable as it provides insight and self-awareness of one's general health and how one's body responds to different phases of the cycle — insight that can directly inform conversations with healthcare providers.",
+  "cyA6S1P4": "Period tracker apps empower people by helping them gain a better understanding of their bodies, ultimately enhancing their social, academic, and health-related lives.",
+  "cyA6S1P5": "A 2024 mixed methods study published in the Journal of Medical Internet Research, surveying Gen Z and millennial users, found that the primary reported benefit of cycle tracking was not period prediction — it was body literacy: understanding why they felt the way they felt at different points in the month.",
+  "cyA6S1P6": "This article covers what each piece of data you log actually reveals, why starting early matters more than most people realise, and how to turn your tracked data into something a doctor can actually use.",
+  "cyA6FlowH": "What your flow data reveals",
+  "cyA6FlowP1": "Flow level is the most basic thing you can track and the first thing most doctors ask about. But it tells you more than just \"heavy\" or \"light.\"",
+  "cyA6FlowPatternsLabel": "Patterns over time:",
+  "cyA6FlowPat1": "Consistently light flow can indicate low estrogen or a thin uterine lining — sometimes caused by hormonal imbalances or certain medications.",
+  "cyA6FlowPat2": "Consistently heavy flow is one of the primary indicators of conditions like endometriosis, fibroids, or a bleeding disorder — conditions that are significantly underdiagnosed, in part because people assume heavy periods are just normal for them.",
+  "cyA6FlowPat3": "Flow that gets progressively heavier over several cycles is more clinically significant than a single heavy cycle.",
+  "cyA6FlowResearchLabel": "What the research shows:",
+  "cyA6FlowResP1": "The Apple Women's Health Study found that the most frequently tracked symptoms were abdominal cramps, bloating, and tiredness — all experienced by more than 60 percent of participants who logged symptoms. More than half reported acne and headaches. Notably, less widely recognised symptoms like diarrhoea and sleep changes were also tracked by 37 percent of participants.",
+  "cyA6FlowResP2": "Many of these people had normalised these symptoms for years. Tracking made the pattern visible.",
+  "cyA6FlowK1": "Log flow every day of your period, not just the first day.",
+  "cyA6FlowK2": "Note the difference between heavy days and very heavy days — this distinction matters clinically.",
+  "cyA6FlowK3": "Changes in your personal flow pattern are more significant than absolute volume — a change from your normal is the signal.",
+  "cyA6FlowK4": "If you are consistently soaking through protection in under 2 hours, this warrants medical attention regardless of what you have been told is \"normal\" for your family.",
+  "cyA6SympH": "What your symptom data reveals",
+  "cyA6SympP1": "Symptoms logged over multiple cycles reveal patterns that are completely invisible in a single cycle.",
+  "cyA6SympCrampsT": "Cramps",
+  "cyA6SympCrampsB": "Mild cramping on day 1–2 is normal. Cramping that starts before your period, lasts beyond day 2–3, or radiates to the lower back and legs consistently is not — and is one of the primary presenting symptoms of endometriosis. A study analysing 4.9 million natural cycles from over 378,000 users of the Clue app found that period flow and pain are among the highest-signal self-tracked symptoms for identifying health conditions including endometriosis and PCOS.",
+  "cyA6SympCrampsP": "Endometriosis currently takes an average of 7 to 10 years to diagnose. Tracked symptom data documenting a consistent pain pattern is one of the most powerful tools for shortening that timeline.",
+  "cyA6SympHeadT": "Headaches",
+  "cyA6SympHeadB": "Headaches that consistently appear in the same phase of your cycle — most commonly in the late luteal phase or around menstruation — are called menstrual migraines and are a recognised medical condition. Showing a doctor they are hormonally triggered opens up targeted treatment options.",
+  "cyA6SympDigT": "Digestive symptoms",
+  "cyA6SympDigB": "Bloating, diarrhoea, and constipation that follow a consistent cycle pattern are driven by prostaglandins — chemicals produced during menstruation that affect the gut. These are often dismissed as coincidental until someone sees the pattern.",
+  "cyA6SympAcneT": "Acne",
+  "cyA6SympAcneB": "Acne that consistently appears in the same phase — typically the late luteal phase — is hormonally driven and responds to different interventions than non-hormonal acne.",
+  "cyA6SympK1": "Symptoms logged in isolation are anecdotes — symptoms logged across 3 or more cycles become a pattern.",
+  "cyA6SympK2": "The phase in which a symptom appears is as important as the symptom itself.",
+  "cyA6SympK3": "You do not need to log every symptom every day — logging when something feels notable is enough to build a useful picture.",
+  "cyA6SympK4": "Consistent pre-menstrual symptom patterns that significantly affect your quality of life may indicate PMDD, which is treatable.",
+  "cyA6MoodH": "What your mood data reveals",
+  "cyA6MoodP1": "Mood tracking is arguably the most under-appreciated aspect of cycle logging. The connection between hormonal phase and emotional state is real, biological, and well-researched — but because most people experience it without any framework, it remains invisible and is frequently attributed to personality or external circumstances.",
+  "cyA6MoodP2": "A concern in menstrual self-tracking research is that data reflects not only physiological behaviour but also the engagement dynamics of users — context is necessary for interpretation. A note of a headache during the cycle does not spur personal reflection if it is not contextualised. What happened on this day? How was sleep? These interrelated data are necessary to provide any personal insights.",
+  "cyA6MoodP3": "When you log mood consistently across cycles, several things become visible:",
+  "cyA6MoodL1": "The follicular phase lift — most people notice improved mood, motivation, and sociability in the week after their period ends. Seeing this pattern consistently helps you plan around it.",
+  "cyA6MoodL2": "The luteal phase drop — the irritability, sensitivity, and low mood that often appears 5 to 10 days before a period follows a predictable pattern. When you can see it in your data, it stops feeling random and starts feeling manageable.",
+  "cyA6MoodL3": "PMDD identification — premenstrual dysphoric disorder is characterised by severe mood disruption in the luteal phase that resolves within a few days of menstruation beginning. It affects 3 to 8 percent of people who menstruate and is significantly underdiagnosed. A pattern of consistently severe premenstrual mood changes tracked across cycles is the primary diagnostic tool.",
+  "cyA6MoodK1": "You do not need to document every mood every day — simply logging when you feel notably good or notably difficult is enough to reveal the pattern.",
+  "cyA6MoodK2": "Seeing the pattern changes your relationship to it — instead of \"I am anxious today,\" it becomes \"I am in the late luteal phase and this is temporary.\"",
+  "cyA6MoodK3": "Mood data logged across cycles is clinically useful — bring it to any mental health or gynaecology appointment.",
+  "cyA6CardTitle": "What each data point reveals over time",
+  "cyA6CardSub": "Value increases significantly after 3+ cycles of consistent logging",
+  "cyA6DpFlowT": "Flow level",
+  "cyA6DpFlowD": "Identifies heavy bleeding patterns, endometriosis risk, anaemia, and hormonal imbalances over time",
+  "cyA6DpSympT": "Symptoms",
+  "cyA6DpSympD": "Phase-correlated pain and digestive symptoms are primary diagnostic signals for endometriosis, PCOS, and PMDD",
+  "cyA6DpMoodT": "Mood",
+  "cyA6DpMoodD": "Reveals luteal phase mood patterns, supports PMDD identification, and helps contextualise emotional experiences",
+  "cyA6DpMucusT": "Cervical mucus",
+  "cyA6DpMucusD": "Confirms ovulation timing independently of calendar prediction. Egg-white mucus is the most reliable natural ovulation indicator",
+  "cyA6DpLenT": "Cycle length history",
+  "cyA6DpLenD": "Enables PCOS screening, detects short/long cycle patterns, and improves prediction accuracy significantly after 3+ cycles",
+  "cyA6PillHigh": "High clinical value",
+  "cyA6PillMedHigh": "Medium-high value",
+  "cyA6PillMed": "Medium value",
+  "cyA6PillTime": "Increases with time",
+  "cyA6CardCaption": "The clinical value of your tracked data compounds over time. Flow and symptom data have the highest immediate value. Cycle length history becomes more powerful after 3 or more cycles. All of it is most useful when it is consistent.",
+  "cyA6MucusH": "What cervical mucus data reveals",
+  "cyA6MucusP1": "Cervical mucus is the most underlogged data point in cycle tracking — and one of the most informative. Changes in mucus consistency are directly driven by estrogen and are one of the most reliable natural indicators of where you are in your cycle.",
+  "cyA6MucusL1": "Dry or no mucus — early follicular phase and post-ovulation luteal phase. Estrogen is low.",
+  "cyA6MucusL2": "Sticky or crumbly — early to mid follicular phase. Estrogen beginning to rise.",
+  "cyA6MucusL3": "Creamy or lotion-like — mid follicular phase. Estrogen rising. Getting closer to ovulation.",
+  "cyA6MucusL4": "Egg-white: clear, stretchy, slippery — the peak fertility sign. Indicates you are at or very close to ovulation. This is the most important mucus type to recognise.",
+  "cyA6MucusL5": "Dry again — post-ovulation. Progesterone thickens mucus to create a barrier.",
+  "cyA6MucusP2": "If you never notice egg-white mucus across multiple cycles, it can indicate that ovulation is not occurring, or that it is occurring at a different time than calendar predictions suggest. This is worth mentioning to a doctor.",
+  "cyA6EarlyH": "Why starting early creates a baseline that is impossible to replicate later",
+  "cyA6EarlyP1": "The most important reason to start tracking young — ideally in the first year or two after your first period — is that you are recording your baseline. The normal that exists before anything has had a chance to change it.",
+  "cyA6EarlyP2": "The Apple Women's Health Study found that participants whose cycles took 5 or more years to reach regularity after their first period had more than twice the risk of endometrial hyperplasia and more than 3.5 times the risk of uterine cancer compared to those who reached regularity within one year. These findings highlight the importance of understanding cycle regularity early, and encouraging people to have conversations with their healthcare providers about cycle irregularity earlier.",
+  "cyA6EarlyP3": "Dr. Shruthi Mahalingaiah, MD MS — Associate Professor of Environmental, Reproductive and Women's Health at Harvard — has stated that more awareness of menstrual cycle physiology and the impact of irregular periods on uterine health is needed, and that cycle tracking data is central to building that awareness at a population level.",
+  "cyA6EarlyP4": "A baseline established in your teens gives you a reference point for the rest of your life. If something changes — your flow gets heavier, your cycle length shifts, a new symptom appears — you will know it is a change because you have data showing what your normal used to look like. Without that baseline, changes are much harder to detect and much harder to communicate to a doctor.",
+  "cyA6DocAptH": "How to use tracked data in a doctor's appointment",
+  "cyA6DocAptP1": "Most people go to a doctor and say \"my periods have been irregular lately.\" This gives the doctor very little to work with. A person who brings 3 to 6 months of tracked cycle data can say something entirely different — and get a much more targeted response.",
+  "cyA6DocAptP2": "Women with PCOS, endometriosis, and infertility in a 2023 survey reported that the use of tracking technologies directly aided in the diagnosis of their conditions — 61.8% for endometriosis, 63.6% for PCOS, and 75% for infertility.",
+  "cyA6DocAptP3": "Tracked data shortens the diagnostic path because it replaces recall-based estimates with actual longitudinal records.",
+  "cyA6BringLabel": "What to bring to a doctor's appointment:",
+  "cyA6Bring1": "Your average cycle length and how much it varies month to month.",
+  "cyA6Bring2": "Your typical period length and flow pattern.",
+  "cyA6Bring3": "Any symptoms that appear consistently in the same phase, especially pain, mood changes, and digestive symptoms.",
+  "cyA6Bring4": "Any changes from your previous normal — even if you cannot articulate why it feels different.",
+  "cyA6Bring5": "How many cycles you have tracked and how consistently.",
+  "cyA6ConvLabel": "Specific conversations tracked data enables:",
+  "cyA6Conv1": "\"My period has been getting progressively heavier over the last 4 cycles\" — this is the opening to an investigation for endometriosis or fibroids.",
+  "cyA6Conv2": "\"I have severe mood symptoms for exactly 8 days before every period that resolve within 2 days of my period starting\" — this is the clinical description of PMDD.",
+  "cyA6Conv3": "\"My cycle has been consistently over 35 days for the past 6 cycles\" — this is the basis for a PCOS screening conversation.",
+  "cyA6Conv4": "\"I have never noticed egg-white cervical mucus across 4 cycles\" — this is a flag for possible anovulation.",
+  "cyA6DocAptP4": "Participants in a qualitative study on period tracking app use stated that exporting their data as a document and sharing it with doctors was one of the most helpful features of cycle tracking apps — giving doctors a concrete record rather than a memory-based estimate.",
+  "cyA6PredH": "How accurate is cycle tracking for prediction?",
+  "cyA6PredP1": "Prediction accuracy is one of the most common questions about cycle tracking — and it is worth being honest about. Calendar-based prediction works reasonably well for people with very regular cycles, and improves substantially with more data.",
+  "cyA6PredP2": "A large-scale validation study of the Flo app's algorithm, published in JMIR mHealth and uHealth in 2023 and analysing over 3 million cycles, found that app-based menstrual cycle tracking data has significant potential for epidemiological research and clinical applications, particularly for identifying cycle characteristics associated with conditions like endometriosis and PCOS — with accuracy improving substantially as more cycles are logged.",
+  "cyA6PredP3": "For teenagers specifically, prediction is less reliable than for adults — because the follicular phase length is more variable. The most honest framework is:",
+  "cyA6PredL1": "1 to 3 cycles logged: Prediction is a rough estimate — useful for planning but not for precision.",
+  "cyA6PredL2": "3 to 6 cycles logged: Prediction improves significantly. Your personal average starts to emerge.",
+  "cyA6PredL3": "6+ cycles logged: Prediction is meaningfully personalised. The app knows your cycle, not just the population average.",
+  "cyA6PredL4": "Irregular cycles: Prediction will always have more variance. This is not a failure of the technology — it is an accurate reflection of your biology.",
+  "cyA6PracH": "Practical guidance — how to actually track effectively",
+  "cyA6LogDailyLabel": "What to log every day of your period:",
+  "cyA6LogDaily1": "Flow level — consistently, every day.",
+  "cyA6LogDaily2": "Any symptoms, even mild ones.",
+  "cyA6LogNoticeLabel": "What to log when you notice it:",
+  "cyA6LogNotice1": "Cervical mucus changes — particularly when you notice egg-white consistency.",
+  "cyA6LogNotice2": "Mood changes that feel notably different from your baseline.",
+  "cyA6LogNotice3": "Spotting — note the amount and colour.",
+  "cyA6LogCycleLabel": "What to log at least once per cycle:",
+  "cyA6LogCycle1": "The first day of your period — this is the most critical data point and should never be missed.",
+  "cyA6LogNotLabel": "What you do not need to log:",
+  "cyA6LogNot1": "Everything, every day — this level of logging is not sustainable and is not necessary for useful data.",
+  "cyA6LogNot2": "Symptoms you have to invent because you feel like you should be logging something — inaccurate data is worse than no data.",
+  "cyA6PracK1": "Consistency matters more than comprehensiveness — a partial log every cycle is more valuable than a perfect log for one cycle and nothing for three cycles.",
+  "cyA6PracK2": "The first day of your period is the single most important data point — prioritise it above everything else.",
+  "cyA6PracK3": "Start now — even one cycle of data is more than zero, and the baseline you build now will be relevant for decades.",
+  "cyA6WhenH": "When should you talk to a doctor?",
+  "cyA6WhenP1": "Tracking itself will not tell you when something is wrong — but it will tell you when something has changed. Bring your tracked data to a doctor if:",
+  "cyA6WhenL1": "Your cycle length has shifted by more than 7 days from your previous consistent pattern across 3 or more cycles.",
+  "cyA6WhenL2": "Your flow has become consistently heavier or you are experiencing more pain than before.",
+  "cyA6WhenL3": "You notice mood symptoms that follow a clear premenstrual pattern and significantly affect your daily life.",
+  "cyA6WhenL4": "You have never noticed egg-white cervical mucus across 3 or more cycles.",
+  "cyA6WhenL5": "Your period has been absent for 3 or more consecutive cycles.",
+  "cyA6WhenL6": "You simply feel like something is different from before — even if you cannot articulate exactly what — and your tracked data confirms a change in pattern.",
+  "cyA6WhenP2": "Your tracked data is not a diagnosis. It is evidence. Bring it to someone who can interpret it.",
+  "cyDevMissing90B1": "Going 3 or more months without a period is a condition called secondary amenorrhea. In an adolescent, amenorrhea can be a sign of a medical problem or a side effect of certain medications. (Children's Hospital of Philadelphia)",
+  "cyDevMissing90B2": "The most common causes in young people include significant mental or physical stress, low body weight, and excessive exercise. The body can essentially \"shut down\" its reproductive system when it is severely malnourished, and young athletes often experience amenorrhea due to excessive exercise, low body fat, and stress.",
+  "cyDevMissing90B3": "Most cases of amenorrhea are caused by dysfunction of the hypothalamic-pituitary-ovarian (HPO) axis, which is the major regulator of the female reproductive hormones estrogen and progesterone. Other possible causes include thyroid disorders, a condition called PCOS (polycystic ovary syndrome), or in rare cases, a pituitary adenoma — a small, usually benign growth near the brain that disrupts hormone signalling.",
+  "cyDevMissing90B4": "A healthcare provider may recommend blood tests to look at hormone levels, and a pelvic ultrasound, which is a painless test that uses sound waves to create images of the reproductive system. Treatment depends on the underlying cause and may involve lifestyle changes, hormonal therapy, or other medicines. Please speak to a doctor or a trusted adult as soon as possible — the earlier this is investigated, the easier it is to manage.",
+  "cyDevLate14B1": "A period that is two weeks late is worth paying attention to, even if it turns out to be nothing serious. At your age, the most common causes are stress, changes in sleep or diet, intense exercise, or illness — all of which can disrupt the hormonal signals that control your cycle.",
+  "cyDevLate14B2": "However, a 14-day delay can also be an early sign of an underlying hormonal condition. PCOS (polycystic ovary syndrome) is a common health problem that can affect teen girls and young women. It can cause irregular menstrual periods, make periods heavier, or even make periods stop.",
+  "cyDevLate14B3": "Thyroid dysfunction was found in 13.6% of girls with menstrual disorders compared to 3.5% in those without — a statistically significant difference. Both conditions are very common and very treatable once diagnosed.",
+  "cyDevLate14B4": "A doctor can run simple blood tests to check your hormone levels, thyroid function, and rule out other causes. You don't need to panic — but getting it checked early is always the right move.",
+  "cyDevLate7B1": "A period that is up to 7 days late is considered within the normal range of variation for most people, especially teenagers. Your cycle is controlled by a sensitive hormonal system involving your brain, pituitary gland, and ovaries — and this system responds strongly to what is happening in your life.",
+  "cyDevLate7B2": "Emotional or physical stress may cause amenorrhea for as long as the stress remains. Rapid weight loss or gain, medications, and chronic illness can also cause missed or delayed periods.",
+  "cyDevLate7B3": "Common triggers at your age include exam pressure, disrupted sleep, skipping meals, travel, or recovering from an illness.",
+  "cyDevLate7B4": "Approximately 75% of menstruating adolescents report their cycle to be between 21 and 45 days in the first year post-menarche. Your body is still learning its rhythm. If this keeps happening across multiple cycles, consistent tracking will help you and any doctor you see understand your pattern much faster.",
+  "cyDevIrregularB1": "Cycle irregularity means the number of days between your periods varies significantly from month to month. Some variation — a few days either way — is completely normal. High irregularity over many cycles is more noteworthy.",
+  "cyDevIrregularB2": "During adolescence, the most common cause of irregular menstrual cycles is immaturity of the hypothalamic-pituitary-ovarian (HPO) axis — the hormonal control system that regulates your cycle. This is normal in the first few years after your first period.",
+  "cyDevIrregularB3": "However, other causes should also be considered. In the first year after menarche, only 20% of menstrual cycles are ovulatory. This increases to 25–35% in the second year, 45% in the fourth year, and up to 70% during years 5 to 9 after menarche.",
+  "cyDevIrregularB4": "As many as one in four people who menstruate have menstrual irregularities. Your menstrual cycle could be considered irregular if your cycles are unpredictably short (fewer than 21 days), long (more than 35 days), or spaced out by more than three months.",
+  "cyDevIrregularB5": "If irregularity persists beyond 2–3 years after your first period, a doctor can run hormone tests to get a clearer picture. It is a straightforward investigation that can rule out PCOS, thyroid issues, and other common and treatable conditions.",
+  "cyDevShortCycleB1": "A cycle shorter than 21 days means your period is arriving more frequently than what is considered typical. For teenagers this can sometimes be normal, particularly in the early years after your first period when the hormonal system is still maturing.",
+  "cyDevShortCycleB2": "According to international evidence-based guidelines, cycles shorter than 21 days in the period between 1 and 3 years after menarche are defined as irregular and worth monitoring.",
+  "cyDevShortCycleB3": "Consistently short cycles can sometimes be linked to a condition called a luteal phase defect, where the phase after ovulation is too short, or to low progesterone levels. They can also simply reflect your body responding to stress, significant changes in weight, or nutritional deficiencies.",
+  "cyDevShortCycleB4": "Additional causes to consider include PCOS, hypothyroidism, elevated prolactin levels, and functional hypothalamic dysfunction. If your cycles have consistently been shorter than 21 days for 3 or more cycles, mention it to a doctor. A simple blood hormone panel can identify or rule out most causes quickly.",
+  "cyDevLongCycleB1": "A cycle longer than 35 days means your body is taking more time than usual between periods. This is actually one of the most common menstrual patterns seen in teenagers, because the hormonal axis that controls ovulation takes several years to fully regulate after your first period.",
+  "cyDevLongCycleB2": "According to international clinical guidelines, cycles longer than 45 days in the first 1 to 3 years after menarche, or longer than 35 days from 3 years post-menarche onwards, are considered irregular and warrant evaluation.",
+  "cyDevLongCycleB3": "Studies have indicated that irregular menstrual cycles during puberty are predictive of future PCOS development — though this does not mean every long cycle is a sign of PCOS. Stress, thyroid dysfunction, elevated prolactin, and nutritional factors are all equally common causes.",
+  "cyDevLongCycleB4": "Research from the Apple Women's Health Study, analysing 160,206 menstrual cycles across 15,586 participants, found that those with early-life irregular cycles consistently had longer mean cycle lengths in early reproductive years, with differences diminishing with age through the twenties and thirties.",
+  "cyDevLongCycleB5": "If cycles are consistently over 35 days across 3 or more cycles, a doctor can do blood tests to check hormone levels including LH, FSH, thyroid function, and androgens.",
+  "cyDevLongPeriodB1": "A typical period lasts between 3 and 7 days. Bleeding consistently beyond 8 days is worth investigating. Heavy menstrual bleeding (HMB) is defined as blood loss exceeding 80 mL or bleeding lasting longer than 7 days per cycle.",
+  "cyDevLongPeriodB2": "Extended periods in teenagers are most commonly caused by anovulatory cycles — cycles where ovulation does not occur — which leads to an overgrown uterine lining that takes longer to shed. Menstrual cycles are often irregular and anovulatory in the first few years after menarche, and the time to establish regular ovulatory cycles increases with increasing age at menarche.",
+  "cyDevLongPeriodB3": "Other causes include thyroid dysfunction, PCOS, and in some cases an underlying bleeding disorder. Anovulation is the most common cause of heavy menstrual bleeding in adolescents; an underlying bleeding disorder is the second most common cause.",
+  "cyDevLongPeriodB4": "Approximately 20% of all adolescent girls with heavy menstrual bleeding and 33% of those hospitalised for it have an underlying bleeding disorder. If your periods are consistently lasting more than 8 days, a doctor can check your iron levels — prolonged bleeding can lead to iron deficiency anaemia, which causes fatigue and difficulty concentrating.",
+  "cyDevHeavyB1": "Heavy menstrual bleeding — clinically called menorrhagia — is defined as excessive blood loss that interferes with your physical, social, or emotional quality of life. It is estimated to occur in approximately 37% of adolescent females. So while it can feel alarming, you are far from alone.",
+  "cyDevHeavyB2": "The most common cause of heavy menstrual bleeding in adolescents is ovulatory dysfunction, followed by coagulopathies — conditions where the blood does not clot properly. The most common inherited bleeding disorder is von Willebrand disease.",
+  "cyDevHeavyB3": "Even in the absence of anaemia, iron depletion from heavy menstrual bleeding can cause fatigue and decreased cognition, especially in verbal learning and memory.",
+  "cyDevHeavyB4": "Research advocates for conducting a comprehensive bleeding evaluation in all adolescents with heavy menstrual bleeding, even within their first year post-menarche. If you are soaking through a pad or tampon in under 2 hours, passing large clots, or feeling dizzy and fatigued during your period, speak to a doctor. Effective treatments are available — including iron supplementation, hormonal options, and other medications — that can significantly improve quality of life.",
+  "navHome": "Home",
+  "navDiet": "Diet",
+  "navWorkout": "Workout",
+  "navMore": "More",
+  "dashScoreLabel": "SCORE",
+  "dashTapForMore": "Tap for more",
+  "dashSteps": "Steps",
+  "dashStepsUnit": "steps",
+  "dashGoalShort": "Goal",
+  "dashGoalValue": "Goal {value}",
+  "@dashGoalValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "dashHeartRate": "Heart Rate",
+  "dashBpm": "bpm",
+  "dashExerciseTime": "Exercise Time",
+  "dashCaloriesBurned": "Calories Burned",
+  "dashKcal": "kcal",
+  "dashBurned": "Burned",
+  "dashEaten": "Eaten",
+  "dashNet": "Net",
+  "dashSleepAnalysis": "Sleep Analysis",
+  "dashSleepToday": "today",
+  "dashSleepAvg": "(avg {value})",
+  "@dashSleepAvg": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "dashScore90": "Top 5% of adults globally",
+  "dashScore75": "Healthier than ~80% of adults",
+  "dashScore50": "Around average for most adults",
+  "dashScore25": "Below average — most adults score higher",
+  "dashScore0": "In the bottom 15% — you've got room to grow",
+  "dashStepsGoalReached": "Steps goal reached — {steps} steps",
+  "@dashStepsGoalReached": {
+    "placeholders": {
+      "steps": {
+        "type": "String"
+      }
+    }
+  },
+  "dashCaloriesGoalReached": "Calories burned goal reached — {kcal} kcal",
+  "@dashCaloriesGoalReached": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "detailAddData": "Add data",
+  "detailLess": "Less",
+  "detailMore": "More",
+  "detailDate": "Date",
+  "detailTime": "Time",
+  "detailSaveFailed": "Failed to save. Please try again.",
+  "exDetExerciseToday": "Exercise today",
+  "exDetJustStarting": "Just starting",
+  "exDetGoalReached": "Goal reached",
+  "exDetErrorMinutes": "Enter a valid number of minutes greater than 0.",
+  "exDetMinutes": "Minutes",
+  "exDetMinUnit": "min",
+  "exDetInsNoneP": "No exercise ",
+  "exDetInsNoneK": "recorded",
+  "exDetInsNoneS": " yet today.",
+  "exDetInsGoalP": "You've ",
+  "exDetInsGoalK": "hit your goal",
+  "exDetInsGoalS": " today!",
+  "exDetInsAlmostP": "Almost there — ",
+  "exDetInsAlmostK": "keep going",
+  "exDetInsAlmostS": ".",
+  "exDetInsHalfP": "You're ",
+  "exDetInsHalfK": "halfway to your goal",
+  "exDetInsHalfS": " today.",
+  "exDetInsStartP": "You've made a ",
+  "exDetInsStartK": "solid start",
+  "exDetInsStartS": " today.",
+  "exDetInsEveryP": "Every minute ",
+  "exDetInsEveryK": "counts",
+  "exDetInsEveryS": " — keep moving.",
+  "detailDaily": "Daily",
+  "detailWeekly": "Weekly",
+  "detailDailyGoal": "Daily Goal",
+  "detailKm": "km",
+  "stepsDetGreeting": "Hey {name},",
+  "@stepsDetGreeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "stepsDetWalkedPrefix": "You walked ",
+  "stepsDetWalkedSuffix": " steps today",
+  "stepsDetErrorCount": "Enter a valid step count greater than 0.",
+  "detailDistance": "Distance",
+  "detailToday": "Today",
+  "stepsDetTodaysSteps": "Today's steps",
+  "stepsDetAvgDaily": "Avg. daily steps",
+  "stepsDetEmpty": "No steps recorded yet today",
+  "stepsDetDistanceSub": "≈ {meters} m  ·  {steps} steps",
+  "@stepsDetDistanceSub": {
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      },
+      "steps": {
+        "type": "int"
+      }
+    }
+  },
+  "hrDetBpm": "BPM",
+  "hrDetEnterBpm": "Enter BPM",
+  "hrDetAvgToday": "Avg today",
+  "hrDetNoDataToday": "No heart rate data today",
+  "hrDetLowest": "Lowest",
+  "hrDetHighest": "Highest",
+  "hrDetRange": "RANGE",
+  "hrDetZonesTitle": "Heart Rate Zones",
+  "hrDetZoneResting": "Resting",
+  "hrDetZoneNormal": "Normal",
+  "hrDetZoneElevated": "Elevated",
+  "hrDetZoneHigh": "High",
+  "hrDetReadNow": "Read your heart now",
+  "hrDetReadNowSub": "Use camera & flashlight to measure BPM",
+  "hrDetInsNoneP": "No heart rate data recorded ",
+  "hrDetInsNoneK": "yet today",
+  "hrDetInsNoneS": ".",
+  "hrDetInsElevatedP": "Your average rate has been ",
+  "hrDetInsElevatedK": "elevated",
+  "hrDetInsElevatedS": " today.",
+  "hrDetInsManyP": "You had ",
+  "hrDetInsManyK": "several active spikes",
+  "hrDetInsManyS": " today.",
+  "hrDetInsFewP": "You had a few ",
+  "hrDetInsFewK": "active spikes",
+  "hrDetInsFewS": " today.",
+  "hrDetInsWideP": "Your heart rate had a ",
+  "hrDetInsWideK": "wide range",
+  "hrDetInsWideS": " today.",
+  "hrDetInsCalmP": "You have been ",
+  "hrDetInsCalmK": "very calm",
+  "hrDetInsCalmS": " today.",
+  "hrDetInsSteadyP": "Your heart rate has been ",
+  "hrDetInsSteadyK": "steady",
+  "hrDetInsSteadyS": " today.",
+  "hrDetInsNormalP": "Your average rate is in a ",
+  "hrDetInsNormalK": "normal range",
+  "hrDetInsNormalS": " today.",
+  "calDetCaloriesTitle": "Calories",
+  "calDetBalanceTitle": "Calorie Balance",
+  "calDetActiveEnergyToday": "Active energy today",
+  "calDetCaloriesConsumedToday": "Calories consumed today",
+  "calDetBurnGoalOf": "of {goal} burn goal",
+  "@calDetBurnGoalOf": {
+    "placeholders": {
+      "goal": {
+        "type": "int"
+      }
+    }
+  },
+  "calDetSurplus": "Surplus",
+  "calDetExtremeDeficit": "Extreme deficit",
+  "calDetMaintenance": "Maintenance",
+  "calDetDeficit": "Deficit",
+  "calDetErrorAmount": "Enter a valid calorie amount greater than 0.",
+  "calDetGainedNote": "To log gained (eaten) calories, use the Diet section.",
+  "calDetInsNoneP": "No activity ",
+  "calDetInsNoneK": "recorded",
+  "calDetInsNoneS": " yet today.",
+  "calDetInsNoBurnP": "You've eaten but haven't ",
+  "calDetInsNoBurnK": "burned any calories",
+  "calDetInsNoBurnS": " yet.",
+  "calDetInsGoalP": "You've ",
+  "calDetInsGoalK": "hit your burn goal",
+  "calDetInsGoalS": " today!",
+  "calDetInsDeficitP": "You're in a ",
+  "calDetInsDeficitK": "solid deficit",
+  "calDetInsDeficitS": " today.",
+  "calDetInsSurplusP": "You're in a ",
+  "calDetInsSurplusK": "calorie surplus",
+  "calDetInsSurplusS": " today.",
+  "calDetInsMaintP": "You're close to ",
+  "calDetInsMaintK": "maintenance",
+  "calDetInsMaintS": " today.",
+  "calDetInsHalfP": "You're ",
+  "calDetInsHalfK": "halfway to your burn goal",
+  "calDetInsHalfS": ".",
+  "calDetInsKeepP": "Keep moving to ",
+  "calDetInsKeepK": "reach your goal",
+  "calDetInsKeepS": " today.",
+  "slpStageInBed": "In Bed",
+  "slpStageAsleep": "Asleep",
+  "slpStageAwake": "Awake",
+  "slpStageCore": "Core",
+  "slpStageDeep": "Deep",
+  "slpStageRem": "REM",
+  "slpStageTotal": "Total",
+  "slpYouSleptFor": "You slept for",
+  "slpTitle": "Sleep",
+  "slpStarts": "Starts",
+  "slpEnds": "Ends",
+  "slpErrorEndAfter": "End time must be after start time.",
+  "slpStagesTitle": "Sleep Stages",
+  "slpStagesEmpty": "Add a sleep entry to see your chart",
+  "slpInsNoneP": "No sleep data ",
+  "slpInsNoneK": "recorded",
+  "slpInsNoneS": " yet.",
+  "slpInsGreatP": "You got a ",
+  "slpInsGreatK": "great night's sleep",
+  "slpInsGreatS": ".",
+  "slpInsWellP": "You slept ",
+  "slpInsWellK": "well",
+  "slpInsWellS": " last night.",
+  "slpInsDecentP": "You got ",
+  "slpInsDecentK": "decent sleep",
+  "slpInsDecentS": " last night.",
+  "slpInsShortP": "You had a ",
+  "slpInsShortK": "short night",
+  "slpInsShortS": " — try to rest more.",
+  "slpInsNeedP": "You need ",
+  "slpInsNeedK": "more sleep",
+  "slpInsNeedS": " tonight.",
+  "hrMeasYourHeartRate": "Your heart rate",
+  "hrMeasCouldntRead": "Couldn't read your pulse",
+  "hrMeasWaitingFinger": "Waiting for finger…",
+  "hrMeasHoldStill": "Hold still…",
+  "hrMeasPaused": "Paused",
+  "hrMeasReadYourHeart": "Read your heart",
+  "hrMeasSubDone": "Tap Save to add this reading to today.",
+  "hrMeasSubWaiting": "Place your fingertip over the rear camera and flash. The reading will start automatically.",
+  "hrMeasSubMeasuring": "Hold your finger steady over the camera and flash.",
+  "hrMeasSubPaused": "Place your finger back on the camera to continue.",
+  "hrMeasSubIdle": "We use your phone's camera and flashlight to detect your pulse through your fingertip.",
+  "hrMeasFailLifted": "You lifted your finger. Hold it steady over the camera and flash for the full reading.",
+  "hrMeasFailNoFrames": "No camera frames received. Try again.",
+  "hrMeasFailNoFinger": "We couldn't see your finger on the camera. Cover the rear camera and flash with your fingertip, then try again.",
+  "hrMeasFailNoSignal": "We couldn't detect a clear pulse signal. Make sure your finger fully covers the camera and flash.",
+  "hrMeasFailNoSteady": "We couldn't detect a steady pulse. Hold your finger still over the camera and flash, then try again.",
+  "hrMeasFailLockOn": "We couldn't lock onto your pulse.",
+  "hrMeasCameraUnavailable": "Camera unavailable: {error}",
+  "@hrMeasCameraUnavailable": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "hrMeasDidYouKnow": "Did you know?",
+  "hrMeasTryAgain": "Try again",
+  "hrMeasRetry": "Retry",
+  "hrMeasSave": "Save {bpm} BPM",
+  "@hrMeasSave": {
+    "placeholders": {
+      "bpm": {
+        "type": "int"
+      }
+    }
+  },
+  "hrMeasCancel": "Cancel",
+  "hrMeasStart": "Start measurement",
+  "hrMeasPreparing": "Preparing camera…",
+  "hrTip1": "Your heart beats around 100,000 times a day.",
+  "hrTip2": "A typical adult resting heart rate is 60–100 BPM.",
+  "hrTip3": "Athletes often have resting heart rates below 60 BPM.",
+  "hrTip4": "Deep, slow breaths can lower your heart rate.",
+  "hrTip5": "Sit upright and relax your shoulders for a cleaner reading.",
+  "hrTip6": "Try not to talk or move while we measure.",
+  "hrTip7": "Your heart pumps about 2,000 gallons of blood every day.",
+  "hrTip8": "Hydration helps your heart pump more efficiently.",
+  "hrTip9": "Caffeine can raise your resting heart rate for hours.",
+  "hrTip10": "The “lub-dub” sound is your heart valves snapping shut.",
+  "hrTip11": "Laughter has been shown to lower blood pressure.",
+  "hrTip12": "Cold hands? Warm them up — it gives a stronger signal.",
+  "hrTip13": "Press gently. Squeezing too hard cuts off the pulse.",
+  "hrTip14": "Your heart is roughly the size of your fist.",
+  "hrMeasCoverCamera": "Cover the camera fully with your fingertip",
+  "woTitle": "Workout",
+  "woHistory": "History",
+  "woHistoryTitle": "Workout History",
+  "woChooseActivity": "Choose an activity",
+  "woModeRunning": "Running",
+  "woModeTrailRun": "Trail Run",
+  "woModeOutdoorWalking": "Outdoor Walking",
+  "woModeCycling": "Cycling",
+  "woModeMountainBike": "Mountain Bike Ride",
+  "woModeEBike": "E-Bike Ride",
+  "woModeSwimming": "Swimming",
+  "woSubRunning": "GPS route, speed (km/h), calories, and active time.",
+  "woSubTrailRun": "Trail run with GPS, pace (min/km), and higher-intensity calorie estimate.",
+  "woSubOutdoorWalking": "Outdoor walk with live GPS route and speed.",
+  "woSubCycling": "Ride with GPS speed (km/h), distance, and calorie estimate.",
+  "woSubMountainBike": "Off-road ride with GPS; calories tuned for higher MTB effort.",
+  "woSubEBike": "Assisted ride with GPS; calories reflect lighter effort vs. standard cycling.",
+  "woSubSwimming": "Open-water or pool-side GPS; distance in meters, swim pace (/100m), time-based calories.",
+  "woPace": "Pace",
+  "woSpeed": "Speed",
+  "woDistance": "Distance",
+  "woDuration": "Duration",
+  "woCalories": "Calories",
+  "woActive": "Active",
+  "woKcalValue": "{kcal} kcal",
+  "@woKcalValue": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "woCaloriesLine": "Calories: {kcal} kcal",
+  "@woCaloriesLine": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "woMinValue": "{minutes} min",
+  "@woMinValue": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "woLoadingWeather": "Loading weather...",
+  "woLocationUnavailable": "Location unavailable",
+  "woUnknown": "Unknown",
+  "woTempCondition": "{temp}°C • {condition}",
+  "@woTempCondition": {
+    "placeholders": {
+      "temp": {
+        "type": "String"
+      },
+      "condition": {
+        "type": "String"
+      }
+    }
+  },
+  "woLatLng": "Lat {lat} • Lng {lng}",
+  "@woLatLng": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lng": {
+        "type": "String"
+      }
+    }
+  },
+  "woWeatherFull": "Feels {feels}°C • Humidity {humidity}% • Wind {wind} kph",
+  "@woWeatherFull": {
+    "placeholders": {
+      "feels": {
+        "type": "String"
+      },
+      "humidity": {
+        "type": "String"
+      },
+      "wind": {
+        "type": "String"
+      }
+    }
+  },
+  "woWeatherCompact": "Feels {feels}° • Hum {humidity}% • Wind {wind} kph",
+  "@woWeatherCompact": {
+    "placeholders": {
+      "feels": {
+        "type": "String"
+      },
+      "humidity": {
+        "type": "String"
+      },
+      "wind": {
+        "type": "String"
+      }
+    }
+  },
+  "woStopRoute": "Stop Route",
+  "woPreparingGps": "Preparing GPS...",
+  "woStartRoute": "Start Route",
+  "woResume": "Resume",
+  "woPause": "Pause",
+  "woReset": "Reset",
+  "woGo": "Go",
+  "woShowUi": "Show UI",
+  "woHideUi": "Hide UI",
+  "woRecenterTooltip": "Recenter map on your location",
+  "woMapFollows": "Map follows your location (pan map to explore freely)",
+  "woStatusPluginNotLoaded": "Location plugin not loaded. Fully restart the app (stop and run again).",
+  "woStatusPlatformError": "Location platform error: {error}",
+  "@woStatusPlatformError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "woStatusTimeout": "Timed out while getting your current location.",
+  "woStatusServicesDisabled": "Location services are disabled.",
+  "woStatusUnableLocation": "Unable to get current location: {error}",
+  "@woStatusUnableLocation": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "woStatusPermissionDenied": "Location permission denied.",
+  "woStatusPermissionPermanent": "Location permission permanently denied.",
+  "woStatusGettingLocation": "Getting your live location...",
+  "woStatusGettingLocationMode": "Getting your live location for {mode}...",
+  "@woStatusGettingLocationMode": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "woStatusLiveReady": "Live location ready.",
+  "woStatusStreamError": "Location stream error: {error}",
+  "@woStatusStreamError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "woStatusTrackingStarted": "Tracking started.",
+  "woStatusStartCancelled": "Start cancelled.",
+  "woStatusPaused": "Paused. Tap Resume to continue.",
+  "woStatusResumed": "Tracking resumed.",
+  "woToastStarted": "Workout started — let's go!",
+  "woToastSaved": "Workout saved",
+  "woToastDeleted": "Workout deleted",
+  "woEndRouteTitle": "End route?",
+  "woEndRouteBody": "Your current tracking session will stop.",
+  "woEndRouteConfirm": "End Route",
+  "woNotifInProgress": "{mode} in progress",
+  "@woNotifInProgress": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "woNotifStartedTitle": "Workout started",
+  "woNotifStartedBody": "{mode} tracking is live. Keep your pace steady.",
+  "@woNotifStartedBody": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "woNotifWeatherTitle": "Workout weather advisory",
+  "woNotifWeatherHot": "High heat detected ({temp}°C). Hydrate and ease intensity.",
+  "@woNotifWeatherHot": {
+    "placeholders": {
+      "temp": {
+        "type": "String"
+      }
+    }
+  },
+  "woNotifWeatherSevere": "Current weather is {condition}. Consider safer indoor training.",
+  "@woNotifWeatherSevere": {
+    "placeholders": {
+      "condition": {
+        "type": "String"
+      }
+    }
+  },
+  "woWeatherUnfavorable": "unfavorable",
+  "woNotifWeatherWind": "Strong wind detected ({wind} kph). Adjust your route and effort.",
+  "@woNotifWeatherWind": {
+    "placeholders": {
+      "wind": {
+        "type": "String"
+      }
+    }
+  },
+  "woNotifDistanceTitle": "Distance milestone",
+  "woNotifDistanceBody": "Great work! You just crossed {km} km.",
+  "@woNotifDistanceBody": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "woNotifTimeTitle": "Time milestone",
+  "woNotifTimeBody": "You have trained for {minutes} minutes.",
+  "@woNotifTimeBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "woNotifGoalTitle": "Goal reached",
+  "woNotifGoalBody": "Workout goal complete: {kcal} kcal and {minutes} min.",
+  "@woNotifGoalBody": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "woNotifForegroundTitle": "Synthese workout tracking",
+  "woNotifForegroundBody": "Tracking your {mode} in background",
+  "@woNotifForegroundBody": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "woSearchHint": "Search workouts...",
+  "woSignInHistory": "Please sign in to view history.",
+  "woNoHistory": "No workout history yet.",
+  "woNoMatch": "No workouts match your search.",
+  "woDeleteTitle": "Delete workout?",
+  "woDeleteBody": "This workout session will be removed from your history.",
+  "woWeatherLoadError": "Unable to load weather",
+  "authGoogleNoToken": "Google sign-in did not return an auth token.",
+  "authGoogleFailedCode": "Google Sign-In failed ({code})",
+  "@authGoogleFailedCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "authGoogleAndroidConfig": "Google Sign-In Android config is incomplete. Add SHA-1/SHA-256 for this app in Firebase, enable Google provider, then download the updated google-services.json.",
+  "authGoogleFailed": "Google Sign-In failed",
+  "authGoogleFailedType": "Google Sign-In failed ({type}).",
+  "@authGoogleFailedType": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "authContinueGoogle": "Continue with Google",
+  "loginErrEnterCredentials": "Please enter email and password",
+  "loginErrVerifyEmail": "Please verify your email before logging in.",
+  "loginErrLoginFailed": "Login failed",
+  "loginErrResetEnterEmail": "Enter your email above to reset password.",
+  "loginMsgResetSent": "Reset email sent! Check your inbox.",
+  "loginErrResetFailed": "Failed to send reset email.",
+  "loginTitle": "Sign In",
+  "loginEmail": "Email",
+  "loginPassword": "Password",
+  "loginForgot": "Forgot password?",
+  "loginButton": "Login",
+  "loginNoAccount": "Don't have an account? ",
+  "loginSignUp": "Sign up",
+  "signupErrFillFields": "Please fill in all fields",
+  "signupErrPasswordMismatch": "Passwords do not match",
+  "signupErrFailed": "Sign up failed",
+  "signupTitle": "Sign Up",
+  "signupConfirmPassword": "Confirm Password",
+  "signupCreateAccount": "Create Account",
+  "signupHaveAccount": "Already have an account? ",
+  "verifyResent": "Verification email resent!",
+  "verifyWaitResend": "Wait a moment before resending.",
+  "verifyTitle": "Verify your email",
+  "verifyBody": "We sent a verification link to your email.\nPlease click it to continue.",
+  "verifyChecking": "Checking for verification...",
+  "verifySpamNotice": "Can't find the email? Check your spam or junk folder.",
+  "verifyResendButton": "Resend Email",
+  "verifyVerified": "Verified!",
+  "moreTitle": "More",
+  "moreSearchHint": "Search sections...",
+  "moreNoResults": "No results",
+  "moreMindfulness": "Mindfulness",
+  "moreFinance": "Finance",
+  "moreCycles": "Cycles",
+  "startSignUp": "Continue with Sign Up",
+  "startSignIn": "Continue with Sign In",
+  "startGuest": "Continue as Guest",
+  "startTestingNote": "For testing only — data may be reset at any time.",
+  "startLegalPrefix": "By pressing Continue you agree with our\n",
+  "startPrivacyPolicy": "privacy policy",
+  "startAnd": " and ",
+  "startTerms": "terms and conditions",
+  "startAnonFailed": "Anonymous sign-in failed",
+  "startGuestFailed": "Guest access failed: {error}",
+  "@startGuestFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutTitle": "About App",
+  "aboutVersion": "Version {version}",
+  "@aboutVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "aboutSecDeveloper": "DEVELOPER",
+  "aboutDeveloper": "Developer",
+  "aboutSecLegal": "LEGAL",
+  "aboutPrivacyPolicy": "Privacy Policy",
+  "aboutSecPermissions": "PERMISSIONS",
+  "aboutPermNotifications": "Notifications",
+  "aboutPermLocation": "Location",
+  "aboutPermActivity": "Activity Recognition",
+  "aboutPermCamera": "Camera",
+  "aboutPermPhotos": "Photos & Media",
+  "aboutSecContact": "CONTACT THE DEVELOPER",
+  "aboutEmail": "Email",
+  "aboutMadeWith": "Made with ❤️",
+  "metricEnterValid": "Enter a valid {label}.",
+  "@metricEnterValid": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSave": "Save",
+  "commonSaving": "Saving...",
+  "commonSaved": "Saved",
+  "mrTitle": "Morning Readiness",
+  "mrSubtitle": "How are you feeling this morning?",
+  "mrLogged": "Morning readiness logged",
+  "mrSleepQuality": "Sleep Quality",
+  "mrEnergyLevel": "Energy Level",
+  "mrStressLevel": "Stress Level",
+  "mrSleepPoor": "Poor",
+  "mrSleepFair": "Fair",
+  "mrSleepOkay": "Okay",
+  "mrSleepGood": "Good",
+  "mrSleepGreat": "Great",
+  "mrEnergyExhausted": "Exhausted",
+  "mrEnergyLow": "Low",
+  "mrEnergyModerate": "Moderate",
+  "mrEnergyHigh": "High",
+  "mrEnergyEnergized": "Energized",
+  "mrStressOverwhelming": "Overwhelming",
+  "mrStressHigh": "High",
+  "mrStressModerate": "Moderate",
+  "mrStressLow": "Low",
+  "mrStressMinimal": "Minimal",
+  "moodHowFeeling": "How are you feeling?",
+  "moodLogFor": "Log for {time}",
+  "@moodLogFor": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "moodYoureFeeling": "You're feeling",
+  "moodScaleUnpleasant": "Unpleasant",
+  "moodScalePleasant": "Pleasant",
+  "moodNext": "Next",
+  "moodDescribeFeeling": "Describe your feeling",
+  "moodWhatDescribes": "What best describes this feeling?",
+  "moodFinish": "Finish",
+  "moodLogged": "Mood logged",
+  "moodLoggedOverlay": "Logged",
+  "moodLblVeryUnpleasant": "Very Unpleasant",
+  "moodLblUnpleasant": "Unpleasant",
+  "moodLblSlightlyUnpleasant": "Slightly Unpleasant",
+  "moodLblNeutral": "Neutral",
+  "moodLblSlightlyPleasant": "Slightly Pleasant",
+  "moodLblPleasant": "Pleasant",
+  "moodLblVeryPleasant": "Very Pleasant",
+  "moodDescVeryUnpleasant": "It's rough right now. Give yourself grace — you're doing what you can.",
+  "moodDescUnpleasant": "Things feel heavy. Take it one step at a time.",
+  "moodDescSlightlyUnpleasant": "A little off-track. Not great, but you're hanging in there.",
+  "moodDescNeutral": "Balanced and centered. Ready for what's next.",
+  "moodDescSlightlyPleasant": "Doing alright! A steady, positive energy is building.",
+  "moodDescPleasant": "Feeling solid and on track. You've got a good flow going.",
+  "moodDescVeryPleasant": "Absolutely great! You're in peak form and feeling energized.",
+  "moodFeelAngry": "Angry",
+  "moodFeelAnxious": "Anxious",
+  "moodFeelScared": "Scared",
+  "moodFeelOverwhelmed": "Overwhelmed",
+  "moodFeelAshamed": "Ashamed",
+  "moodFeelDevastated": "Devastated",
+  "moodFeelPanicked": "Panicked",
+  "moodFeelHopeless": "Hopeless",
+  "moodFeelFurious": "Furious",
+  "moodFeelTerrified": "Terrified",
+  "moodFeelDisgusted": "Disgusted",
+  "moodFeelResentful": "Resentful",
+  "moodFeelMiserable": "Miserable",
+  "moodFeelFrustrated": "Frustrated",
+  "moodFeelWorried": "Worried",
+  "moodFeelSad": "Sad",
+  "moodFeelStressed": "Stressed",
+  "moodFeelLonely": "Lonely",
+  "moodFeelDisappointed": "Disappointed",
+  "moodFeelInsecure": "Insecure",
+  "moodFeelIrritated": "Irritated",
+  "moodFeelGuilty": "Guilty",
+  "moodFeelHurt": "Hurt",
+  "moodFeelNervous": "Nervous",
+  "moodFeelJealous": "Jealous",
+  "moodFeelEmbarrassed": "Embarrassed",
+  "moodFeelTired": "Tired",
+  "moodFeelBored": "Bored",
+  "moodFeelUneasy": "Uneasy",
+  "moodFeelDistracted": "Distracted",
+  "moodFeelRestless": "Restless",
+  "moodFeelApathetic": "Apathetic",
+  "moodFeelDrained": "Drained",
+  "moodFeelImpatient": "Impatient",
+  "moodFeelDisconnected": "Disconnected",
+  "moodFeelSluggish": "Sluggish",
+  "moodFeelUncertain": "Uncertain",
+  "moodFeelUnfocused": "Unfocused",
+  "moodFeelMelancholic": "Melancholic",
+  "moodFeelContent": "Content",
+  "moodFeelCalm": "Calm",
+  "moodFeelPeaceful": "Peaceful",
+  "moodFeelIndifferent": "Indifferent",
+  "moodFeelSteady": "Steady",
+  "moodFeelBalanced": "Balanced",
+  "moodFeelAccepting": "Accepting",
+  "moodFeelPresent": "Present",
+  "moodFeelMellow": "Mellow",
+  "moodFeelComposed": "Composed",
+  "moodFeelGrounded": "Grounded",
+  "moodFeelReserved": "Reserved",
+  "moodFeelThoughtful": "Thoughtful",
+  "moodFeelHopeful": "Hopeful",
+  "moodFeelRelaxed": "Relaxed",
+  "moodFeelFocused": "Focused",
+  "moodFeelGrateful": "Grateful",
+  "moodFeelOptimistic": "Optimistic",
+  "moodFeelCurious": "Curious",
+  "moodFeelRefreshed": "Refreshed",
+  "moodFeelRelieved": "Relieved",
+  "moodFeelComfortable": "Comfortable",
+  "moodFeelOpen": "Open",
+  "moodFeelEncouraged": "Encouraged",
+  "moodFeelInterested": "Interested",
+  "moodFeelSerene": "Serene",
+  "moodFeelHappy": "Happy",
+  "moodFeelConfident": "Confident",
+  "moodFeelEnergized": "Energized",
+  "moodFeelMotivated": "Motivated",
+  "moodFeelJoyful": "Joyful",
+  "moodFeelProud": "Proud",
+  "moodFeelFulfilled": "Fulfilled",
+  "moodFeelCheerful": "Cheerful",
+  "moodFeelPlayful": "Playful",
+  "moodFeelEmpowered": "Empowered",
+  "moodFeelCreative": "Creative",
+  "moodFeelAppreciated": "Appreciated",
+  "moodFeelLoving": "Loving",
+  "moodFeelAmazed": "Amazed",
+  "moodFeelExcited": "Excited",
+  "moodFeelSurprised": "Surprised",
+  "moodFeelPassionate": "Passionate",
+  "moodFeelInspired": "Inspired",
+  "moodFeelEuphoric": "Euphoric",
+  "moodFeelThrilled": "Thrilled",
+  "moodFeelElated": "Elated",
+  "moodFeelEcstatic": "Ecstatic",
+  "moodFeelBlissful": "Blissful",
+  "moodFeelRadiant": "Radiant",
+  "moodFeelAlive": "Alive",
+  "breatheTitle": "Breathing Exercise",
+  "breatheBox": "Box",
+  "breatheSimple": "Simple",
+  "breatheInhale": "Breathe In",
+  "breatheHold": "Hold",
+  "breatheExhale": "Breathe Out",
+  "breatheTapStart": "Tap Start",
+  "breathePause": "Pause",
+  "breatheStart": "Start",
+  "acctLogTitle": "Log additional info",
+  "acctLogSubtitle": "These are your current readings, not your goals.",
+  "acctLogHeight": "Height",
+  "acctLogWeight": "Weight",
+  "acctLogSleep": "Average sleep duration",
+  "acctLogWater": "Daily water intake",
+  "acctLogAthleteProfile": "Athlete profile",
+  "acctLogAthleteSubtitle": "Tell us about your training so we can tailor your experience.",
+  "acctLogTypeOfAthlete": "Type of athlete",
+  "acctLogExperienceLevel": "Experience level",
+  "acctLogSportsProfile": "Sports profile",
+  "acctLogSelectAll": "Select all you train in",
+  "acctLogTypeStudent": "Student",
+  "acctLogTypeClub": "Club",
+  "acctLogTypeCasual": "Casual",
+  "acctLogTypeCompetitive": "Competitive",
+  "acctLogExpBeginner": "Beginner",
+  "acctLogExpIntermediate": "Intermediate",
+  "acctLogExpAdvanced": "Advanced",
+  "acctLogSportFootball": "Football",
+  "acctLogSportTrack": "Track",
+  "acctLogSportCricket": "Cricket",
+  "acctLogSportBasketball": "Basketball",
+  "acctLogSportMotorSport": "Motor sport",
+  "acctLogSportGolf": "Golf",
+  "acctLogSportBadminton": "Badminton",
+  "acctLogSportTennis": "Tennis",
+  "acctLogSportGymnastics": "Gymnastics",
+  "acctLogSportVolleyball": "Volleyball",
+  "acctLogSportMartialArts": "Martial arts",
+  "acctLogSportSwimming": "Swimming",
+  "acctLogSportCycling": "Cycling",
+  "acctLogSportRunning": "Running",
+  "acctLogSportRugby": "Rugby",
+  "acctLogSportHockey": "Hockey",
+  "commonBack": "Back",
+  "dlogFlowLevel": "FLOW LEVEL",
+  "dlogSymptoms": "SYMPTOMS",
+  "dlogMood": "MOOD",
+  "dlogCervicalMucus": "CERVICAL MUCUS",
+  "dlogFlowNone": "None",
+  "dlogFlowSpotting": "Spotting",
+  "dlogFlowLight": "Light",
+  "dlogFlowMedium": "Medium",
+  "dlogFlowHeavy": "Heavy",
+  "dlogFlowVeryHeavy": "Very Heavy",
+  "dlogSympCrampsMild": "Cramps (mild)",
+  "dlogSympCrampsSevere": "Cramps (severe)",
+  "dlogSympBloating": "Bloating",
+  "dlogSympBreastTenderness": "Breast tenderness",
+  "dlogSympHeadache": "Headache",
+  "dlogSympFatigue": "Fatigue",
+  "dlogSympLowerBackPain": "Lower back pain",
+  "dlogSympNausea": "Nausea",
+  "dlogSympAcne": "Acne",
+  "dlogSympFoodCravings": "Food cravings",
+  "dlogMoodHappy": "Happy",
+  "dlogMoodCalm": "Calm",
+  "dlogMoodConfident": "Confident",
+  "dlogMoodIrritable": "Irritable",
+  "dlogMoodAnxious": "Anxious",
+  "dlogMoodSad": "Sad",
+  "dlogMoodSensitive": "Sensitive",
+  "dlogMoodStressed": "Stressed",
+  "dlogMoodBrainFog": "Brain fog",
+  "dlogMoodTired": "Tired",
+  "dlogMucusDry": "Dry",
+  "dlogMucusSticky": "Sticky",
+  "dlogMucusCreamy": "Creamy",
+  "dlogMucusEggWhite": "Egg white",
+  "dlogMucusWatery": "Watery",
+  "dlogEarlyTitle": "Did your period start early?",
+  "dlogEarlySpotting": "You logged spotting. Is this the start of a new period?",
+  "dlogEarlyBleeding": "You logged bleeding, but your period isn't due yet.",
+  "dlogNoJustSpotting": "No, just spotting",
+  "dlogYesStarted": "Yes, it started",
+  "dlogDueTitle": "Did your period start?",
+  "dlogDueBody": "You logged spotting around the time your period is due. Is this the start of your period?",
+  "dlogSaved": "Cycle log saved",
+  "dlogLoggedOverlay": "Logged",
+  "dlogTodayPrefix": "Today, {date}",
+  "@dlogTodayPrefix": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOk": "OK",
+  "accountDeleteAccount": "Delete Account",
+  "accountDeleteBody": "Are you sure you want to delete your account? This will permanently delete all your data and cannot be undone.",
+  "accountErrorTitle": "Error",
+  "accountDeleteFailed": "Failed to delete account. Please try again or contact support.",
+  "accountPhotoUpdated": "Profile photo updated",
+  "accountPhotoFailed": "Failed to upload photo",
+  "accountDetailsTitle": "Account Details",
+  "accountHealthTitle": "Health Details",
+  "accountAthleteTitle": "Athlete Details",
+  "accountSettings": "Settings",
+  "accountSignOut": "Sign Out",
+  "accountNotProvided": "Not provided",
+  "accountFullName": "Full Name",
+  "accountDob": "Date of Birth",
+  "accountCountry": "Country",
+  "accountNoneSelected": "None selected",
+  "accountPhysicalStats": "PHYSICAL STATS",
+  "accountAvgSleep": "Avg sleep",
+  "accountDailyWater": "Daily water",
+  "accountMedical": "MEDICAL",
+  "accountSupplements": "Supplements",
+  "accountYes": "Yes",
+  "accountNone": "None",
+  "accountDisabilities": "Disabilities",
+  "accountInjuryHistory": "Injury History",
+  "accountYourGoals": "YOUR GOALS",
+  "accountSelectedGoals": "Selected goals",
+  "accountProfile": "PROFILE",
+  "accountSports": "SPORTS",
+  "accountLogAthleteInfo": "Log athlete info",
+  "accountChangeTheme": "Change Theme",
+  "accountThemeUpdated": "Theme colour updated",
+  "accountAppearance": "APPEARANCE",
+  "accountSystemDefault": "System Default",
+  "accountFollowingSystem": "Following system theme",
+  "accountLightMode": "Light Mode",
+  "accountLightModeOn": "Light mode on",
+  "accountDarkMode": "Dark Mode",
+  "accountDarkModeOn": "Dark mode on",
+  "accountPresets": "PRESETS",
+  "accountCustomRgb": "CUSTOM RGB",
+  "accountRgbError": "Enter values 0–255 for each channel",
+  "accountApply": "Apply",
+  "accountSupportDev": "Enjoying Synthese? Support development",
+  "finDebts": "Debts",
+  "finYouOwe": "You Owe",
+  "finOwedToYou": "Owed to You",
+  "finPaydownProgress": "Paydown Progress",
+  "finTapViewAllDebts": "Tap to view all debts",
+  "finTitle": "Finance",
+  "finTransfer": "Transfer",
+  "finAddTransaction": "Add Transaction",
+  "finRecentTransactions": "Recent Transactions",
+  "finTotalBalance": "Total Balance",
+  "finNoTransactions": "No transactions yet",
+  "finNoMatching": "No matching transactions",
+  "finTapAddToStart": "Tap 'Add Transaction' to get started",
+  "finTryAdjustFilters": "Try adjusting your filters",
+  "finUnknown": "Unknown",
+  "finSearchTransactions": "Search transactions...",
+  "finAllCategories": "All Categories",
+  "finOther": "Other",
+  "finOtherExpense": "Other (Expense)",
+  "finOtherIncome": "Other (Income)",
+  "finSelectCategory": "Select Category",
+  "finDeleteTransaction": "Delete Transaction",
+  "finDeleteTransactionConfirm": "Are you sure you want to delete this transaction?",
+  "finDebtDeleteTitle": "Delete Debt",
+  "finDebtDeleteConfirm": "Are you sure you want to delete this debt? This action cannot be undone.",
+  "finDebtAddDebt": "Add Debt",
+  "finDebtIOwe": "I Owe",
+  "finDebtOweMe": "Owe Me",
+  "finDebtSignIn": "Please sign in to view debts",
+  "finDebtPaid": "Paid",
+  "finDebtNoneYouOwe": "No debts you owe",
+  "finDebtNoneOwedToYou": "No debts owed to you",
+  "finDebtTapAddOwe": "Tap 'Add Debt' to track money you owe",
+  "finDebtTapAddOwedToYou": "Tap 'Add Debt' to track money owed to you",
+  "finDebtDeleted": "Debt deleted",
+  "finTrInvalidAmount": "Please enter a valid amount",
+  "finTrSelectSource": "Please select a source account",
+  "finTrSelectDest": "Please select a destination account",
+  "finTrSameAccount": "Cannot transfer to the same account",
+  "finTrSourceNotFound": "Source account not found",
+  "finTrInsufficient": "Insufficient Funds",
+  "finTrCompleted": "Transfer completed",
+  "finTrFailed": "Failed to transfer funds",
+  "finTrFrom": "From",
+  "finTrTo": "To",
+  "finTrSelectAccount": "Select account",
+  "finTrSelectAccountTitle": "Select Account",
+  "finTxSelectAccount": "Please select an account",
+  "finTxSelectCategory": "Please select a category",
+  "finTxSaved": "Transaction saved",
+  "finTxFailed": "Failed to save transaction",
+  "finTxAccount": "Account",
+  "finTxNoteOptional": "Note (optional)",
+  "finTxAddExpense": "Add Expense",
+  "finTxAddIncome": "Add Income",
+  "finTxExpense": "Expense",
+  "finTxIncome": "Income",
+  "finTxNoAccounts": "No accounts available",
+  "finTxNoCategories": "No categories available",
+  "finTxCategory": "Category",
+  "finTxToday": "Today",
+  "finTxRecurring": "Recurring",
+  "finTxDaily": "Daily",
+  "finTxWeekly": "Weekly",
+  "finTxMonthly": "Monthly",
+  "finTxAddNote": "Add a note...",
+  "finAddDebtEnterTitle": "Please enter a title",
+  "finAddDebtValidInstallment": "Please enter a valid installment amount",
+  "finAddDebtInstallmentExceed": "Installment cannot exceed total amount",
+  "finAddDebtAdded": "Debt added",
+  "finAddDebtFailed": "Failed to save debt",
+  "finAddDebtTitleLabel": "Title",
+  "finAddDebtTotalAmount": "Total Amount",
+  "finAddDebtDueDateOptional": "Due Date (optional)",
+  "finAddDebtNotesOptional": "Notes (optional)",
+  "finAddDebtTitleHint": "e.g., Car Loan, Credit Card Balance...",
+  "finAddDebtNoDueDate": "No due date",
+  "finAddDebtInstallments": "Installments",
+  "finAddDebtInstallmentAmount": "Installment Amount",
+  "finAddDebtAddNotes": "Add notes...",
+  "finInsForYou": "For You",
+  "finInsDismiss": "Dismiss",
+  "finInsSpendingSpikeTitle": "Spending Spike",
+  "finInsSpendingSpikeBody": "You spent {percent}% more on {category} this month compared to last month.",
+  "@finInsSpendingSpikeBody": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "finInsBudgetAlertTitle": "Budget Alert",
+  "finInsBudgetAlertBody": "You've used {percent}% of your monthly budget with {days} days left.",
+  "@finInsBudgetAlertBody": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "finInsTopSpendingTitle": "Top Spending",
+  "finInsTopSpendingBody": "{category} is your biggest expense this month — {percent}% of total spending.",
+  "@finInsTopSpendingBody": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "finInsOverspendTitle": "Overspending Alert",
+  "finInsOverspendBody": "You spent more than you earned this month. Consider reducing expenses.",
+  "finInsGreatSavingsTitle": "Great Savings!",
+  "finInsGreatSavingsBody": "You saved {percent}% of your income this month — keep it up! 🎉",
+  "@finInsGreatSavingsBody": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "finInsUnusualTitle": "Unusual Spending",
+  "finInsUnusualBody": "Your {amount} {category} purchase was {multiplier}x your usual spending there.",
+  "@finInsUnusualBody": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "category": {
+        "type": "String"
+      },
+      "multiplier": {
+        "type": "String"
+      }
+    }
+  },
+  "finInsOverdueTitle": "Payment Overdue",
+  "finInsOverdueBody": "Your payment for \"{title}\" was due {days} days ago.",
+  "@finInsOverdueBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "finInsHighDebtTitle": "High Debt Load",
+  "finInsHighDebtBody": "Your total debt is {percent}% of your monthly income. Consider paying down debt.",
+  "@finInsHighDebtBody": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "finInsBudgetStreakTitle": "Budget Streak!",
+  "finInsBudgetStreakBody": "You've stayed under budget for {months} months in a row 🎉",
+  "@finInsBudgetStreakBody": {
+    "placeholders": {
+      "months": {
+        "type": "String"
+      }
+    }
+  },
+  "finInsNoSpendTitle": "No-Spend Days",
+  "finInsNoSpendBody": "You've had {days} no-spend days this week — nice discipline!",
+  "@finInsNoSpendBody": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      }
+    }
+  },
+  "finInsightsTitle": "Insights",
+  "finInsightsMonthlySummary": "Monthly Summary",
+  "finInsightsSpent": "Spent",
+  "finInsightsEarned": "Earned",
+  "finInsightsNetPrefix": "Net:",
+  "finInsightsMonthlyTrends": "Monthly Trends",
+  "finInsightsNoData": "No transaction data yet",
+  "finInsightsIncomeVsExpense": "Income vs Expense",
+  "finInsightsSpendingInsights": "Spending Insights",
+  "finInsightsBiggestExpense": "Biggest Expense",
+  "finInsightsVsLastMonth": "vs Last Month",
+  "finInsightsTrendMore": "↑{percent}% more",
+  "@finInsightsTrendMore": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "finInsightsTrendLess": "↓{percent}% less",
+  "@finInsightsTrendLess": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "finInsightsTotalDebtLoad": "Total Debt Load",
+  "finInsightsDebtToIncome": "Debt-to-Income Ratio",
+  "finInsightsDebtPaidOff": "You've paid off {percent}% of your debt this month 🎉",
+  "@finInsightsDebtPaidOff": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "finInsightsSpendingAlert": "Spending Alert",
+  "finInsightsAddToSee": "Add transactions to see insights",
+  "finInsightsBudget": "Budget",
+  "finInsightsHealthy": "Healthy",
+  "finInsightsStable": "Stable",
+  "finInsightsNeedsAttention": "Needs Attention",
+  "finInsightsNetWorth": "Net Worth",
+  "finInsightsTotalAccounts": "Total across {count, plural, =1{1 account} other{{count} accounts}}",
+  "@finInsightsTotalAccounts": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "finInsightsSpendingByCategory": "Spending by Category",
+  "finInsightsAlertItem": "{category} +{percent}%",
+  "@finInsightsAlertItem": {
+    "placeholders": {
+      "category": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "finInsightsCategoryAmount": "{amount} ({percent}%)",
+  "@finInsightsCategoryAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "finDDPaymentRecorded": "Payment recorded",
+  "finDDMarkedReceived": "Marked as received",
+  "finDDMarkedPaid": "Marked as paid",
+  "finDDMarkedComplete": "Debt marked as complete",
+  "finDDRecordPaymentReceived": "Record Payment Received",
+  "finDDMakePayment": "Make a Payment",
+  "finDDRemaining": "Remaining: {amount}",
+  "@finDDRemaining": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "finDDFull": "Full",
+  "finDDHalf": "Half",
+  "finDDInstallment": "Installment",
+  "finDDAddNote": "Add a note (optional)",
+  "finDDRecordPayment": "Record Payment",
+  "finDDSubmitPayment": "Submit Payment",
+  "finDDCompleted": "Completed",
+  "finDDProgress": "Progress",
+  "finDDPaidOf": "{paid} paid of {total}",
+  "@finDDPaidOf": {
+    "placeholders": {
+      "paid": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "finDDDueDate": "Due Date",
+  "finDDNotes": "Notes",
+  "finDDPaymentHistory": "Payment History",
+  "finDDNoPayments": "No payments yet",
+  "finDDMarkReceived": "Mark as Received",
+  "finDDMarkPaid": "Mark as Paid",
+  "finDDPaymentReceivedTitle": "Payment Received!",
+  "finDDDebtPaidOff": "Debt Paid Off!",
+  "finDDYesterday": "Yesterday",
+  "finDDTomorrow": "Tomorrow",
+  "finCatFood": "Food",
+  "finCatTransport": "Transport",
+  "finCatShopping": "Gear & Shopping",
+  "finCatEntertainment": "Entertainment",
+  "finCatBills": "Bills",
+  "finCatHealth": "Health & Recovery",
+  "finCatSalary": "Contract",
+  "finCatFreelance": "Appearance Fee",
+  "finCatInvestment": "Sponsorship",
+  "finCatGift": "Gift",
+  "finAccCash": "Cash",
+  "finAccBank": "Bank",
+  "finAccCard": "Card",
+  "finOnbWelcome": "Welcome to\nFinance Tracker",
+  "finOnbTrackTitle": "Track expenses",
+  "finOnbTrackDesc": "Log every transaction and see where your money goes. Categorize spending to understand your habits.",
+  "finOnbBudgetTitle": "Set budgets",
+  "finOnbBudgetDesc": "Set monthly spending limits and get alerts when you're close to reaching them.",
+  "finOnbPrivacyTitle": "Privacy first",
+  "finOnbPrivacyDesc": "Your financial data stays on your device and is never shared with third parties.",
+  "finOnbDisclaimer": "This app is for personal finance tracking only and does not provide financial advice.",
+  "finOnbGetStarted": "Get Started",
+  "finOnbSetupAccounts": "Set up your accounts",
+  "finOnbSetupAccountsDesc": "Choose which accounts you want to track. You can rename them or add more later.",
+  "finOnbContinue": "Continue",
+  "finOnbSetBudget": "Set your monthly budget",
+  "finOnbSetBudgetDesc": "How much do you want to spend each month? We'll help you stay on track.",
+  "finOnbFinishSetup": "Finish Setup"
+}

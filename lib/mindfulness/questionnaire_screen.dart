@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/mindfulness/questionnaire_data.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 
@@ -98,7 +99,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                   const SizedBox(width: 40),
                   Expanded(
                     child: Text(
-                      'Mental Health Assessment',
+                      AppLocalizations.of(context).questionnaireTitle,
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -153,7 +154,8 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     Color textColor,
     bool isCompact,
   ) {
-    final question = questions[index];
+    final t = AppLocalizations.of(context);
+    final question = questionsFor(t)[index];
     final pillBgColor = isDark ? const Color(0xFF151515) : Colors.white;
 
     return Padding(
@@ -164,7 +166,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
           Padding(
             padding: EdgeInsets.symmetric(vertical: isCompact ? 8 : 12),
             child: Text(
-              'QUESTION ${index + 1} OF 15',
+              t.questionnaireProgress(index + 1, 15),
               style: TextStyle(
                 color: textColor.withValues(alpha: 0.5),
                 fontSize: isCompact ? 13 : 14,
@@ -352,7 +354,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
         children: [
           // Next/View Results button
           _liquidGlassPillButton(
-            label: _currentPage == 14 ? "View Results" : "Next",
+            label: _currentPage == 14 ? AppLocalizations.of(context).questionnaireViewResults : AppLocalizations.of(context).commonNext,
             onPressed: _nextPage,
             isDark: isDark,
             accentColor: tealColor,
@@ -367,7 +369,7 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
             child: IgnorePointer(
               ignoring: _currentPage == 0,
               child: _liquidGlassPillButton(
-                label: 'Back',
+                label: AppLocalizations.of(context).questionnaireBack,
                 onPressed: _currentPage > 0 ? _prevPage : null,
                 isDark: isDark,
               ),

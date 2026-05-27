@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 
 class MindfulnessOnboarding extends StatelessWidget {
@@ -15,6 +16,7 @@ class MindfulnessOnboarding extends StatelessWidget {
     final accentColor = isDark
         ? const Color(0xFF009688)
         : const Color(0xFF33BEBE);
+    final t = AppLocalizations.of(context);
 
     return Scaffold(
       body: SafeArea(
@@ -45,7 +47,7 @@ class MindfulnessOnboarding extends StatelessWidget {
                   children: [
                     SizedBox(height: isCompact ? 12 : 32),
                     Text(
-                      'Welcome to Mindfulness',
+                      t.mindfulnessOnboardingTitle,
                       style: TextStyle(
                         color: textColor,
                         fontSize: titleSize,
@@ -61,9 +63,8 @@ class MindfulnessOnboarding extends StatelessWidget {
                         size: iconSize,
                         color: const Color(0xFF5E5CE6),
                       ),
-                      title: 'Guided Meditations',
-                      subtitle:
-                          'Relax and refocus with science-backed sessions.',
+                      title: t.mindfulnessOnboardingFeature1Title,
+                      subtitle: t.mindfulnessOnboardingFeature1Desc,
                       compact: isCompact,
                     ),
                     SizedBox(height: featureGap),
@@ -73,9 +74,8 @@ class MindfulnessOnboarding extends StatelessWidget {
                         size: iconSize,
                         color: const Color(0xFFFF9F0A),
                       ),
-                      title: 'Mindful Reminders',
-                      subtitle:
-                          'Gentle nudges to help you stay present throughout your day.',
+                      title: t.mindfulnessOnboardingFeature2Title,
+                      subtitle: t.mindfulnessOnboardingFeature2Desc,
                       compact: isCompact,
                     ),
                     SizedBox(height: featureGap),
@@ -85,9 +85,8 @@ class MindfulnessOnboarding extends StatelessWidget {
                         size: iconSize,
                         color: const Color(0xFFFF453A),
                       ),
-                      title: 'Mood & Reflection',
-                      subtitle:
-                          'Track your mood and reflect on your mental well-being.',
+                      title: t.mindfulnessOnboardingFeature3Title,
+                      subtitle: t.mindfulnessOnboardingFeature3Desc,
                       compact: isCompact,
                     ),
                     SizedBox(height: featureGap),
@@ -97,14 +96,13 @@ class MindfulnessOnboarding extends StatelessWidget {
                         size: iconSize,
                         color: const Color(0xFF32ADE6),
                       ),
-                      title: 'Progress Insights',
-                      subtitle:
-                          'See your mindfulness journey and growth over time.',
+                      title: t.mindfulnessOnboardingFeature4Title,
+                      subtitle: t.mindfulnessOnboardingFeature4Desc,
                       compact: isCompact,
                     ),
                     const Spacer(),
                     PremiumButton(
-                      text: 'Begin',
+                      text: t.mindfulnessOnboardingBegin,
                       onPressed: onContinue,
                       color: accentColor,
                     ),

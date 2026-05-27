@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
@@ -161,46 +163,57 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
     return '${m}m';
   }
 
-  ({String prefix, String keyword, String suffix}) _buildInsight() {
+  ({String prefix, String keyword, String suffix}) _buildInsight(
+    AppLocalizations t,
+  ) {
     final int mins = _exerciseMinutes;
     final double pct = mins / _goalMinutes;
 
     if (mins == 0) {
       return (
-        prefix: 'No exercise ',
-        keyword: 'recorded',
-        suffix: ' yet today.',
+        prefix: t.exDetInsNoneP,
+        keyword: t.exDetInsNoneK,
+        suffix: t.exDetInsNoneS,
       );
     }
     if (pct >= 1.0) {
-      return (prefix: 'You\'ve ', keyword: 'hit your goal', suffix: ' today!');
+      return (
+        prefix: t.exDetInsGoalP,
+        keyword: t.exDetInsGoalK,
+        suffix: t.exDetInsGoalS,
+      );
     }
     if (pct >= 0.75) {
-      return (prefix: 'Almost there — ', keyword: 'keep going', suffix: '.');
+      return (
+        prefix: t.exDetInsAlmostP,
+        keyword: t.exDetInsAlmostK,
+        suffix: t.exDetInsAlmostS,
+      );
     }
     if (pct >= 0.5) {
       return (
-        prefix: 'You\'re ',
-        keyword: 'halfway to your goal',
-        suffix: ' today.',
+        prefix: t.exDetInsHalfP,
+        keyword: t.exDetInsHalfK,
+        suffix: t.exDetInsHalfS,
       );
     }
     if (mins >= 10) {
       return (
-        prefix: 'You\'ve made a ',
-        keyword: 'solid start',
-        suffix: ' today.',
+        prefix: t.exDetInsStartP,
+        keyword: t.exDetInsStartK,
+        suffix: t.exDetInsStartS,
       );
     }
     return (
-      prefix: 'Every minute ',
-      keyword: 'counts',
-      suffix: ' — keep moving.',
+      prefix: t.exDetInsEveryP,
+      keyword: t.exDetInsEveryK,
+      suffix: t.exDetInsEveryS,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF111111) : const Color(0xFFF2F2F7);
     final textColor = isDark ? Colors.white : Colors.black;
@@ -208,7 +221,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
     final font = GoogleFonts.plusJakartaSans;
 
     final double progress = (_exerciseMinutes / _goalMinutes).clamp(0.0, 1.0);
-    final insight = _buildInsight();
+    final insight = _buildInsight(t);
 
     return ValueListenableBuilder<Color>(
       valueListenable: AccentColor.notifier,
@@ -274,7 +287,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
                                 icon: Icon(Icons.add_rounded,
                                     size: 16, color: textColor),
                                 label: Text(
-                                  'Add data',
+                                  t.detailAddData,
                                   style: font(
                                     fontWeight: FontWeight.w700,
                                     color: textColor,
@@ -388,7 +401,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              'Exercise today',
+                                              t.exDetExerciseToday,
                                               style: font(
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w500,
@@ -408,7 +421,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      'Just starting',
+                                      t.exDetJustStarting,
                                       style: font(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
@@ -418,7 +431,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
                                       ),
                                     ),
                                     Text(
-                                      'Goal reached',
+                                      t.exDetGoalReached,
                                       style: font(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
@@ -493,31 +506,22 @@ class _ExerciseHeatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final localeName = Localizations.localeOf(context).toString();
     final font = GoogleFonts.plusJakartaSans;
     final now = DateTime.now();
     final int year = now.year;
     final int month = now.month;
     final int daysInMonth = DateUtils.getDaysInMonth(year, month);
-    const monthNames = [
-      '',
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    final monthLabel = '${monthNames[month]} $year';
+    final monthLabel = DateFormat('MMMM yyyy', localeName).format(now);
     final int firstWeekday = (DateTime(year, month, 1).weekday - 1).clamp(0, 6);
     final int totalCells = firstWeekday + daysInMonth;
     final int rows = (totalCells / 7).ceil();
-    const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+    final dayLabels = List.generate(
+      7,
+      (i) => DateFormat('EEEEE', localeName).format(monday.add(Duration(days: i))),
+    );
     final labelColor = textColor.withValues(alpha: 0.4);
     final emptyColor = isDark
         ? Colors.white.withValues(alpha: 0.06)
@@ -546,7 +550,7 @@ class _ExerciseHeatmap extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    'Less',
+                    t.detailLess,
                     style: font(
                       fontSize: 11,
                       color: labelColor,
@@ -559,7 +563,7 @@ class _ExerciseHeatmap extends StatelessWidget {
                     return Container(
                       width: 10,
                       height: 10,
-                      margin: const EdgeInsets.only(left: 3),
+                      margin: const EdgeInsetsDirectional.only(start: 3),
                       decoration: BoxDecoration(
                         color: accentColor.withValues(alpha: opacity),
                         borderRadius: BorderRadius.circular(2),
@@ -568,7 +572,7 @@ class _ExerciseHeatmap extends StatelessWidget {
                   }),
                   const SizedBox(width: 4),
                   Text(
-                    'More',
+                    t.detailMore,
                     style: font(
                       fontSize: 11,
                       color: labelColor,
@@ -839,7 +843,7 @@ class _ExerciseAddSheetState extends State<_ExerciseAddSheet> {
   Future<void> _submit() async {
     final mins = int.tryParse(_minsCtrl.text.trim());
     if (mins == null || mins <= 0) {
-      setState(() => _error = 'Enter a valid number of minutes greater than 0.');
+      setState(() => _error = AppLocalizations.of(context).exDetErrorMinutes);
       return;
     }
     setState(() { _error = null; _saving = true; });
@@ -849,24 +853,26 @@ class _ExerciseAddSheetState extends State<_ExerciseAddSheet> {
       Navigator.of(context).pop();
     } catch (e) {
       if (!mounted) return;
-      setState(() { _error = 'Failed to save. Please try again.'; _saving = false; });
+      setState(() {
+        _error = AppLocalizations.of(context).detailSaveFailed;
+        _saving = false;
+      });
     }
   }
 
   String _formatDate(DateTime dt) {
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat('d MMM yyyy', localeName).format(dt);
   }
 
   String _formatTime(DateTime dt) {
-    final h = dt.hour == 0 ? 12 : dt.hour > 12 ? dt.hour - 12 : dt.hour;
-    final m = dt.minute.toString().padLeft(2, '0');
-    final period = dt.hour < 12 ? 'AM' : 'PM';
-    return '$h:$m $period';
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat.jm(localeName).format(dt);
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = widget.isDark;
     final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF2F2F7);
     final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
@@ -953,7 +959,7 @@ class _ExerciseAddSheetState extends State<_ExerciseAddSheet> {
               // ── title ──
               Center(
                 child: Text(
-                  'Exercise Time',
+                  t.dashExerciseTime,
                   style: font(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
@@ -977,7 +983,7 @@ class _ExerciseAddSheetState extends State<_ExerciseAddSheet> {
                     children: [
                       // Date
                       _ExSheetRow(
-                        label: 'Date',
+                        label: t.detailDate,
                         subColor: subColor,
                         textColor: textColor,
                         font: font,
@@ -1004,7 +1010,7 @@ class _ExerciseAddSheetState extends State<_ExerciseAddSheet> {
                       Divider(height: 1, thickness: 0.5, indent: 16, color: divColor),
                       // Time
                       _ExSheetRow(
-                        label: 'Time',
+                        label: t.detailTime,
                         subColor: subColor,
                         textColor: textColor,
                         font: font,
@@ -1039,9 +1045,9 @@ class _ExerciseAddSheetState extends State<_ExerciseAddSheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text('Minutes',
+                                Text(t.exDetMinutes,
                                     style: font(fontSize: 16, color: subColor)),
-                                Text('min',
+                                Text(t.exDetMinUnit,
                                     style: font(
                                         fontSize: 11,
                                         color: const Color(0xFFFF4B4B)

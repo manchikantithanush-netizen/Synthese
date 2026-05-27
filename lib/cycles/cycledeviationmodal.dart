@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 
 class CycleDeviationModal extends StatelessWidget {
@@ -10,7 +11,11 @@ class CycleDeviationModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final article = _articleData[alertId] ?? _fallbackArticle;
+    final localizedTitle = _localizedTitle(t, alertId) ?? article['title'];
+    final List<String> body =
+        _localizedBody(t, alertId) ?? [t.cycleDeviationFallbackBody];
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -33,7 +38,7 @@ class CycleDeviationModal extends StatelessWidget {
             top: Radius.circular(38),
           ), // Matches exact radius
         ),
-        padding: const EdgeInsets.only(top: 24.0, left: 20.0, right: 20.0),
+        padding: const EdgeInsetsDirectional.only(top: 24.0, start: 20.0, end: 20.0),
         child: Column(
           children: [
             // --- HEADER ---
@@ -43,7 +48,7 @@ class CycleDeviationModal extends StatelessWidget {
                 Align(
                   alignment: Alignment.center,
                   child: Text(
-                    "Cycle Insight",
+                    t.cycleDeviationInsightTitle,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -52,7 +57,7 @@ class CycleDeviationModal extends StatelessWidget {
                   ),
                 ),
                 Align(
-                  alignment: Alignment.centerRight,
+                  alignment: AlignmentDirectional.centerEnd,
                   child: UniversalCloseButton(
                     onPressed: () {
                       Navigator.pop(context);
@@ -87,7 +92,7 @@ class CycleDeviationModal extends StatelessWidget {
                         const SizedBox(width: 16),
                         Expanded(
                           child: Text(
-                            article['title'],
+                            localizedTitle,
                             style: TextStyle(
                               color: textColor,
                               fontSize: 26,
@@ -102,7 +107,7 @@ class CycleDeviationModal extends StatelessWidget {
                     const SizedBox(height: 32),
 
                     // Body Paragraphs
-                    ..._buildParagraphs(article['body'], bodyTextColor),
+                    ..._buildParagraphs(body, bodyTextColor),
 
                     const SizedBox(height: 40),
                     Divider(
@@ -113,7 +118,7 @@ class CycleDeviationModal extends StatelessWidget {
 
                     // Sources Section
                     Text(
-                      "Sources",
+                      t.cycleDeviationSources,
                       style: TextStyle(
                         color: textColor,
                         fontSize: 18,
@@ -178,6 +183,43 @@ class CycleDeviationModal extends StatelessWidget {
           ),
         )
         .toList();
+  }
+}
+
+String? _localizedTitle(AppLocalizations t, String alertId) {
+  switch (alertId) {
+    case 'missing_90': return t.cycleAlertMissing90Title;
+    case 'late_14': return t.cycleAlertLate14Title;
+    case 'late_7': return t.cycleAlertLate7Title;
+    case 'irregular': return t.cycleAlertIrregularTitle;
+    case 'short_cycle': return t.cycleAlertShortCycleTitle;
+    case 'long_cycle': return t.cycleAlertLongCycleTitle;
+    case 'long_period': return t.cycleAlertLongPeriodTitle;
+    case 'heavy_bleeding': return t.cycleAlertHeavyBleedingTitle;
+    default: return null;
+  }
+}
+
+List<String>? _localizedBody(AppLocalizations t, String alertId) {
+  switch (alertId) {
+    case 'missing_90':
+      return [t.cyDevMissing90B1, t.cyDevMissing90B2, t.cyDevMissing90B3, t.cyDevMissing90B4];
+    case 'late_14':
+      return [t.cyDevLate14B1, t.cyDevLate14B2, t.cyDevLate14B3, t.cyDevLate14B4];
+    case 'late_7':
+      return [t.cyDevLate7B1, t.cyDevLate7B2, t.cyDevLate7B3, t.cyDevLate7B4];
+    case 'irregular':
+      return [t.cyDevIrregularB1, t.cyDevIrregularB2, t.cyDevIrregularB3, t.cyDevIrregularB4, t.cyDevIrregularB5];
+    case 'short_cycle':
+      return [t.cyDevShortCycleB1, t.cyDevShortCycleB2, t.cyDevShortCycleB3, t.cyDevShortCycleB4];
+    case 'long_cycle':
+      return [t.cyDevLongCycleB1, t.cyDevLongCycleB2, t.cyDevLongCycleB3, t.cyDevLongCycleB4, t.cyDevLongCycleB5];
+    case 'long_period':
+      return [t.cyDevLongPeriodB1, t.cyDevLongPeriodB2, t.cyDevLongPeriodB3, t.cyDevLongPeriodB4];
+    case 'heavy_bleeding':
+      return [t.cyDevHeavyB1, t.cyDevHeavyB2, t.cyDevHeavyB3, t.cyDevHeavyB4];
+    default:
+      return null;
   }
 }
 

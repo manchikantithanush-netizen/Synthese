@@ -8,6 +8,7 @@ import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 import 'food_analysis_service.dart';
 import 'diet_onboarding.dart';
@@ -234,6 +235,14 @@ class _DietPageState extends State<DietPage> {
             protein: data['protein'] ?? 0,
             carbs: data['carbs'] ?? 0,
             fats: data['fats'] ?? 0,
+            fiber: (data['fiber'] as num?)?.toInt() ?? 0,
+            sugar: (data['sugar'] as num?)?.toInt() ?? 0,
+            sodium: (data['sodium'] as num?)?.toInt() ?? 0,
+            iron: (data['iron'] as num?)?.toInt() ?? 0,
+            calcium: (data['calcium'] as num?)?.toInt() ?? 0,
+            potassium: (data['potassium'] as num?)?.toInt() ?? 0,
+            vitaminC: (data['vitaminC'] as num?)?.toInt() ?? 0,
+            vitaminD: (data['vitaminD'] as num?)?.toInt() ?? 0,
             firestoreId: doc.id, // Store the document ID
           );
         }).toList();
@@ -275,6 +284,14 @@ class _DietPageState extends State<DietPage> {
         final protein = (data['protein'] as num?)?.toInt() ?? 0;
         final carbs = (data['carbs'] as num?)?.toInt() ?? 0;
         final fats = (data['fats'] as num?)?.toInt() ?? 0;
+        final fiber = (data['fiber'] as num?)?.toInt() ?? 0;
+        final sugar = (data['sugar'] as num?)?.toInt() ?? 0;
+        final sodium = (data['sodium'] as num?)?.toInt() ?? 0;
+        final iron = (data['iron'] as num?)?.toInt() ?? 0;
+        final calcium = (data['calcium'] as num?)?.toInt() ?? 0;
+        final potassium = (data['potassium'] as num?)?.toInt() ?? 0;
+        final vitaminC = (data['vitaminC'] as num?)?.toInt() ?? 0;
+        final vitaminD = (data['vitaminD'] as num?)?.toInt() ?? 0;
         final description = (data['description'] as String?) ?? '';
 
         if (!grouped.containsKey(normalized)) {
@@ -284,6 +301,14 @@ class _DietPageState extends State<DietPage> {
             protein: protein,
             carbs: carbs,
             fats: fats,
+            fiber: fiber,
+            sugar: sugar,
+            sodium: sodium,
+            iron: iron,
+            calcium: calcium,
+            potassium: potassium,
+            vitaminC: vitaminC,
+            vitaminD: vitaminD,
             description: description,
             frequency: 1,
             lastEaten: timestamp,
@@ -340,6 +365,14 @@ class _DietPageState extends State<DietPage> {
             'protein': entry.protein,
             'carbs': entry.carbs,
             'fats': entry.fats,
+            'fiber': entry.fiber,
+            'sugar': entry.sugar,
+            'sodium': entry.sodium,
+            'iron': entry.iron,
+            'calcium': entry.calcium,
+            'potassium': entry.potassium,
+            'vitaminC': entry.vitaminC,
+            'vitaminD': entry.vitaminD,
           });
       await DataAggregationService.updateDietCalories(
         uid: uid,
@@ -367,25 +400,26 @@ class _DietPageState extends State<DietPage> {
     final textColor = isDark ? Colors.white : Colors.black;
     final mutedText = isDark ? Colors.white70 : Colors.black54;
 
+    final t = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: dialogBg,
-        title: Text("Reset Diet Data?", style: TextStyle(color: textColor)),
+        title: Text(t.dietPageResetDietDataTitle, style: TextStyle(color: textColor)),
         content: Text(
-          "This will clear your calorie goal and food log, and send you back to the onboarding screen. This cannot be undone.",
+          t.dietPageResetDietDataMsg,
           style: TextStyle(color: mutedText),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text("Cancel", style: TextStyle(color: textColor)),
+            child: Text(t.commonCancel, style: TextStyle(color: textColor)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              "Reset Data",
-              style: TextStyle(
+            child: Text(
+              t.dietPageResetData,
+              style: const TextStyle(
                 color: Colors.redAccent,
                 fontWeight: FontWeight.bold,
               ),
@@ -517,6 +551,14 @@ class _DietPageState extends State<DietPage> {
       protein: _analysisResult!.protein,
       carbs: _analysisResult!.carbs,
       fats: _analysisResult!.fats,
+      fiber: _analysisResult!.fiber,
+      sugar: _analysisResult!.sugar,
+      sodium: _analysisResult!.sodium,
+      iron: _analysisResult!.iron,
+      calcium: _analysisResult!.calcium,
+      potassium: _analysisResult!.potassium,
+      vitaminC: _analysisResult!.vitaminC,
+      vitaminD: _analysisResult!.vitaminD,
     );
 
     setState(() {
@@ -541,6 +583,14 @@ class _DietPageState extends State<DietPage> {
             protein: newEntry.protein,
             carbs: newEntry.carbs,
             fats: newEntry.fats,
+            fiber: newEntry.fiber,
+            sugar: newEntry.sugar,
+            sodium: newEntry.sodium,
+            iron: newEntry.iron,
+            calcium: newEntry.calcium,
+            potassium: newEntry.potassium,
+            vitaminC: newEntry.vitaminC,
+            vitaminD: newEntry.vitaminD,
             firestoreId: docId,
           );
         }
@@ -551,13 +601,13 @@ class _DietPageState extends State<DietPage> {
     Future.delayed(const Duration(milliseconds: 200), () {
       HapticFeedback.lightImpact();
     });
-    if (mounted) AppToast.success(context, '${newEntry.foodName} added to log', icon: Icons.restaurant_rounded);
+    if (mounted) AppToast.success(context, AppLocalizations.of(context).dietPageFoodAddedToast(newEntry.foodName), icon: Icons.restaurant_rounded);
 
     // Check calorie goal — only toast once per session
     final totalCals = _foodLog.fold<int>(0, (sum, e) => sum + e.calories);
     if (!_calorieGoalToasted && totalCals >= _dailyCalorieGoal) {
       _calorieGoalToasted = true;
-      if (mounted) AppToast.success(context, 'Daily calorie goal reached', icon: Icons.local_fire_department_rounded);
+      if (mounted) AppToast.success(context, AppLocalizations.of(context).dietPageCalorieGoalReached, icon: Icons.local_fire_department_rounded);
       ReviewService.instance.maybeRequestAfterGoal();
     }
 
@@ -575,6 +625,14 @@ class _DietPageState extends State<DietPage> {
       protein: item.protein,
       carbs: item.carbs,
       fats: item.fats,
+      fiber: item.fiber,
+      sugar: item.sugar,
+      sodium: item.sodium,
+      iron: item.iron,
+      calcium: item.calcium,
+      potassium: item.potassium,
+      vitaminC: item.vitaminC,
+      vitaminD: item.vitaminD,
     );
 
     setState(() {
@@ -594,6 +652,14 @@ class _DietPageState extends State<DietPage> {
             protein: quickEntry.protein,
             carbs: quickEntry.carbs,
             fats: quickEntry.fats,
+            fiber: quickEntry.fiber,
+            sugar: quickEntry.sugar,
+            sodium: quickEntry.sodium,
+            iron: quickEntry.iron,
+            calcium: quickEntry.calcium,
+            potassium: quickEntry.potassium,
+            vitaminC: quickEntry.vitaminC,
+            vitaminD: quickEntry.vitaminD,
             firestoreId: docId,
           );
         });
@@ -612,29 +678,30 @@ class _DietPageState extends State<DietPage> {
     final textColor = isDark ? Colors.white : Colors.black;
     final mutedText = isDark ? Colors.white70 : Colors.black54;
 
+    final t = AppLocalizations.of(context);
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: dialogBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete Food Log', style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
+        title: Text(t.dietPageDeleteFoodLogTitle, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
         content: Text(
-          'Are you sure you want to delete this food entry? This will remove it from your calorie count.',
+          t.dietPageDeleteFoodLogMsg,
           style: TextStyle(color: mutedText),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel', style: TextStyle(color: textColor)),
+            child: Text(t.commonCancel, style: TextStyle(color: textColor)),
           ),
           TextButton(
             onPressed: () {
               HapticFeedback.lightImpact();
               Navigator.pop(context, true);
             },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+            child: Text(
+              t.commonDelete,
+              style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -652,7 +719,7 @@ class _DietPageState extends State<DietPage> {
       });
 
       HapticFeedback.mediumImpact();
-      if (mounted) AppToast.info(context, 'Food entry removed', icon: Icons.delete_outline_rounded);
+      if (mounted) AppToast.info(context, AppLocalizations.of(context).dietPageFoodEntryRemoved, icon: Icons.delete_outline_rounded);
 
       // Delete from Firestore if it has a document ID
       if (entry.firestoreId != null) {
@@ -712,7 +779,7 @@ class _DietPageState extends State<DietPage> {
               ),
               ListTile(
                 leading: Icon(Icons.camera_alt_rounded, color: textColor),
-                title: Text('Camera', style: TextStyle(color: textColor, fontWeight: FontWeight.w500)),
+                title: Text(AppLocalizations.of(context).dietPageCamera, style: TextStyle(color: textColor, fontWeight: FontWeight.w500)),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.camera);
@@ -720,7 +787,7 @@ class _DietPageState extends State<DietPage> {
               ),
               ListTile(
                 leading: Icon(Icons.photo_library_rounded, color: textColor),
-                title: Text('Photo Library', style: TextStyle(color: textColor, fontWeight: FontWeight.w500)),
+                title: Text(AppLocalizations.of(context).dietPagePhotoLibrary, style: TextStyle(color: textColor, fontWeight: FontWeight.w500)),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.gallery);
@@ -728,7 +795,7 @@ class _DietPageState extends State<DietPage> {
               ),
               ListTile(
                 leading: Icon(Icons.close_rounded, color: textColor.withOpacity(0.5)),
-                title: Text('Cancel', style: TextStyle(color: textColor.withOpacity(0.5))),
+                title: Text(AppLocalizations.of(context).commonCancel, style: TextStyle(color: textColor.withOpacity(0.5))),
                 onTap: () => Navigator.pop(context),
               ),
             ],
@@ -748,10 +815,11 @@ class _DietPageState extends State<DietPage> {
     showDialog<void>(
       context: context,
       builder: (context) {
+        final t = AppLocalizations.of(context);
         return AlertDialog(
           backgroundColor: cardColor,
           title: Text(
-            'Type your meal',
+            t.dietPageTypeYourMeal,
             style: TextStyle(color: textColor),
           ),
           content: TextField(
@@ -761,8 +829,7 @@ class _DietPageState extends State<DietPage> {
             textInputAction: TextInputAction.done,
             style: TextStyle(color: textColor),
             decoration: InputDecoration(
-              hintText:
-                  'Example: 2 eggs, 2 slices toast with butter, and a banana',
+              hintText: t.dietPageMealHint,
               hintStyle: TextStyle(color: hintColor),
               filled: true,
               fillColor: isDark
@@ -777,7 +844,7 @@ class _DietPageState extends State<DietPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(t.commonCancel),
             ),
             TextButton(
               onPressed: () {
@@ -787,12 +854,515 @@ class _DietPageState extends State<DietPage> {
                   _analyzeTypedFood(value);
                 }
               },
-              child: const Text('Analyze'),
+              child: Text(t.dietPageAnalyze),
             ),
           ],
         );
       },
     );
+  }
+
+  Widget _buildManualEntryButton(bool isDark, Color textColor) {
+    const bg = Color(0xFFE0E0E5); // slightly discolored white
+    return SizedBox(
+      height: 48,
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+          HapticFeedback.lightImpact();
+          _showManualEntrySheet();
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: bg,
+          foregroundColor: Colors.black,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+          ),
+          side: BorderSide.none,
+        ),
+        child: Text(
+          AppLocalizations.of(context).dietPageManualEntry,
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showManualEntrySheet() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
+    final subTextColor = textColor.withOpacity(0.5);
+    final sheetColor = isDark ? const Color(0xFF1F1F1F) : Colors.white;
+    final fieldFill = isDark
+        ? Colors.white.withOpacity(0.06)
+        : Colors.black.withOpacity(0.04);
+    final hintColor = isDark ? Colors.white54 : Colors.black45;
+
+    final nameC = TextEditingController();
+    final caloriesC = TextEditingController();
+    final proteinC = TextEditingController();
+    final carbsC = TextEditingController();
+    final fatsC = TextEditingController();
+    final fiberC = TextEditingController();
+    final sugarC = TextEditingController();
+    final sodiumC = TextEditingController();
+    final ironC = TextEditingController();
+    final calciumC = TextEditingController();
+    final potassiumC = TextEditingController();
+    final vitaminCC = TextEditingController();
+    final vitaminDC = TextEditingController();
+
+    bool includeMicros = false;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: sheetColor,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetCtx).viewInsets.bottom,
+          ),
+          child: StatefulBuilder(
+            builder: (ctx, setLocal) {
+              final t = AppLocalizations.of(ctx);
+              Widget field({
+                required String label,
+                required TextEditingController controller,
+                String? unit,
+                bool numeric = true,
+                String? hint,
+              }) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(start: 4, bottom: 4),
+                        child: Text(
+                          unit != null ? '$label ($unit)' : label,
+                          style: TextStyle(
+                            color: subTextColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      TextField(
+                        controller: controller,
+                        keyboardType: numeric
+                            ? const TextInputType.numberWithOptions(decimal: false)
+                            : TextInputType.text,
+                        inputFormatters: numeric
+                            ? [FilteringTextInputFormatter.digitsOnly]
+                            : null,
+                        style: TextStyle(color: textColor, fontSize: 15),
+                        decoration: InputDecoration(
+                          hintText: hint ?? (numeric ? '0' : ''),
+                          hintStyle: TextStyle(color: hintColor),
+                          filled: true,
+                          fillColor: fieldFill,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 36,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: textColor.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      Text(
+                        t.dietPageManualEntry,
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        t.dietPageManualEntryHint,
+                        style: TextStyle(
+                          color: subTextColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      field(
+                        label: t.dietPageName,
+                        controller: nameC,
+                        numeric: false,
+                        hint: t.dietPageManuallyAdded,
+                      ),
+                      field(label: t.dietPageCaloriesLabel, controller: caloriesC, unit: 'kcal'),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: field(
+                              label: t.dietPageMacroProtein,
+                              controller: proteinC,
+                              unit: 'g',
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: field(
+                              label: t.dietPageMacroCarbs,
+                              controller: carbsC,
+                              unit: 'g',
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: field(
+                              label: t.dietPageMacroFats,
+                              controller: fatsC,
+                              unit: 'g',
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: fieldFill,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              CupertinoIcons.sparkles,
+                              size: 16,
+                              color: subTextColor,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                t.dietPageAddMicros,
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Switch.adaptive(
+                              value: includeMicros,
+                              activeColor: orangeColor,
+                              onChanged: (v) {
+                                HapticFeedback.selectionClick();
+                                setLocal(() => includeMicros = v);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOutCubic,
+                        alignment: Alignment.topCenter,
+                        child: includeMicros
+                            ? Padding(
+                                padding: const EdgeInsets.only(top: 14),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: field(
+                                            label: t.dietPageMicroFiber,
+                                            controller: fiberC,
+                                            unit: 'g',
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: field(
+                                            label: t.dietPageMicroSugar,
+                                            controller: sugarC,
+                                            unit: 'g',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: field(
+                                            label: t.dietPageMicroSodium,
+                                            controller: sodiumC,
+                                            unit: 'mg',
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: field(
+                                            label: t.dietPageMicroIron,
+                                            controller: ironC,
+                                            unit: 'mg',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: field(
+                                            label: t.dietPageMicroCalcium,
+                                            controller: calciumC,
+                                            unit: 'mg',
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: field(
+                                            label: t.dietPageMicroPotassium,
+                                            controller: potassiumC,
+                                            unit: 'mg',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: field(
+                                            label: t.dietPageMicroVitaminC,
+                                            controller: vitaminCC,
+                                            unit: 'mg',
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: field(
+                                            label: t.dietPageMicroVitaminD,
+                                            controller: vitaminDC,
+                                            unit: 'μg',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CNButton(
+                              label: t.commonCancel,
+                              style: CNButtonStyle.glass,
+                              onPressed: () => Navigator.pop(sheetCtx),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: UniversalButton(
+                              text: t.dietPageAddToLog,
+                              onPressed: () {
+                                _submitManualEntry(
+                                  sheetCtx: sheetCtx,
+                                  name: nameC.text,
+                                  calories: caloriesC.text,
+                                  protein: proteinC.text,
+                                  carbs: carbsC.text,
+                                  fats: fatsC.text,
+                                  fiber: fiberC.text,
+                                  sugar: sugarC.text,
+                                  sodium: sodiumC.text,
+                                  iron: ironC.text,
+                                  calcium: calciumC.text,
+                                  potassium: potassiumC.text,
+                                  vitaminC: vitaminCC.text,
+                                  vitaminD: vitaminDC.text,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _submitManualEntry({
+    required BuildContext sheetCtx,
+    required String name,
+    required String calories,
+    required String protein,
+    required String carbs,
+    required String fats,
+    required String fiber,
+    required String sugar,
+    required String sodium,
+    required String iron,
+    required String calcium,
+    required String potassium,
+    required String vitaminC,
+    required String vitaminD,
+  }) async {
+    int p(String s) => int.tryParse(s.trim()) ?? 0;
+
+    final trimmedName = name.trim();
+    final cals = p(calories);
+    final pro = p(protein);
+    final crb = p(carbs);
+    final fat = p(fats);
+    final fib = p(fiber);
+    final sug = p(sugar);
+    final sod = p(sodium);
+    final irn = p(iron);
+    final cal = p(calcium);
+    final pot = p(potassium);
+    final vc = p(vitaminC);
+    final vd = p(vitaminD);
+
+    final hasAny = trimmedName.isNotEmpty ||
+        cals > 0 ||
+        pro > 0 ||
+        crb > 0 ||
+        fat > 0 ||
+        fib > 0 ||
+        sug > 0 ||
+        sod > 0 ||
+        irn > 0 ||
+        cal > 0 ||
+        pot > 0 ||
+        vc > 0 ||
+        vd > 0;
+
+    if (!hasAny) {
+      HapticFeedback.lightImpact();
+      AppToast.info(
+        sheetCtx,
+        AppLocalizations.of(sheetCtx).dietPageFillAtLeastOne,
+        icon: Icons.info_outline_rounded,
+      );
+      return;
+    }
+
+    final manuallyAddedFallback = AppLocalizations.of(sheetCtx).dietPageManuallyAdded;
+    Navigator.pop(sheetCtx);
+
+    final entry = FoodLogEntry(
+      foodName: trimmedName.isEmpty ? manuallyAddedFallback : trimmedName,
+      calories: cals,
+      description: '',
+      timestamp: DateTime.now(),
+      protein: pro,
+      carbs: crb,
+      fats: fat,
+      fiber: fib,
+      sugar: sug,
+      sodium: sod,
+      iron: irn,
+      calcium: cal,
+      potassium: pot,
+      vitaminC: vc,
+      vitaminD: vd,
+    );
+
+    setState(() {
+      _foodLog.insert(0, entry);
+    });
+    HapticFeedback.mediumImpact();
+    if (mounted) {
+      AppToast.success(
+        context,
+        AppLocalizations.of(context).dietPageFoodAddedToast(entry.foodName),
+        icon: Icons.restaurant_rounded,
+      );
+    }
+
+    final docId = await _saveFoodLog(entry);
+    if (docId != null && mounted) {
+      final index = _foodLog.indexOf(entry);
+      if (index >= 0) {
+        setState(() {
+          _foodLog[index] = FoodLogEntry(
+            foodName: entry.foodName,
+            calories: entry.calories,
+            description: entry.description,
+            timestamp: entry.timestamp,
+            protein: entry.protein,
+            carbs: entry.carbs,
+            fats: entry.fats,
+            fiber: entry.fiber,
+            sugar: entry.sugar,
+            sodium: entry.sodium,
+            iron: entry.iron,
+            calcium: entry.calcium,
+            potassium: entry.potassium,
+            vitaminC: entry.vitaminC,
+            vitaminD: entry.vitaminD,
+            firestoreId: docId,
+          );
+        });
+      }
+    }
+
+    final totalCals = _foodLog.fold<int>(0, (sum, e) => sum + e.calories);
+    if (!_calorieGoalToasted && totalCals >= _dailyCalorieGoal) {
+      _calorieGoalToasted = true;
+      if (mounted) {
+        AppToast.success(
+          context,
+          AppLocalizations.of(context).dietPageCalorieGoalReached,
+          icon: Icons.local_fire_department_rounded,
+        );
+      }
+      ReviewService.instance.maybeRequestAfterGoal();
+    }
+
+    _loadFrequentFoods();
+    unawaited(NotificationRulesEngine.evaluateGlobal());
   }
 
   int get _totalCaloriesToday {
@@ -859,6 +1429,30 @@ class _DietPageState extends State<DietPage> {
         .fold(0, (sum, entry) => sum + entry.fats);
   }
 
+  int _sumTodayMicro(int Function(FoodLogEntry) selector) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    return _foodLog
+        .where((entry) {
+          final entryDate = DateTime(
+            entry.timestamp.year,
+            entry.timestamp.month,
+            entry.timestamp.day,
+          );
+          return entryDate == today;
+        })
+        .fold(0, (sum, entry) => sum + selector(entry));
+  }
+
+  int get _totalFiberToday => _sumTodayMicro((e) => e.fiber);
+  int get _totalSugarToday => _sumTodayMicro((e) => e.sugar);
+  int get _totalSodiumToday => _sumTodayMicro((e) => e.sodium);
+  int get _totalIronToday => _sumTodayMicro((e) => e.iron);
+  int get _totalCalciumToday => _sumTodayMicro((e) => e.calcium);
+  int get _totalPotassiumToday => _sumTodayMicro((e) => e.potassium);
+  int get _totalVitaminCToday => _sumTodayMicro((e) => e.vitaminC);
+  int get _totalVitaminDToday => _sumTodayMicro((e) => e.vitaminD);
+
   Widget _buildGoalCalendar({
     required BuildContext context,
     required String title,
@@ -884,7 +1478,7 @@ class _DietPageState extends State<DietPage> {
             children: [
               Expanded(
                 child: Text(
-                  DateFormat('MMMM yyyy').format(now),
+                  DateFormat('MMMM yyyy', Localizations.localeOf(context).toLanguageTag()).format(now),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -968,12 +1562,12 @@ class _DietPageState extends State<DietPage> {
 
     return Container(
       width: 40,
-      margin: const EdgeInsets.only(right: 8),
+      margin: const EdgeInsetsDirectional.only(end: 8),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            DateFormat('E').format(date).substring(0, 1),
+            DateFormat('E', Localizations.localeOf(context).toLanguageTag()).format(date).substring(0, 1),
             style: TextStyle(
               color: textColor.withOpacity(0.4),
               fontSize: 11,
@@ -1115,6 +1709,7 @@ class _DietPageState extends State<DietPage> {
     final subTextColor = textColor.withOpacity(0.5);
     final cardColor = isDark ? const Color(0xFF151515) : Colors.grey.shade100;
     final isNarrow = mediaQuery.size.width < 380;
+    final t = AppLocalizations.of(context);
 
     return MediaQuery(
       data: mediaQuery.copyWith(
@@ -1138,7 +1733,7 @@ class _DietPageState extends State<DietPage> {
                 children: [
                   Expanded(
                     child: Text(
-                      "Food Tracker",
+                      t.dietPageTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1162,7 +1757,7 @@ class _DietPageState extends State<DietPage> {
               ),
               const SizedBox(height: 4),
               Text(
-                "Track your calories with AI",
+                t.dietPageSubtitle,
                 style: TextStyle(
                   color: subTextColor,
                   fontSize: 16,
@@ -1173,7 +1768,7 @@ class _DietPageState extends State<DietPage> {
 
               _buildGoalCalendar(
                 context: context,
-                title: "Calorie Goal",
+                title: t.dietPageCalorieGoalLabel,
                 goalsByDateStream: _calorieGoalStatusStream(),
               ),
               const SizedBox(height: 16),
@@ -1204,8 +1799,8 @@ class _DietPageState extends State<DietPage> {
                             ),
                             SizedBox(width: 4),
                             Text(
-                              "AI estimates may be inaccurate",
-                              style: TextStyle(
+                              t.dietPageAiInaccurateLabel,
+                              style: const TextStyle(
                                 color: Color(0xFFFF9500),
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
@@ -1231,7 +1826,7 @@ class _DietPageState extends State<DietPage> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          "Today's Intake",
+                          t.dietPageTodaysIntake,
                           style: TextStyle(
                             color: subTextColor,
                             fontSize: 14,
@@ -1240,7 +1835,7 @@ class _DietPageState extends State<DietPage> {
                         ),
                         const Spacer(),
                         Text(
-                          "Goal: $_dailyCalorieGoal",
+                          t.dietPageGoal(_dailyCalorieGoal),
                           style: TextStyle(
                             color: subTextColor,
                             fontSize: 13,
@@ -1284,7 +1879,7 @@ class _DietPageState extends State<DietPage> {
                       ],
                     ),
                     Text(
-                      "calories",
+                      t.dietPageCaloriesUnit,
                       style: TextStyle(color: subTextColor, fontSize: 16),
                     ),
                     const SizedBox(height: 16),
@@ -1337,11 +1932,13 @@ class _DietPageState extends State<DietPage> {
                       },
                       child: Text(
                         _getProgressMessage(
+                          context,
                           _totalCaloriesToday,
                           _dailyCalorieGoal,
                         ),
                         key: ValueKey(
                           _getProgressMessage(
+                            context,
                             _totalCaloriesToday,
                             _dailyCalorieGoal,
                           ),
@@ -1362,7 +1959,7 @@ class _DietPageState extends State<DietPage> {
                       children: [
                         Expanded(
                           child: _buildMacroCard(
-                            'Protein',
+                            t.dietPageMacroProtein,
                             '${_totalProteinToday}g',
                             const Color(0xFF30D158), // Green
                             isDark,
@@ -1371,7 +1968,7 @@ class _DietPageState extends State<DietPage> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: _buildMacroCard(
-                            'Carbs',
+                            t.dietPageMacroCarbs,
                             '${_totalCarbsToday}g',
                             const Color(0xFF32ADE6), // Blue
                             isDark,
@@ -1380,13 +1977,27 @@ class _DietPageState extends State<DietPage> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: _buildMacroCard(
-                            'Fats',
+                            t.dietPageMacroFats,
                             '${_totalFatsToday}g',
                             const Color(0xFFFFCC00), // Yellow
                             isDark,
                           ),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 16),
+                    _buildMicrosSection(
+                      isDark: isDark,
+                      textColor: textColor,
+                      subTextColor: subTextColor,
+                      fiber: _totalFiberToday,
+                      sugar: _totalSugarToday,
+                      sodium: _totalSodiumToday,
+                      iron: _totalIronToday,
+                      calcium: _totalCalciumToday,
+                      potassium: _totalPotassiumToday,
+                      vitaminC: _totalVitaminCToday,
+                      vitaminD: _totalVitaminDToday,
                     ),
                   ],
                 ),
@@ -1395,7 +2006,7 @@ class _DietPageState extends State<DietPage> {
 
               if (_frequentFoods.isNotEmpty) ...[
                 Text(
-                  "Frequent Foods",
+                  t.dietPageFrequentFoods,
                   style: TextStyle(
                     color: textColor,
                     fontSize: 18,
@@ -1404,7 +2015,7 @@ class _DietPageState extends State<DietPage> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  "Tap to quickly re-log recent meals",
+                  t.dietPageFrequentFoodsHint,
                   style: TextStyle(
                     color: subTextColor,
                     fontSize: 13,
@@ -1489,7 +2100,7 @@ class _DietPageState extends State<DietPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Analyze Food",
+                      t.dietPageAnalyzeFood,
                       style: TextStyle(
                         color: textColor,
                         fontSize: 18,
@@ -1530,7 +2141,7 @@ class _DietPageState extends State<DietPage> {
                               const BouncingDotsLoader(),
                               const SizedBox(height: 12),
                               Text(
-                                "Analyzing your food...",
+                                t.dietPageAnalyzingFood,
                                 style: TextStyle(
                                   color: subTextColor,
                                   fontSize: 14,
@@ -1605,7 +2216,7 @@ class _DietPageState extends State<DietPage> {
                                       const SizedBox(height: 12),
                                       // AI Disclaimer
                                       Text(
-                                        "AI-Estimated Nutritional Info",
+                                        t.dietPageAiNutritionalInfo,
                                         style: TextStyle(
                                           color: subTextColor,
                                           fontSize: 12,
@@ -1633,7 +2244,7 @@ class _DietPageState extends State<DietPage> {
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
-                                            "kcal",
+                                            t.dietPageKcal,
                                             style: TextStyle(
                                               color: subTextColor,
                                               fontSize: 16,
@@ -1647,7 +2258,7 @@ class _DietPageState extends State<DietPage> {
                                         children: [
                                           Expanded(
                                             child: _buildMacroCard(
-                                              'Protein',
+                                              t.dietPageMacroProtein,
                                               '${_analysisResult!.protein}g',
                                               const Color(0xFF30D158), // Green
                                               isDark,
@@ -1656,7 +2267,7 @@ class _DietPageState extends State<DietPage> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: _buildMacroCard(
-                                              'Carbs',
+                                              t.dietPageMacroCarbs,
                                               '${_analysisResult!.carbs}g',
                                               const Color(0xFF32ADE6), // Blue
                                               isDark,
@@ -1665,13 +2276,27 @@ class _DietPageState extends State<DietPage> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: _buildMacroCard(
-                                              'Fats',
+                                              t.dietPageMacroFats,
                                               '${_analysisResult!.fats}g',
                                               const Color(0xFFFFCC00), // Yellow
                                               isDark,
                                             ),
                                           ),
                                         ],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      _buildMicrosSection(
+                                        isDark: isDark,
+                                        textColor: textColor,
+                                        subTextColor: subTextColor,
+                                        fiber: _analysisResult!.fiber,
+                                        sugar: _analysisResult!.sugar,
+                                        sodium: _analysisResult!.sodium,
+                                        iron: _analysisResult!.iron,
+                                        calcium: _analysisResult!.calcium,
+                                        potassium: _analysisResult!.potassium,
+                                        vitaminC: _analysisResult!.vitaminC,
+                                        vitaminD: _analysisResult!.vitaminD,
                                       ),
                                       const SizedBox(height: 12),
                                       Text(
@@ -1690,7 +2315,7 @@ class _DietPageState extends State<DietPage> {
                                   children: [
                                     Expanded(
                                       child: UniversalButton(
-                                        text: "Add to Log",
+                                        text: t.dietPageAddToLog,
                                         onPressed: _addToLog,
                                       ),
                                     ),
@@ -1720,8 +2345,7 @@ class _DietPageState extends State<DietPage> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    _analysisResult!.errorMessage ??
-                                        'Analysis failed',
+                                    _errorMessageFor(t, _analysisResult!.errorCode),
                                     style: TextStyle(
                                       color: textColor,
                                       fontSize: 14,
@@ -1733,7 +2357,7 @@ class _DietPageState extends State<DietPage> {
                           ),
                           const SizedBox(height: 16),
                           CNButton(
-                            label: "Try Again",
+                            label: t.commonTryAgain,
                             style: CNButtonStyle.glass,
                             onPressed: _analyzeImage,
                           ),
@@ -1741,7 +2365,7 @@ class _DietPageState extends State<DietPage> {
                       ],
                       const SizedBox(height: 12),
                       UniversalButton(
-                        text: "Choose Different Image",
+                        text: t.dietPageChooseDifferentImage,
                         onPressed: _showImageSourcePicker,
                       ),
                     ] else ...[
@@ -1753,8 +2377,8 @@ class _DietPageState extends State<DietPage> {
                               const SizedBox(height: 12),
                               Text(
                                 _lastTypedFood != null
-                                    ? "Analyzing your meal text..."
-                                    : "Analyzing your food...",
+                                    ? t.dietPageAnalyzingMealText
+                                    : t.dietPageAnalyzingFood,
                                 style: TextStyle(
                                   color: subTextColor,
                                   fontSize: 14,
@@ -1838,7 +2462,7 @@ class _DietPageState extends State<DietPage> {
                                       ],
                                       const SizedBox(height: 12),
                                       Text(
-                                        "AI-Estimated Nutritional Info",
+                                        t.dietPageAiNutritionalInfo,
                                         style: TextStyle(
                                           color: subTextColor,
                                           fontSize: 12,
@@ -1865,7 +2489,7 @@ class _DietPageState extends State<DietPage> {
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
-                                            "kcal",
+                                            t.dietPageKcal,
                                             style: TextStyle(
                                               color: subTextColor,
                                               fontSize: 16,
@@ -1878,7 +2502,7 @@ class _DietPageState extends State<DietPage> {
                                         children: [
                                           Expanded(
                                             child: _buildMacroCard(
-                                              'Protein',
+                                              t.dietPageMacroProtein,
                                               '${_analysisResult!.protein}g',
                                               const Color(0xFF30D158),
                                               isDark,
@@ -1887,7 +2511,7 @@ class _DietPageState extends State<DietPage> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: _buildMacroCard(
-                                              'Carbs',
+                                              t.dietPageMacroCarbs,
                                               '${_analysisResult!.carbs}g',
                                               const Color(0xFF32ADE6),
                                               isDark,
@@ -1896,13 +2520,27 @@ class _DietPageState extends State<DietPage> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: _buildMacroCard(
-                                              'Fats',
+                                              t.dietPageMacroFats,
                                               '${_analysisResult!.fats}g',
                                               const Color(0xFFFFCC00),
                                               isDark,
                                             ),
                                           ),
                                         ],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      _buildMicrosSection(
+                                        isDark: isDark,
+                                        textColor: textColor,
+                                        subTextColor: subTextColor,
+                                        fiber: _analysisResult!.fiber,
+                                        sugar: _analysisResult!.sugar,
+                                        sodium: _analysisResult!.sodium,
+                                        iron: _analysisResult!.iron,
+                                        calcium: _analysisResult!.calcium,
+                                        potassium: _analysisResult!.potassium,
+                                        vitaminC: _analysisResult!.vitaminC,
+                                        vitaminD: _analysisResult!.vitaminD,
                                       ),
                                       const SizedBox(height: 12),
                                       Text(
@@ -1921,7 +2559,7 @@ class _DietPageState extends State<DietPage> {
                                   children: [
                                     Expanded(
                                       child: UniversalButton(
-                                        text: "Add to Log",
+                                        text: t.dietPageAddToLog,
                                         onPressed: _addToLog,
                                       ),
                                     ),
@@ -1937,7 +2575,7 @@ class _DietPageState extends State<DietPage> {
                                 ),
                                 const SizedBox(height: 12),
                                 UniversalButton(
-                                  text: "Type Another Meal",
+                                  text: t.dietPageTypeAnotherMeal,
                                   onPressed: _showTextFoodInputDialog,
                                 ),
                               ],
@@ -1960,8 +2598,7 @@ class _DietPageState extends State<DietPage> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Text(
-                                    _analysisResult!.errorMessage ??
-                                        'Analysis failed',
+                                    _errorMessageFor(t, _analysisResult!.errorCode),
                                     style: TextStyle(
                                       color: textColor,
                                       fontSize: 14,
@@ -1976,7 +2613,7 @@ class _DietPageState extends State<DietPage> {
                             children: [
                               Expanded(
                                 child: CNButton(
-                                  label: "Try Again",
+                                  label: t.commonTryAgain,
                                   style: CNButtonStyle.glass,
                                   onPressed: _showTextFoodInputDialog,
                                 ),
@@ -2016,7 +2653,7 @@ class _DietPageState extends State<DietPage> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                "Tap to upload food image",
+                                t.dietPageTapToUpload,
                                 style: TextStyle(
                                   color: subTextColor,
                                   fontSize: 16,
@@ -2025,7 +2662,7 @@ class _DietPageState extends State<DietPage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                "Camera or Photo Library",
+                                t.dietPageCameraOrPhotoLibrary,
                                 style: TextStyle(
                                   color: subTextColor.withOpacity(0.6),
                                   fontSize: 13,
@@ -2037,9 +2674,11 @@ class _DietPageState extends State<DietPage> {
                       ),
                       const SizedBox(height: 12),
                       UniversalButton(
-                        text: "Type Food Instead",
+                        text: t.dietPageTypeFoodInstead,
                         onPressed: _showTextFoodInputDialog,
                       ),
+                      const SizedBox(height: 10),
+                      _buildManualEntryButton(isDark, textColor),
                     ],
                   ],
                 ),
@@ -2049,7 +2688,7 @@ class _DietPageState extends State<DietPage> {
               // Food Log Section
               if (_foodLog.isNotEmpty) ...[
                 Text(
-                  "Food Log",
+                  t.dietPageFoodLog,
                   style: TextStyle(
                     color: textColor,
                     fontSize: 20,
@@ -2075,8 +2714,8 @@ class _DietPageState extends State<DietPage> {
                       key: Key(logEntry.timestamp.toString()),
                       direction: DismissDirection.endToStart,
                       background: Container(
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 20),
+                        alignment: AlignmentDirectional.centerEnd,
+                        padding: const EdgeInsetsDirectional.only(end: 20),
                         margin: const EdgeInsets.only(bottom: 12),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFF3B30),
@@ -2096,6 +2735,7 @@ class _DietPageState extends State<DietPage> {
                         _deleteFoodLog(index);
                       },
                       child: _buildFoodLogEntry(
+                        context,
                         logEntry,
                         isDark,
                         textColor,
@@ -2111,7 +2751,7 @@ class _DietPageState extends State<DietPage> {
 
               _buildGoalCalendar(
                 context: context,
-                title: "Water Goal",
+                title: t.dietPageWaterGoalLabel,
                 goalsByDateStream: _waterGoalStatusStream(),
               ),
               const SizedBox(height: 16),
@@ -2154,13 +2794,14 @@ class _DietPageState extends State<DietPage> {
   }
 
   Widget _buildFoodLogEntry(
+    BuildContext context,
     FoodLogEntry entry,
     bool isDark,
     Color textColor,
     Color subTextColor,
     Color cardColor,
   ) {
-    final timeStr = _formatTime(entry.timestamp);
+    final timeStr = _formatTime(context, entry.timestamp);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -2225,30 +2866,29 @@ class _DietPageState extends State<DietPage> {
             ),
           ),
           const SizedBox(width: 4),
-          Text("kcal", style: TextStyle(color: subTextColor, fontSize: 12)),
+          Text(AppLocalizations.of(context).dietPageKcal, style: TextStyle(color: subTextColor, fontSize: 12)),
         ],
       ),
     );
   }
 
-  String _formatTime(DateTime time) {
+  String _formatTime(BuildContext context, DateTime time) {
+    final t = AppLocalizations.of(context);
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
     final entryDate = DateTime(time.year, time.month, time.day);
 
-    final hour = time.hour > 12
-        ? time.hour - 12
-        : (time.hour == 0 ? 12 : time.hour);
-    final minute = time.minute.toString().padLeft(2, '0');
-    final period = time.hour >= 12 ? 'PM' : 'AM';
+    final timeStr = DateFormat.jm(localeTag).format(time);
 
     if (entryDate == today) {
-      return 'Today at $hour:$minute $period';
+      return t.dietPageTimeToday(timeStr);
     } else if (entryDate == yesterday) {
-      return 'Yesterday at $hour:$minute $period';
+      return t.dietPageTimeYesterday(timeStr);
     } else {
-      return '${time.month}/${time.day} at $hour:$minute $period';
+      final dateStr = DateFormat.Md(localeTag).format(time);
+      return t.dietPageTimeOnDate(dateStr, timeStr);
     }
   }
 
@@ -2263,16 +2903,34 @@ class _DietPageState extends State<DietPage> {
     return const Color(0xFFFF453A); // Red - over goal
   }
 
-  String _getProgressMessage(int current, int goal) {
-    if (goal == 0) return "Set a goal to track progress";
+  String _getProgressMessage(BuildContext context, int current, int goal) {
+    final t = AppLocalizations.of(context);
+    if (goal == 0) return t.dietPageProgressNoGoal;
     final remaining = goal - current;
 
     if (remaining > 0) {
-      return "$remaining cal remaining";
+      return t.dietPageProgressRemaining(remaining);
     } else if (remaining == 0) {
-      return "Goal reached!";
+      return t.dietPageProgressGoalReached;
     } else {
-      return "${remaining.abs()} cal over goal";
+      return t.dietPageProgressOver(remaining.abs());
+    }
+  }
+
+  String _errorMessageFor(AppLocalizations t, FoodAnalysisError? code) {
+    switch (code) {
+      case FoodAnalysisError.imageFailed:
+        return t.foodErrorImageFailed;
+      case FoodAnalysisError.connection:
+        return t.foodErrorConnection;
+      case FoodAnalysisError.emptyText:
+        return t.foodErrorEmptyText;
+      case FoodAnalysisError.textFailed:
+        return t.foodErrorTextFailed;
+      case FoodAnalysisError.parseFailed:
+        return t.foodErrorParseFailed;
+      case null:
+        return t.dietPageAnalysisFailed;
     }
   }
 
@@ -2317,6 +2975,246 @@ class _DietPageState extends State<DietPage> {
       ),
     );
   }
+
+  List<({String label, int value, String unit, Color color})> _microSpecs({
+    required AppLocalizations t,
+    required int fiber,
+    required int sugar,
+    required int sodium,
+    required int iron,
+    required int calcium,
+    required int potassium,
+    required int vitaminC,
+    required int vitaminD,
+  }) {
+    return [
+      (label: t.dietPageMicroFiber, value: fiber, unit: 'g', color: const Color(0xFF8E8E93)),
+      (label: t.dietPageMicroSugar, value: sugar, unit: 'g', color: const Color(0xFFFF2D55)),
+      (label: t.dietPageMicroSodium, value: sodium, unit: 'mg', color: const Color(0xFFAF52DE)),
+      (label: t.dietPageMicroIron, value: iron, unit: 'mg', color: const Color(0xFFFF3B30)),
+      (label: t.dietPageMicroCalcium, value: calcium, unit: 'mg', color: const Color(0xFF5AC8FA)),
+      (label: t.dietPageMicroPotassium, value: potassium, unit: 'mg', color: const Color(0xFF5856D6)),
+      (label: t.dietPageMicroVitaminC, value: vitaminC, unit: 'mg', color: const Color(0xFFFF9500)),
+      (label: t.dietPageMicroVitaminD, value: vitaminD, unit: 'μg', color: const Color(0xFFFFD60A)),
+    ];
+  }
+
+  Widget _buildMicrosSection({
+    required bool isDark,
+    required Color textColor,
+    required Color subTextColor,
+    required int fiber,
+    required int sugar,
+    required int sodium,
+    required int iron,
+    required int calcium,
+    required int potassium,
+    required int vitaminC,
+    required int vitaminD,
+  }) {
+    return Builder(
+      builder: (ctx) {
+        return _MicronutrientsList(
+          isDark: isDark,
+          textColor: textColor,
+          subTextColor: subTextColor,
+          specs: _microSpecs(
+            t: AppLocalizations.of(ctx),
+            fiber: fiber,
+            sugar: sugar,
+            sodium: sodium,
+            iron: iron,
+            calcium: calcium,
+            potassium: potassium,
+            vitaminC: vitaminC,
+            vitaminD: vitaminD,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _MicronutrientsList extends StatefulWidget {
+  final bool isDark;
+  final Color textColor;
+  final Color subTextColor;
+  final List<({String label, int value, String unit, Color color})> specs;
+
+  const _MicronutrientsList({
+    required this.isDark,
+    required this.textColor,
+    required this.subTextColor,
+    required this.specs,
+  });
+
+  @override
+  State<_MicronutrientsList> createState() => _MicronutrientsListState();
+}
+
+class _MicronutrientsListState extends State<_MicronutrientsList> {
+  bool _expanded = false;
+
+  void _toggle() {
+    HapticFeedback.selectionClick();
+    setState(() => _expanded = !_expanded);
+  }
+
+  Widget _row(({String label, int value, String unit, Color color}) s) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: s.color,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              s.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: widget.isDark ? Colors.white70 : Colors.black54,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          TweenAnimationBuilder<int>(
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOutCubic,
+            tween: IntTween(begin: 0, end: s.value),
+            builder: (context, animatedValue, child) {
+              return RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '$animatedValue',
+                      style: TextStyle(
+                        color: widget.textColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' ${s.unit}',
+                      style: TextStyle(
+                        color: widget.subTextColor,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final left = widget.specs.take(4).toList();
+    final right = widget.specs.skip(4).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: _toggle,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Text(
+                    t.dietPageMicrosTitle,
+                    style: TextStyle(
+                      color: widget.textColor,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    CupertinoIcons.sparkles,
+                    size: 12,
+                    color: widget.subTextColor,
+                  ),
+                  const Spacer(),
+                  Text(
+                    _expanded ? t.dietPageHide : t.dietPageShow,
+                    style: TextStyle(
+                      color: widget.subTextColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  AnimatedRotation(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                    turns: _expanded ? 0.25 : 0.0,
+                    child: Icon(
+                      CupertinoIcons.chevron_right,
+                      size: 14,
+                      color: widget.subTextColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        ClipRect(
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            heightFactor: _expanded ? 1.0 : 0.0,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 200),
+              opacity: _expanded ? 1.0 : 0.0,
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(top: 4, start: 2, end: 2),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: left.map(_row).toList(),
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: right.map(_row).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class FoodLogEntry {
@@ -2328,6 +3226,14 @@ class FoodLogEntry {
   final int protein;
   final int carbs;
   final int fats;
+  final int fiber;
+  final int sugar;
+  final int sodium;
+  final int iron;
+  final int calcium;
+  final int potassium;
+  final int vitaminC;
+  final int vitaminD;
   final String? firestoreId; // Add Firestore document ID
 
   FoodLogEntry({
@@ -2339,6 +3245,14 @@ class FoodLogEntry {
     this.protein = 0,
     this.carbs = 0,
     this.fats = 0,
+    this.fiber = 0,
+    this.sugar = 0,
+    this.sodium = 0,
+    this.iron = 0,
+    this.calcium = 0,
+    this.potassium = 0,
+    this.vitaminC = 0,
+    this.vitaminD = 0,
     this.firestoreId,
   });
 }
@@ -2349,6 +3263,14 @@ class FrequentFoodItem {
   final int protein;
   final int carbs;
   final int fats;
+  final int fiber;
+  final int sugar;
+  final int sodium;
+  final int iron;
+  final int calcium;
+  final int potassium;
+  final int vitaminC;
+  final int vitaminD;
   final String description;
   final int frequency;
   final DateTime lastEaten;
@@ -2359,6 +3281,14 @@ class FrequentFoodItem {
     required this.protein,
     required this.carbs,
     required this.fats,
+    this.fiber = 0,
+    this.sugar = 0,
+    this.sodium = 0,
+    this.iron = 0,
+    this.calcium = 0,
+    this.potassium = 0,
+    this.vitaminC = 0,
+    this.vitaminD = 0,
     required this.description,
     required this.frequency,
     required this.lastEaten,
@@ -2374,6 +3304,14 @@ class FrequentFoodItem {
       protein: protein,
       carbs: carbs,
       fats: fats,
+      fiber: fiber,
+      sugar: sugar,
+      sodium: sodium,
+      iron: iron,
+      calcium: calcium,
+      potassium: potassium,
+      vitaminC: vitaminC,
+      vitaminD: vitaminD,
       description: description,
       frequency: frequency ?? this.frequency,
       lastEaten: lastEaten ?? this.lastEaten,

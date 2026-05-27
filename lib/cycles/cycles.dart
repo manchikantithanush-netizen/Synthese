@@ -6,6 +6,7 @@ import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'cycledeviationmodal.dart';
 import 'package:synthese/onboarding/onboarding_cycles.dart';
 import 'package:synthese/ui/daily_logging_screen.dart';
@@ -90,25 +91,26 @@ class _CyclesPageState extends State<CyclesPage>
     final textColor = isLightMode ? Colors.black : Colors.white;
     final mutedText = isLightMode ? Colors.black54 : Colors.white70;
 
+    final t = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: dialogBg,
-        title: Text("Reset All Data?", style: TextStyle(color: textColor)),
+        title: Text(t.cyclesResetTitle, style: TextStyle(color: textColor)),
         content: Text(
-          "This will wipe all your daily logs and send you back to the onboarding screen. This cannot be undone.",
+          t.cyclesResetMsg,
           style: TextStyle(color: mutedText),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text("Cancel", style: TextStyle(color: textColor)),
+            child: Text(t.commonCancel, style: TextStyle(color: textColor)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              "Wipe Data",
-              style: TextStyle(
+            child: Text(
+              t.cyclesWipeData,
+              style: const TextStyle(
                 color: Colors.redAccent,
                 fontWeight: FontWeight.bold,
               ),
@@ -175,7 +177,7 @@ class _CyclesPageState extends State<CyclesPage>
       return Scaffold(
         backgroundColor: bgColor,
         body: Center(
-          child: Text("Please log in", style: TextStyle(color: textColor)),
+          child: Text(AppLocalizations.of(context).cyclesPleaseLogIn, style: TextStyle(color: textColor)),
         ),
       );
     }
@@ -278,7 +280,7 @@ class _CyclesPageState extends State<CyclesPage>
     Map<String, dynamic>? logData,
     bool hasLoggedToday,
   ) {
-    final data = processDashboardData(userData, recentCycles, currentCycleLogs);
+    final data = processDashboardData(AppLocalizations.of(context), userData, recentCycles, currentCycleLogs);
 
     // --- THEME ADAPTATION ---
     final isLightMode = Theme.of(context).brightness == Brightness.light;
@@ -308,10 +310,13 @@ class _CyclesPageState extends State<CyclesPage>
 
     final safePadding = MediaQuery.of(context).padding;
     const Color pinkColor = Color(0xFFEC548A);
+    final t = AppLocalizations.of(context);
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
 
-    String todayFormatted = DateFormat('EEEE, MMMM d').format(simulatedToday);
+    String todayFormatted = DateFormat('EEEE, MMMM d', localeTag).format(simulatedToday);
     String nextPeriodFormatted = DateFormat(
       'MMM d',
+      localeTag,
     ).format(data.nextPeriodDate);
     bool isRealToday = dateOnly(
       simulatedToday,
@@ -335,7 +340,7 @@ class _CyclesPageState extends State<CyclesPage>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Cycles",
+                      t.cyclesTitle,
                       style: TextStyle(
                         color: textColor,
                         fontSize: 32,
@@ -438,7 +443,7 @@ class _CyclesPageState extends State<CyclesPage>
                   child: Column(
                     children: [
                       Text(
-                        isRealToday ? "Today" : "Simulated Date",
+                        isRealToday ? t.cyclesToday : t.cyclesSimulatedDate,
                         style: TextStyle(
                           color: subtitleColor,
                           fontSize: 16,
@@ -488,11 +493,11 @@ class _CyclesPageState extends State<CyclesPage>
                         GestureDetector(
                           onTap: () =>
                               setState(() => simulatedToday = DateTime.now()),
-                          child: const Padding(
-                            padding: EdgeInsets.only(top: 4.0),
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
                             child: Text(
-                              "Reset to Present",
-                              style: TextStyle(
+                              t.cyclesResetToPresent,
+                              style: const TextStyle(
                                 color: pinkColor,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -516,6 +521,7 @@ class _CyclesPageState extends State<CyclesPage>
                 const SizedBox(height: 30),
 
                 CycleEnergyCard(
+                  phaseId: data.phaseId,
                   phaseText: data.phaseText,
                   healthScore: data.healthScore.toString(),
                   healthColor: data.healthColor,
@@ -586,7 +592,7 @@ class _CyclesPageState extends State<CyclesPage>
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 CNButton(
-                                  label: 'Dismiss',
+                                  label: t.cyclesDismiss,
                                   style: CNButtonStyle.plain,
                                   tint: subtitleColor,
                                   onPressed: () {
@@ -599,7 +605,7 @@ class _CyclesPageState extends State<CyclesPage>
                                 ),
                                 const SizedBox(width: 8),
                                 CNButton(
-                                  label: 'Learn more',
+                                  label: t.cyclesLearnMore,
                                   style: CNButtonStyle.tinted,
                                   tint: alertIconColor,
                                   onPressed: () {
@@ -641,7 +647,7 @@ class _CyclesPageState extends State<CyclesPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Today's Log Summary",
+                          t.cyclesTodaysLogSummary,
                           style: TextStyle(
                             color: textColor,
                             fontSize: 16,
@@ -652,19 +658,19 @@ class _CyclesPageState extends State<CyclesPage>
 
                         _buildSummaryRow(
                           Icons.water_drop,
-                          "Flow",
+                          t.cyclesFlow,
                           logData['flow'] ?? '',
                           isLightMode,
                         ),
                         _buildSummaryRow(
                           Icons.opacity,
-                          "Mucus",
+                          t.cyclesMucus,
                           logData['cervicalMucus'] ?? '',
                           isLightMode,
                         ),
                         _buildSummaryRow(
                           Icons.sick,
-                          "Symptoms",
+                          t.cyclesSymptoms,
                           (logData['symptoms'] as List<dynamic>?)?.join(
                                 ' · ',
                               ) ??
@@ -673,7 +679,7 @@ class _CyclesPageState extends State<CyclesPage>
                         ),
                         _buildSummaryRow(
                           Icons.mood,
-                          "Mood",
+                          t.cyclesMood,
                           (logData['mood'] as List<dynamic>?)?.join(' · ') ??
                               '',
                           isLightMode,
@@ -712,7 +718,7 @@ class _CyclesPageState extends State<CyclesPage>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "What's happening right now?",
+                              t.cyclesWhatsHappening,
                               style: TextStyle(
                                 color: textColor,
                                 fontSize: 15,
@@ -756,8 +762,8 @@ class _CyclesPageState extends State<CyclesPage>
                     ),
                     child: PremiumButton(
                       text: hasLoggedToday
-                          ? "Edit Today's Log"
-                          : "Log Symptoms Today",
+                          ? t.cyclesEditTodaysLog
+                          : t.cyclesLogSymptomsToday,
                       isGlassStyle: true,
                       onPressed: () {
                         Navigator.push(

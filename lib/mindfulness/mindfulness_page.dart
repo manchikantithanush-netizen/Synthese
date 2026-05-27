@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:intl/intl.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/mood_tracker_modal.dart';
 import 'package:synthese/ui/components/breathing_exercise_modal.dart';
 import 'package:synthese/ui/components/questionnaire_disclaimer_modal.dart';
@@ -200,28 +201,29 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
     final textColor = isLightMode ? Colors.black : Colors.white;
     final mutedText = isLightMode ? Colors.black54 : Colors.white70;
 
+    final t = AppLocalizations.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: dialogBg,
         title: Text(
-          "Reset Mental Health Data?",
+          t.mindfulnessResetTitle,
           style: TextStyle(color: textColor),
         ),
         content: Text(
-          "This will delete all your mood check-ins and mental health history. This cannot be undone.",
+          t.mindfulnessResetMsg,
           style: TextStyle(color: mutedText),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text("Cancel", style: TextStyle(color: textColor)),
+            child: Text(t.commonCancel, style: TextStyle(color: textColor)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              "Delete All",
-              style: TextStyle(
+            child: Text(
+              t.mindfulnessDeleteAll,
+              style: const TextStyle(
                 color: Colors.redAccent,
                 fontWeight: FontWeight.bold,
               ),
@@ -267,9 +269,9 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
         Navigator.pop(context); // Close loading dialog
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('All mental health data has been deleted'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(AppLocalizations.of(context).mindfulnessDeletedSnackbar),
+            duration: const Duration(seconds: 2),
           ),
         );
 
@@ -320,7 +322,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                     children: [
                       Expanded(
                         child: Text(
-                          'Mental Health',
+                          AppLocalizations.of(context).mindfulnessPageTitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -423,7 +425,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
             children: [
               Expanded(
                 child: Text(
-                  DateFormat('MMMM yyyy').format(now),
+                  DateFormat('MMMM yyyy', Localizations.localeOf(context).toLanguageTag()).format(now),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -435,7 +437,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
               ),
               const SizedBox(width: 8),
               Text(
-                'Mood History',
+                AppLocalizations.of(context).mindfulnessMoodHistory,
                 style: TextStyle(
                   color: textColor.withOpacity(0.5),
                   fontSize: isNarrow ? 12 : 13,
@@ -537,12 +539,12 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
 
     return Container(
       width: 40,
-      margin: const EdgeInsets.only(right: 8),
+      margin: const EdgeInsetsDirectional.only(end: 8),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            DateFormat('E').format(date).substring(0, 1),
+            DateFormat('E', Localizations.localeOf(context).toLanguageTag()).format(date).substring(0, 1),
             style: TextStyle(
               color: textColor.withOpacity(0.4),
               fontSize: 11,
@@ -612,7 +614,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Morning Readiness',
+                    AppLocalizations.of(context).mindfulnessMorningReadiness,
                     style: TextStyle(
                       color: isDark
                           ? Colors.white.withOpacity(0.6)
@@ -626,8 +628,12 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                     duration: const Duration(milliseconds: 300),
                     child: Text(
                       _hasReadinessLogged
-                          ? 'Sleep ${_cachedSleepQuality ?? "-"} · Energy ${_cachedEnergyLevel ?? "-"} · Stress ${_cachedAcademicStress ?? "-"}'
-                          : 'How ready are you today?',
+                          ? AppLocalizations.of(context).mindfulnessReadinessSummary(
+                              _cachedSleepQuality?.toString() ?? '-',
+                              _cachedEnergyLevel?.toString() ?? '-',
+                              _cachedAcademicStress?.toString() ?? '-',
+                            )
+                          : AppLocalizations.of(context).mindfulnessReadinessPrompt,
                       key: ValueKey(_hasReadinessLogged ? 'logged' : 'prompt'),
                       style: TextStyle(
                         color: isDark ? Colors.white : Colors.black,
@@ -656,7 +662,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
-                        'Edit',
+                        AppLocalizations.of(context).mindfulnessEdit,
                         style: TextStyle(
                           color: isDark
                               ? Colors.white.withOpacity(0.8)
@@ -731,7 +737,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     child: Text(
-                      hasMoodLogged ? "Today's Check-in" : 'Daily Check-in',
+                      hasMoodLogged ? AppLocalizations.of(context).mindfulnessTodaysCheckin : AppLocalizations.of(context).mindfulnessDailyCheckin,
                       key: ValueKey(hasMoodLogged ? 'logged' : 'not-logged'),
                       style: TextStyle(
                         color: isDark
@@ -747,8 +753,8 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                     duration: const Duration(milliseconds: 300),
                     child: Text(
                       hasMoodLogged
-                          ? 'Feeling $_moodLabel'
-                          : 'How are you feeling?',
+                          ? AppLocalizations.of(context).mindfulnessFeelingLabel(_moodLabel ?? '')
+                          : AppLocalizations.of(context).mindfulnessHowFeeling,
                       key: ValueKey(hasMoodLogged ? _moodLabel : 'prompt'),
                       style: TextStyle(
                         color: isDark ? Colors.white : Colors.black,
@@ -777,7 +783,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
-                        'Edit',
+                        AppLocalizations.of(context).mindfulnessEdit,
                         style: TextStyle(
                           color: isDark
                               ? Colors.white.withOpacity(0.8)
@@ -799,9 +805,9 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                           color: const Color(0xFF33BEBE),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Text(
-                          'Log',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context).mindfulnessLogButton,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -844,7 +850,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Breathing',
+                    AppLocalizations.of(context).mindfulnessBreathing,
                     style: TextStyle(
                       color: isDark
                           ? Colors.white.withOpacity(0.6)
@@ -855,7 +861,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Take a moment to breathe',
+                    AppLocalizations.of(context).mindfulnessBreathingPrompt,
                     style: TextStyle(
                       color: isDark ? Colors.white : Colors.black,
                       fontSize: 20,
@@ -907,7 +913,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Mental Health Assessment',
+            AppLocalizations.of(context).mindfulnessAssessmentTitle,
             style: TextStyle(
               color: textColor,
               fontSize: 20,
@@ -916,7 +922,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            '15 questions inspired by PHQ-9, GAD-7, and Maslach Burnout Inventory',
+            AppLocalizations.of(context).mindfulnessAssessmentSubtitle,
             style: TextStyle(
               color: textColor.withOpacity(0.6),
               fontSize: 14,
@@ -926,7 +932,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
           const SizedBox(height: 16),
           if (!_isModalOpen) ...[
             UniversalButton(
-              text: 'Start Assessment',
+              text: AppLocalizations.of(context).mindfulnessStartAssessment,
               onPressed: () => _showDisclaimerModal(context),
             ),
           ],
@@ -959,7 +965,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Mood Insights',
+                AppLocalizations.of(context).mindfulnessMoodInsights,
                 style: TextStyle(
                   color: textColor,
                   fontSize: 18,
@@ -967,7 +973,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                 ),
               ),
               Text(
-                'Last 30 days',
+                AppLocalizations.of(context).mindfulnessLast30Days,
                 style: TextStyle(
                   color: textColor.withOpacity(0.5),
                   fontSize: 13,
@@ -1002,7 +1008,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'Log your mood to see insights',
+                          AppLocalizations.of(context).mindfulnessLogMoodPrompt,
                           style: TextStyle(
                             color: textColor.withOpacity(0.5),
                             fontSize: 14,
@@ -1037,7 +1043,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                 if (moodData.isEmpty) {
                   return Center(
                     child: Text(
-                      'No mood data yet',
+                      AppLocalizations.of(context).mindfulnessNoMoodData,
                       style: TextStyle(color: textColor.withOpacity(0.5)),
                     ),
                   );
@@ -1063,9 +1069,9 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildLegendItem('Very Happy', const Color(0xFF30D158)),
-              _buildLegendItem('Neutral', const Color(0xFF60A5FA)),
-              _buildLegendItem('Unpleasant', const Color(0xFFFF3B30)),
+              _buildLegendItem(AppLocalizations.of(context).mindfulnessLegendVeryHappy, const Color(0xFF30D158)),
+              _buildLegendItem(AppLocalizations.of(context).mindfulnessLegendNeutral, const Color(0xFF60A5FA)),
+              _buildLegendItem(AppLocalizations.of(context).mindfulnessLegendUnpleasant, const Color(0xFFFF3B30)),
             ],
           ),
         ],

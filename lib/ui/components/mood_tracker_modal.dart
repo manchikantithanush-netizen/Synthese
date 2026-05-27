@@ -10,6 +10,8 @@ import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/services/data_aggregation_service.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
 import 'package:synthese/ui/components/app_toast.dart';
+import 'package:intl/intl.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class MoodOption {
   final double value;
@@ -301,7 +303,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
           _isSaving = false;
         });
         _checkmarkController.forward();
-        AppToast.success(context, 'Mood logged', icon: Icons.mood_rounded);
+        AppToast.success(context, AppLocalizations.of(context).moodLogged, icon: Icons.mood_rounded);
         await Future.delayed(const Duration(milliseconds: 1500));
         if (mounted) Navigator.of(context).pop();
       }
@@ -321,13 +323,8 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
         ? Colors.white.withOpacity(0.1)
         : Colors.black.withOpacity(0.08);
 
-    final now = DateTime.now();
-    final hour = now.hour > 12
-        ? now.hour - 12
-        : (now.hour == 0 ? 12 : now.hour);
-    final minute = now.minute.toString().padLeft(2, '0');
-    final amPm = now.hour >= 12 ? 'PM' : 'AM';
-    final timeString = '$hour:$minute $amPm';
+    final localeName = Localizations.localeOf(context).toString();
+    final timeString = DateFormat.jm(localeName).format(DateTime.now());
 
     return FractionallySizedBox(
       heightFactor: 0.93,
@@ -396,7 +393,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
                     FadeTransition(
                       opacity: _checkmarkAnimation,
                       child: Text(
-                        'Logged',
+                        AppLocalizations.of(context).moodLoggedOverlay,
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
@@ -421,17 +418,18 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
     Color trackColor,
     String timeString,
   ) {
+    final t = AppLocalizations.of(context);
     return Column(
       key: const ValueKey('first'),
       children: [
         // Header
         Padding(
-          padding: const EdgeInsets.only(top: 24, left: 20, right: 20),
+          padding: const EdgeInsetsDirectional.only(top: 24, start: 20, end: 20),
           child: Stack(
             alignment: Alignment.center,
             children: [
               Text(
-                'How are you feeling?',
+                t.moodHowFeeling,
                 style: TextStyle(
                   color: textColor,
                   fontSize: 18,
@@ -439,7 +437,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
                 ),
               ),
               Align(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerEnd,
                 child: UniversalCloseButton(
                   onPressed: () {
                     Navigator.of(context).pop();
@@ -462,7 +460,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
             border: Border.all(color: currentColor.withOpacity(0.3), width: 1),
           ),
           child: Text(
-            'Log for $timeString',
+            t.moodLogFor(timeString),
             style: TextStyle(
               color: currentColor,
               fontSize: 14,
@@ -479,7 +477,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "You're feeling",
+                    t.moodYoureFeeling,
                     style: TextStyle(
                       color: subTextColor,
                       fontSize: 16,
@@ -492,7 +490,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
                     child: Text(
-                      _selectedMood.label,
+                      _moodLabel(t, _selectedMood.label),
                       key: ValueKey(_selectedIndex),
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -510,7 +508,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
                   AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
                     child: Text(
-                      _selectedMood.description,
+                      _moodDesc(t, _selectedMood.label),
                       key: ValueKey(_selectedMood.description),
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -554,11 +552,11 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Unpleasant',
+                        t.moodScaleUnpleasant,
                         style: TextStyle(color: subTextColor, fontSize: 12),
                       ),
                       Text(
-                        'Pleasant',
+                        t.moodScalePleasant,
                         style: TextStyle(color: subTextColor, fontSize: 12),
                       ),
                     ],
@@ -585,7 +583,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
         // Next Button
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
-          child: UniversalButton(text: 'Next', onPressed: _goToSecondPage),
+          child: UniversalButton(text: t.moodNext, onPressed: _goToSecondPage),
         ),
       ],
     );
@@ -597,6 +595,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
     Color subTextColor,
     Color currentColor,
   ) {
+    final t = AppLocalizations.of(context);
     final mediaQuery = MediaQuery.of(context);
     final isCompact = mediaQuery.size.height < 760;
     return Column(
@@ -604,16 +603,16 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
       children: [
         // Header with back button
         Padding(
-          padding: const EdgeInsets.only(top: 24, left: 20, right: 20),
+          padding: const EdgeInsetsDirectional.only(top: 24, start: 20, end: 20),
           child: Stack(
             alignment: Alignment.center,
             children: [
               Align(
-                alignment: Alignment.centerLeft,
+                alignment: AlignmentDirectional.centerStart,
                 child: UniversalBackButton(onPressed: _goBack),
               ),
               Text(
-                'Describe your feeling',
+                t.moodDescribeFeeling,
                 style: TextStyle(
                   color: textColor,
                   fontSize: 18,
@@ -621,7 +620,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
                 ),
               ),
               Align(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerEnd,
                 child: UniversalCloseButton(
                   onPressed: () {
                     Navigator.of(context).pop();
@@ -647,7 +646,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
             ),
           ),
           child: Text(
-            _selectedMood.label,
+            _moodLabel(t, _selectedMood.label),
             style: TextStyle(
               color: currentColor,
               fontSize: isCompact ? 16 : 18,
@@ -663,7 +662,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
             child: Column(
               children: [
                 Text(
-                  'What best describes this feeling?',
+                  t.moodWhatDescribes,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: textColor.withValues(alpha: 0.7),
@@ -708,7 +707,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
                           ),
                         ),
                         child: Text(
-                          feeling,
+                          _feelingLabel(t, feeling),
                           style: TextStyle(
                             color: isSelected ? Colors.white : currentColor,
                             fontSize: isCompact ? 14 : 16,
@@ -728,7 +727,7 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
           child: UniversalButton(
-            text: _isSaving ? 'Saving...' : 'Finish',
+            text: _isSaving ? t.commonSaving : t.moodFinish,
             isLoading: _isSaving,
             onPressed: _isSaving ? () {} : _saveMood,
           ),
@@ -737,32 +736,238 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
     );
   }
 
+  String _moodLabel(AppLocalizations t, String label) {
+    switch (label) {
+      case 'Very Unpleasant':
+        return t.moodLblVeryUnpleasant;
+      case 'Unpleasant':
+        return t.moodLblUnpleasant;
+      case 'Slightly Unpleasant':
+        return t.moodLblSlightlyUnpleasant;
+      case 'Neutral':
+        return t.moodLblNeutral;
+      case 'Slightly Pleasant':
+        return t.moodLblSlightlyPleasant;
+      case 'Pleasant':
+        return t.moodLblPleasant;
+      case 'Very Pleasant':
+        return t.moodLblVeryPleasant;
+      default:
+        return label;
+    }
+  }
+
+  String _moodDesc(AppLocalizations t, String label) {
+    switch (label) {
+      case 'Very Unpleasant':
+        return t.moodDescVeryUnpleasant;
+      case 'Unpleasant':
+        return t.moodDescUnpleasant;
+      case 'Slightly Unpleasant':
+        return t.moodDescSlightlyUnpleasant;
+      case 'Neutral':
+        return t.moodDescNeutral;
+      case 'Slightly Pleasant':
+        return t.moodDescSlightlyPleasant;
+      case 'Pleasant':
+        return t.moodDescPleasant;
+      case 'Very Pleasant':
+        return t.moodDescVeryPleasant;
+      default:
+        return '';
+    }
+  }
+
+  String _feelingLabel(AppLocalizations t, String feeling) {
+    switch (feeling) {
+      case 'Angry':
+        return t.moodFeelAngry;
+      case 'Anxious':
+        return t.moodFeelAnxious;
+      case 'Scared':
+        return t.moodFeelScared;
+      case 'Overwhelmed':
+        return t.moodFeelOverwhelmed;
+      case 'Ashamed':
+        return t.moodFeelAshamed;
+      case 'Devastated':
+        return t.moodFeelDevastated;
+      case 'Panicked':
+        return t.moodFeelPanicked;
+      case 'Hopeless':
+        return t.moodFeelHopeless;
+      case 'Furious':
+        return t.moodFeelFurious;
+      case 'Terrified':
+        return t.moodFeelTerrified;
+      case 'Disgusted':
+        return t.moodFeelDisgusted;
+      case 'Resentful':
+        return t.moodFeelResentful;
+      case 'Miserable':
+        return t.moodFeelMiserable;
+      case 'Frustrated':
+        return t.moodFeelFrustrated;
+      case 'Worried':
+        return t.moodFeelWorried;
+      case 'Sad':
+        return t.moodFeelSad;
+      case 'Stressed':
+        return t.moodFeelStressed;
+      case 'Lonely':
+        return t.moodFeelLonely;
+      case 'Disappointed':
+        return t.moodFeelDisappointed;
+      case 'Insecure':
+        return t.moodFeelInsecure;
+      case 'Irritated':
+        return t.moodFeelIrritated;
+      case 'Guilty':
+        return t.moodFeelGuilty;
+      case 'Hurt':
+        return t.moodFeelHurt;
+      case 'Nervous':
+        return t.moodFeelNervous;
+      case 'Jealous':
+        return t.moodFeelJealous;
+      case 'Embarrassed':
+        return t.moodFeelEmbarrassed;
+      case 'Tired':
+        return t.moodFeelTired;
+      case 'Bored':
+        return t.moodFeelBored;
+      case 'Uneasy':
+        return t.moodFeelUneasy;
+      case 'Distracted':
+        return t.moodFeelDistracted;
+      case 'Restless':
+        return t.moodFeelRestless;
+      case 'Apathetic':
+        return t.moodFeelApathetic;
+      case 'Drained':
+        return t.moodFeelDrained;
+      case 'Impatient':
+        return t.moodFeelImpatient;
+      case 'Disconnected':
+        return t.moodFeelDisconnected;
+      case 'Sluggish':
+        return t.moodFeelSluggish;
+      case 'Uncertain':
+        return t.moodFeelUncertain;
+      case 'Unfocused':
+        return t.moodFeelUnfocused;
+      case 'Melancholic':
+        return t.moodFeelMelancholic;
+      case 'Content':
+        return t.moodFeelContent;
+      case 'Calm':
+        return t.moodFeelCalm;
+      case 'Peaceful':
+        return t.moodFeelPeaceful;
+      case 'Indifferent':
+        return t.moodFeelIndifferent;
+      case 'Steady':
+        return t.moodFeelSteady;
+      case 'Balanced':
+        return t.moodFeelBalanced;
+      case 'Accepting':
+        return t.moodFeelAccepting;
+      case 'Present':
+        return t.moodFeelPresent;
+      case 'Mellow':
+        return t.moodFeelMellow;
+      case 'Composed':
+        return t.moodFeelComposed;
+      case 'Grounded':
+        return t.moodFeelGrounded;
+      case 'Reserved':
+        return t.moodFeelReserved;
+      case 'Thoughtful':
+        return t.moodFeelThoughtful;
+      case 'Hopeful':
+        return t.moodFeelHopeful;
+      case 'Relaxed':
+        return t.moodFeelRelaxed;
+      case 'Focused':
+        return t.moodFeelFocused;
+      case 'Grateful':
+        return t.moodFeelGrateful;
+      case 'Optimistic':
+        return t.moodFeelOptimistic;
+      case 'Curious':
+        return t.moodFeelCurious;
+      case 'Refreshed':
+        return t.moodFeelRefreshed;
+      case 'Relieved':
+        return t.moodFeelRelieved;
+      case 'Comfortable':
+        return t.moodFeelComfortable;
+      case 'Open':
+        return t.moodFeelOpen;
+      case 'Encouraged':
+        return t.moodFeelEncouraged;
+      case 'Interested':
+        return t.moodFeelInterested;
+      case 'Serene':
+        return t.moodFeelSerene;
+      case 'Happy':
+        return t.moodFeelHappy;
+      case 'Confident':
+        return t.moodFeelConfident;
+      case 'Energized':
+        return t.moodFeelEnergized;
+      case 'Motivated':
+        return t.moodFeelMotivated;
+      case 'Joyful':
+        return t.moodFeelJoyful;
+      case 'Proud':
+        return t.moodFeelProud;
+      case 'Fulfilled':
+        return t.moodFeelFulfilled;
+      case 'Cheerful':
+        return t.moodFeelCheerful;
+      case 'Playful':
+        return t.moodFeelPlayful;
+      case 'Empowered':
+        return t.moodFeelEmpowered;
+      case 'Creative':
+        return t.moodFeelCreative;
+      case 'Appreciated':
+        return t.moodFeelAppreciated;
+      case 'Loving':
+        return t.moodFeelLoving;
+      case 'Amazed':
+        return t.moodFeelAmazed;
+      case 'Excited':
+        return t.moodFeelExcited;
+      case 'Surprised':
+        return t.moodFeelSurprised;
+      case 'Passionate':
+        return t.moodFeelPassionate;
+      case 'Inspired':
+        return t.moodFeelInspired;
+      case 'Euphoric':
+        return t.moodFeelEuphoric;
+      case 'Thrilled':
+        return t.moodFeelThrilled;
+      case 'Elated':
+        return t.moodFeelElated;
+      case 'Ecstatic':
+        return t.moodFeelEcstatic;
+      case 'Blissful':
+        return t.moodFeelBlissful;
+      case 'Radiant':
+        return t.moodFeelRadiant;
+      case 'Alive':
+        return t.moodFeelAlive;
+      default:
+        return feeling;
+    }
+  }
+
   String _getFormattedDate() {
-    final now = DateTime.now();
-    final weekdays = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-    final months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    return '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat('EEEE, MMMM d', localeName).format(DateTime.now());
   }
 
   Widget _buildPillSlider(Color trackColor, Color thumbColor) {

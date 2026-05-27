@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -323,7 +325,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
       }
 
       await batch.commit();
-      if (mounted) AppToast.success(context, 'Payment recorded', icon: Icons.payments_outlined);
+      if (mounted) AppToast.success(context, AppLocalizations.of(context).finDDPaymentRecorded, icon: Icons.payments_outlined);
 
       // Update local state
       setState(() {
@@ -419,7 +421,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
       batch.update(debtRef, {'remainingAmount': 0.0, 'isPaid': true});
 
       await batch.commit();
-      if (mounted) AppToast.success(context, 'Debt marked as complete', icon: Icons.check_circle_outline_rounded);
+      if (mounted) AppToast.success(context, AppLocalizations.of(context).finDDMarkedComplete, icon: Icons.check_circle_outline_rounded);
 
       // Update local state
       setState(() {
@@ -513,7 +515,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
 
                 // Title
                 Text(
-                  _isOweMe ? 'Record Payment Received' : 'Make a Payment',
+                  _isOweMe ? AppLocalizations.of(context).finDDRecordPaymentReceived : AppLocalizations.of(context).finDDMakePayment,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -522,7 +524,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Remaining: ${_formatCurrency(_debt.remainingAmount)}',
+                  AppLocalizations.of(context).finDDRemaining(_formatCurrency(_debt.remainingAmount)),
                   style: TextStyle(fontSize: 14, color: subtextColor),
                 ),
                 const SizedBox(height: 24),
@@ -585,14 +587,14 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                 Row(
                   children: [
                     _buildQuickAmountButton(
-                      'Full',
+                      AppLocalizations.of(context).finDDFull,
                       _debt.remainingAmount,
                       amountController,
                       isDark,
                     ),
                     const SizedBox(width: 8),
                     _buildQuickAmountButton(
-                      'Half',
+                      AppLocalizations.of(context).finDDHalf,
                       _debt.remainingAmount / 2,
                       amountController,
                       isDark,
@@ -600,7 +602,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                     if (_debt.installmentAmount != null) ...[
                       const SizedBox(width: 8),
                       _buildQuickAmountButton(
-                        'Installment',
+                        AppLocalizations.of(context).finDDInstallment,
                         _debt.installmentAmount!,
                         amountController,
                         isDark,
@@ -624,7 +626,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                     controller: noteController,
                     style: TextStyle(color: textColor, fontSize: 15),
                     decoration: InputDecoration(
-                      hintText: 'Add a note (optional)',
+                      hintText: AppLocalizations.of(context).finDDAddNote,
                       hintStyle: TextStyle(color: subtextColor, fontSize: 15),
                       border: InputBorder.none,
                       prefixIcon: Icon(
@@ -639,7 +641,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
 
                 // Submit button
                 PremiumButton(
-                  text: _isOweMe ? 'Record Payment' : 'Submit Payment',
+                  text: _isOweMe ? AppLocalizations.of(context).finDDRecordPayment : AppLocalizations.of(context).finDDSubmitPayment,
                   onPressed: () {
                     final amount = double.tryParse(
                       amountController.text.replaceAll(',', '.'),
@@ -850,7 +852,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    _isOweMe ? 'Owe Me' : 'I Owe',
+                    _isOweMe ? AppLocalizations.of(context).finDebtOweMe : AppLocalizations.of(context).finDebtIOwe,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -865,7 +867,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
           ),
           // Close button
           Padding(
-            padding: const EdgeInsets.only(left: 8.0),
+            padding: const EdgeInsetsDirectional.only(start: 8.0),
             child: Center(
               child: UniversalCloseButton(
                 onPressed: () {
@@ -928,12 +930,12 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _debt.isPaid ? 'Completed' : 'Progress',
+                      _debt.isPaid ? AppLocalizations.of(context).finDDCompleted : AppLocalizations.of(context).finDDProgress,
                       style: TextStyle(color: subtextColor, fontSize: 13),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${_formatCurrency(_amountPaid)} paid of ${_formatCurrency(_debt.totalAmount)}',
+                      AppLocalizations.of(context).finDDPaidOf(_formatCurrency(_amountPaid), _formatCurrency(_debt.totalAmount)),
                       style: TextStyle(
                         color: textColor,
                         fontSize: 16,
@@ -1026,7 +1028,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Due Date',
+                  AppLocalizations.of(context).finDDDueDate,
                   style: TextStyle(color: subtextColor, fontSize: 12),
                 ),
                 Text(
@@ -1097,7 +1099,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Notes',
+                  AppLocalizations.of(context).finDDNotes,
                   style: TextStyle(color: subtextColor, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
@@ -1123,7 +1125,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Payment History',
+          AppLocalizations.of(context).finDDPaymentHistory,
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -1145,7 +1147,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
                   Icon(Icons.description_outlined, color: subtextColor, size: 32),
                   const SizedBox(height: 8),
                   Text(
-                    'No payments yet',
+                    AppLocalizations.of(context).finDDNoPayments,
                     style: TextStyle(color: subtextColor, fontSize: 14),
                   ),
                 ],
@@ -1237,7 +1239,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
         children: [
           // Make Payment button
           PremiumButton(
-            text: _isOweMe ? 'Record Payment' : 'Make a Payment',
+            text: _isOweMe ? AppLocalizations.of(context).finDDRecordPayment : AppLocalizations.of(context).finDDMakePayment,
             isLoading: _isProcessing,
             onPressed: _showPaymentModal,
           ),
@@ -1261,7 +1263,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
               ),
               child: Center(
                 child: Text(
-                  _isOweMe ? 'Mark as Received' : 'Mark as Paid',
+                  _isOweMe ? AppLocalizations.of(context).finDDMarkReceived : AppLocalizations.of(context).finDDMarkPaid,
                   style: const TextStyle(
                     color: Color(0xFF34C759),
                     fontSize: 16,
@@ -1312,7 +1314,7 @@ class _DebtDetailModalState extends State<DebtDetailModal>
               FadeTransition(
                 opacity: _checkmarkAnimation,
                 child: Text(
-                  _isOweMe ? 'Payment Received!' : 'Debt Paid Off!',
+                  _isOweMe ? AppLocalizations.of(context).finDDPaymentReceivedTitle : AppLocalizations.of(context).finDDDebtPaidOff,
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -1345,28 +1347,15 @@ class _DebtDetailModalState extends State<DebtDetailModal>
     final dateOnly = DateTime(date.year, date.month, date.day);
 
     if (dateOnly == today) {
-      return 'Today';
+      return AppLocalizations.of(context).finTxToday;
     } else if (dateOnly == today.subtract(const Duration(days: 1))) {
-      return 'Yesterday';
+      return AppLocalizations.of(context).finDDYesterday;
     } else if (dateOnly == today.add(const Duration(days: 1))) {
-      return 'Tomorrow';
+      return AppLocalizations.of(context).finDDTomorrow;
     }
 
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+    return DateFormat('MMM d, yyyy', Localizations.localeOf(context).toString())
+        .format(date);
   }
 }
 

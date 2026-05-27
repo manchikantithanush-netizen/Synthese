@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 // 1. IMPORT DASHBOARD INSTEAD OF MAIN
@@ -92,6 +93,7 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
     // DYNAMIC THEME VARIABLES
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).colorScheme.onSurface;
+    final t = AppLocalizations.of(context);
 
     if (_isLoading) {
       return const Scaffold(
@@ -120,7 +122,7 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
                         children: [
                           const SizedBox(height: 60),
                           Text(
-                            "Hello,",
+                            t.onboardingIntroTitle,
                             style: TextStyle(
                               color: textColor, // DYNAMIC
                               fontSize: 42,
@@ -130,7 +132,7 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            "We are going to collect some data so that you can get the best out of your app.",
+                            t.onboardingIntroBody,
                             style: TextStyle(
                               color: textColor, // DYNAMIC
                               fontSize: 22,
@@ -171,7 +173,7 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
                                     ),
                                     const SizedBox(width: 12),
                                     Text(
-                                      "Privacy First",
+                                      t.onboardingIntroPrivacyTitle,
                                       style: TextStyle(
                                         color: textColor, // DYNAMIC
                                         fontWeight: FontWeight.w600,
@@ -181,7 +183,7 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  "Your data is yours, we will not be using your data for any purpose other than improving your experience.",
+                                  t.onboardingIntroPrivacyBody,
                                   style: TextStyle(
                                     color: textColor.withOpacity(
                                       0.5,
@@ -197,7 +199,7 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
 
                           // Continue Button uses Navigator.push so that OnboardingIntro stays in the background
                           PremiumButton(
-                            text: "Continue",
+                            text: t.commonContinue,
                             onPressed: () {
                               Navigator.push(
                                 context,
@@ -225,7 +227,7 @@ class _OnboardingIntroState extends State<OnboardingIntro> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    "Go Back",
+                                    t.commonGoBack,
                                     style: TextStyle(
                                       color: textColor,
                                       fontSize: 16,

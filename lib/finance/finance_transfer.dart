@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -160,19 +161,19 @@ class _TransferModalState extends State<TransferModal> {
     // Validation
     final amount = double.tryParse(_amountController.text.replaceAll(',', '.'));
     if (amount == null || amount <= 0) {
-      _showError('Please enter a valid amount');
+      _showError(AppLocalizations.of(context).finTrInvalidAmount);
       return;
     }
     if (_fromAccount == null) {
-      _showError('Please select a source account');
+      _showError(AppLocalizations.of(context).finTrSelectSource);
       return;
     }
     if (_toAccount == null) {
-      _showError('Please select a destination account');
+      _showError(AppLocalizations.of(context).finTrSelectDest);
       return;
     }
     if (_fromAccount!.id == _toAccount!.id) {
-      _showError('Cannot transfer to the same account');
+      _showError(AppLocalizations.of(context).finTrSameAccount);
       return;
     }
 
@@ -182,11 +183,11 @@ class _TransferModalState extends State<TransferModal> {
       _fromAccount!.id,
     );
     if (latestFromAccount == null) {
-      _showError('Source account not found');
+      _showError(AppLocalizations.of(context).finTrSourceNotFound);
       return;
     }
     if (latestFromAccount.balance < amount) {
-      _showError('Insufficient Funds');
+      _showError(AppLocalizations.of(context).finTrInsufficient);
       return;
     }
 
@@ -203,12 +204,12 @@ class _TransferModalState extends State<TransferModal> {
       HapticFeedback.mediumImpact();
 
       if (mounted) {
-        AppToast.success(context, 'Transfer completed', icon: Icons.swap_horiz_rounded);
+        AppToast.success(context, AppLocalizations.of(context).finTrCompleted, icon: Icons.swap_horiz_rounded);
         Navigator.pop(context, true);
       }
     } catch (e) {
       debugPrint('Error transferring: $e');
-      _showError('Failed to transfer funds');
+      _showError(AppLocalizations.of(context).finTrFailed);
     }
 
     if (mounted) {
@@ -259,7 +260,7 @@ class _TransferModalState extends State<TransferModal> {
                   Align(
                     alignment: Alignment.center,
                     child: Text(
-                      "Transfer",
+                      AppLocalizations.of(context).finTransfer,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -268,7 +269,7 @@ class _TransferModalState extends State<TransferModal> {
                     ),
                   ),
                   Align(
-                    alignment: Alignment.centerRight,
+                    alignment: AlignmentDirectional.centerEnd,
                     child: UniversalCloseButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -320,7 +321,7 @@ class _TransferModalState extends State<TransferModal> {
                           const SizedBox(height: 20),
 
                           // --- FROM ACCOUNT ---
-                          _buildSectionLabel('From', subtextColor),
+                          _buildSectionLabel(AppLocalizations.of(context).finTrFrom, subtextColor),
                           const SizedBox(height: 8),
                           _buildAccountDropdown(
                             isDark: isDark,
@@ -336,7 +337,7 @@ class _TransferModalState extends State<TransferModal> {
                           const SizedBox(height: 20),
 
                           // --- TO ACCOUNT ---
-                          _buildSectionLabel('To', subtextColor),
+                          _buildSectionLabel(AppLocalizations.of(context).finTrTo, subtextColor),
                           const SizedBox(height: 8),
                           _buildAccountDropdown(
                             isDark: isDark,
@@ -359,7 +360,7 @@ class _TransferModalState extends State<TransferModal> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
               child: PremiumButton(
-                text: 'Transfer',
+                text: AppLocalizations.of(context).finTransfer,
                 isLoading: _isTransferring,
                 onPressed: _executeTransfer,
               ),
@@ -479,7 +480,7 @@ class _TransferModalState extends State<TransferModal> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      selectedAccount.name,
+                      financeDefaultName(AppLocalizations.of(context), selectedAccount.id, selectedAccount.name),
                       style: TextStyle(
                         color: textColor,
                         fontSize: 16,
@@ -501,7 +502,7 @@ class _TransferModalState extends State<TransferModal> {
             ] else ...[
               Expanded(
                 child: Text(
-                  'Select account',
+                  AppLocalizations.of(context).finTrSelectAccount,
                   style: TextStyle(
                     color: isDark ? Colors.white38 : Colors.black38,
                     fontSize: 16,
@@ -562,7 +563,7 @@ class _TransferModalState extends State<TransferModal> {
               child: Row(
                 children: [
                   Text(
-                    'Select Account',
+                    AppLocalizations.of(context).finTrSelectAccountTitle,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -643,7 +644,7 @@ class _TransferModalState extends State<TransferModal> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  account.name,
+                                  financeDefaultName(AppLocalizations.of(context), account.id, account.name),
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: isSelected

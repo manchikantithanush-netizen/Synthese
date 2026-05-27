@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -39,10 +40,24 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
 
   static const Color greenColor = Color(0xFF34C759);
 
+  bool _accountDefaultsApplied = false;
+
   @override
   void initState() {
     super.initState();
     _fetchUserCurrency();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_accountDefaultsApplied) {
+      final t = AppLocalizations.of(context);
+      _cashNameController.text = t.finAccCash;
+      _bankNameController.text = t.finAccBank;
+      _cardNameController.text = t.finAccCard;
+      _accountDefaultsApplied = true;
+    }
   }
 
   String _getCurrencySymbol(String country) {
@@ -167,7 +182,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
         final account = Account(
           id: 'cash',
           name: _cashNameController.text.trim().isEmpty
-              ? 'Cash'
+              ? AppLocalizations.of(context).finAccCash
               : _cashNameController.text.trim(),
           type: 'cash',
           balance: 0.0,
@@ -179,7 +194,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
         final account = Account(
           id: 'bank',
           name: _bankNameController.text.trim().isEmpty
-              ? 'Bank'
+              ? AppLocalizations.of(context).finAccBank
               : _bankNameController.text.trim(),
           type: 'bank',
           balance: 0.0,
@@ -191,7 +206,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
         final account = Account(
           id: 'card',
           name: _cardNameController.text.trim().isEmpty
-              ? 'Card'
+              ? AppLocalizations.of(context).finAccCard
               : _cardNameController.text.trim(),
           type: 'card',
           balance: 0.0,
@@ -356,7 +371,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
         children: [
           SizedBox(height: isCompact ? 14 : 32),
           Text(
-            "Welcome to\nFinance Tracker",
+            AppLocalizations.of(context).finOnbWelcome,
             style: TextStyle(
               color: textColor,
               fontSize: isCompact ? 30 : 34,
@@ -367,20 +382,20 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           ),
           const Spacer(),
           buildFeature(
-            "Track expenses",
-            "Log every transaction and see where your money goes. Categorize spending to understand your habits.",
+            AppLocalizations.of(context).finOnbTrackTitle,
+            AppLocalizations.of(context).finOnbTrackDesc,
             Icons.account_balance_wallet,
             const Color(0xFF34C759),
           ),
           buildFeature(
-            "Set budgets",
-            "Set monthly spending limits and get alerts when you're close to reaching them.",
+            AppLocalizations.of(context).finOnbBudgetTitle,
+            AppLocalizations.of(context).finOnbBudgetDesc,
             Icons.pie_chart,
             const Color(0xFF5E5CE6),
           ),
           buildFeature(
-            "Privacy first",
-            "Your financial data stays on your device and is never shared with third parties.",
+            AppLocalizations.of(context).finOnbPrivacyTitle,
+            AppLocalizations.of(context).finOnbPrivacyDesc,
             Icons.lock,
             const Color(0xFFFF9F0A),
           ),
@@ -397,7 +412,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
               ),
             ),
             child: Text(
-              "This app is for personal finance tracking only and does not provide financial advice.",
+              AppLocalizations.of(context).finOnbDisclaimer,
               style: TextStyle(
                 color: textColor.withOpacity(0.7),
                 fontSize: 14,
@@ -407,7 +422,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           ),
           const SizedBox(height: 24),
           PremiumButton(
-            text: "Get Started",
+            text: AppLocalizations.of(context).finOnbGetStarted,
             onPressed: _nextPage,
             color: greenColor,
           ),
@@ -507,7 +522,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           UniversalBackButton(onPressed: _previousPage),
           const SizedBox(height: 24),
           Text(
-            "Set up your accounts",
+            AppLocalizations.of(context).finOnbSetupAccounts,
             style: TextStyle(
               color: textColor,
               fontSize: isCompact ? 28 : 32,
@@ -518,7 +533,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           ),
           const SizedBox(height: 12),
           Text(
-            "Choose which accounts you want to track. You can rename them or add more later.",
+            AppLocalizations.of(context).finOnbSetupAccountsDesc,
             style: TextStyle(
               color: textColor.withValues(alpha: 0.6),
               fontSize: isCompact ? 15 : 16,
@@ -527,26 +542,26 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           ),
           const Spacer(),
           _buildAccountPill(
-            'Cash',
+            AppLocalizations.of(context).finAccCash,
             _cashEnabled,
             () => setState(() => _cashEnabled = !_cashEnabled),
             nameController: _cashNameController,
           ),
           _buildAccountPill(
-            'Bank',
+            AppLocalizations.of(context).finAccBank,
             _bankEnabled,
             () => setState(() => _bankEnabled = !_bankEnabled),
             nameController: _bankNameController,
           ),
           _buildAccountPill(
-            'Card',
+            AppLocalizations.of(context).finAccCard,
             _cardEnabled,
             () => setState(() => _cardEnabled = !_cardEnabled),
             nameController: _cardNameController,
           ),
           const Spacer(),
           PremiumButton(
-            text: "Continue",
+            text: AppLocalizations.of(context).finOnbContinue,
             onPressed: (_cashEnabled || _bankEnabled || _cardEnabled)
                 ? _nextPage
                 : () {},
@@ -568,7 +583,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           UniversalBackButton(onPressed: _previousPage),
           const SizedBox(height: 24),
           Text(
-            "Set your monthly budget",
+            AppLocalizations.of(context).finOnbSetBudget,
             style: TextStyle(
               color: textColor,
               fontSize: isCompact ? 28 : 32,
@@ -579,7 +594,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           ),
           const SizedBox(height: 12),
           Text(
-            "How much do you want to spend each month? We'll help you stay on track.",
+            AppLocalizations.of(context).finOnbSetBudgetDesc,
             style: TextStyle(
               color: textColor.withValues(alpha: 0.6),
               fontSize: isCompact ? 15 : 16,
@@ -637,7 +652,7 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
           ),
           const Spacer(),
           PremiumButton(
-            text: "Finish Setup",
+            text: AppLocalizations.of(context).finOnbFinishSetup,
             isLoading: _isSaving,
             onPressed: _isSaving ? () {} : _saveData,
             color: greenColor,

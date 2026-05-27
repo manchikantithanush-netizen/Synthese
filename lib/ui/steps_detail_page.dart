@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
@@ -267,6 +269,7 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF111111) : const Color(0xFFF2F2F7);
     final textColor = isDark ? Colors.white : Colors.black;
@@ -296,9 +299,17 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
         : nonZero.reduce((a, b) => a + b) ~/ nonZero.length;
 
     final int displayNum = isDaily ? _todaySteps : avg;
-    final String displayLabel = isDaily ? "Today's steps" : 'Avg. daily steps';
+    final String displayLabel =
+        isDaily ? t.stepsDetTodaysSteps : t.stepsDetAvgDaily;
 
-    const weekLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final localeName = Localizations.localeOf(context).toString();
+    final mondayLabel = DateTime.now().subtract(
+      Duration(days: DateTime.now().weekday - 1),
+    );
+    final weekLabels = List.generate(
+      7,
+      (i) => DateFormat('EEE', localeName).format(mondayLabel.add(Duration(days: i))),
+    );
 
     return ValueListenableBuilder<Color>(
       valueListenable: AccentColor.notifier,
@@ -362,7 +373,7 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                                 icon: Icon(Icons.add_rounded,
                                     size: 16, color: textColor),
                                 label: Text(
-                                  'Add data',
+                                  t.detailAddData,
                                   style: font(
                                     fontWeight: FontWeight.w700,
                                     color: textColor,
@@ -399,8 +410,8 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                               ),
                               children: [
                                 if (_firstName.isNotEmpty)
-                                  TextSpan(text: 'Hey $_firstName,\n'),
-                                const TextSpan(text: 'You walked '),
+                                  TextSpan(text: '${t.stepsDetGreeting(_firstName)}\n'),
+                                TextSpan(text: t.stepsDetWalkedPrefix),
                                 TextSpan(
                                   text: _formatLarge(_todaySteps),
                                   style: font(
@@ -410,7 +421,7 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                                   ),
                                 ),
                                 TextSpan(
-                                  text: ' steps today',
+                                  text: t.stepsDetWalkedSuffix,
                                   style: font(
                                     fontSize: 28,
                                     fontWeight: FontWeight.w800,
@@ -438,7 +449,7 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
                               children: [
                                 UniversalSegmentedControl<int>(
                                   items: const [0, 1],
-                                  labels: const ['Daily', 'Weekly'],
+                                  labels: [t.detailDaily, t.detailWeekly],
                                   selectedItem: _selectedTab,
                                   onSelectionChanged: (v) {
                                     HapticFeedback.selectionClick();
@@ -633,7 +644,7 @@ class _AddStepsSheetState extends State<_AddStepsSheet> {
   Future<void> _submit() async {
     final value = int.tryParse(_stepsController.text.trim());
     if (value == null || value <= 0) {
-      setState(() => _error = 'Enter a valid step count greater than 0.');
+      setState(() => _error = AppLocalizations.of(context).stepsDetErrorCount);
       return;
     }
     setState(() { _error = null; _saving = true; });
@@ -643,24 +654,26 @@ class _AddStepsSheetState extends State<_AddStepsSheet> {
       Navigator.of(context).pop();
     } catch (e) {
       if (!mounted) return;
-      setState(() { _error = 'Failed to save. Please try again.'; _saving = false; });
+      setState(() {
+        _error = AppLocalizations.of(context).detailSaveFailed;
+        _saving = false;
+      });
     }
   }
 
   String _formatDate(DateTime dt) {
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat('d MMM yyyy', localeName).format(dt);
   }
 
   String _formatTime(DateTime dt) {
-    final h = dt.hour == 0 ? 12 : dt.hour > 12 ? dt.hour - 12 : dt.hour;
-    final m = dt.minute.toString().padLeft(2, '0');
-    final period = dt.hour < 12 ? 'AM' : 'PM';
-    return '$h:$m $period';
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat.jm(localeName).format(dt);
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = widget.isDark;
     final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF2F2F7);
     final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
@@ -747,7 +760,7 @@ class _AddStepsSheetState extends State<_AddStepsSheet> {
               // ── title ──
               Center(
                 child: Text(
-                  'Steps',
+                  t.dashSteps,
                   style: font(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
@@ -771,7 +784,7 @@ class _AddStepsSheetState extends State<_AddStepsSheet> {
                     children: [
                       // Date row
                       _SheetRow(
-                        label: 'Date',
+                        label: t.detailDate,
                         subColor: subColor,
                         textColor: textColor,
                         font: font,
@@ -799,7 +812,7 @@ class _AddStepsSheetState extends State<_AddStepsSheet> {
                           indent: 16, color: divColor),
                       // Time row
                       _SheetRow(
-                        label: 'Time',
+                        label: t.detailTime,
                         subColor: subColor,
                         textColor: textColor,
                         font: font,
@@ -832,7 +845,7 @@ class _AddStepsSheetState extends State<_AddStepsSheet> {
                         child: Row(
                           children: [
                             Text(
-                              'Steps',
+                              t.dashSteps,
                               style: font(
                                 fontSize: 16,
                                 color: subColor,
@@ -1000,11 +1013,19 @@ class _WeeklyRings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final localeName = Localizations.localeOf(context).toString();
     final font = GoogleFonts.plusJakartaSans;
     final dimColor = textColor.withValues(alpha: 0.35);
     // Today's weekday index: Mon=0 … Sun=6
     final int todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
-    const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final mondayLabel = DateTime.now().subtract(
+      Duration(days: DateTime.now().weekday - 1),
+    );
+    final labels = List.generate(
+      7,
+      (i) => DateFormat('EEE', localeName).format(mondayLabel.add(Duration(days: i))),
+    );
 
     return Container(
       decoration: BoxDecoration(
@@ -1033,7 +1054,7 @@ class _WeeklyRings extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                isToday ? 'Today' : labels[i],
+                isToday ? t.detailToday : labels[i],
                 style: font(
                   fontSize: 11,
                   fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
@@ -1212,6 +1233,7 @@ class _DistanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final double km = (steps * _strideM) / 1000.0;
     final double goalKm = (stepGoal * _strideM) / 1000.0;
     // Round goal km to nearest whole number for display
@@ -1242,7 +1264,7 @@ class _DistanceCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Distance',
+                  t.detailDistance,
                   style: font(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -1264,9 +1286,9 @@ class _DistanceCard extends StatelessWidget {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 6, left: 5),
+                      padding: const EdgeInsetsDirectional.only(bottom: 6, start: 5),
                       child: Text(
-                        'km',
+                        t.detailKm,
                         style: font(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -1278,7 +1300,7 @@ class _DistanceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '≈ ${(steps * _strideM).round()} m  ·  ${steps.toString()} steps',
+                  t.stepsDetDistanceSub((steps * _strideM).round(), steps),
                   style: font(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -1313,7 +1335,7 @@ class _DistanceCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '$goalKmDisplay km',
+                '$goalKmDisplay ${t.detailKm}',
                 style: font(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
@@ -1458,6 +1480,7 @@ class _EnergyBarState extends State<_EnergyBar>
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final font = GoogleFonts.plusJakartaSans;
     final pct = (widget.progress * 100).round();
     final trackColor = widget.isDark
@@ -1474,7 +1497,7 @@ class _EnergyBarState extends State<_EnergyBar>
         children: [
           // Label
           Text(
-            'Daily Goal',
+            t.detailDailyGoal,
             style: font(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -1495,7 +1518,7 @@ class _EnergyBarState extends State<_EnergyBar>
                   animation: _anim,
                   builder: (_, __) => FractionallySizedBox(
                     widthFactor: _anim.value * widget.progress,
-                    alignment: Alignment.centerLeft,
+                    alignment: AlignmentDirectional.centerStart,
                     child: Container(
                       decoration: BoxDecoration(
                         color: widget.accentColor,
@@ -1581,10 +1604,8 @@ class _StepsBarChartState extends State<_StepsBarChart>
   }
 
   String _hourLabel(int hour) {
-    if (hour == 0) return '12 AM';
-    if (hour < 12) return '$hour AM';
-    if (hour == 12) return '12 PM';
-    return '${hour - 12} PM';
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat('h a', localeName).format(DateTime(2020, 1, 1, hour));
   }
 
   String _fmtAxis(int n) {
@@ -1600,6 +1621,7 @@ class _StepsBarChartState extends State<_StepsBarChart>
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final axisColor = widget.textColor.withValues(alpha: 0.15);
     final labelColor = widget.textColor.withValues(alpha: 0.45);
     final font = GoogleFonts.plusJakartaSans;
@@ -1616,7 +1638,7 @@ class _StepsBarChartState extends State<_StepsBarChart>
             height: 200,
             alignment: Alignment.center,
             child: Text(
-              'No steps recorded yet today',
+              t.stepsDetEmpty,
               style: font(
                 fontSize: 13,
                 color: labelColor,
@@ -1624,12 +1646,12 @@ class _StepsBarChartState extends State<_StepsBarChart>
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(left: 40),
+            padding: const EdgeInsetsDirectional.only(start: 40),
             child: Container(height: 1, color: axisColor),
           ),
           const SizedBox(height: 6),
           Padding(
-            padding: const EdgeInsets.only(left: 40),
+            padding: const EdgeInsetsDirectional.only(start: 40),
             child: LayoutBuilder(
               builder: (ctx, bc) {
                 final List<int> indices = [0, (barCount * 1 / 3).round().clamp(0, barCount - 1), (barCount * 2 / 3).round().clamp(0, barCount - 1), barCount - 1];
@@ -1709,14 +1731,14 @@ class _StepsBarChartState extends State<_StepsBarChart>
 
         // Baseline
         Padding(
-          padding: const EdgeInsets.only(left: 40),
+          padding: const EdgeInsetsDirectional.only(start: 40),
           child: Container(height: 1, color: axisColor),
         ),
         const SizedBox(height: 6),
 
         // X-axis labels
         Padding(
-          padding: const EdgeInsets.only(left: 40),
+          padding: const EdgeInsetsDirectional.only(start: 40),
           child: widget.isDaily
               ? LayoutBuilder(
                   builder: (ctx, bc) {
@@ -1887,6 +1909,8 @@ class _MonthHeatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final localeName = Localizations.localeOf(context).toString();
     final now = DateTime.now();
     final int year = now.year;
     final int month = now.month;
@@ -1894,22 +1918,7 @@ class _MonthHeatmap extends StatelessWidget {
     final font = GoogleFonts.plusJakartaSans;
 
     // Month name
-    const monthNames = [
-      '',
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    final monthLabel = '${monthNames[month]} $year';
+    final monthLabel = DateFormat('MMMM yyyy', localeName).format(now);
 
     // First weekday of month: Mon=0 … Sun=6
     final int firstWeekday = (DateTime(year, month, 1).weekday - 1).clamp(0, 6);
@@ -1919,7 +1928,11 @@ class _MonthHeatmap extends StatelessWidget {
     // Rows of 7
     final int rows = (totalCells / 7).ceil();
 
-    const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+    final dayLabels = List.generate(
+      7,
+      (i) => DateFormat('EEEEE', localeName).format(monday.add(Duration(days: i))),
+    );
     final labelColor = textColor.withValues(alpha: 0.4);
     final emptyColor = isDark
         ? Colors.white.withValues(alpha: 0.06)
@@ -1950,7 +1963,7 @@ class _MonthHeatmap extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    'Less',
+                    t.detailLess,
                     style: font(
                       fontSize: 11,
                       color: labelColor,
@@ -1963,7 +1976,7 @@ class _MonthHeatmap extends StatelessWidget {
                     return Container(
                       width: 10,
                       height: 10,
-                      margin: const EdgeInsets.only(left: 3),
+                      margin: const EdgeInsetsDirectional.only(start: 3),
                       decoration: BoxDecoration(
                         color: accentColor.withValues(alpha: opacity),
                         borderRadius: BorderRadius.circular(2),
@@ -1972,7 +1985,7 @@ class _MonthHeatmap extends StatelessWidget {
                   }),
                   const SizedBox(width: 4),
                   Text(
-                    'More',
+                    t.detailMore,
                     style: font(
                       fontSize: 11,
                       color: labelColor,

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/update_reminder.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class AboutAppPage extends StatelessWidget {
   final VoidCallback onBack;
@@ -21,6 +22,7 @@ class AboutAppPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
     final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
@@ -32,15 +34,15 @@ class AboutAppPage extends StatelessWidget {
         children: [
           // ── Header ──────────────────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.only(top: 24, left: 20, right: 20, bottom: 12),
+            padding: const EdgeInsetsDirectional.only(top: 24, start: 20, end: 20, bottom: 12),
             child: Stack(
               alignment: Alignment.center,
               children: [
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: UniversalBackButton(onPressed: onBack),
                 ),
-                Text('About App',
+                Text(t.aboutTitle,
                     style: TextStyle(
                         fontSize: 17, fontWeight: FontWeight.w600, color: textColor)),
               ],
@@ -72,7 +74,7 @@ class AboutAppPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        'Version ${UpdateReminder.currentVersion}',
+                        t.aboutVersion(UpdateReminder.currentVersion),
                         style: TextStyle(
                           color: subColor,
                           fontSize: 13,
@@ -86,14 +88,14 @@ class AboutAppPage extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 // Developer
-                _SectionLabel(label: 'DEVELOPER', subColor: subColor),
+                _SectionLabel(label: t.aboutSecDeveloper, subColor: subColor),
                 Container(
                   decoration: BoxDecoration(
                       color: cardColor, borderRadius: BorderRadius.circular(20)),
                   clipBehavior: Clip.antiAlias,
                   child: _InfoRow(
                     icon: Icons.person_rounded,
-                    title: 'Developer',
+                    title: t.aboutDeveloper,
                     value: 'Thanush M',
                     textColor: textColor,
                     subColor: subColor,
@@ -105,14 +107,14 @@ class AboutAppPage extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 // Privacy Policy
-                _SectionLabel(label: 'LEGAL', subColor: subColor),
+                _SectionLabel(label: t.aboutSecLegal, subColor: subColor),
                 Container(
                   decoration: BoxDecoration(
                       color: cardColor, borderRadius: BorderRadius.circular(20)),
                   clipBehavior: Clip.antiAlias,
                   child: _TappableRow(
                     icon: Icons.shield_outlined,
-                    title: 'Privacy Policy',
+                    title: t.aboutPrivacyPolicy,
                     trailing: Icons.open_in_new_rounded,
                     textColor: textColor,
                     subColor: subColor,
@@ -124,24 +126,24 @@ class AboutAppPage extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 // Permissions
-                _SectionLabel(label: 'PERMISSIONS', subColor: subColor),
+                _SectionLabel(label: t.aboutSecPermissions, subColor: subColor),
                 Container(
                   decoration: BoxDecoration(
                       color: cardColor, borderRadius: BorderRadius.circular(20)),
                   clipBehavior: Clip.antiAlias,
                   child: Column(children: [
-                    _InfoRow(icon: Icons.notifications_outlined,  title: 'Notifications',        value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
-                    _InfoRow(icon: Icons.location_on_outlined,    title: 'Location',             value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
-                    _InfoRow(icon: Icons.directions_walk_rounded, title: 'Activity Recognition', value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
-                    _InfoRow(icon: Icons.camera_alt_outlined,     title: 'Camera',               value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
-                    _InfoRow(icon: Icons.photo_library_outlined,  title: 'Photos & Media',       value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: true),
+                    _InfoRow(icon: Icons.notifications_outlined,  title: t.aboutPermNotifications,        value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
+                    _InfoRow(icon: Icons.location_on_outlined,    title: t.aboutPermLocation,             value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
+                    _InfoRow(icon: Icons.directions_walk_rounded, title: t.aboutPermActivity, value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
+                    _InfoRow(icon: Icons.camera_alt_outlined,     title: t.aboutPermCamera,               value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
+                    _InfoRow(icon: Icons.photo_library_outlined,  title: t.aboutPermPhotos,       value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: true),
                   ]),
                 ),
 
                 const SizedBox(height: 12),
 
                 // Contact
-                _SectionLabel(label: 'CONTACT THE DEVELOPER', subColor: subColor),
+                _SectionLabel(label: t.aboutSecContact, subColor: subColor),
                 Container(
                   decoration: BoxDecoration(
                       color: cardColor, borderRadius: BorderRadius.circular(20)),
@@ -167,7 +169,7 @@ class AboutAppPage extends StatelessWidget {
                     _Divider(isDark: isDark),
                     _TappableRow(
                       icon: Icons.mail_outline_rounded,
-                      title: 'Email',
+                      title: t.aboutEmail,
                       value: 'thanush.manchikanti@gmail.com',
                       trailing: Icons.open_in_new_rounded,
                       textColor: textColor, subColor: subColor, isDark: isDark,
@@ -179,7 +181,7 @@ class AboutAppPage extends StatelessWidget {
                 const SizedBox(height: 24),
                 Center(
                   child: Text(
-                    'Made with ❤️',
+                    t.aboutMadeWith,
                     style: TextStyle(color: subColor, fontSize: 12),
                   ),
                 ),
@@ -203,7 +205,7 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(left: 4, bottom: 8, top: 4),
+        padding: const EdgeInsetsDirectional.only(start: 4, bottom: 8, top: 4),
         child: Text(label,
             style: TextStyle(
                 color: subColor,
@@ -218,7 +220,7 @@ class _Divider extends StatelessWidget {
   const _Divider({required this.isDark});
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(left: 56),
+        padding: const EdgeInsetsDirectional.only(start: 56),
         child: Container(
             height: 0.5,
             color: isDark ? Colors.white12 : Colors.black12),

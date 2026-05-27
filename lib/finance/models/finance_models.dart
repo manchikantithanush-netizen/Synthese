@@ -1,5 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
+
+/// Returns the localized display name for a default account/category, keyed by
+/// its stable [id]. User-created items (unknown id) keep their stored [fallback]
+/// name. Storage always keeps the English name; only display is localized.
+String financeDefaultName(AppLocalizations t, String id, String fallback) {
+  switch (id) {
+    case 'food':
+      return t.finCatFood;
+    case 'transport':
+      return t.finCatTransport;
+    case 'shopping':
+      return t.finCatShopping;
+    case 'entertainment':
+      return t.finCatEntertainment;
+    case 'bills':
+      return t.finCatBills;
+    case 'health':
+      return t.finCatHealth;
+    case 'salary':
+      return t.finCatSalary;
+    case 'freelance':
+      return t.finCatFreelance;
+    case 'investment':
+      return t.finCatInvestment;
+    case 'gift':
+      return t.finCatGift;
+    case 'other_expense':
+    case 'other_income':
+      return t.finOther;
+    case 'cash':
+      return t.finAccCash;
+    case 'bank':
+      return t.finAccBank;
+    case 'card':
+      return t.finAccCard;
+    default:
+      return fallback;
+  }
+}
 
 /// Returns a Material icon directly from the well-known id string.
 /// No Firestore lookup needed — ids never change.

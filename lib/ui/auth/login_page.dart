@@ -12,6 +12,7 @@ import 'package:synthese/onboarding/onboarding_intro.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -26,6 +27,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
 
   String? _errorMessage;
+  bool _notificationIsError = true;
   Timer? _errorTimer;
 
   @override
@@ -38,7 +40,10 @@ class _LoginPageState extends State<LoginPage> {
 
   void _triggerNotification(String message, {bool isError = true}) {
     if (isError) HapticFeedback.heavyImpact();
-    setState(() => _errorMessage = message);
+    setState(() {
+      _errorMessage = message;
+      _notificationIsError = isError;
+    });
     _errorTimer?.cancel();
     _errorTimer = Timer(const Duration(seconds: 4), () {
       if (mounted) setState(() => _errorMessage = null);
@@ -61,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> signInWithEmail() async {
     if (emailController.text.trim().isEmpty ||
         passwordController.text.trim().isEmpty) {
-      _triggerNotification('Please enter email and password');
+      _triggerNotification(AppLocalizations.of(context).loginErrEnterCredentials);
       return;
     }
     setState(() => _isLoading = true);
@@ -78,7 +83,10 @@ class _LoginPageState extends State<LoginPage> {
       final emailLower = (user?.email ?? '').toLowerCase();
       if (user != null && !user.emailVerified && !_bypassVerificationEmails.contains(emailLower)) {
         await FirebaseAuth.instance.signOut();
-        _triggerNotification('Please verify your email before logging in.');
+        if (mounted) {
+          _triggerNotification(
+              AppLocalizations.of(context).loginErrVerifyEmail);
+        }
         setState(() => _isLoading = false);
         return;
       }
@@ -91,7 +99,10 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      _triggerNotification(e.message ?? 'Login failed');
+      if (mounted) {
+        _triggerNotification(
+            e.message ?? AppLocalizations.of(context).loginErrLoginFailed);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -120,7 +131,9 @@ class _LoginPageState extends State<LoginPage> {
       if (googleAuth.idToken == null && googleAuth.accessToken == null) {
         throw FirebaseAuthException(
           code: 'missing-google-token',
-          message: 'Google sign-in did not return an auth token.',
+          message: mounted
+              ? AppLocalizations.of(context).authGoogleNoToken
+              : 'Google sign-in did not return an auth token.',
         );
       }
       final credential = GoogleAuthProvider.credential(
@@ -137,14 +150,16 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      _triggerNotification(e.message ?? 'Google Sign-In failed (${e.code})');
+      if (!mounted) return;
+      _triggerNotification(
+          e.message ?? AppLocalizations.of(context).authGoogleFailedCode(e.code));
     } on PlatformException catch (e) {
+      if (!mounted) return;
+      final t = AppLocalizations.of(context);
       final rawMessage = e.message ?? '';
       if (e.code == 'sign_in_failed' &&
           rawMessage.contains('ApiException: 10')) {
-        _triggerNotification(
-          'Google Sign-In Android config is incomplete. Add SHA-1/SHA-256 for this app in Firebase, enable Google provider, then download the updated google-services.json.',
-        );
+        _triggerNotification(t.authGoogleAndroidConfig);
         return;
       }
       final details = [
@@ -152,10 +167,12 @@ class _LoginPageState extends State<LoginPage> {
         e.message,
       ].whereType<String>().where((part) => part.isNotEmpty).join(': ');
       _triggerNotification(
-        'Google Sign-In failed${details.isNotEmpty ? ' ($details)' : ''}',
+        '${t.authGoogleFailed}${details.isNotEmpty ? ' ($details)' : ''}',
       );
     } catch (e) {
-      _triggerNotification('Google Sign-In failed (${e.runtimeType}).');
+      if (!mounted) return;
+      _triggerNotification(
+          AppLocalizations.of(context).authGoogleFailedType('${e.runtimeType}'));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -164,18 +181,23 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> resetPassword() async {
     final email = emailController.text.trim();
     if (email.isEmpty) {
-      _triggerNotification('Enter your email above to reset password.');
+      _triggerNotification(
+          AppLocalizations.of(context).loginErrResetEnterEmail);
       return;
     }
     setState(() => _isLoading = true);
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      _triggerNotification(
-        'Reset email sent! Check your inbox.',
-        isError: false,
-      );
+      if (mounted) {
+        _triggerNotification(
+          AppLocalizations.of(context).loginMsgResetSent,
+          isError: false,
+        );
+      }
     } catch (e) {
-      _triggerNotification('Failed to send reset email.');
+      if (mounted) {
+        _triggerNotification(AppLocalizations.of(context).loginErrResetFailed);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -203,6 +225,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final textColor = Theme.of(context).colorScheme.onSurface;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -249,7 +272,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 32),
 
                     Text(
-                      'Sign In',
+                      t.loginTitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: textColor,
@@ -269,9 +292,9 @@ class _LoginPageState extends State<LoginPage> {
                                 _errorMessage!,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                  color: _errorMessage!.contains('sent')
-                                      ? const Color(0xFF4CD964)
-                                      : const Color(0xFFFF3B30),
+                                  color: _notificationIsError
+                                      ? const Color(0xFFFF3B30)
+                                      : const Color(0xFF4CD964),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -288,7 +311,7 @@ class _LoginPageState extends State<LoginPage> {
                       style: TextStyle(color: textColor),
                       decoration: _iosInputDecoration(
                         context,
-                        'Email',
+                        t.loginEmail,
                         Icons.mail_outline,
                       ),
                     ),
@@ -301,7 +324,7 @@ class _LoginPageState extends State<LoginPage> {
                       style: TextStyle(color: textColor),
                       decoration: _iosInputDecoration(
                         context,
-                        'Password',
+                        t.loginPassword,
                         Icons.lock_outline,
                       ),
                     ),
@@ -309,11 +332,11 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 12),
 
                     Align(
-                      alignment: Alignment.centerRight,
+                      alignment: AlignmentDirectional.centerEnd,
                       child: GestureDetector(
                         onTap: resetPassword,
                         child: Text(
-                          'Forgot password?',
+                          t.loginForgot,
                           style: TextStyle(
                             color: textColor.withOpacity(0.54),
                             fontSize: 14,
@@ -330,12 +353,12 @@ class _LoginPageState extends State<LoginPage> {
                         : Column(
                             children: [
                               PremiumButton(
-                                text: 'Login',
+                                text: t.loginButton,
                                 onPressed: signInWithEmail,
                               ),
                               const SizedBox(height: 14),
                               PremiumButton(
-                                text: 'Continue with Google',
+                                text: t.authContinueGoogle,
                                 onPressed: signInWithGoogle,
                                 showIcon: true,
                                 icon: Image.asset(
@@ -365,9 +388,9 @@ class _LoginPageState extends State<LoginPage> {
                             fontSize: 14,
                           ),
                           children: [
-                            const TextSpan(text: "Don't have an account? "),
+                            TextSpan(text: t.loginNoAccount),
                             TextSpan(
-                              text: 'Sign up',
+                              text: t.loginSignUp,
                               style: TextStyle(
                                 color: textColor,
                                 fontWeight: FontWeight.bold,

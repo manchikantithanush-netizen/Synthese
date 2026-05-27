@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class OnboardingStage1 extends StatelessWidget {
   final TextEditingController nameController;
@@ -26,6 +27,9 @@ class OnboardingStage1 extends StatelessWidget {
     required this.onAthleteSelect,
   });
 
+  // `id` is the canonical (English) value stored in Firestore and the
+  // selectedGoals list — never translated, so existing user data keeps working.
+  // The display label is looked up from AppLocalizations at build time.
   static const List<_Goal> _goals = [
     _Goal('Endurance', Icons.directions_run_rounded),
     _Goal('Strength', Icons.fitness_center_rounded),
@@ -36,6 +40,29 @@ class OnboardingStage1 extends StatelessWidget {
     _Goal('Better Sleep', Icons.nightlight_round),
     _Goal('Consistency', Icons.calendar_month_rounded),
   ];
+
+  static String _goalLabel(AppLocalizations t, String id) {
+    switch (id) {
+      case 'Endurance':
+        return t.goalEndurance;
+      case 'Strength':
+        return t.goalStrength;
+      case 'Lose Fat':
+        return t.goalLoseFat;
+      case 'Gain Muscle':
+        return t.goalGainMuscle;
+      case 'Speed':
+        return t.goalSpeed;
+      case 'Recovery':
+        return t.goalRecovery;
+      case 'Better Sleep':
+        return t.goalBetterSleep;
+      case 'Consistency':
+        return t.goalConsistency;
+      default:
+        return id;
+    }
+  }
 
   int _calculateAge(DateTime birthDate) {
     final now = DateTime.now();
@@ -69,6 +96,8 @@ class OnboardingStage1 extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).colorScheme.onSurface;
     final isMinor = dob != null && _calculateAge(dob!) < 16;
+    final t = AppLocalizations.of(context);
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -76,7 +105,7 @@ class OnboardingStage1 extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Let's get\nstarted",
+            t.onboardingStage1Title,
             style: TextStyle(
               color: textColor,
               fontSize: 38,
@@ -87,7 +116,7 @@ class OnboardingStage1 extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            "Just the basics so we can personalize your experience.",
+            t.onboardingStage1Body,
             style: TextStyle(
               color: textColor.withOpacity(0.55),
               fontSize: 16,
@@ -101,13 +130,14 @@ class OnboardingStage1 extends StatelessWidget {
             controller: nameController,
             cursorColor: textColor,
             style: TextStyle(color: textColor),
-            decoration: _iosInput(context, "Full name", Icons.person_outline),
+            decoration: _iosInput(
+                context, t.onboardingStage1FullName, Icons.person_outline),
           ),
 
           const SizedBox(height: 24),
 
           Text(
-            "Date of birth",
+            t.onboardingStage1Dob,
             style:
                 TextStyle(color: textColor.withOpacity(0.5), fontSize: 14),
           ),
@@ -130,8 +160,8 @@ class OnboardingStage1 extends StatelessWidget {
                   const SizedBox(width: 12),
                   Text(
                     dob == null
-                        ? "Select date"
-                        : DateFormat('MMMM dd, yyyy').format(dob!),
+                        ? t.commonSelectDate
+                        : DateFormat('MMMM dd, yyyy', localeTag).format(dob!),
                     style: TextStyle(
                       color: dob == null
                           ? const Color(0xFF8E8E93)
@@ -168,7 +198,7 @@ class OnboardingStage1 extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        "You're under 16. Parental guidance is required when using this app.",
+                        t.onboardingStage1MinorNotice,
                         style: TextStyle(
                           color: textColor.withOpacity(0.85),
                           fontSize: 13,
@@ -192,13 +222,13 @@ class OnboardingStage1 extends StatelessWidget {
           const SizedBox(height: 28),
 
           Text(
-            "Gender",
+            t.onboardingStage1Gender,
             style:
                 TextStyle(color: textColor.withOpacity(0.5), fontSize: 14),
           ),
           const SizedBox(height: 4),
           Text(
-            "Used to enable cycle tracking for female users.",
+            t.onboardingStage1GenderHint,
             style: TextStyle(
               color: textColor.withOpacity(0.35),
               fontSize: 12,
@@ -209,7 +239,7 @@ class OnboardingStage1 extends StatelessWidget {
             children: [
               Expanded(
                 child: _SelectablePill(
-                  label: 'Male',
+                  label: t.onboardingStage1Male,
                   selected: gender == 'Male',
                   onTap: () => onGenderSelect('Male'),
                 ),
@@ -217,7 +247,7 @@ class OnboardingStage1 extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _SelectablePill(
-                  label: 'Female',
+                  label: t.onboardingStage1Female,
                   selected: gender == 'Female',
                   onTap: () => onGenderSelect('Female'),
                 ),
@@ -228,13 +258,13 @@ class OnboardingStage1 extends StatelessWidget {
           const SizedBox(height: 28),
 
           Text(
-            "Your goals",
+            t.onboardingStage1Goals,
             style:
                 TextStyle(color: textColor.withOpacity(0.5), fontSize: 14),
           ),
           const SizedBox(height: 4),
           Text(
-            "Pick all that apply",
+            t.onboardingStage1GoalsHint,
             style: TextStyle(
               color: textColor.withOpacity(0.35),
               fontSize: 12,
@@ -254,13 +284,14 @@ class OnboardingStage1 extends StatelessWidget {
             ),
             itemBuilder: (context, i) {
               final goal = _goals[i];
-              final selected = selectedGoals.contains(goal.label);
+              final selected = selectedGoals.contains(goal.id);
               return _GoalTile(
                 goal: goal,
+                displayLabel: _goalLabel(t, goal.id),
                 selected: selected,
                 onTap: () {
                   HapticFeedback.lightImpact();
-                  onGoalToggle(goal.label);
+                  onGoalToggle(goal.id);
                 },
               );
             },
@@ -269,7 +300,7 @@ class OnboardingStage1 extends StatelessWidget {
           const SizedBox(height: 28),
 
           Text(
-            "Are you an athlete?",
+            t.onboardingStage1AthleteQuestion,
             style:
                 TextStyle(color: textColor.withOpacity(0.5), fontSize: 14),
           ),
@@ -278,7 +309,7 @@ class OnboardingStage1 extends StatelessWidget {
             children: [
               Expanded(
                 child: _SelectablePill(
-                  label: 'Yes',
+                  label: t.commonYes,
                   selected: isAthlete == true,
                   onTap: () => onAthleteSelect(true),
                 ),
@@ -286,7 +317,7 @@ class OnboardingStage1 extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _SelectablePill(
-                  label: 'No',
+                  label: t.commonNo,
                   selected: isAthlete == false,
                   onTap: () => onAthleteSelect(false),
                 ),
@@ -318,7 +349,7 @@ class OnboardingStage1 extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        "Add your sport, experience level and training details from Account → Athlete Details after onboarding.",
+                        t.onboardingStage1AthleteNotice,
                         style: TextStyle(
                           color: textColor.withOpacity(0.8),
                           fontSize: 12.5,
@@ -347,18 +378,20 @@ class OnboardingStage1 extends StatelessWidget {
 }
 
 class _Goal {
-  final String label;
+  final String id;
   final IconData icon;
-  const _Goal(this.label, this.icon);
+  const _Goal(this.id, this.icon);
 }
 
 class _GoalTile extends StatelessWidget {
   final _Goal goal;
+  final String displayLabel;
   final bool selected;
   final VoidCallback onTap;
 
   const _GoalTile({
     required this.goal,
+    required this.displayLabel,
     required this.selected,
     required this.onTap,
   });
@@ -392,7 +425,7 @@ class _GoalTile extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                goal.label,
+                displayLabel,
                 style: TextStyle(
                   color: textColor,
                   fontSize: 14,

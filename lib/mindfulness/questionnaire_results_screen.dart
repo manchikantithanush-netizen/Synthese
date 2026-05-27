@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/mindfulness/questionnaire_data.dart';
 import 'package:synthese/mindfulness/questionnaire_screen.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
@@ -32,21 +33,22 @@ class QuestionnaireResultsScreen extends StatelessWidget {
     final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = textColor.withOpacity(0.6);
+    final t = AppLocalizations.of(context);
 
     // Calculate scores
     final scores = calculateDimensionScores(answers);
     final hasCrisis = hasCrisisIndicator(answers);
 
-    // Get high and moderate risk dimensions
+    // Get high and moderate risk dimensions (localized names)
     final highRisk = <String>[];
     final moderateRisk = <String>[];
     for (final entry in scores.entries) {
       final level = getRiskLevel(entry.value);
       if (level == RiskLevel.high) {
-        highRisk.add(getDimensionById(entry.key)?.name ?? entry.key);
+        highRisk.add(dimensionName(t, entry.key));
       }
       if (level == RiskLevel.moderate) {
-        moderateRisk.add(getDimensionById(entry.key)?.name ?? entry.key);
+        moderateRisk.add(dimensionName(t, entry.key));
       }
     }
 
@@ -65,14 +67,14 @@ class QuestionnaireResultsScreen extends StatelessWidget {
           children: [
             // Header with close button
             Padding(
-              padding: const EdgeInsets.only(top: 24, left: 20, right: 20),
+              padding: const EdgeInsetsDirectional.only(top: 24, start: 20, end: 20),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
                   Align(
                     alignment: Alignment.center,
                     child: Text(
-                      'Results',
+                      t.resultsTitle,
                       style: TextStyle(
                         color: textColor,
                         fontSize: 18,
@@ -81,7 +83,7 @@ class QuestionnaireResultsScreen extends StatelessWidget {
                     ),
                   ),
                   Align(
-                    alignment: Alignment.centerRight,
+                    alignment: AlignmentDirectional.centerEnd,
                     child: UniversalCloseButton(
                       onPressed: () {
                         // Close all modals and go back to mindfulness page
@@ -105,7 +107,7 @@ class QuestionnaireResultsScreen extends StatelessWidget {
                   children: [
                     // Header
                     Text(
-                      'Your Wellbeing Snapshot',
+                      t.resultsWellbeingSnapshot,
                       style: TextStyle(
                         color: textColor,
                         fontSize: 28,
@@ -115,7 +117,7 @@ class QuestionnaireResultsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Based on your responses, here\'s a breakdown across eight dimensions of mental health.',
+                      t.resultsWellbeingBody,
                       style: TextStyle(color: subTextColor, fontSize: 15),
                     ),
                     const SizedBox(height: 24),
@@ -150,7 +152,7 @@ class QuestionnaireResultsScreen extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Text(
-                        'This assessment is for personal reflection only and does not constitute a clinical diagnosis. If you are experiencing distress, please speak with a qualified mental health professional.',
+                        t.resultsDisclaimer,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: subTextColor,
@@ -164,7 +166,7 @@ class QuestionnaireResultsScreen extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 40),
                       child: UniversalButton(
-                        text: 'Retake Assessment',
+                        text: t.resultsRetake,
                         onPressed: () {
                           HapticFeedback.lightImpact();
                           // Close results modal and show questionnaire modal
@@ -191,47 +193,37 @@ class QuestionnaireResultsScreen extends StatelessWidget {
     required Color cardColor,
     required Color textColor,
   }) {
+    final t = AppLocalizations.of(context);
     IconData insightIcon;
     Color insightColor;
     Color insightBorderColor;
     String insightTitle;
     String insightBody;
 
-    // Priority 1: Crisis indicator (Q12 answer is C (2) or D (3))
     if (hasCrisis) {
       insightIcon = CupertinoIcons.heart_fill;
       insightColor = Colors.red;
       insightBorderColor = Colors.red;
-      insightTitle = 'A note of care';
-      insightBody =
-          'Some of your responses suggest you may be experiencing thoughts that are difficult to carry. Please consider reaching out to a mental health professional, a trusted person, or a crisis line — you don\'t have to manage this alone.';
-    }
-    // Priority 2: Any HIGH risk
-    else if (highRisk.isNotEmpty) {
+      insightTitle = t.resultsInsightCrisisTitle;
+      insightBody = t.resultsInsightCrisisBody;
+    } else if (highRisk.isNotEmpty) {
       insightIcon = CupertinoIcons.exclamationmark_triangle_fill;
       insightColor = Colors.orange;
       insightBorderColor = Colors.orange;
-      insightTitle = 'Where to focus';
-      insightBody =
-          'Your results suggest elevated indicators in: ${highRisk.join(', ')}. These areas may benefit from intentional support — whether through rest, professional guidance, or mindfulness practice.';
-    }
-    // Priority 3: Any MODERATE risk
-    else if (moderateRisk.isNotEmpty) {
+      insightTitle = t.resultsInsightHighTitle;
+      insightBody = t.resultsInsightHighBody(highRisk.join(', '));
+    } else if (moderateRisk.isNotEmpty) {
       insightIcon = CupertinoIcons.info_circle_fill;
       insightColor = Colors.blue;
       insightBorderColor = Colors.blue;
-      insightTitle = 'Worth watching';
-      insightBody =
-          'You\'re showing moderate indicators in: ${moderateRisk.join(', ')}. Small, consistent habits — quality sleep, connection, movement — can make a meaningful difference.';
-    }
-    // Priority 4: All LOW
-    else {
+      insightTitle = t.resultsInsightModerateTitle;
+      insightBody = t.resultsInsightModerateBody(moderateRisk.join(', '));
+    } else {
       insightIcon = CupertinoIcons.checkmark_circle_fill;
       insightColor = Colors.green;
       insightBorderColor = Colors.green;
-      insightTitle = 'Looking good overall';
-      insightBody =
-          'Your responses suggest a relatively balanced state of mental wellbeing. Keep up your healthy habits, and check in regularly — mental health can shift with life circumstances.';
+      insightTitle = t.resultsInsightGoodTitle;
+      insightBody = t.resultsInsightGoodBody;
     }
 
     return Container(
@@ -277,8 +269,9 @@ class QuestionnaireResultsScreen extends StatelessWidget {
     required Color subTextColor,
     required bool isDark,
   }) {
+    final t = AppLocalizations.of(context);
     final riskLevel = getRiskLevel(score);
-    final riskLevelText = _getRiskLevelText(riskLevel);
+    final riskLevelText = _getRiskLevelText(t, riskLevel);
     final riskLevelColor = _getRiskLevelColor(riskLevel);
 
     return Container(
@@ -292,7 +285,7 @@ class QuestionnaireResultsScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'RISK INDICATOR',
+            t.resultsRiskIndicator,
             style: TextStyle(
               color: subTextColor,
               fontSize: 11,
@@ -302,7 +295,7 @@ class QuestionnaireResultsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            dimension.name,
+            dimensionName(t, dimension.id),
             style: TextStyle(
               color: textColor,
               fontSize: 18,
@@ -334,14 +327,14 @@ class QuestionnaireResultsScreen extends StatelessWidget {
     );
   }
 
-  String _getRiskLevelText(RiskLevel level) {
+  String _getRiskLevelText(AppLocalizations t, RiskLevel level) {
     switch (level) {
       case RiskLevel.low:
-        return 'Low Risk';
+        return t.resultsRiskLow;
       case RiskLevel.moderate:
-        return 'Moderate Risk';
+        return t.resultsRiskModerate;
       case RiskLevel.high:
-        return 'High Risk';
+        return t.resultsRiskHigh;
     }
   }
 

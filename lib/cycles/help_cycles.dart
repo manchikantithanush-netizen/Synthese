@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/cycles/articles/cycle_article1.dart';
@@ -77,18 +78,20 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
     final subtitleColor = isDark
         ? const Color(0xFF8E8E93)
         : const Color(0xFF8E8E93);
+    final t = AppLocalizations.of(context);
+    final articles = _articlesFor(t);
 
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 16.0, left: 20.0, right: 20.0),
+          padding: const EdgeInsetsDirectional.only(top: 16.0, start: 20.0, end: 20.0),
           child: Stack(
             alignment: Alignment.center,
             children: [
               Align(
                 alignment: Alignment.center,
                 child: Text(
-                  "Learn",
+                  t.cycleHelpLearn,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -97,7 +100,7 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
                 ),
               ),
               Align(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerEnd,
                 child: UniversalCloseButton(
                   onPressed: () {
                     Navigator.pop(context);
@@ -117,14 +120,13 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
               bottom: 40,
               top: 10,
             ),
-            itemCount: _articles.length,
+            itemCount: articles.length,
             separatorBuilder: (context, index) => const SizedBox(height: 24),
             itemBuilder: (context, index) {
-              final article = _articles[index];
+              final article = articles[index];
               return _buildLargeArticleCard(
                 index: index,
-                // The ?? fallbacks prevent the 'Null is not a subtype of String' error
-                title: article['title'] as String? ?? 'Article Title',
+                title: article['title'] as String? ?? t.cycleHelpArticleTitle,
                 description: article['desc'] as String? ?? '',
                 imagePath: article['image'] as String? ?? 'assets/image1.jpg',
                 isDark: isDark,
@@ -266,16 +268,16 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 16.0, left: 20.0, right: 20.0),
+          padding: const EdgeInsetsDirectional.only(top: 16.0, start: 20.0, end: 20.0),
           child: Stack(
             alignment: Alignment.center,
             children: [
               Align(
-                alignment: Alignment.centerLeft,
+                alignment: AlignmentDirectional.centerStart,
                 child: UniversalBackButton(onPressed: _slideBack),
               ),
               Align(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerEnd,
                 child: UniversalCloseButton(
                   onPressed: () {
                     Navigator.pop(context);
@@ -292,43 +294,35 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
   }
 }
 
-// --- ARTICLE DATA ---
-// NOTE: Ensure this completely replaces the old list at the bottom of your file.
-final List<Map<String, dynamic>> _articles = [
+List<Map<String, dynamic>> _articlesFor(AppLocalizations t) => [
   {
-    'title': 'What is a menstrual cycle?',
-    'desc':
-        'The complete beginner\'s guide to understanding your body and what is actually happening every month.',
+    'title': t.cycleHelpArticle1Title,
+    'desc': t.cycleHelpArticle1Desc,
     'image': 'assets/image1.jpg',
   },
   {
-    'title': 'The four phases of your cycle',
-    'desc':
-        'Breaking down the menstrual, follicular, ovulation, and luteal phases. What your body is doing and what you might feel.',
+    'title': t.cycleHelpArticle2Title,
+    'desc': t.cycleHelpArticle2Desc,
     'image': 'assets/image2.jpg',
   },
   {
-    'title': 'Hormones and your cycle',
-    'desc':
-        'What estrogen, progesterone, LH, and FSH actually do. How hormone levels rise and fall and cause symptoms.',
+    'title': t.cycleHelpArticle3Title,
+    'desc': t.cycleHelpArticle3Desc,
     'image': 'assets/image3.jpg',
   },
   {
-    'title': 'What is spotting?',
-    'desc':
-        'The difference between spotting and a period. Common causes like ovulation and stress, and when to mention it.',
+    'title': t.cycleHelpArticle4Title,
+    'desc': t.cycleHelpArticle4Desc,
     'image': 'assets/image4.jpg',
   },
   {
-    'title': 'Things that affect your cycle',
-    'desc':
-        'Stress, sleep, exercise, diet, and travel. Why your cycle is a reflection of your overall health.',
+    'title': t.cycleHelpArticle5Title,
+    'desc': t.cycleHelpArticle5Desc,
     'image': 'assets/image5.jpg',
   },
   {
-    'title': 'Why cycle tracking matters',
-    'desc':
-        'What tracking tells you beyond predicting your period. How to use your logs to understand your baseline.',
+    'title': t.cycleHelpArticle6Title,
+    'desc': t.cycleHelpArticle6Desc,
     'image': 'assets/image6.jpg',
   },
 ];

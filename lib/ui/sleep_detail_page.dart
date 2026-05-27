@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart' hide TextDirection;
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
@@ -65,20 +67,20 @@ class _SleepSegment {
 enum _SleepPhase { inBed, asleep, awake, light, deep, rem }
 
 extension _SleepPhaseX on _SleepPhase {
-  String get label {
+  String label(AppLocalizations t) {
     switch (this) {
       case _SleepPhase.inBed:
-        return 'In Bed';
+        return t.slpStageInBed;
       case _SleepPhase.asleep:
-        return 'Asleep';
+        return t.slpStageAsleep;
       case _SleepPhase.awake:
-        return 'Awake';
+        return t.slpStageAwake;
       case _SleepPhase.light:
-        return 'Core';
+        return t.slpStageCore;
       case _SleepPhase.deep:
-        return 'Deep';
+        return t.slpStageDeep;
       case _SleepPhase.rem:
-        return 'REM';
+        return t.slpStageRem;
     }
   }
 }
@@ -336,47 +338,62 @@ class _SleepDetailPageState extends State<SleepDetailPage>
     );
   }
 
-  ({String prefix, String keyword, String suffix}) _buildInsight() {
+  ({String prefix, String keyword, String suffix}) _buildInsight(
+    AppLocalizations t,
+  ) {
     final int mins = _data.totalMinutes;
     if (mins == 0) {
-      return (prefix: 'No sleep data ', keyword: 'recorded', suffix: ' yet.');
+      return (
+        prefix: t.slpInsNoneP,
+        keyword: t.slpInsNoneK,
+        suffix: t.slpInsNoneS,
+      );
     }
     final double hrs = mins / 60;
     if (hrs >= 8) {
       return (
-        prefix: 'You got a ',
-        keyword: 'great night\'s sleep',
-        suffix: '.',
+        prefix: t.slpInsGreatP,
+        keyword: t.slpInsGreatK,
+        suffix: t.slpInsGreatS,
       );
     }
     if (hrs >= 7) {
-      return (prefix: 'You slept ', keyword: 'well', suffix: ' last night.');
+      return (
+        prefix: t.slpInsWellP,
+        keyword: t.slpInsWellK,
+        suffix: t.slpInsWellS,
+      );
     }
     if (hrs >= 6) {
       return (
-        prefix: 'You got ',
-        keyword: 'decent sleep',
-        suffix: ' last night.',
+        prefix: t.slpInsDecentP,
+        keyword: t.slpInsDecentK,
+        suffix: t.slpInsDecentS,
       );
     }
     if (hrs >= 4) {
       return (
-        prefix: 'You had a ',
-        keyword: 'short night',
-        suffix: ' — try to rest more.',
+        prefix: t.slpInsShortP,
+        keyword: t.slpInsShortK,
+        suffix: t.slpInsShortS,
       );
     }
-    return (prefix: 'You need ', keyword: 'more sleep', suffix: ' tonight.');
+    return (
+      prefix: t.slpInsNeedP,
+      keyword: t.slpInsNeedK,
+      suffix: t.slpInsNeedS,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF111111) : const Color(0xFFF2F2F7);
     final textColor = isDark ? Colors.white : Colors.black;
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final font = GoogleFonts.plusJakartaSans;
-    final insight = _buildInsight();
+    final insight = _buildInsight(t);
 
     // Ring colors — matching the reference image style
     const Color remColor = Color(0xFF5B8A5F); // green
@@ -457,7 +474,7 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                   color: textColor,
                                 ),
                                 label: Text(
-                                  'Add data',
+                                  t.detailAddData,
                                   style: font(
                                     fontWeight: FontWeight.w700,
                                     color: textColor,
@@ -531,7 +548,7 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                       Column(
                                         children: [
                                           Text(
-                                            'You slept for',
+                                            t.slpYouSleptFor,
                                             style: font(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
@@ -560,7 +577,7 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                           ),
                                           const SizedBox(height: 6),
                                           Text(
-                                            'Goal ${_fmtHours(_goalMinutes)}',
+                                            t.dashGoalValue(_fmtHours(_goalMinutes)),
                                             style: font(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w600,
@@ -609,7 +626,7 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                         children: [
                                           if (_data.remMinutes > 0)
                                             _StageChip(
-                                              label: 'REM',
+                                              label: t.slpStageRem,
                                               value: _fmtHours(
                                                 _data.remMinutes,
                                               ),
@@ -619,7 +636,7 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                             ),
                                           if (_data.coreMinutes > 0)
                                             _StageChip(
-                                              label: 'Core',
+                                              label: t.slpStageCore,
                                               value: _fmtHours(
                                                 _data.coreMinutes,
                                               ),
@@ -629,7 +646,7 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                             ),
                                           if (_data.deepMinutes > 0)
                                             _StageChip(
-                                              label: 'Deep',
+                                              label: t.slpStageDeep,
                                               value: _fmtHours(
                                                 _data.deepMinutes,
                                               ),
@@ -639,7 +656,7 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                             ),
                                           if (_data.awakeMinutes > 0)
                                             _StageChip(
-                                              label: 'Awake',
+                                              label: t.slpStageAwake,
                                               value: _fmtHours(
                                                 _data.awakeMinutes,
                                               ),
@@ -649,7 +666,7 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                             ),
                                           if (_data.asleepMinutes > 0)
                                             _StageChip(
-                                              label: 'Asleep',
+                                              label: t.slpStageAsleep,
                                               value: _fmtHours(
                                                 _data.asleepMinutes,
                                               ),
@@ -659,7 +676,7 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                             ),
                                           if (_data.inBedMinutes > 0)
                                             _StageChip(
-                                              label: 'In Bed',
+                                              label: t.slpStageInBed,
                                               value: _fmtHours(
                                                 _data.inBedMinutes,
                                               ),
@@ -675,7 +692,7 @@ class _SleepDetailPageState extends State<SleepDetailPage>
                                               _data.inBedMinutes == 0 &&
                                               total > 0)
                                             _StageChip(
-                                              label: 'Total',
+                                              label: t.slpStageTotal,
                                               value: _fmtHours(total),
                                               color: accentColor,
                                               isDark: isDark,
@@ -830,7 +847,7 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
 
   Future<void> _submit() async {
     if (!_end.isAfter(_start)) {
-      setState(() => _error = 'End time must be after start time.');
+      setState(() => _error = AppLocalizations.of(context).slpErrorEndAfter);
       return;
     }
     setState(() {
@@ -844,39 +861,20 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = 'Failed to save. Please try again.';
+        _error = AppLocalizations.of(context).detailSaveFailed;
         _saving = false;
       });
     }
   }
 
   String _fmt(DateTime dt) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${dt.day} ${months[dt.month - 1]}';
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat('d MMM', localeName).format(dt);
   }
 
   String _fmtTime(DateTime dt) {
-    final h = dt.hour == 0
-        ? 12
-        : dt.hour > 12
-        ? dt.hour - 12
-        : dt.hour;
-    final m = dt.minute.toString().padLeft(2, '0');
-    final period = dt.hour < 12 ? 'AM' : 'PM';
-    return '$h:$m $period';
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat.jm(localeName).format(dt);
   }
 
   String _duration() {
@@ -891,6 +889,7 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = widget.isDark;
     final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF2F2F7);
     final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
@@ -985,7 +984,7 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
               // ── title + duration ──
               Center(
                 child: Text(
-                  'Sleep',
+                  t.slpTitle,
                   style: font(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
@@ -1031,7 +1030,7 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
                               child: Row(
                                 children: [
                                   Text(
-                                    p.label,
+                                    p.label(t),
                                     style: font(fontSize: 16, color: textColor),
                                   ),
                                   const Spacer(),
@@ -1072,7 +1071,7 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
                   child: Column(
                     children: [
                       _SleepSheetRow(
-                        label: 'Starts',
+                        label: t.slpStarts,
                         subColor: subColor,
                         textColor: textColor,
                         font: font,
@@ -1132,7 +1131,7 @@ class _SleepPhaseAddSheetState extends State<_SleepPhaseAddSheet> {
                         color: divColor,
                       ),
                       _SleepSheetRow(
-                        label: 'Ends',
+                        label: t.slpEnds,
                         subColor: subColor,
                         textColor: textColor,
                         font: font,
@@ -1421,20 +1420,20 @@ class _SleepTimeline extends StatelessWidget {
     }
   }
 
-  static String _stageLabel(String stage) {
+  static String _stageLabel(AppLocalizations t, String stage) {
     switch (stage) {
       case 'awake':
-        return 'Awake';
+        return t.slpStageAwake;
       case 'light':
-        return 'Core';
+        return t.slpStageCore;
       case 'rem':
-        return 'REM';
+        return t.slpStageRem;
       case 'deep':
-        return 'Deep';
+        return t.slpStageDeep;
       case 'asleep':
-        return 'Asleep';
+        return t.slpStageAsleep;
       case 'inBed':
-        return 'In Bed';
+        return t.slpStageInBed;
       default:
         return stage;
     }
@@ -1442,6 +1441,8 @@ class _SleepTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final localeName = Localizations.localeOf(context).toString();
     final font = GoogleFonts.plusJakartaSans;
     final labelColor = textColor.withValues(alpha: 0.4);
 
@@ -1458,11 +1459,11 @@ class _SleepTimeline extends StatelessWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Sleep Stages',
+          Text(t.slpStagesTitle,
               style: font(fontSize: 15, fontWeight: FontWeight.w700,
                   color: textColor)),
           const SizedBox(height: 40),
-          Center(child: Text('Add a sleep entry to see your chart',
+          Center(child: Text(t.slpStagesEmpty,
               style: font(fontSize: 13, color: labelColor))),
           const SizedBox(height: 40),
         ],
@@ -1475,9 +1476,7 @@ class _SleepTimeline extends StatelessWidget {
 
     // Build exactly 4 evenly-spaced X-axis labels across the range
     String _hourLabel(DateTime dt) {
-      final h = dt.hour == 0 ? 12 : dt.hour > 12 ? dt.hour - 12 : dt.hour;
-      final period = dt.hour < 12 ? 'AM' : 'PM';
-      return '$h $period';
+      return DateFormat('h a', localeName).format(dt);
     }
 
     final List<String> xLabels = [];
@@ -1496,7 +1495,7 @@ class _SleepTimeline extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Sleep Stages',
+        Text(t.slpStagesTitle,
             style: font(fontSize: 15, fontWeight: FontWeight.w700,
                 color: textColor)),
 
@@ -1516,6 +1515,14 @@ class _SleepTimeline extends StatelessWidget {
                       totalMins: totalMins,
                       start: chartStart,
                       isDark: isDark,
+                      stageLabels: [
+                        t.slpStageDeep,
+                        t.slpStageRem,
+                        t.slpStageCore,
+                        t.slpStageAsleep,
+                        t.slpStageAwake,
+                        t.slpStageInBed,
+                      ],
                     ),
                   ),
                 ),
@@ -1589,7 +1596,7 @@ class _SleepTimeline extends StatelessWidget {
                 ),
                 const SizedBox(width: 5),
                 Text(
-                  '$timeStr  ${_stageLabel(stage)}',
+                  '$timeStr  ${_stageLabel(t, stage)}',
                   style: font(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -1610,12 +1617,15 @@ class _SleepGanttPainter extends CustomPainter {
   final int totalMins;
   final DateTime start;
   final bool isDark;
+  // Top→bottom: Deep, REM, Core, Asleep, Awake, In Bed
+  final List<String> stageLabels;
 
   const _SleepGanttPainter({
     required this.segments,
     required this.totalMins,
     required this.start,
     required this.isDark,
+    required this.stageLabels,
   });
 
   static const int _levels =
@@ -1654,11 +1664,10 @@ class _SleepGanttPainter extends CustomPainter {
       fontWeight: FontWeight.w600,
     );
     // Top→bottom: Deep(0), REM(1), Light(2), Asleep(3), Awake(4), In Bed(5)
-    const stageNames = ['Deep', 'REM', 'Core', 'Asleep', 'Awake', 'In Bed'];
     for (int i = 0; i < _levels; i++) {
       final double cy = levelH * i + levelH / 2;
       final tp = TextPainter(
-        text: TextSpan(text: stageNames[i], style: labelStyle),
+        text: TextSpan(text: stageLabels[i], style: labelStyle),
         textDirection: TextDirection.ltr,
       )..layout(maxWidth: leftMargin - 6);
       tp.paint(canvas, Offset(leftMargin - tp.width - 6, cy - tp.height / 2));
@@ -1820,30 +1829,21 @@ class _SleepHeatmapState extends State<_SleepHeatmap> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final localeName = Localizations.localeOf(context).toString();
     final font = GoogleFonts.plusJakartaSans;
     final now = DateTime.now();
     final int year = now.year;
     final int month = now.month;
     final int daysInMonth = DateUtils.getDaysInMonth(year, month);
-    const monthNames = [
-      '',
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    final monthLabel = '${monthNames[month]} $year';
+    final monthLabel = DateFormat('MMMM yyyy', localeName).format(now);
     final int firstWeekday = (DateTime(year, month, 1).weekday - 1).clamp(0, 6);
     final int rows = ((firstWeekday + daysInMonth) / 7).ceil();
-    const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+    final dayLabels = List.generate(
+      7,
+      (i) => DateFormat('EEEEE', localeName).format(monday.add(Duration(days: i))),
+    );
     final labelColor = widget.textColor.withValues(alpha: 0.4);
     final emptyColor = widget.isDark
         ? Colors.white.withValues(alpha: 0.06)
@@ -1872,7 +1872,7 @@ class _SleepHeatmapState extends State<_SleepHeatmap> {
               Row(
                 children: [
                   Text(
-                    'Less',
+                    t.detailLess,
                     style: font(
                       fontSize: 11,
                       color: labelColor,
@@ -1885,7 +1885,7 @@ class _SleepHeatmapState extends State<_SleepHeatmap> {
                     return Container(
                       width: 10,
                       height: 10,
-                      margin: const EdgeInsets.only(left: 3),
+                      margin: const EdgeInsetsDirectional.only(start: 3),
                       decoration: BoxDecoration(
                         color: widget.accentColor.withValues(alpha: opacity),
                         borderRadius: BorderRadius.circular(2),

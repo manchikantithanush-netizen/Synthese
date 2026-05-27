@@ -4,6 +4,10 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Synthese uses the camera and flashlight to measure your heart rate by detecting subtle blood-flow changes in your fingertip.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Required by the camera plugin even though Synthese does not record audio.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

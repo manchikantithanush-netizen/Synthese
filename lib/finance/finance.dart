@@ -4,6 +4,7 @@ import 'package:adaptive_platform_ui/adaptive_platform_ui.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/finance/services/finance_service.dart';
 import 'package:synthese/finance/finance_add_transaction.dart';
@@ -259,7 +260,7 @@ class _FinancePageState extends State<FinancePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Debts",
+                AppLocalizations.of(context).finDebts,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -282,7 +283,7 @@ class _FinancePageState extends State<FinancePage> {
                           child: Column(
                             children: [
                               Text(
-                                "You Owe",
+                                AppLocalizations.of(context).finYouOwe,
                                 style: TextStyle(
                                   color: subTextColor,
                                   fontSize: 13,
@@ -305,7 +306,7 @@ class _FinancePageState extends State<FinancePage> {
                           child: Column(
                             children: [
                               Text(
-                                "Owed to You",
+                                AppLocalizations.of(context).finOwedToYou,
                                 style: TextStyle(
                                   color: subTextColor,
                                   fontSize: 13,
@@ -334,7 +335,7 @@ class _FinancePageState extends State<FinancePage> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              "Paydown Progress",
+                              AppLocalizations.of(context).finPaydownProgress,
                               style: TextStyle(
                                 color: subTextColor,
                                 fontSize: 12,
@@ -372,7 +373,7 @@ class _FinancePageState extends State<FinancePage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          "Tap to view all debts",
+                          AppLocalizations.of(context).finTapViewAllDebts,
                           style: TextStyle(
                             color: subTextColor,
                             fontSize: 12,
@@ -441,7 +442,7 @@ class _FinancePageState extends State<FinancePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Finance",
+              AppLocalizations.of(context).finTitle,
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
@@ -474,7 +475,7 @@ class _FinancePageState extends State<FinancePage> {
               opacity: _isModalOpen ? 0.0 : 1.0,
               duration: const Duration(milliseconds: 150),
               child: Align(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerEnd,
                 child: TextButton(
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
@@ -493,7 +494,7 @@ class _FinancePageState extends State<FinancePage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Transfer',
+                        AppLocalizations.of(context).finTransfer,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -512,7 +513,7 @@ class _FinancePageState extends State<FinancePage> {
               opacity: _isModalOpen ? 0.0 : 1.0,
               duration: const Duration(milliseconds: 150),
               child: PremiumButton(
-                text: "Add Transaction",
+                text: AppLocalizations.of(context).finAddTransaction,
                 onPressed: _showAddTransactionModal,
               ),
             ),
@@ -637,7 +638,7 @@ class _FinancePageState extends State<FinancePage> {
 
             // Transaction History Section
             Text(
-              "Recent Transactions",
+              AppLocalizations.of(context).finRecentTransactions,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -691,7 +692,7 @@ class _FinancePageState extends State<FinancePage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                "Total Balance",
+                AppLocalizations.of(context).finTotalBalance,
                 style: TextStyle(
                   color: subTextColor,
                   fontSize: 14,
@@ -816,7 +817,7 @@ class _FinancePageState extends State<FinancePage> {
           ),
           const SizedBox(height: 8),
           Text(
-            account.name,
+            financeDefaultName(AppLocalizations.of(context), account.id, account.name),
             style: TextStyle(
               color: subTextColor,
               fontSize: 12,
@@ -912,15 +913,15 @@ class _FinancePageState extends State<FinancePage> {
                     const SizedBox(height: 16),
                     Text(
                       allDocs.isEmpty
-                          ? "No transactions yet"
-                          : "No matching transactions",
+                          ? AppLocalizations.of(context).finNoTransactions
+                          : AppLocalizations.of(context).finNoMatching,
                       style: TextStyle(color: subTextColor, fontSize: 16),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       allDocs.isEmpty
-                          ? "Tap 'Add Transaction' to get started"
-                          : "Try adjusting your filters",
+                          ? AppLocalizations.of(context).finTapAddToStart
+                          : AppLocalizations.of(context).finTryAdjustFilters,
                       style: TextStyle(
                         color: subTextColor.withOpacity(0.7),
                         fontSize: 13,
@@ -960,14 +961,15 @@ class _FinancePageState extends State<FinancePage> {
                   final amountPrefix = isExpense ? '-' : '+';
                   final dateStr = DateFormat(
                     'MMM d, yyyy',
+                    Localizations.localeOf(context).toString(),
                   ).format(transaction.date);
 
                   return Dismissible(
                     key: Key(doc.id),
                     direction: DismissDirection.endToStart,
                     background: Container(
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(right: 20),
+                      alignment: AlignmentDirectional.centerEnd,
+                      padding: const EdgeInsetsDirectional.only(end: 20),
                       color: const Color(0xFFFF3B30),
                       child: const Icon(
                         Icons.delete,
@@ -1004,7 +1006,7 @@ class _FinancePageState extends State<FinancePage> {
                         ),
                       ),
                       title: Text(
-                        category?.name ?? 'Unknown',
+                        category != null ? financeDefaultName(AppLocalizations.of(context), category.id, category.name) : AppLocalizations.of(context).finUnknown,
                         style: TextStyle(
                           color: textColor,
                           fontSize: 15,
@@ -1049,7 +1051,7 @@ class _FinancePageState extends State<FinancePage> {
         onChanged: (value) => setState(() => _searchQuery = value),
         style: TextStyle(color: textColor, fontSize: 16),
         decoration: InputDecoration(
-          hintText: 'Search transactions...',
+          hintText: AppLocalizations.of(context).finSearchTransactions,
           hintStyle: TextStyle(color: subTextColor, fontSize: 16),
           prefixIcon: Icon(
             Icons.search,
@@ -1086,7 +1088,7 @@ class _FinancePageState extends State<FinancePage> {
     final canGoForward =
         _selectedMonth.year < now.year ||
         (_selectedMonth.year == now.year && _selectedMonth.month < now.month);
-    final monthLabel = DateFormat('MMMM yyyy').format(_selectedMonth);
+    final monthLabel = DateFormat('MMMM yyyy', Localizations.localeOf(context).toString()).format(_selectedMonth);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -1218,10 +1220,12 @@ class _FinancePageState extends State<FinancePage> {
                 Expanded(
                   child: Text(
                     selectedCategory == null
-                        ? 'All Categories'
+                        ? AppLocalizations.of(context).finAllCategories
                         : (selectedCategory.name == 'Other'
-                              ? 'Other (${selectedCategory.type == 'expense' ? 'Expense' : 'Income'})'
-                              : selectedCategory.name),
+                              ? (selectedCategory.type == 'expense'
+                                  ? AppLocalizations.of(context).finOtherExpense
+                                  : AppLocalizations.of(context).finOtherIncome)
+                              : financeDefaultName(AppLocalizations.of(context), selectedCategory.id, selectedCategory.name)),
                     style: TextStyle(
                       color: textColor,
                       fontSize: 16,
@@ -1285,7 +1289,7 @@ class _FinancePageState extends State<FinancePage> {
                     Align(
                       alignment: Alignment.center,
                       child: Text(
-                        "Select Category",
+                        AppLocalizations.of(context).finSelectCategory,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -1294,7 +1298,7 @@ class _FinancePageState extends State<FinancePage> {
                       ),
                     ),
                     Align(
-                      alignment: Alignment.centerRight,
+                      alignment: AlignmentDirectional.centerEnd,
                       child: GestureDetector(
                         onTap: () {
                           HapticFeedback.lightImpact();
@@ -1429,10 +1433,12 @@ class _FinancePageState extends State<FinancePage> {
             Expanded(
               child: Text(
                 category == null
-                    ? 'All Categories'
+                    ? AppLocalizations.of(context).finAllCategories
                     : (category.name == 'Other'
-                          ? 'Other (${category.type == 'expense' ? 'Expense' : 'Income'})'
-                          : category.name),
+                          ? (category.type == 'expense'
+                              ? AppLocalizations.of(context).finOtherExpense
+                              : AppLocalizations.of(context).finOtherIncome)
+                          : financeDefaultName(AppLocalizations.of(context), category.id, category.name)),
                 style: TextStyle(
                   color: textColor,
                   fontSize: 16,
@@ -1459,17 +1465,17 @@ class _FinancePageState extends State<FinancePage> {
     bool result = false;
     await AdaptiveAlertDialog.show(
       context: context,
-      title: 'Delete Transaction',
-      message: 'Are you sure you want to delete this transaction?',
+      title: AppLocalizations.of(context).finDeleteTransaction,
+      message: AppLocalizations.of(context).finDeleteTransactionConfirm,
       icon: 'trash.fill',
       actions: [
         AlertAction(
-          title: 'Cancel',
+          title: AppLocalizations.of(context).commonCancel,
           style: AlertActionStyle.cancel,
           onPressed: () {},
         ),
         AlertAction(
-          title: 'Delete',
+          title: AppLocalizations.of(context).commonDelete,
           style: AlertActionStyle.destructive,
           onPressed: () {
             HapticFeedback.lightImpact();

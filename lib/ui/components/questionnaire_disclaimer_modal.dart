@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 
@@ -18,6 +19,7 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
     final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF5F5F5);
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = textColor.withValues(alpha: 0.6);
+    final t = AppLocalizations.of(context);
 
     return FractionallySizedBox(
       heightFactor: 0.93,
@@ -40,7 +42,7 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
                   const SizedBox(width: 40),
                   Expanded(
                     child: Text(
-                      'Before You Begin',
+                      t.disclaimerTitle,
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -90,7 +92,7 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
 
                     // Disclaimer text
                     Text(
-                      'This assessment is designed for personal reflection and self-awareness. It is not a clinical diagnosis tool and should not replace professional mental health advice.',
+                      t.disclaimerBody,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: textColor,
@@ -103,7 +105,7 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
 
                     // Credits section
                     Text(
-                      'This questionnaire covers 15 carefully researched questions inspired by validated tools like the PHQ-9, GAD-7, and Maslach Burnout Inventory.',
+                      t.disclaimerCredits,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: subTextColor,
@@ -126,7 +128,7 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
                         ),
                         SizedBox(width: isCompact ? 4 : 6),
                         Text(
-                          'Takes about 3-5 minutes to complete.',
+                          t.disclaimerDuration,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: subTextColor,
@@ -152,7 +154,7 @@ class QuestionnaireDisclaimerModal extends StatelessWidget {
                 mediaQuery.padding.bottom + (isCompact ? 12 : 24),
               ),
               child: UniversalButton(
-                text: 'Start Test',
+                text: t.disclaimerStartTest,
                 onPressed: () {
                   HapticFeedback.mediumImpact();
                   Navigator.of(context).pop(true);

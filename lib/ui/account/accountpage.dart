@@ -9,7 +9,9 @@ import 'package:synthese/main.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/services/accent_color_service.dart';
+import 'package:synthese/services/locale_service.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -43,6 +45,114 @@ class _AccountPageModalState extends State<AccountPageModal> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  // ===== Localized display lookups (values stay English in Firestore) =====
+  String _genderLabel(AppLocalizations t, dynamic v) {
+    switch (v?.toString()) {
+      case 'Male':
+        return t.onboardingStage1Male;
+      case 'Female':
+        return t.onboardingStage1Female;
+      default:
+        return v?.toString() ?? '';
+    }
+  }
+  String _goalLabel(AppLocalizations t, String v) {
+    switch (v) {
+      case 'Endurance':
+        return t.goalEndurance;
+      case 'Strength':
+        return t.goalStrength;
+      case 'Lose Fat':
+        return t.goalLoseFat;
+      case 'Gain Muscle':
+        return t.goalGainMuscle;
+      case 'Speed':
+        return t.goalSpeed;
+      case 'Recovery':
+        return t.goalRecovery;
+      case 'Better Sleep':
+        return t.goalBetterSleep;
+      case 'Consistency':
+        return t.goalConsistency;
+      case 'Daily Steps':
+        return t.goalDailySteps;
+      case 'Calories Burnt':
+        return t.goalCaloriesBurnt;
+      case 'Calories Eaten':
+        return t.goalCaloriesEaten;
+      case 'Exercise Time':
+        return t.goalExerciseTime;
+      case 'Sleep':
+        return t.goalSleep;
+      default:
+        return v;
+    }
+  }
+  String _athleteTypeLabel(AppLocalizations t, String v) {
+    switch (v) {
+      case 'Student':
+        return t.acctLogTypeStudent;
+      case 'Club':
+        return t.acctLogTypeClub;
+      case 'Casual':
+        return t.acctLogTypeCasual;
+      case 'Competitive':
+        return t.acctLogTypeCompetitive;
+      default:
+        return v;
+    }
+  }
+  String _experienceLabel(AppLocalizations t, String v) {
+    switch (v) {
+      case 'Beginner':
+        return t.acctLogExpBeginner;
+      case 'Intermediate':
+        return t.acctLogExpIntermediate;
+      case 'Advanced':
+        return t.acctLogExpAdvanced;
+      default:
+        return v;
+    }
+  }
+  String _sportLabel(AppLocalizations t, String v) {
+    switch (v) {
+      case 'Football':
+        return t.acctLogSportFootball;
+      case 'Track':
+        return t.acctLogSportTrack;
+      case 'Cricket':
+        return t.acctLogSportCricket;
+      case 'Basketball':
+        return t.acctLogSportBasketball;
+      case 'Motor sport':
+        return t.acctLogSportMotorSport;
+      case 'Golf':
+        return t.acctLogSportGolf;
+      case 'Badminton':
+        return t.acctLogSportBadminton;
+      case 'Tennis':
+        return t.acctLogSportTennis;
+      case 'Gymnastics':
+        return t.acctLogSportGymnastics;
+      case 'Volleyball':
+        return t.acctLogSportVolleyball;
+      case 'Martial arts':
+        return t.acctLogSportMartialArts;
+      case 'Swimming':
+        return t.acctLogSportSwimming;
+      case 'Cycling':
+        return t.acctLogSportCycling;
+      case 'Running':
+        return t.acctLogSportRunning;
+      case 'Rugby':
+        return t.acctLogSportRugby;
+      case 'Hockey':
+        return t.acctLogSportHockey;
+      default:
+        return v;
+    }
   }
 
   Future<void> _fetchUserData() async {
@@ -106,24 +216,24 @@ class _AccountPageModalState extends State<AccountPageModal> {
       builder: (context) => AlertDialog(
         backgroundColor: dialogBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete Account', style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
+        title: Text(AppLocalizations.of(context).accountDeleteAccount, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
         content: Text(
-          'Are you sure you want to delete your account? This will permanently delete all your data and cannot be undone.',
+          AppLocalizations.of(context).accountDeleteBody,
           style: TextStyle(color: mutedText),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel', style: TextStyle(color: textColor)),
+            child: Text(AppLocalizations.of(context).commonCancel, style: TextStyle(color: textColor)),
           ),
           TextButton(
             onPressed: () {
               HapticFeedback.lightImpact();
               Navigator.pop(context, true);
             },
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+            child: Text(
+              AppLocalizations.of(context).commonDelete,
+              style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -177,15 +287,15 @@ class _AccountPageModalState extends State<AccountPageModal> {
           builder: (context) => AlertDialog(
             backgroundColor: dialogBg,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: Text('Error', style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
+            title: Text(AppLocalizations.of(context).accountErrorTitle, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
             content: Text(
-              'Failed to delete account. Please try again or contact support.',
+              AppLocalizations.of(context).accountDeleteFailed,
               style: TextStyle(color: mutedText),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('OK', style: TextStyle(color: textColor)),
+                child: Text(AppLocalizations.of(context).commonOk, style: TextStyle(color: textColor)),
               ),
             ],
           ),
@@ -269,11 +379,11 @@ class _AccountPageModalState extends State<AccountPageModal> {
       try { await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'photoURL': url}); } catch (_) {}
       if (mounted) setState(() => _photoUrl = url);
       if (context.mounted) {
-        AppToast.success(context, 'Profile photo updated');
+        AppToast.success(context, AppLocalizations.of(context).accountPhotoUpdated);
       }
     } catch (e) {
       if (context.mounted) {
-        AppToast.error(context, 'Failed to upload photo');
+        AppToast.error(context, AppLocalizations.of(context).accountPhotoFailed);
       }
     }
   }
@@ -309,11 +419,11 @@ class _AccountPageModalState extends State<AccountPageModal> {
     return SafeArea(
       bottom: false,
       child: Padding(
-        padding: const EdgeInsets.only(top: 24.0, left: 20.0, right: 20.0),
+        padding: const EdgeInsetsDirectional.only(top: 24.0, start: 20.0, end: 20.0),
         child: Column(
           children: [
             Align(
-              alignment: Alignment.centerRight,
+              alignment: AlignmentDirectional.centerEnd,
               child: UniversalCloseButton(
                 onPressed: () {
                   Navigator.pop(context);
@@ -363,7 +473,7 @@ class _AccountPageModalState extends State<AccountPageModal> {
                       child: Column(
                         children: [
                           _InstantRow(
-                            title: "Account Details",
+                            title: AppLocalizations.of(context).accountDetailsTitle,
                             isDark: isDark,
                             hlColor: hlColor,
                             onTap: () {
@@ -372,11 +482,11 @@ class _AccountPageModalState extends State<AccountPageModal> {
                             },
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(left: 20.0),
+                            padding: const EdgeInsetsDirectional.only(start: 20.0),
                             child: Container(height: 0.5, color: hlColor),
                           ),
                           _InstantRow(
-                            title: "Health Details",
+                            title: AppLocalizations.of(context).accountHealthTitle,
                             isDark: isDark,
                             hlColor: hlColor,
                             onTap: () {
@@ -386,11 +496,11 @@ class _AccountPageModalState extends State<AccountPageModal> {
                           ),
                           if (_userData?['isAthlete'] == true) ...[
                             Padding(
-                              padding: const EdgeInsets.only(left: 20.0),
+                              padding: const EdgeInsetsDirectional.only(start: 20.0),
                               child: Container(height: 0.5, color: hlColor),
                             ),
                             _InstantRow(
-                              title: "Athlete Details",
+                              title: AppLocalizations.of(context).accountAthleteTitle,
                               isDark: isDark,
                               hlColor: hlColor,
                               onTap: () {
@@ -411,7 +521,7 @@ class _AccountPageModalState extends State<AccountPageModal> {
                       ),
                       clipBehavior: Clip.antiAlias,
                       child: _InstantRow(
-                        title: "Settings",
+                        title: AppLocalizations.of(context).accountSettings,
                         isDark: isDark,
                         hlColor: hlColor,
                         onTap: () => _slideForward(_SettingsPage(onBack: _slideBack, onNavigate: _slideForward2, onNavigateBack: _slideBack2)),
@@ -431,7 +541,7 @@ class _AccountPageModalState extends State<AccountPageModal> {
                   Padding(
                     padding: const EdgeInsets.only(top: 0, bottom: 8.0),
                     child: PremiumButton(
-                      text: "Sign Out",
+                      text: AppLocalizations.of(context).accountSignOut,
                       isLoading: _isSigningOut,
                       onPressed: () async {
                         setState(() => _isSigningOut = true);
@@ -448,7 +558,7 @@ class _AccountPageModalState extends State<AccountPageModal> {
                     ),
                   ),
                   PremiumButton(
-                    text: "Delete Account",
+                    text: AppLocalizations.of(context).accountDeleteAccount,
                     isLoading: _isDeletingAccount,
                     onPressed: _deleteAccount,
                     color: Colors.red,
@@ -467,9 +577,10 @@ class _AccountPageModalState extends State<AccountPageModal> {
   Widget _buildAccountDetails() {
     String formatDate(dynamic d) => (d is Timestamp)
         ? "${d.toDate().day}/${d.toDate().month}/${d.toDate().year}"
-        : d?.toString() ?? "Not provided";
+        : d?.toString() ?? AppLocalizations.of(context).accountNotProvided;
+    final t = AppLocalizations.of(context);
     return _DetailLayout(
-      title: "Account Details",
+      title: t.accountDetailsTitle,
       onBack: _slideBack,
       children: [
         Center(
@@ -513,13 +624,13 @@ class _AccountPageModalState extends State<AccountPageModal> {
         ),
         const SizedBox(height: 16),
         _buildDataGroup({
-          "Full Name": _userData?['fullName'],
-          "Gender": _userData?['gender'],
-          "Date of Birth": formatDate(_userData?['dob']),
+          t.accountFullName: _userData?['fullName'],
+          t.onboardingStage1Gender: _genderLabel(t, _userData?['gender']),
+          t.accountDob: formatDate(_userData?['dob']),
         }),
         const SizedBox(height: 24),
         _buildDataGroup({
-          "Country": _userData?['country'],
+          t.accountCountry: _userData?['country'],
         }),
       ],
     );
@@ -527,11 +638,13 @@ class _AccountPageModalState extends State<AccountPageModal> {
 
   Widget _buildHealthDetails() {
     Widget title(String t) => Padding(
-      padding: const EdgeInsets.only(left: 12, bottom: 8),
+      padding: const EdgeInsetsDirectional.only(start: 12, bottom: 8),
       child: Text(t, style: const TextStyle(fontSize: 13, color: Colors.grey)),
     );
-    String formatGoals(dynamic g) =>
-        (g is List && g.isNotEmpty) ? g.join(', ') : "None selected";
+    final t = AppLocalizations.of(context);
+    String formatGoals(dynamic g) => (g is List && g.isNotEmpty)
+        ? g.map((e) => _goalLabel(t, e.toString())).join(', ')
+        : t.accountNoneSelected;
     final bool hasSupp = _userData?['hasSupplements'] == true;
     final bool hasDis = _userData?['hasDisabilities'] == true;
     final sleep = _userData?['sleepDuration'];
@@ -540,38 +653,38 @@ class _AccountPageModalState extends State<AccountPageModal> {
     final waterStr = water is num ? '${water.toStringAsFixed(2)} L' : '--';
 
     return _DetailLayout(
-      title: "Health Details",
+      title: t.accountHealthTitle,
       onBack: _slideBack,
       children: [
-        title("PHYSICAL STATS"),
+        title(t.accountPhysicalStats),
         _buildDataGroup({
-          "Height": "${_userData?['height'] ?? '--'} cm",
-          "Weight": "${_userData?['weight'] ?? '--'} kg",
-          "Avg sleep": sleepStr,
-          "Daily water": waterStr,
+          t.acctLogHeight: "${_userData?['height'] ?? '--'} cm",
+          t.acctLogWeight: "${_userData?['weight'] ?? '--'} kg",
+          t.accountAvgSleep: sleepStr,
+          t.accountDailyWater: waterStr,
         }),
         const SizedBox(height: 24),
-        title("MEDICAL"),
+        title(t.accountMedical),
         _buildDataGroup({
-          "Supplements": hasSupp
-              ? (_userData?['supplementsDetails'] ?? "Yes")
-              : "None",
-          "Disabilities": hasDis
-              ? (_userData?['disabilityDetails'] ?? "Yes")
-              : "None",
-          "Injury History":
+          t.accountSupplements: hasSupp
+              ? (_userData?['supplementsDetails'] ?? t.accountYes)
+              : t.accountNone,
+          t.accountDisabilities: hasDis
+              ? (_userData?['disabilityDetails'] ?? t.accountYes)
+              : t.accountNone,
+          t.accountInjuryHistory:
               (_userData?['injuryHistory']?.toString().isEmpty ?? true)
-              ? "None"
+              ? t.accountNone
               : _userData?['injuryHistory'],
         }),
         const SizedBox(height: 24),
-        title("YOUR GOALS"),
+        title(t.accountYourGoals),
         _buildDataGroup({
-          "Selected goals": formatGoals(_userData?['goals']),
+          t.accountSelectedGoals: formatGoals(_userData?['goals']),
         }),
         const SizedBox(height: 28),
         _LogInfoButton(
-          label: "Log additional info",
+          label: t.acctLogTitle,
           icon: Icons.edit_note_rounded,
           onTap: _openHealthLogSheet,
         ),
@@ -581,34 +694,38 @@ class _AccountPageModalState extends State<AccountPageModal> {
 
   Widget _buildAthleteDetails() {
     Widget title(String t) => Padding(
-      padding: const EdgeInsets.only(left: 12, bottom: 8),
+      padding: const EdgeInsetsDirectional.only(start: 12, bottom: 8),
       child: Text(t, style: const TextStyle(fontSize: 13, color: Colors.grey)),
     );
-    String formatList(dynamic v) =>
-        (v is List && v.isNotEmpty) ? v.join(', ') : "Not provided";
+    final t = AppLocalizations.of(context);
+    String formatList(dynamic v) => (v is List && v.isNotEmpty)
+        ? v.map((e) => _sportLabel(t, e.toString())).join(', ')
+        : t.accountNotProvided;
 
     final athleteType = _userData?['athleteType']?.toString();
     final experience = _userData?['experienceLevel']?.toString();
 
     return _DetailLayout(
-      title: "Athlete Details",
+      title: t.accountAthleteTitle,
       onBack: _slideBack,
       children: [
-        title("PROFILE"),
+        title(t.accountProfile),
         _buildDataGroup({
-          "Type of athlete":
-              (athleteType?.isEmpty ?? true) ? "Not provided" : athleteType,
-          "Experience level":
-              (experience?.isEmpty ?? true) ? "Not provided" : experience,
+          t.acctLogTypeOfAthlete: (athleteType?.isEmpty ?? true)
+              ? t.accountNotProvided
+              : _athleteTypeLabel(t, athleteType!),
+          t.acctLogExperienceLevel: (experience?.isEmpty ?? true)
+              ? t.accountNotProvided
+              : _experienceLabel(t, experience!),
         }),
         const SizedBox(height: 24),
-        title("SPORTS"),
+        title(t.accountSports),
         _buildDataGroup({
-          "Sports profile": formatList(_userData?['selectedSports']),
+          t.acctLogSportsProfile: formatList(_userData?['selectedSports']),
         }),
         const SizedBox(height: 28),
         _LogInfoButton(
-          label: "Log athlete info",
+          label: t.accountLogAthleteInfo,
           icon: Icons.sports_score_rounded,
           onTap: _openAthleteLogSheet,
         ),
@@ -663,7 +780,7 @@ class _AccountPageModalState extends State<AccountPageModal> {
           final valText =
               (entries[index].value == null ||
                   entries[index].value.toString().isEmpty)
-              ? "Not provided"
+              ? AppLocalizations.of(context).accountNotProvided
               : entries[index].value.toString();
           return Column(
             children: [
@@ -837,7 +954,7 @@ class _DetailLayout extends StatelessWidget {
               alignment: Alignment.center,
               children: [
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: UniversalBackButton(onPressed: onBack),
                 ),
                 Text(
@@ -882,14 +999,14 @@ class _InstantRowState extends State<_InstantRow> {
   bool _pressed = false;
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      onPointerDown: (_) => setState(() => _pressed = true),
-      onPointerUp: (_) {
-        setState(() => _pressed = false);
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      onTap: () {
         HapticFeedback.selectionClick();
         widget.onTap();
       },
-      onPointerCancel: (_) => setState(() => _pressed = false),
       child: Container(
         color: _pressed ? widget.hlColor : Colors.transparent,
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
@@ -932,7 +1049,7 @@ class _SettingsPage extends StatelessWidget {
     final hlColor = isDark ? Colors.white12 : Colors.black12;
 
     return _DetailLayout(
-      title: 'Settings',
+      title: AppLocalizations.of(context).accountSettings,
       onBack: onBack,
       children: [
         Container(
@@ -944,17 +1061,28 @@ class _SettingsPage extends StatelessWidget {
           child: Column(
             children: [
               _InstantRow(
-                title: "Change Theme",
+                title: AppLocalizations.of(context).accountChangeTheme,
                 isDark: isDark,
                 hlColor: hlColor,
                 onTap: () => onNavigate(_ChangeThemePage(onBack: onNavigateBack)),
               ),
               Padding(
-                padding: const EdgeInsets.only(left: 20.0),
+                padding: const EdgeInsetsDirectional.only(start: 20.0),
                 child: Container(height: 0.5, color: hlColor),
               ),
               _InstantRow(
-                title: "About App",
+                title: AppLocalizations.of(context).accountLanguage,
+                isDark: isDark,
+                hlColor: hlColor,
+                onTap: () =>
+                    onNavigate(_ChangeLanguagePage(onBack: onNavigateBack)),
+              ),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 20.0),
+                child: Container(height: 0.5, color: hlColor),
+              ),
+              _InstantRow(
+                title: AppLocalizations.of(context).aboutTitle,
                 isDark: isDark,
                 hlColor: hlColor,
                 onTap: () => onNavigate(AboutAppPage(onBack: onNavigateBack)),
@@ -1021,7 +1149,7 @@ class _ChangeThemePageState extends State<_ChangeThemePage> {
       _selected = Color.fromARGB(255, r, g, b);
     });
     AccentColor.set(_selected);
-    if (context.mounted) AppToast.success(context, 'Theme colour updated', icon: Icons.palette_rounded);
+    if (context.mounted) AppToast.success(context, AppLocalizations.of(context).accountThemeUpdated, icon: Icons.palette_rounded);
   }
 
   void _pick(Color c) {
@@ -1031,7 +1159,7 @@ class _ChangeThemePageState extends State<_ChangeThemePage> {
     });
     _syncRgbFields(c);
     AccentColor.set(c);
-    if (context.mounted) AppToast.success(context, 'Theme colour updated', icon: Icons.palette_rounded);
+    if (context.mounted) AppToast.success(context, AppLocalizations.of(context).accountThemeUpdated, icon: Icons.palette_rounded);
   }
 
   @override
@@ -1042,14 +1170,15 @@ class _ChangeThemePageState extends State<_ChangeThemePage> {
     final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
     final bgField = isDark ? const Color(0xFF3A3A3C) : const Color(0xFFF2F2F7);
 
+    final t = AppLocalizations.of(context);
     return _DetailLayout(
-      title: 'Change Theme',
+      title: t.accountChangeTheme,
       onBack: widget.onBack,
       children: [
         // ── Appearance mode toggle ────────────────────────────────────────
         Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 10),
-          child: Text('APPEARANCE',
+          padding: const EdgeInsetsDirectional.only(start: 4, bottom: 10),
+          child: Text(t.accountAppearance,
               style: TextStyle(
                   color: subColor, fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.8)),
         ),
@@ -1062,7 +1191,7 @@ class _ChangeThemePageState extends State<_ChangeThemePage> {
               child: Column(children: [
                 _ThemeModeRow(
                   icon: Icons.brightness_auto_rounded,
-                  label: 'System Default',
+                  label: t.accountSystemDefault,
                   selected: currentMode == ThemeMode.system,
                   textColor: textColor,
                   subColor: subColor,
@@ -1070,12 +1199,12 @@ class _ChangeThemePageState extends State<_ChangeThemePage> {
                   isLast: false,
                   onTap: () {
                     AccentColor.setThemeMode(ThemeMode.system);
-                    if (context.mounted) AppToast.info(context, 'Following system theme', icon: Icons.brightness_auto_rounded);
+                    if (context.mounted) AppToast.info(context, AppLocalizations.of(context).accountFollowingSystem, icon: Icons.brightness_auto_rounded);
                   },
                 ),
                 _ThemeModeRow(
                   icon: Icons.light_mode_rounded,
-                  label: 'Light Mode',
+                  label: t.accountLightMode,
                   selected: currentMode == ThemeMode.light,
                   textColor: textColor,
                   subColor: subColor,
@@ -1083,12 +1212,12 @@ class _ChangeThemePageState extends State<_ChangeThemePage> {
                   isLast: false,
                   onTap: () {
                     AccentColor.setThemeMode(ThemeMode.light);
-                    if (context.mounted) AppToast.success(context, 'Light mode on', icon: Icons.light_mode_rounded);
+                    if (context.mounted) AppToast.success(context, AppLocalizations.of(context).accountLightModeOn, icon: Icons.light_mode_rounded);
                   },
                 ),
                 _ThemeModeRow(
                   icon: Icons.dark_mode_rounded,
-                  label: 'Dark Mode',
+                  label: t.accountDarkMode,
                   selected: currentMode == ThemeMode.dark,
                   textColor: textColor,
                   subColor: subColor,
@@ -1096,7 +1225,7 @@ class _ChangeThemePageState extends State<_ChangeThemePage> {
                   isLast: true,
                   onTap: () {
                     AccentColor.setThemeMode(ThemeMode.dark);
-                    if (context.mounted) AppToast.success(context, 'Dark mode on', icon: Icons.dark_mode_rounded);
+                    if (context.mounted) AppToast.success(context, AppLocalizations.of(context).accountDarkModeOn, icon: Icons.dark_mode_rounded);
                   },
                 ),
               ]),
@@ -1128,8 +1257,8 @@ class _ChangeThemePageState extends State<_ChangeThemePage> {
 
         // Presets
         Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 10),
-          child: Text('PRESETS',
+          padding: const EdgeInsetsDirectional.only(start: 4, bottom: 10),
+          child: Text(t.accountPresets,
               style: TextStyle(
                   color: subColor, fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.8)),
         ),
@@ -1182,8 +1311,8 @@ class _ChangeThemePageState extends State<_ChangeThemePage> {
 
         // Custom RGB
         Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 10),
-          child: Text('CUSTOM RGB',
+          padding: const EdgeInsetsDirectional.only(start: 4, bottom: 10),
+          child: Text(t.accountCustomRgb,
               style: TextStyle(
                   color: subColor, fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.8)),
         ),
@@ -1204,8 +1333,8 @@ class _ChangeThemePageState extends State<_ChangeThemePage> {
               ),
               if (_rgbError) ...[
                 const SizedBox(height: 8),
-                Text('Enter values 0–255 for each channel',
-                    style: TextStyle(color: Colors.redAccent, fontSize: 12)),
+                Text(t.accountRgbError,
+                    style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
               ],
               const SizedBox(height: 14),
               SizedBox(
@@ -1215,8 +1344,8 @@ class _ChangeThemePageState extends State<_ChangeThemePage> {
                   color: _selected,
                   borderRadius: BorderRadius.circular(12),
                   onPressed: _applyRgb,
-                  child: const Text('Apply',
-                      style: TextStyle(
+                  child: Text(t.accountApply,
+                      style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                           fontSize: 15)),
@@ -1307,14 +1436,14 @@ class _ThemeModeRowState extends State<_ThemeModeRow> {
   Widget build(BuildContext context) {
     final hlColor = widget.isDark ? Colors.white12 : Colors.black12;
     return Column(children: [
-      Listener(
-        onPointerDown: (_) => setState(() => _pressed = true),
-        onPointerUp: (_) {
-          setState(() => _pressed = false);
+      GestureDetector(
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
+        onTap: () {
           HapticFeedback.selectionClick();
           widget.onTap();
         },
-        onPointerCancel: (_) => setState(() => _pressed = false),
         child: Container(
           color: _pressed ? hlColor : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -1335,7 +1464,7 @@ class _ThemeModeRowState extends State<_ThemeModeRow> {
       ),
       if (!widget.isLast)
         Padding(
-          padding: const EdgeInsets.only(left: 56),
+          padding: const EdgeInsetsDirectional.only(start: 56),
           child: Container(height: 0.5, color: widget.isDark ? Colors.white12 : Colors.black12),
         ),
     ]);
@@ -1387,7 +1516,7 @@ class _BmcSupportButtonState extends State<_BmcSupportButton>
     return Column(
       children: [
         Text(
-          'Enjoying Synthese? Support development',
+          AppLocalizations.of(context).accountSupportDev,
           textAlign: TextAlign.center,
           style: TextStyle(
             color: subColor,
@@ -1413,6 +1542,122 @@ class _BmcSupportButtonState extends State<_BmcSupportButton>
           ),
         ),
       ],
+    );
+  }
+}
+
+// ============================================================================
+// CHANGE LANGUAGE PAGE — picks one of the 5 supported locales
+// ============================================================================
+
+class _ChangeLanguagePage extends StatelessWidget {
+  final VoidCallback onBack;
+  const _ChangeLanguagePage({required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+    final hlColor = isDark ? Colors.white12 : Colors.black12;
+    final textColor = isDark ? Colors.white : Colors.black;
+
+    return _DetailLayout(
+      title: AppLocalizations.of(context).accountLanguageSheetTitle,
+      onBack: onBack,
+      children: [
+        ValueListenableBuilder<Locale>(
+          valueListenable: LocaleService.localeNotifier,
+          builder: (context, current, _) {
+            return Container(
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  for (var i = 0; i < LocaleService.languages.length; i++) ...[
+                    _LanguageRow(
+                      nativeLabel: LocaleService.languages[i].nativeLabel,
+                      englishLabel: LocaleService.languages[i].englishLabel,
+                      selected: current.languageCode ==
+                          LocaleService.languages[i].locale.languageCode,
+                      textColor: textColor,
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        LocaleService.setLocale(
+                            LocaleService.languages[i].locale);
+                      },
+                    ),
+                    if (i < LocaleService.languages.length - 1)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(start: 20.0),
+                        child: Container(height: 0.5, color: hlColor),
+                      ),
+                  ],
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _LanguageRow extends StatelessWidget {
+  final String nativeLabel;
+  final String englishLabel;
+  final bool selected;
+  final Color textColor;
+  final VoidCallback onTap;
+
+  const _LanguageRow({
+    required this.nativeLabel,
+    required this.englishLabel,
+    required this.selected,
+    required this.textColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    nativeLabel,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    englishLabel,
+                    style: TextStyle(
+                      color: textColor.withOpacity(0.45),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (selected)
+              const Icon(Icons.check_rounded,
+                  color: Color(0xFF4CD964), size: 22),
+          ],
+        ),
+      ),
     );
   }
 }

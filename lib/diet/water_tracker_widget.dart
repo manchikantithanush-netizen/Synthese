@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/app_toast.dart';
 import 'package:synthese/services/review_service.dart';
 
@@ -64,6 +65,7 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
       1.0,
     );
     final glassesRemaining = widget.dailyGoal - widget.waterGlasses;
+    final t = AppLocalizations.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,7 +75,7 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              "Water Intake",
+              t.waterIntakeTitle,
               style: TextStyle(
                 color: widget.textColor,
                 fontSize: 20,
@@ -81,7 +83,7 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
               ),
             ),
             Text(
-              "${widget.waterGlasses} / ${widget.dailyGoal} glasses",
+              t.waterGlassCount(widget.waterGlasses, widget.dailyGoal),
               style: TextStyle(color: widget.subTextColor, fontSize: 14),
             ),
           ],
@@ -131,7 +133,7 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          "of daily goal",
+                          t.waterOfDailyGoal,
                           style: TextStyle(
                             color: widget.subTextColor,
                             fontSize: 14,
@@ -153,7 +155,7 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            _getWaterStatusMessage(glassesRemaining),
+                            _getWaterStatusMessage(context, glassesRemaining),
                             style: TextStyle(
                               color: _getWaterStatusColor(waterPercentage),
                               fontSize: 13,
@@ -215,7 +217,7 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
                                     if (newCount >= widget.dailyGoal) {
                                       AppToast.success(
                                         context,
-                                        'Water goal reached',
+                                        t.waterGoalReachedToast,
                                         icon: Icons.water_drop_rounded,
                                       );
                                       ReviewService.instance
@@ -229,7 +231,7 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
                                     ),
                                     child: Center(
                                       child: Text(
-                                        "+ Add Glass",
+                                        t.waterAddGlass,
                                         style: TextStyle(
                                           color: waterColor,
                                           fontWeight: FontWeight.w600,
@@ -298,7 +300,7 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Weekly Trend",
+                AppLocalizations.of(context).waterWeeklyTrend,
                 style: TextStyle(
                   color: widget.textColor,
                   fontSize: 16,
@@ -340,15 +342,29 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
           const SizedBox(height: 16),
           SizedBox(
             height: 120,
-            child: CustomPaint(
-              painter: WaterTrendGraphPainter(
-                weeklyData: widget.weeklyIntakeLitres,
-                baseline: widget.baselineWaterIntakeLitres,
-                isDark: widget.isDark,
-                textColor: widget.textColor,
-                lineColor: const Color(0xFF4FC3F7),
-              ),
-              size: Size.infinite,
+            child: Builder(
+              builder: (ctx) {
+                final t = AppLocalizations.of(ctx);
+                return CustomPaint(
+                  painter: WaterTrendGraphPainter(
+                    weeklyData: widget.weeklyIntakeLitres,
+                    baseline: widget.baselineWaterIntakeLitres,
+                    isDark: widget.isDark,
+                    textColor: widget.textColor,
+                    lineColor: const Color(0xFF4FC3F7),
+                    dayLabels: [
+                      t.dayMon,
+                      t.dayTue,
+                      t.dayWed,
+                      t.dayThu,
+                      t.dayFri,
+                      t.daySat,
+                      t.daySun,
+                    ],
+                  ),
+                  size: Size.infinite,
+                );
+              },
             ),
           ),
         ],
@@ -431,11 +447,12 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
     return const Color(0xFFFF9500);
   }
 
-  String _getWaterStatusMessage(int remaining) {
-    if (remaining <= 0) return "Goal reached!";
-    if (remaining == 1) return "1 glass to go!";
-    if (remaining <= 3) return "Almost there!";
-    return "$remaining glasses to go";
+  String _getWaterStatusMessage(BuildContext context, int remaining) {
+    final t = AppLocalizations.of(context);
+    if (remaining <= 0) return t.waterStatusGoalReached;
+    if (remaining == 1) return t.waterStatus1Glass;
+    if (remaining <= 3) return t.waterStatusAlmostThere;
+    return t.waterStatusGlassesToGo(remaining);
   }
 }
 
@@ -600,12 +617,15 @@ class WaterTrendGraphPainter extends CustomPainter {
   final Color textColor;
   final Color lineColor;
 
+  final List<String> dayLabels;
+
   WaterTrendGraphPainter({
     required this.weeklyData,
     required this.baseline,
     required this.isDark,
     required this.textColor,
     required this.lineColor,
+    required this.dayLabels,
   });
 
   @override
@@ -720,7 +740,7 @@ class WaterTrendGraphPainter extends CustomPainter {
       fontWeight: FontWeight.w500,
     );
 
-    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final days = dayLabels;
     for (int i = 0; i < min(weeklyData.length, days.length); i++) {
       final x = padding.left + (i / (weeklyData.length - 1)) * graphWidth;
       final textPainter = TextPainter(

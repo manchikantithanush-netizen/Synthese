@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class OnboardingStage2 extends StatelessWidget {
   final int goalSteps;
@@ -31,6 +32,7 @@ class OnboardingStage2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).colorScheme.onSurface;
+    final t = AppLocalizations.of(context);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -38,7 +40,7 @@ class OnboardingStage2 extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Set your\ndaily goals",
+            t.onboardingStage2Title,
             style: TextStyle(
               color: textColor,
               fontSize: 38,
@@ -49,7 +51,7 @@ class OnboardingStage2 extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            "Pick targets that feel right. You can change them anytime.",
+            t.onboardingStage2Body,
             style: TextStyle(
               color: textColor.withOpacity(0.55),
               fontSize: 16,
@@ -60,7 +62,7 @@ class OnboardingStage2 extends StatelessWidget {
           const SizedBox(height: 28),
 
           _GoalPicker(
-            label: "Daily Steps",
+            label: t.goalDailySteps,
             icon: Icons.directions_walk_rounded,
             accent: const Color(0xFF6C63FF),
             min: 1000,
@@ -68,27 +70,27 @@ class OnboardingStage2 extends StatelessWidget {
             count: 59, // 1000 .. 30000
             initialValue: goalSteps,
             formatter: (v) => "$v",
-            unit: "steps",
+            unit: t.unitSteps,
             onChange: onStepsChange,
           ),
           const SizedBox(height: 18),
 
           _GoalPicker(
-            label: "Calories Burnt",
+            label: t.goalCaloriesBurnt,
             icon: Icons.local_fire_department_rounded,
             accent: const Color(0xFFFF9500),
             min: 100,
             step: 50,
-            count: 29, // 100 .. 1500
+            count: 79, // 100 .. 4000
             initialValue: goalCaloriesBurnt,
             formatter: (v) => "$v",
-            unit: "kcal",
+            unit: t.unitKcal,
             onChange: onCaloriesBurntChange,
           ),
           const SizedBox(height: 18),
 
           _GoalPicker(
-            label: "Calories Eaten",
+            label: t.goalCaloriesEaten,
             icon: Icons.restaurant_rounded,
             accent: const Color(0xFF34C759),
             min: 1000,
@@ -96,13 +98,13 @@ class OnboardingStage2 extends StatelessWidget {
             count: 61, // 1000 .. 4000
             initialValue: goalCaloriesEaten,
             formatter: (v) => "$v",
-            unit: "kcal",
+            unit: t.unitKcal,
             onChange: onCaloriesEatenChange,
           ),
           const SizedBox(height: 18),
 
           _GoalPicker(
-            label: "Exercise Time",
+            label: t.goalExerciseTime,
             icon: Icons.timer_rounded,
             accent: const Color(0xFF5E5CE6),
             min: 15,
@@ -110,13 +112,13 @@ class OnboardingStage2 extends StatelessWidget {
             count: 34, // 15 .. 180
             initialValue: goalExerciseMinutes,
             formatter: (v) => "$v",
-            unit: "min",
+            unit: t.unitMin,
             onChange: onExerciseChange,
           ),
           const SizedBox(height: 18),
 
           _GoalPicker.decimal(
-            label: "Sleep",
+            label: t.goalSleep,
             icon: Icons.nightlight_round,
             accent: const Color(0xFF32ADE6),
             minDecimal: 5.0,
@@ -124,7 +126,7 @@ class OnboardingStage2 extends StatelessWidget {
             count: 15, // 5.0 .. 12.0
             initialDecimalValue: goalSleepHours,
             decimalFormatter: (v) => v.toStringAsFixed(1),
-            unit: "hrs",
+            unit: t.unitHrs,
             onDecimalChange: onSleepChange,
           ),
 

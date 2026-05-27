@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -204,15 +205,15 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     // Validation
     final amount = double.tryParse(_amountController.text.replaceAll(',', '.'));
     if (amount == null || amount <= 0) {
-      _showError('Please enter a valid amount');
+      _showError(AppLocalizations.of(context).finTrInvalidAmount);
       return;
     }
     if (_selectedAccount == null) {
-      _showError('Please select an account');
+      _showError(AppLocalizations.of(context).finTxSelectAccount);
       return;
     }
     if (_selectedCategory == null) {
-      _showError('Please select a category');
+      _showError(AppLocalizations.of(context).finTxSelectCategory);
       return;
     }
 
@@ -236,12 +237,12 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
       HapticFeedback.mediumImpact();
 
       if (mounted) {
-        AppToast.success(context, 'Transaction saved', icon: Icons.receipt_rounded);
+        AppToast.success(context, AppLocalizations.of(context).finTxSaved, icon: Icons.receipt_rounded);
         Navigator.pop(context, true);
       }
     } catch (e) {
       debugPrint('Error saving transaction: $e');
-      _showError('Failed to save transaction');
+      _showError(AppLocalizations.of(context).finTxFailed);
     }
 
     if (mounted) {
@@ -325,7 +326,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                   Align(
                     alignment: Alignment.center,
                     child: Text(
-                      "Add Transaction",
+                      AppLocalizations.of(context).finAddTransaction,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -334,7 +335,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                     ),
                   ),
                   Align(
-                    alignment: Alignment.centerRight,
+                    alignment: AlignmentDirectional.centerEnd,
                     child: UniversalCloseButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -393,7 +394,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                           const SizedBox(height: 20),
 
                           // --- ACCOUNT SELECTOR ---
-                          _buildSectionLabel('Account', subtextColor),
+                          _buildSectionLabel(AppLocalizations.of(context).finTxAccount, subtextColor),
                           const SizedBox(height: 8),
                           _buildAccountSelector(isDark, cardColor, textColor),
 
@@ -405,7 +406,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                           const SizedBox(height: 20),
 
                           // --- DATE PICKER ---
-                          _buildSectionLabel('Date', subtextColor),
+                          _buildSectionLabel(AppLocalizations.of(context).detailDate, subtextColor),
                           const SizedBox(height: 8),
                           _buildDatePicker(isDark, cardColor, textColor),
 
@@ -417,7 +418,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                           const SizedBox(height: 20),
 
                           // --- NOTES FIELD ---
-                          _buildSectionLabel('Note (optional)', subtextColor),
+                          _buildSectionLabel(AppLocalizations.of(context).finTxNoteOptional, subtextColor),
                           const SizedBox(height: 8),
                           _buildNotesField(isDark, cardColor, textColor),
 
@@ -431,7 +432,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
             Padding(
               padding: EdgeInsets.fromLTRB(20, 10, 20, bottomActionPadding),
               child: PremiumButton(
-                text: _transactionType == 0 ? 'Add Expense' : 'Add Income',
+                text: _transactionType == 0 ? AppLocalizations.of(context).finTxAddExpense : AppLocalizations.of(context).finTxAddIncome,
                 isLoading: _isSaving,
                 onPressed: _saveTransaction,
               ),
@@ -457,7 +458,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
   Widget _buildTransactionTypeToggle(bool isDark, Color cardColor) {
     return UniversalSegmentedControl<int>(
       items: const [0, 1],
-      labels: const ['Expense', 'Income'],
+      labels: [AppLocalizations.of(context).finTxExpense, AppLocalizations.of(context).finTxIncome],
       selectedItem: _transactionType,
       onSelectionChanged: (value) {
         HapticFeedback.selectionClick();
@@ -533,7 +534,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
         ),
         child: Center(
           child: Text(
-            'No accounts available',
+            AppLocalizations.of(context).finTxNoAccounts,
             style: TextStyle(color: isDark ? Colors.white54 : Colors.black54),
           ),
         ),
@@ -579,7 +580,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    account.name,
+                    financeDefaultName(AppLocalizations.of(context), account.id, account.name),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: isSelected
@@ -609,7 +610,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
         ),
         child: Center(
           child: Text(
-            'No categories available',
+            AppLocalizations.of(context).finTxNoCategories,
             style: TextStyle(color: isDark ? Colors.white54 : Colors.black54),
           ),
         ),
@@ -620,7 +621,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Category',
+          AppLocalizations.of(context).finTxCategory,
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -668,7 +669,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      category.name,
+                      financeDefaultName(AppLocalizations.of(context), category.id, category.name),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: isSelected
@@ -690,7 +691,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
   }
 
   Widget _buildDatePicker(bool isDark, Color cardColor, Color textColor) {
-    final formattedDate = DateFormat('EEEE, MMM d, yyyy').format(_selectedDate);
+    final formattedDate = DateFormat('EEEE, MMM d, yyyy', Localizations.localeOf(context).toString()).format(_selectedDate);
     final isToday =
         DateFormat('yyyy-MM-dd').format(_selectedDate) ==
         DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -709,7 +710,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                isToday ? 'Today' : formattedDate,
+                isToday ? AppLocalizations.of(context).finTxToday : formattedDate,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
@@ -750,7 +751,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Recurring',
+                  AppLocalizations.of(context).finTxRecurring,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
@@ -769,7 +770,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
           const SizedBox(height: 12),
           UniversalSegmentedControl<String>(
             items: const ['daily', 'weekly', 'monthly'],
-            labels: const ['Daily', 'Weekly', 'Monthly'],
+            labels: [AppLocalizations.of(context).finTxDaily, AppLocalizations.of(context).finTxWeekly, AppLocalizations.of(context).finTxMonthly],
             selectedItem: _recurrenceType,
             onSelectionChanged: (value) {
               HapticFeedback.selectionClick();
@@ -792,11 +793,11 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
         controller: _noteController,
         style: TextStyle(fontSize: 16, color: textColor),
         decoration: InputDecoration(
-          hintText: 'Add a note...',
+          hintText: AppLocalizations.of(context).finTxAddNote,
           hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
           border: InputBorder.none,
           prefixIcon: Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsetsDirectional.only(end: 12),
             child: Icon(
               Icons.edit_outlined,
               color: isDark ? Colors.white38 : Colors.black38,

@@ -4,8 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import 'dart:async';
 import 'dart:math' as math;
+
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 import 'package:synthese/ui/account/accountpage.dart';
 import 'package:synthese/ui/components/app_toast.dart';
@@ -44,6 +47,10 @@ class _DashboardPageState extends State<DashboardPage>
   late final AnimationController _workoutTabEnterController;
   late final Animation<double> _workoutTabEnterOpacity;
   late final Animation<Offset> _workoutTabEnterSlide;
+
+  late final AnimationController _tabEnterController;
+  late final Animation<double> _tabEnterOpacity;
+  late final Animation<Offset> _tabEnterSlide;
   // --- STATE VARIABLES ---
   late int _score;
   int _tabIndex = 0;
@@ -110,6 +117,21 @@ class _DashboardPageState extends State<DashboardPage>
       begin: const Offset(0, 0.035),
       end: Offset.zero,
     ).animate(_workoutTabEnterOpacity);
+
+    _tabEnterController = AnimationController(
+      vsync: this,
+      duration: _kTabSwitchDuration,
+      value: 1.0, // start complete so initial home tab has no animation
+    );
+    final _tabEnterCurved = CurvedAnimation(
+      parent: _tabEnterController,
+      curve: Curves.easeOutCubic,
+    );
+    _tabEnterOpacity = _tabEnterCurved;
+    _tabEnterSlide = Tween<Offset>(
+      begin: const Offset(0, 0.035),
+      end: Offset.zero,
+    ).animate(_tabEnterCurved);
     WidgetsBinding.instance.addObserver(this);
     _workoutPage = WorkoutPage(
       onMetricsChanged: _handleWorkoutMetricsChanged,
@@ -144,6 +166,7 @@ class _DashboardPageState extends State<DashboardPage>
   @override
   void dispose() {
     _workoutTabEnterController.dispose();
+    _tabEnterController.dispose();
     _metricsPersistDebounce?.cancel();
     _notificationRulesTimer?.cancel();
     _dailyAggSub?.cancel();
@@ -550,13 +573,18 @@ class _DashboardPageState extends State<DashboardPage>
 
     _score = healthScore.round();
 
-    // Goal-reached toasts — fire only once per session per goal
+    // Goal-reached toasts — fire only once per session per goal.
+    // Look up localizations only when a toast actually fires: _updateScore()
+    // runs during initState() (before the Localizations scope is available),
+    // and an unconditional AppLocalizations.of(context) there would throw.
     if (mounted && context.mounted) {
       if (!_stepsGoalToasted && _steps >= _goalSteps) {
         _stepsGoalToasted = true;
         AppToast.success(
           context,
-          'Steps goal reached — ${_formatNumber(_goalSteps)} steps',
+          AppLocalizations.of(context).dashStepsGoalReached(
+            _formatNumber(_goalSteps),
+          ),
           icon: Icons.directions_walk_rounded,
         );
         ReviewService.instance.maybeRequestAfterGoal();
@@ -565,7 +593,9 @@ class _DashboardPageState extends State<DashboardPage>
         _caloriesGoalToasted = true;
         AppToast.success(
           context,
-          'Calories burned goal reached — $_goalCaloriesBurnt kcal',
+          AppLocalizations.of(context).dashCaloriesGoalReached(
+            _goalCaloriesBurnt,
+          ),
           icon: Icons.local_fire_department_rounded,
         );
         ReviewService.instance.maybeRequestAfterGoal();
@@ -574,12 +604,12 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   // --- SCORE HELPERS ---
-  String _getScoreMessage(int score) {
-    if (score >= 90) return "Top 5% of adults globally";
-    if (score >= 75) return "Healthier than ~80% of adults";
-    if (score >= 50) return "Around average for most adults";
-    if (score >= 25) return "Below average — most adults score higher";
-    return "In the bottom 15% — you've got room to grow";
+  String _getScoreMessage(AppLocalizations t, int score) {
+    if (score >= 90) return t.dashScore90;
+    if (score >= 75) return t.dashScore75;
+    if (score >= 50) return t.dashScore50;
+    if (score >= 25) return t.dashScore25;
+    return t.dashScore0;
   }
 
   Color _getScoreColor(int score) {
@@ -589,39 +619,14 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   // --- FORMATTING HELPERS ---
-  String _getFormattedDate() {
-    final now = DateTime.now();
-    const weekdays = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return "${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}";
+  String _getFormattedDate(BuildContext context) {
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat('EEEE, MMM d', localeName).format(DateTime.now());
   }
 
   String _formatNumber(int number) {
-    return number.toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]},',
-    );
+    final localeName = Localizations.localeOf(context).toString();
+    return NumberFormat.decimalPattern(localeName).format(number);
   }
 
   String _formatMinutes(int totalMinutes) {
@@ -676,40 +681,19 @@ class _DashboardPageState extends State<DashboardPage>
       _workoutTabEnterController.stop();
       _workoutTabEnterController.reset();
       _isWorkoutModeOpen = false;
+      _tabEnterController.forward(from: 0);
+    } else if (!isWorkout) {
+      _tabEnterController.forward(from: 0);
     }
   }
 
   Widget _buildNonWorkoutTabSwitcher(Widget currentScreen) {
-    return AnimatedSwitcher(
-      duration: _kTabSwitchDuration,
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.easeInCubic,
-      layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
-        return Stack(
-          alignment: Alignment.topCenter,
-          children: <Widget>[
-            ...previousChildren,
-            if (currentChild != null) currentChild,
-          ],
-        );
-      },
-      transitionBuilder: (Widget child, Animation<double> animation) {
-        final curved = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutCubic,
-        );
-        return FadeTransition(
-          opacity: curved,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.035),
-              end: Offset.zero,
-            ).animate(curved),
-            child: child,
-          ),
-        );
-      },
-      child: currentScreen,
+    return FadeTransition(
+      opacity: _tabEnterOpacity,
+      child: SlideTransition(
+        position: _tabEnterSlide,
+        child: currentScreen,
+      ),
     );
   }
 
@@ -762,6 +746,7 @@ class _DashboardPageState extends State<DashboardPage>
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final mediaQuery = MediaQuery.of(context);
     final clampedTextScale = mediaQuery.textScaler.scale(1.0).clamp(0.9, 1.0);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -815,7 +800,7 @@ class _DashboardPageState extends State<DashboardPage>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        _getFormattedDate(),
+                        _getFormattedDate(context),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -935,7 +920,7 @@ class _DashboardPageState extends State<DashboardPage>
                               ),
                             ),
                             Text(
-                              "SCORE",
+                              t.dashScoreLabel,
                               style: TextStyle(
                                 color: subTextColor,
                                 fontSize: 12,
@@ -949,7 +934,7 @@ class _DashboardPageState extends State<DashboardPage>
                                 horizontal: 28.0,
                               ),
                               child: Text(
-                                _getScoreMessage(_score),
+                                _getScoreMessage(t, _score),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: _getScoreColor(_score),
@@ -979,15 +964,15 @@ class _DashboardPageState extends State<DashboardPage>
                 subTextColor: subTextColor,
                 icon: Icons.directions_walk_rounded,
                 iconColor: const Color(0xFF6C63FF),
-                trendText: 'Tap for more',
+                trendText: t.dashTapForMore,
                 trendColor: subTextColor,
-                title: "Steps",
+                title: t.dashSteps,
                 value: _formatNumber(_steps),
-                unit: "steps",
+                unit: t.dashStepsUnit,
                 valueInlineUnit: true,
                 compact: false,
                 stepsProgress: _steps / _goalSteps.toDouble(),
-                stepsGoalLabel: 'Goal ${_formatNumber(_goalSteps)}',
+                stepsGoalLabel: t.dashGoalValue(_formatNumber(_goalSteps)),
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -1026,7 +1011,7 @@ class _DashboardPageState extends State<DashboardPage>
                 subTextColor: subTextColor,
                 heartRate: _heartRate,
                 hrHistory: _hrHistory,
-                trendText: 'Tap for more',
+                trendText: t.dashTapForMore,
                 trendColor: subTextColor,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
@@ -1061,7 +1046,7 @@ class _DashboardPageState extends State<DashboardPage>
                 activeCalories: _activeCalories,
                 eatenCalories: _eatenCalories,
                 burnGoal: _goalCaloriesBurnt,
-                trendText: 'Tap for more',
+                trendText: t.dashTapForMore,
                 trendColor: subTextColor,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
@@ -1095,7 +1080,7 @@ class _DashboardPageState extends State<DashboardPage>
                 subTextColor: subTextColor,
                 exerciseMinutes: _exerciseMinutes,
                 exHistory: _exHistory,
-                trendText: 'Tap for more',
+                trendText: t.dashTapForMore,
                 trendColor: subTextColor,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
@@ -1129,7 +1114,7 @@ class _DashboardPageState extends State<DashboardPage>
               avgSleepMinutes: avgSleepMinutes,
               todaySleepMinutes: todaySleepMinutes,
               goalMinutes: (_goalSleepHours * 60).round(),
-              trendText: 'Tap for more',
+              trendText: t.dashTapForMore,
               trendColor: subTextColor,
               isDark: isDark,
               onTap: () async {
@@ -1251,17 +1236,17 @@ class _DashboardPageState extends State<DashboardPage>
                     _setBottomTab(index);
                   },
                   items: [
-                    const NavItem(label: 'Home', icon: Icons.home_rounded),
-                    const NavItem(
-                      label: 'Diet',
+                    NavItem(label: t.navHome, icon: Icons.home_rounded),
+                    NavItem(
+                      label: t.navDiet,
                       icon: Icons.restaurant_rounded,
                     ),
-                    const NavItem(
-                      label: 'Workout',
+                    NavItem(
+                      label: t.navWorkout,
                       icon: Icons.fitness_center_rounded,
                     ),
-                    const NavItem(
-                      label: 'More',
+                    NavItem(
+                      label: t.navMore,
                       icon: Icons.more_horiz_rounded,
                     ),
                   ],
@@ -1360,6 +1345,7 @@ class MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final cardPadding = compact ? 16.0 : 20.0;
     final iconSize = compact ? 20.0 : 24.0;
     final iconPad = compact ? 6.0 : 8.0;
@@ -1476,7 +1462,7 @@ class MetricCard extends StatelessWidget {
               const SizedBox(height: 8),
               _StepsPillBar(
                 progress: stepsProgress!.clamp(0.0, 1.0),
-                goalLabel: stepsGoalLabel ?? 'Goal',
+                goalLabel: stepsGoalLabel ?? t.dashGoalShort,
               ),
               const SizedBox(height: 2),
             ],
@@ -1503,7 +1489,7 @@ class _StepsPillBar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Align(
-          alignment: Alignment.centerRight,
+          alignment: AlignmentDirectional.centerEnd,
           child: Text(
             goalLabel,
             style: TextStyle(
@@ -1524,7 +1510,7 @@ class _StepsPillBar extends StatelessWidget {
               children: List.generate(totalPills, (i) {
                 final filled = i < filledCount;
                 return Padding(
-                  padding: EdgeInsets.only(right: i < totalPills - 1 ? gap : 0),
+                  padding: EdgeInsetsDirectional.only(end: i < totalPills - 1 ? gap : 0),
                   child: Container(
                     width: pillWidth,
                     height: 24,
@@ -1652,6 +1638,7 @@ class HeartRateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final p = compact ? 16.0 : 20.0;
     final topGap = compact ? 16.0 : 24.0;
     final valueSize = compact ? 24.0 : 28.0;
@@ -1711,7 +1698,7 @@ class HeartRateCard extends StatelessWidget {
             ),
             SizedBox(height: topGap),
             Text(
-              'Heart Rate',
+              t.dashHeartRate,
               style: TextStyle(
                 color: subTextColor,
                 fontSize: compact ? 13.0 : 14.0,
@@ -1734,7 +1721,7 @@ class HeartRateCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Text(
-                    'bpm',
+                    t.dashBpm,
                     style: TextStyle(
                       color: subTextColor,
                       fontSize: compact ? 11.0 : 12.0,
@@ -1921,8 +1908,15 @@ class ExerciseTimeCard extends StatelessWidget {
     final iconSize = compact ? 20.0 : 24.0;
     final iconPad = compact ? 6.0 : 8.0;
 
+    final t = AppLocalizations.of(context);
     final pillColor = AccentColor.notifier.value;
-    const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final localeName = Localizations.localeOf(context).toString();
+    final nowDate = DateTime.now();
+    final monday = nowDate.subtract(Duration(days: nowDate.weekday - 1));
+    final days = List.generate(
+      7,
+      (i) => DateFormat('EEEEE', localeName).format(monday.add(Duration(days: i))),
+    );
     final todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
 
     return GestureDetector(
@@ -1978,7 +1972,7 @@ class ExerciseTimeCard extends StatelessWidget {
             ),
             SizedBox(height: topGap),
             Text(
-              'Exercise Time',
+              t.dashExerciseTime,
               style: TextStyle(
                 color: subTextColor,
                 fontSize: compact ? 13.0 : 14.0,
@@ -2097,6 +2091,7 @@ class CaloriesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final p = compact ? 16.0 : 20.0;
     final trendSize = compact ? 10.0 : 11.0;
     final iconSize = compact ? 20.0 : 24.0;
@@ -2172,7 +2167,7 @@ class CaloriesCard extends StatelessWidget {
 
             // Burned label + value
             Text(
-              'Calories Burned',
+              t.dashCaloriesBurned,
               style: TextStyle(
                 color: subTextColor,
                 fontSize: compact ? 12.0 : 13.0,
@@ -2195,9 +2190,9 @@ class CaloriesCard extends StatelessWidget {
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 3, left: 4),
+                  padding: const EdgeInsetsDirectional.only(bottom: 3, start: 4),
                   child: Text(
-                    'kcal',
+                    t.dashKcal,
                     style: TextStyle(
                       color: subTextColor,
                       fontSize: compact ? 11.0 : 12.0,
@@ -2221,7 +2216,7 @@ class CaloriesCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 _CalMetric(
-                  label: 'Burned',
+                  label: t.dashBurned,
                   value: activeCalories,
                   color: Colors.orange,
                   textColor: textColor,
@@ -2234,7 +2229,7 @@ class CaloriesCard extends StatelessWidget {
                   color: subTextColor.withValues(alpha: 0.15),
                 ),
                 _CalMetric(
-                  label: 'Eaten',
+                  label: t.dashEaten,
                   value: eatenCalories,
                   color: const Color(0xFF30A2FF),
                   textColor: textColor,
@@ -2247,7 +2242,7 @@ class CaloriesCard extends StatelessWidget {
                   color: subTextColor.withValues(alpha: 0.15),
                 ),
                 _CalMetric(
-                  label: 'Net',
+                  label: t.dashNet,
                   valueStr: netStr,
                   color: netColor,
                   textColor: textColor,
@@ -2307,7 +2302,7 @@ class _CalFuelBar extends StatelessWidget {
             final active = i < filled;
             final h = maxH * heightPattern[i];
             return Padding(
-              padding: EdgeInsets.only(right: i < total - 1 ? gap : 0),
+              padding: EdgeInsetsDirectional.only(end: i < total - 1 ? gap : 0),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 350),
                 curve: Curves.easeOutCubic,
@@ -2498,8 +2493,15 @@ class SleepCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final color = AccentColor.notifier.value;
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final localeName = Localizations.localeOf(context).toString();
+    final nowDate = DateTime.now();
+    final monday = nowDate.subtract(Duration(days: nowDate.weekday - 1));
+    final days = List.generate(
+      7,
+      (i) => DateFormat('EEE', localeName).format(monday.add(Duration(days: i))),
+    );
     final todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
     // Bar fills relative to the user's sleep goal so reaching the goal = full bar.
     final double maxMins = goalMinutes > 0 ? goalMinutes.toDouble() : 480.0;
@@ -2530,7 +2532,7 @@ class SleepCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Sleep Analysis',
+                    t.dashSleepAnalysis,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -2542,7 +2544,7 @@ class SleepCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Tap for more',
+                  t.dashTapForMore,
                   style: TextStyle(
                     color: subTextColor,
                     fontSize: 11,
@@ -2566,7 +2568,7 @@ class SleepCard extends StatelessWidget {
               children: [
                 const SizedBox(width: 40),
                 Text(
-                  'today  ',
+                  '${t.dashSleepToday}  ',
                   style: TextStyle(color: subTextColor, fontSize: 11),
                 ),
                 Text(
@@ -2578,7 +2580,7 @@ class SleepCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '  (avg ${_fmt(avgSleepMinutes)})',
+                  '  ${t.dashSleepAvg(_fmt(avgSleepMinutes))}',
                   style: TextStyle(color: subTextColor, fontSize: 11),
                 ),
               ],

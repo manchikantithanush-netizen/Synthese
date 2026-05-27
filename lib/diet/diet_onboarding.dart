@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 
@@ -183,6 +184,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
   Widget _buildWelcomePage(bool isDark, Color textColor) {
     final screenHeight = MediaQuery.of(context).size.height;
     final isCompact = screenHeight < 760;
+    final t = AppLocalizations.of(context);
 
     Widget buildFeature(
       String title,
@@ -244,7 +246,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
         children: [
           SizedBox(height: isCompact ? 14 : 32),
           Text(
-            "Welcome to\nDiet Tracker",
+            t.dietOnboardingWelcomeTitle,
             style: TextStyle(
               color: textColor,
               fontSize: isCompact ? 30 : 34,
@@ -255,31 +257,31 @@ class _DietOnboardingState extends State<DietOnboarding> {
           ),
           const Spacer(),
           buildFeature(
-            "AI-Powered Analysis",
-            "Snap a photo of your food and get instant calorie estimates powered by advanced AI.",
+            t.dietOnboardingFeature1Title,
+            t.dietOnboardingFeature1Desc,
             CupertinoIcons.camera_viewfinder,
             const Color(0xFF5E5CE6),
           ),
           buildFeature(
-            "Daily Tracking",
-            "Effortlessly monitor your calorie intake throughout the day with a simple food log.",
+            t.dietOnboardingFeature2Title,
+            t.dietOnboardingFeature2Desc,
             CupertinoIcons.chart_bar_fill,
             const Color(0xFFFF9F0A),
           ),
           buildFeature(
-            "Smart Insights",
-            "Understand your eating patterns over time and make informed nutrition choices.",
+            t.dietOnboardingFeature3Title,
+            t.dietOnboardingFeature3Desc,
             CupertinoIcons.lightbulb_fill,
             const Color(0xFF32ADE6),
           ),
           buildFeature(
-            "Goal Setting",
-            "Set daily calorie targets and track your progress toward your health goals.",
+            t.dietOnboardingFeature4Title,
+            t.dietOnboardingFeature4Desc,
             CupertinoIcons.flag_fill,
             const Color(0xFF30D158),
           ),
           const Spacer(),
-          PremiumButton(text: "Next", onPressed: _nextPage, color: orangeColor),
+          PremiumButton(text: t.commonNext, onPressed: _nextPage, color: orangeColor),
         ],
       ),
     );
@@ -287,6 +289,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
 
   Widget _buildDisclaimerPage(bool isDark, Color textColor) {
     final isCompact = MediaQuery.of(context).size.height < 760;
+    final t = AppLocalizations.of(context);
 
     Widget buildDisclaimerParagraph(String text, {bool isBold = false}) {
       return Padding(
@@ -322,7 +325,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  "Important Notice",
+                  t.dietOnboardingDisclaimerTitle,
                   style: TextStyle(
                     color: textColor,
                     fontSize: isCompact ? 28 : 32,
@@ -341,19 +344,13 @@ class _DietOnboardingState extends State<DietOnboarding> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  buildDisclaimerParagraph(t.dietOnboardingDisclaimerPara1),
                   buildDisclaimerParagraph(
-                    "This app uses AI to analyze food images and estimate calorie counts. These estimates are approximations and may not be 100% accurate.",
-                  ),
-                  buildDisclaimerParagraph(
-                    "AI recognition can be affected by image quality, portion sizes, food preparation methods, and other factors. The calorie estimates provided should be used as a general guide only.",
+                    t.dietOnboardingDisclaimerPara2,
                     isBold: true,
                   ),
-                  buildDisclaimerParagraph(
-                    "This app is not a substitute for professional nutritional advice. For personalized dietary guidance, consult a registered dietitian or healthcare professional.",
-                  ),
-                  buildDisclaimerParagraph(
-                    "Calorie needs vary based on age, gender, activity level, metabolism, and health conditions. Always consult a professional before making significant dietary changes.",
-                  ),
+                  buildDisclaimerParagraph(t.dietOnboardingDisclaimerPara3),
+                  buildDisclaimerParagraph(t.dietOnboardingDisclaimerPara4),
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -366,7 +363,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
                       ),
                     ),
                     child: Text(
-                      "By continuing, you acknowledge that this app provides estimates for informational purposes only and does not replace professional nutritional advice.",
+                      t.dietOnboardingDisclaimerAck,
                       style: TextStyle(
                         color: textColor,
                         fontSize: 15,
@@ -381,7 +378,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
           ),
           SizedBox(height: isCompact ? 12 : 16),
           PremiumButton(
-            text: "I Understand",
+            text: t.dietOnboardingUnderstand,
             onPressed: _nextPage,
             color: orangeColor,
           ),
@@ -392,6 +389,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
 
   Widget _buildWaterGoalPage(bool isDark, Color textColor) {
     final isCompact = MediaQuery.of(context).size.height < 760;
+    final t = AppLocalizations.of(context);
     return _buildScrollablePage(
       key: const ValueKey('water-goal'),
       child: Column(
@@ -401,7 +399,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
           UniversalBackButton(onPressed: _previousPage),
           const SizedBox(height: 24),
           Text(
-            "Water Intake Goal",
+            t.dietOnboardingWaterGoalTitle,
             style: TextStyle(
               color: textColor,
               fontSize: isCompact ? 28 : 32,
@@ -432,7 +430,9 @@ class _DietOnboardingState extends State<DietOnboarding> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    "You logged ${_currentWaterIntake.toStringAsFixed(1)}L of water intake daily",
+                    t.dietOnboardingWaterLoggedDaily(
+                      _currentWaterIntake.toStringAsFixed(1),
+                    ),
                     style: TextStyle(
                       color: textColor.withOpacity(0.85),
                       fontSize: 15,
@@ -446,7 +446,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
           ),
           const SizedBox(height: 32),
           Text(
-            "What's your daily water goal?",
+            t.dietOnboardingWaterGoalQuestion,
             style: TextStyle(
               color: textColor.withOpacity(0.6),
               fontSize: 16,
@@ -490,7 +490,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        "$glasses glasses",
+                        t.dietOnboardingGlassesCount(glasses),
                         style: TextStyle(
                           color: textColor.withOpacity(0.4),
                           fontSize: 13,
@@ -505,7 +505,7 @@ class _DietOnboardingState extends State<DietOnboarding> {
           ),
           const Spacer(),
           PremiumButton(
-            text: "Finish Setup",
+            text: t.dietOnboardingFinishSetup,
             isLoading: _isSaving,
             onPressed: _isSaving ? () {} : _saveData,
             color: orangeColor,

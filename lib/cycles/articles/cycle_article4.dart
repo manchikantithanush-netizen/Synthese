@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class ArticleFourView extends StatelessWidget {
   final bool isDark;
@@ -6,17 +7,18 @@ class ArticleFourView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final textColor = isDark ? Colors.white : Colors.black;
     final bodyColor = isDark ? const Color(0xFFEBEBF5) : const Color(0xFF3C3C43);
     final highlightColor = const Color(0xFFFF2D55); // Pink accent for spotting theme
 
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 60.0),
+      padding: const EdgeInsetsDirectional.only(start: 24.0, end: 24.0, bottom: 60.0),
       children: [
         // --- MAIN TITLE ---
         Text(
-          "What Is Spotting and Why Does It Happen?",
+          t.cyA4Title,
           style: TextStyle(
             color: textColor,
             fontSize: 34,
@@ -27,7 +29,7 @@ class ArticleFourView extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          "Everything you need to know about bleeding between periods",
+          t.cyA4Sub,
           style: TextStyle(
             color: isDark
                 ? const Color(0xFFEBEBF5).withOpacity(0.6)
@@ -41,130 +43,130 @@ class ArticleFourView extends StatelessWidget {
         const SizedBox(height: 40),
 
         // --- SECTION 1: WHAT IT IS ---
-        _buildHeading("What spotting actually is", textColor),
-        _buildParagraph("Spotting is light vaginal bleeding that occurs outside of your normal period. It is not a flow — it is small amounts of blood, often noticed only when wiping or as light staining on underwear. The colour is usually pink, light red, or brown rather than the bright or deep red of a typical period. It does not require a pad or tampon in most cases, only a panty liner at most.", bodyColor),
-        _buildParagraph("Spotting is one of the most common and most misunderstood experiences in the menstrual cycle. It can feel alarming the first time it happens, but in the majority of cases it has a completely benign hormonal cause. Spotting, or light vaginal discharge, can be a totally normal part of the menstrual cycle.", bodyColor, citation: "ScienceDirect"),
-        _buildParagraph("Understanding the timing and context of spotting — specifically where you are in your cycle when it occurs — is the single most useful tool for interpreting what it means.", bodyColor),
+        _buildHeading(t.cyA4S1H, textColor),
+        _buildParagraph(t.cyA4S1P1, bodyColor),
+        _buildParagraph(t.cyA4S1P2, bodyColor, citation: "ScienceDirect"),
+        _buildParagraph(t.cyA4S1P3, bodyColor),
         const SizedBox(height: 32),
 
         // --- SECTION 2: TABLE ---
-        _buildHeading("Spotting vs. a period — the key differences", textColor),
-        _buildParagraph("Many people confuse spotting with the start of a light period. Here is how to tell them apart:", bodyColor),
+        _buildHeading(t.cyA4S2H, textColor),
+        _buildParagraph(t.cyA4S2P1, bodyColor),
         const SizedBox(height: 8),
-        
-        _buildComparisonTable(isDark, highlightColor, textColor),
-        
+
+        _buildComparisonTable(t, isDark, highlightColor, textColor),
+
         const SizedBox(height: 16),
-        _buildParagraph("Spotting before your period may appear only when wiping or as a few drops on a panty liner. Menstrual bleeding, in contrast, lasts about 2 to 7 days and is continuous, often increasing in intensity before tapering off.", bodyColor, citation: "Cleveland Clinic"),
+        _buildParagraph(t.cyA4S2P2, bodyColor, citation: "Cleveland Clinic"),
         const SizedBox(height: 32),
 
         // --- SECTION 3: COMMON CAUSES ---
-        _buildHeading("The most common causes of spotting", textColor),
-        
-        _buildSubheading("1. Ovulation spotting", textColor),
-        _buildParagraph("Mid-cycle bleeding, which generally takes the form of light spotting, is most commonly associated with ovulation. In a BioCycle Study, approximately 5% of women self-reported mid-cycle bleeding during or around the time of expected ovulation. Since ovulation bleeding is relatively uncommon, and can occur randomly or infrequently, it can easily be mistaken as a sign of something else.", bodyColor, citation: "Amegroups"),
-        _buildParagraph("Changes in estrogen levels often cause this type of bleeding — some people refer to ovulation bleeding as estrogen breakthrough bleeding. Right before ovulation, estrogen rises sharply. Then immediately after the egg is released, estrogen drops suddenly while progesterone begins rising. This rapid hormonal shift can cause a small amount of the uterine lining to shed briefly, producing light spotting.", bodyColor, citation: "Children's Hospital of Philadelphia"),
-        _buildParagraph("You tend to release eggs from alternating ovaries — your left one cycle and your right the next. Some people notice spotting when they're ovulating on one side but not the other, which is why it may show up every other cycle.", bodyColor, citation: "Stanford Medicine Children's Health"),
-        Text("What it looks like:", style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16)),
+        _buildHeading(t.cyA4S3H, textColor),
+
+        _buildSubheading(t.cyA4Sub1, textColor),
+        _buildParagraph(t.cyA4Sub1P1, bodyColor, citation: "Amegroups"),
+        _buildParagraph(t.cyA4Sub1P2, bodyColor, citation: "Children's Hospital of Philadelphia"),
+        _buildParagraph(t.cyA4Sub1P3, bodyColor, citation: "Stanford Medicine Children's Health"),
+        Text(t.cyA4LooksLabel, style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 8),
-        _buildSimpleBullet("Light pink or red, very small amount.", bodyColor),
-        _buildSimpleBullet("Lasts a few hours to 1–2 days maximum.", bodyColor),
-        _buildSimpleBullet("Occurs around the middle of your cycle — roughly days 11 to 16 in a 28-day cycle.", bodyColor),
-        _buildSimpleBullet("May be accompanied by mild one-sided pelvic cramping (mittelschmerz) and egg-white cervical mucus.", bodyColor),
+        _buildSimpleBullet(t.cyA4Sub1L1, bodyColor),
+        _buildSimpleBullet(t.cyA4Sub1L2, bodyColor),
+        _buildSimpleBullet(t.cyA4Sub1L3, bodyColor),
+        _buildSimpleBullet(t.cyA4Sub1L4, bodyColor),
         const SizedBox(height: 24),
 
-        _buildSubheading("2. Pre-period spotting (late luteal spotting)", textColor),
-        _buildParagraph("Some people experience light brown or pink spotting in the 1 to 3 days before their period properly begins. This is caused by progesterone dropping at the end of the luteal phase, which causes the uterine lining to begin breaking down before the full menstrual flow starts. It is considered normal when it lasts no more than 3 days and is followed by a normal period.", bodyColor),
+        _buildSubheading(t.cyA4Sub2, textColor),
+        _buildParagraph(t.cyA4Sub2P1, bodyColor),
         const SizedBox(height: 12),
 
-        _buildSubheading("3. Hormonal fluctuations and anovulatory cycles", textColor),
-        _buildParagraph("In cycles where ovulation does not occur — which is common in teenagers — the hormonal patterns are less predictable. Without the LH surge and subsequent progesterone rise, estrogen can fluctuate erratically, causing what is called estrogen breakthrough bleeding. This type of spotting is common in the first 2 to 3 years after your first period as the hormonal system matures.", bodyColor),
+        _buildSubheading(t.cyA4Sub3, textColor),
+        _buildParagraph(t.cyA4Sub3P1, bodyColor),
         const SizedBox(height: 12),
 
-        _buildSubheading("4. Stress, illness, and significant lifestyle changes", textColor),
-        _buildParagraph("The hypothalamus — the part of the brain that controls your hormonal cycle — is highly sensitive to psychological and physiological stress. Significant stress, illness, disrupted sleep, extreme exercise, or sudden weight changes can all disrupt hormonal signalling and cause mid-cycle spotting. This is one of the most common causes of unexplained spotting in teenagers.", bodyColor),
+        _buildSubheading(t.cyA4Sub4, textColor),
+        _buildParagraph(t.cyA4Sub4P1, bodyColor),
         const SizedBox(height: 12),
 
-        _buildSubheading("5. Cervical ectropion", textColor),
-        _buildParagraph("Cervical ectropion is a benign gynaecological condition regarded as a normal variant that frequently occurs in women of reproductive age. It occurs due to increased exposure of the cervical epithelium to estrogen.", bodyColor, citation: "ACOG"),
-        _buildParagraph("In simple terms: cells that are normally found inside the cervical canal migrate to the outside of the cervix, where they are more fragile and prone to light bleeding — particularly after physical activity, sex, or even a cervical exam.", bodyColor),
-        _buildParagraph("Ectropion is particularly common in adolescents, pregnant women, or those taking estrogen-containing contraceptives. Vaginal discharge is the most common symptom. Postcoital bleeding may also occur.", bodyColor, citation: "UChicago Medicine"),
-        _buildParagraph("Importantly, cervical ectropion has no links to cervical cancer or cancer-causing health problems. It is a benign condition that often resolves on its own without any treatment.", bodyColor, citation: "PubMed Central"),
+        _buildSubheading(t.cyA4Sub5, textColor),
+        _buildParagraph(t.cyA4Sub5P1, bodyColor, citation: "ACOG"),
+        _buildParagraph(t.cyA4Sub5P2, bodyColor),
+        _buildParagraph(t.cyA4Sub5P3, bodyColor, citation: "UChicago Medicine"),
+        _buildParagraph(t.cyA4Sub5P4, bodyColor, citation: "PubMed Central"),
         const SizedBox(height: 32),
 
         // --- SECTION 4: LESS COMMON CAUSES ---
-        _buildHeading("Less common but important causes", textColor),
-        _buildSubheading("Sexually transmitted infections (STIs)", textColor),
-        _buildParagraph("Sexually transmitted infections such as gonorrhoea or chlamydia may cause the cervical tissue to become inflamed and bleed easily.", bodyColor, citation: "Children's Hospital of Philadelphia"),
-        _buildParagraph("Chlamydia in particular is often completely symptomless — the only sign may be unexpected spotting or bleeding after sex. Cervical ectropion (19–34%), cervical or endometrial polyps (5–18%), and infection including vaginitis and cervicitis are common causes of irregular spotting in premenopausal patients.", bodyColor, citation: "PubMed Central"),
-        _buildParagraph("This is one of the reasons why regular STI screening is recommended for sexually active teenagers — not because it assumes anything, but because chlamydia is the most commonly reported STI in the under-25 age group and is entirely treatable with a short course of antibiotics.", bodyColor),
+        _buildHeading(t.cyA4S4H, textColor),
+        _buildSubheading(t.cyA4Sub6, textColor),
+        _buildParagraph(t.cyA4Sub6P1, bodyColor, citation: "Children's Hospital of Philadelphia"),
+        _buildParagraph(t.cyA4Sub6P2, bodyColor, citation: "PubMed Central"),
+        _buildParagraph(t.cyA4Sub6P3, bodyColor),
         const SizedBox(height: 12),
 
-        _buildSubheading("Cervical polyps", textColor),
-        _buildParagraph("Cervical polyps are small growths that develop on the cervix. Most are benign but could cause bleeding after intercourse or between periods.", bodyColor, citation: "PubMed Central"),
-        _buildParagraph("They are more common in older adults but can occasionally occur in teenagers. They are usually found incidentally during a pelvic examination and can be removed easily in a clinical setting.", bodyColor),
+        _buildSubheading(t.cyA4Sub7, textColor),
+        _buildParagraph(t.cyA4Sub7P1, bodyColor, citation: "PubMed Central"),
+        _buildParagraph(t.cyA4Sub7P2, bodyColor),
         const SizedBox(height: 12),
 
-        _buildSubheading("Anovulatory cycles", textColor),
-        _buildParagraph("In cycles where no egg is released, progesterone is not produced — because progesterone only comes from the corpus luteum that forms after ovulation. Without progesterone to stabilise the uterine lining, estrogen alone controls the endometrium, causing it to thicken unevenly and shed irregularly. This produces unpredictable spotting that does not follow a clear pattern.", bodyColor),
+        _buildSubheading(t.cyA4Sub8, textColor),
+        _buildParagraph(t.cyA4Sub8P1, bodyColor),
         const SizedBox(height: 32),
 
         // --- SECTION 5: COLOURS ---
-        _buildHeading("What colour is spotting and what does it mean?", textColor),
-        _buildParagraph("The colour of spotting carries information:", bodyColor),
-        _buildBullet("Light pink", "Fresh blood mixed with cervical mucus. Common with ovulation spotting or very early menstruation.", bodyColor, textColor),
-        _buildBullet("Bright red", "Fresh active bleeding. More associated with the start of a period or ovulation spotting during a heavy estrogen shift.", bodyColor, textColor),
-        _buildBullet("Brown or rust", "Older blood that has taken time to travel through the cervical canal. Very common with pre-period spotting, the end of a period, or post-ovulation spotting.", bodyColor, textColor),
-        _buildBullet("Dark brown or almost black", "Very old blood, often from the tail end of a period or from blood that was briefly retained. Not inherently concerning on its own.", bodyColor, textColor),
-        
+        _buildHeading(t.cyA4S5H, textColor),
+        _buildParagraph(t.cyA4S5P1, bodyColor),
+        _buildBullet(t.cyA4ColorPinkT, t.cyA4ColorPinkB, bodyColor, textColor),
+        _buildBullet(t.cyA4ColorRedT, t.cyA4ColorRedB, bodyColor, textColor),
+        _buildBullet(t.cyA4ColorBrownT, t.cyA4ColorBrownB, bodyColor, textColor),
+        _buildBullet(t.cyA4ColorDarkT, t.cyA4ColorDarkB, bodyColor, textColor),
+
         const SizedBox(height: 12),
-        Text("Key points:", style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16)),
+        Text(t.cyArtKeyPoints, style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16)),
         const SizedBox(height: 8),
-        _buildSimpleBullet("Brown spotting is almost always old blood — not an emergency.", bodyColor),
-        _buildSimpleBullet("Pink spotting mid-cycle is one of the clearest signs of ovulation spotting.", bodyColor),
-        _buildSimpleBullet("Bright red bleeding outside of your period window is worth noting and monitoring.", bodyColor),
-        _buildSimpleBullet("Colour alone is not diagnostic — timing and context matter far more.", bodyColor),
+        _buildSimpleBullet(t.cyA4S5K1, bodyColor),
+        _buildSimpleBullet(t.cyA4S5K2, bodyColor),
+        _buildSimpleBullet(t.cyA4S5K3, bodyColor),
+        _buildSimpleBullet(t.cyA4S5K4, bodyColor),
         const SizedBox(height: 32),
 
         // --- SECTION 6: NORMAL SPOTTING ---
-        _buildHeading("Spotting that is almost always normal", textColor),
-        _buildSimpleBullet("Light pink or brown spotting for 1–2 days around your expected ovulation window.", bodyColor),
-        _buildSimpleBullet("Brown spotting in the 1–3 days before your period begins.", bodyColor),
-        _buildSimpleBullet("Very light spotting in the first 1–2 days after your period ends.", bodyColor),
-        _buildSimpleBullet("Occasional mid-cycle spotting in the first 2–3 years after your first period.", bodyColor),
+        _buildHeading(t.cyA4S6H, textColor),
+        _buildSimpleBullet(t.cyA4S6L1, bodyColor),
+        _buildSimpleBullet(t.cyA4S6L2, bodyColor),
+        _buildSimpleBullet(t.cyA4S6L3, bodyColor),
+        _buildSimpleBullet(t.cyA4S6L4, bodyColor),
         const SizedBox(height: 32),
 
         // --- SECTION 7: WHEN TO SEE A DOCTOR ---
-        _buildHeading("When should you talk to a doctor?", textColor),
-        _buildParagraph("Most spotting is harmless. But there are specific patterns that are worth getting checked:", bodyColor),
-        _buildSimpleBullet("Spotting that lasts more than 3 days outside of your period.", bodyColor),
-        _buildSimpleBullet("Spotting that occurs consistently after sex — this should always be investigated, even if it turns out to be something benign like cervical ectropion.", bodyColor),
-        _buildSimpleBullet("Spotting accompanied by pelvic pain, unusual discharge, or an unpleasant odour — these can be signs of an infection.", bodyColor),
-        _buildSimpleBullet("Spotting that is getting heavier over time rather than staying light.", bodyColor),
-        _buildSimpleBullet("Spotting that occurs in a completely unpredictable pattern with no connection to your cycle phases across several months.", bodyColor),
-        
+        _buildHeading(t.cyA4S7H, textColor),
+        _buildParagraph(t.cyA4S7P1, bodyColor),
+        _buildSimpleBullet(t.cyA4S7L1, bodyColor),
+        _buildSimpleBullet(t.cyA4S7L2, bodyColor),
+        _buildSimpleBullet(t.cyA4S7L3, bodyColor),
+        _buildSimpleBullet(t.cyA4S7L4, bodyColor),
+        _buildSimpleBullet(t.cyA4S7L5, bodyColor),
+
         const SizedBox(height: 16),
-        _buildParagraph("Any abnormal bleeding that causes significant anxiety or concern — even if the clinical cause turns out to be benign — is a valid reason to seek a medical opinion. A 2023 study reported the prevalence of abnormal uterine bleeding assessed by self-perception was 31.4%", bodyColor, citation: "American Academy of Family Physicians"),
-        _buildParagraph("Meaning nearly one in three people who menstruate report some form of abnormal bleeding at some point. You are not being dramatic by asking a doctor about it.", bodyColor),
-        
+        _buildParagraph(t.cyA4S7P2, bodyColor, citation: "American Academy of Family Physicians"),
+        _buildParagraph(t.cyA4S7P3, bodyColor),
+
         const SizedBox(height: 16),
-        _buildParagraph("A note on spotting after sex specifically: Cervical ectropion, cervical polyps, and infection are the most common causes of postcoital bleeding in premenopausal patients — the majority of which are benign and treatable.", bodyColor, citation: "PubMed Central"),
-        _buildParagraph("Spotting after sex once is not necessarily cause for concern. Spotting after sex repeatedly is worth mentioning to a doctor, not because it is likely to be serious, but because it is easy to assess and easy to treat.", bodyColor),
+        _buildParagraph(t.cyA4S7P4, bodyColor, citation: "PubMed Central"),
+        _buildParagraph(t.cyA4S7P5, bodyColor),
         const SizedBox(height: 48),
 
         // --- SECTION 8: SOURCES ---
         Divider(color: isDark ? Colors.white24 : Colors.black12),
         const SizedBox(height: 24),
-        Text("Reviewed sources & bibliography", style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
+        Text(t.cyArtSourcesTitle, style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
         const SizedBox(height: 16),
-        _buildSourceItem("Primary research:", isDark),
+        _buildSourceItem(t.cyArtPrimaryResearch, isDark),
         _buildSourceItem("• Jones K, et al. Anovulatory Bleeding. StatPearls Publishing, Updated 2023.", isDark),
         _buildSourceItem("• Ardestani S, Dason ES, Sobel M. Postcoital bleeding. CMAJ, September 11, 2023.", isDark),
         _buildSourceItem("• Zhang CY, Li H et al. Abnormal uterine bleeding patterns determined through menstrual tracking... American Journal of Obstetrics and Gynecology, 2023.", isDark),
         _buildSourceItem("• Aggarwal P, Ben Amor A. Cervical Ectropion. StatPearls Publishing, Updated 2023.", isDark),
         _buildSourceItem("• Owens GL, Wood NJ, Martin-Hirsch P. Investigation and management of postcoital bleeding. Obstet Gynaecol, 2022.", isDark),
         const SizedBox(height: 12),
-        _buildSourceItem("Clinical and educational resources:", isDark),
+        _buildSourceItem(t.cyArtClinicalResources, isDark),
         _buildSourceItem("• Cleveland Clinic — Spotting During Ovulation (2025)", isDark),
         _buildSourceItem("• Cleveland Clinic — Cervical Ectropion (2025)", isDark),
         _buildSourceItem("• Medical News Today — Ovulation Bleeding (2024)", isDark),
@@ -238,7 +240,7 @@ class ArticleFourView extends StatelessWidget {
 
   Widget _buildBullet(String boldText, String normalText, Color bodyColor, Color titleColor) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0, left: 8.0),
+      padding: const EdgeInsetsDirectional.only(bottom: 12.0, start: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -261,7 +263,7 @@ class ArticleFourView extends StatelessWidget {
 
   Widget _buildSimpleBullet(String text, Color color) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0, left: 8.0),
+      padding: const EdgeInsetsDirectional.only(bottom: 12.0, start: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -292,7 +294,7 @@ class ArticleFourView extends StatelessWidget {
   }
 
   // --- CUSTOM COMPARISON TABLE ---
-  Widget _buildComparisonTable(bool isDark, Color highlightColor, Color textColor) {
+  Widget _buildComparisonTable(AppLocalizations t, bool isDark, Color highlightColor, Color textColor) {
     final borderColor = isDark ? Colors.white24 : Colors.black12;
     final headerBgColor = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5E7);
     final rowBgColor = isDark ? const Color(0xFF252528) : Colors.white;
@@ -305,8 +307,8 @@ class ArticleFourView extends StatelessWidget {
         ),
         children: [
           _buildTableCell("", textColor, isHeader: true),
-          _buildTableCell("Spotting", textColor, isHeader: true),
-          _buildTableCell("Period", textColor, isHeader: true),
+          _buildTableCell(t.cyA4TblSpotting, textColor, isHeader: true),
+          _buildTableCell(t.cyA4TblPeriod, textColor, isHeader: true),
         ],
       );
     }
@@ -340,12 +342,12 @@ class ArticleFourView extends StatelessWidget {
           },
           children: [
             buildHeaderRow(),
-            buildRow("Volume", "Very light — only requires a panty liner", "Moderate to heavy — requires a pad or tampon"),
-            buildRow("Colour", "Light pink, brown, or rust", "Bright red to deep red"),
-            buildRow("Duration", "Hours to 1–2 days", "3 to 7 days"),
-            buildRow("Clots", "None", "Possible, especially on heavy days"),
-            buildRow("Timing", "Between periods, mid-cycle, or just before/after", "Follows your regular cycle rhythm"),
-            buildRow("Cramping", "Minimal or none", "Common, especially day 1–2"),
+            buildRow(t.cyA4TblVolumeF, t.cyA4TblVolumeS, t.cyA4TblVolumeP),
+            buildRow(t.cyA4TblColourF, t.cyA4TblColourS, t.cyA4TblColourP),
+            buildRow(t.cyA4TblDurationF, t.cyA4TblDurationS, t.cyA4TblDurationP),
+            buildRow(t.cyA4TblClotsF, t.cyA4TblClotsS, t.cyA4TblClotsP),
+            buildRow(t.cyA4TblTimingF, t.cyA4TblTimingS, t.cyA4TblTimingP),
+            buildRow(t.cyA4TblCrampingF, t.cyA4TblCrampingS, t.cyA4TblCrampingP),
           ],
         ),
       ),

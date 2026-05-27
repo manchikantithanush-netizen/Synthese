@@ -9,6 +9,7 @@ import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/services/data_aggregation_service.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
 import 'package:synthese/ui/components/app_toast.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class MorningReadinessModal extends StatefulWidget {
   const MorningReadinessModal({super.key});
@@ -31,30 +32,30 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
   static const Color tealColor = Color(0xFF33BEBE);
 
   // Sleep Quality labels (1-5)
-  static const List<String> _sleepLabels = [
-    'Poor',
-    'Fair',
-    'Okay',
-    'Good',
-    'Great',
+  List<String> _sleepLabels(AppLocalizations t) => [
+    t.mrSleepPoor,
+    t.mrSleepFair,
+    t.mrSleepOkay,
+    t.mrSleepGood,
+    t.mrSleepGreat,
   ];
 
   // Energy Level labels (1-5)
-  static const List<String> _energyLabels = [
-    'Exhausted',
-    'Low',
-    'Moderate',
-    'High',
-    'Energized',
+  List<String> _energyLabels(AppLocalizations t) => [
+    t.mrEnergyExhausted,
+    t.mrEnergyLow,
+    t.mrEnergyModerate,
+    t.mrEnergyHigh,
+    t.mrEnergyEnergized,
   ];
 
   // Academic Stress labels (1-5, where 1=bad, 5=good)
-  static const List<String> _stressLabels = [
-    'Overwhelming',
-    'High',
-    'Moderate',
-    'Low',
-    'Minimal',
+  List<String> _stressLabels(AppLocalizations t) => [
+    t.mrStressOverwhelming,
+    t.mrStressHigh,
+    t.mrStressModerate,
+    t.mrStressLow,
+    t.mrStressMinimal,
   ];
 
   @override
@@ -76,12 +77,12 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
     super.dispose();
   }
 
-  String _getSleepLabel() =>
-      _sleepLabels[(_sleepQuality.round() - 1).clamp(0, 4)];
-  String _getEnergyLabel() =>
-      _energyLabels[(_energyLevel.round() - 1).clamp(0, 4)];
-  String _getStressLabel() =>
-      _stressLabels[(_academicStress.round() - 1).clamp(0, 4)];
+  String _getSleepLabel(AppLocalizations t) =>
+      _sleepLabels(t)[(_sleepQuality.round() - 1).clamp(0, 4)];
+  String _getEnergyLabel(AppLocalizations t) =>
+      _energyLabels(t)[(_energyLevel.round() - 1).clamp(0, 4)];
+  String _getStressLabel(AppLocalizations t) =>
+      _stressLabels(t)[(_academicStress.round() - 1).clamp(0, 4)];
 
   // Sleep Quality: tired orange/red to restful blue/purple
   Color _getSleepColor() {
@@ -145,7 +146,7 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
           _isSaving = false;
         });
         _checkmarkController.forward();
-        AppToast.success(context, 'Morning readiness logged', icon: Icons.wb_sunny_rounded);
+        AppToast.success(context, AppLocalizations.of(context).mrLogged, icon: Icons.wb_sunny_rounded);
         await Future.delayed(const Duration(milliseconds: 1500));
         if (mounted) Navigator.of(context).pop(true);
       }
@@ -157,6 +158,7 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF5F5F5);
     final textColor = isDark ? Colors.white : Colors.black;
@@ -179,12 +181,12 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
               children: [
                 // Header
                 Padding(
-                  padding: const EdgeInsets.only(top: 24, left: 20, right: 20),
+                  padding: const EdgeInsetsDirectional.only(top: 24, start: 20, end: 20),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
                       Text(
-                        'Morning Readiness',
+                        t.mrTitle,
                         style: TextStyle(
                           color: textColor,
                           fontSize: 18,
@@ -192,7 +194,7 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
                         ),
                       ),
                       Align(
-                        alignment: Alignment.centerRight,
+                        alignment: AlignmentDirectional.centerEnd,
                         child: UniversalCloseButton(
                           onPressed: () {
                             Navigator.of(context).pop();
@@ -209,7 +211,7 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Text(
-                    'How are you feeling this morning?',
+                    t.mrSubtitle,
                     style: TextStyle(
                       color: textColor.withOpacity(0.6),
                       fontSize: 15,
@@ -229,10 +231,10 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
                         // Sleep Quality Slider
                         Expanded(
                           child: _buildVerticalSliderSection(
-                            title: 'Sleep Quality',
+                            title: t.mrSleepQuality,
                             icon: CupertinoIcons.moon_fill,
                             value: _sleepQuality,
-                            label: _getSleepLabel(),
+                            label: _getSleepLabel(t),
                             color: _getSleepColor(),
                             cardColor: cardColor,
                             textColor: textColor,
@@ -247,10 +249,10 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
                         // Energy Level Slider
                         Expanded(
                           child: _buildVerticalSliderSection(
-                            title: 'Energy Level',
+                            title: t.mrEnergyLevel,
                             icon: CupertinoIcons.bolt_fill,
                             value: _energyLevel,
-                            label: _getEnergyLabel(),
+                            label: _getEnergyLabel(t),
                             color: _getEnergyColor(),
                             cardColor: cardColor,
                             textColor: textColor,
@@ -265,10 +267,10 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
                         // Academic Stress Slider
                         Expanded(
                           child: _buildVerticalSliderSection(
-                            title: 'Stress Level',
+                            title: t.mrStressLevel,
                             icon: CupertinoIcons.book_fill,
                             value: _academicStress,
-                            label: _getStressLabel(),
+                            label: _getStressLabel(t),
                             color: _getStressColor(),
                             cardColor: cardColor,
                             textColor: textColor,
@@ -288,7 +290,7 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
                   child: UniversalButton(
-                    text: _isSaving ? 'Saving...' : 'Save',
+                    text: _isSaving ? t.commonSaving : t.commonSave,
                     isLoading: _isSaving,
                     onPressed: _isSaving ? () {} : _saveReadiness,
                   ),
@@ -332,7 +334,7 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
                     FadeTransition(
                       opacity: _checkmarkAnimation,
                       child: Text(
-                        'Saved',
+                        t.commonSaved,
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,

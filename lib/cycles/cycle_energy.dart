@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
+import 'cycles_mechanism.dart';
 
 class CycleEnergyCard extends StatelessWidget {
+  final CyclePhase phaseId;
   final String phaseText;
   final String healthScore;
   final Color healthColor;
@@ -12,6 +15,7 @@ class CycleEnergyCard extends StatelessWidget {
 
   const CycleEnergyCard({
     super.key,
+    required this.phaseId,
     required this.phaseText,
     required this.healthScore,
     required this.healthColor,
@@ -24,10 +28,10 @@ class CycleEnergyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isNarrow = MediaQuery.of(context).size.width < 380;
-    // --- THEME & STATE ADAPTATION ---
     final isLightMode = Theme.of(context).brightness == Brightness.light;
-    final bool isPeriod = phaseText == "Your period is here";
+    final bool isPeriod = phaseId == CyclePhase.period;
 
     final textColor = isLightMode ? Colors.black : Colors.white;
     final mutedTextColor = isLightMode ? Colors.grey[700]! : Colors.white70;
@@ -57,31 +61,37 @@ class CycleEnergyCard extends StatelessWidget {
     String exactPhase = "";
     String hormoneLabel = "";
 
-    if (isPeriod) {
-      thumbIcon = Icons.water_drop;
-      thumbIconColor = const Color(0xFFEF5350); // Red
-      exactPhase = "Period";
-      hormoneLabel = "Estrogen & progesterone dropping";
-    } else if (phaseText == "Your egg is growing") {
-      thumbIcon = Icons.spa;
-      thumbIconColor = const Color(0xFF66BB6A); // Green
-      exactPhase = "Follicular";
-      hormoneLabel = "Estrogen rising";
-    } else if (phaseText == "Ovulation today") {
-      thumbIcon = Icons.flare;
-      thumbIconColor = const Color(0xFFFFA726); // Orange
-      exactPhase = "Ovulation";
-      hormoneLabel = "LH surge · Estrogen peak";
-    } else if (phaseText == "Body is waiting") {
-      thumbIcon = Icons.hourglass_bottom;
-      thumbIconColor = const Color(0xFFAB47BC); // Purple
-      exactPhase = "Luteal";
-      hormoneLabel = "Progesterone dominant";
-    } else {
-      thumbIcon = Icons.watch_later;
-      thumbIconColor = const Color(0xFF5C6BC0); // Indigo
-      exactPhase = "Period due soon";
-      hormoneLabel = "Progesterone dropping";
+    switch (phaseId) {
+      case CyclePhase.period:
+        thumbIcon = Icons.water_drop;
+        thumbIconColor = const Color(0xFFEF5350);
+        exactPhase = t.cyclePhasePeriod;
+        hormoneLabel = t.cycleHormonePeriod;
+        break;
+      case CyclePhase.follicular:
+        thumbIcon = Icons.spa;
+        thumbIconColor = const Color(0xFF66BB6A);
+        exactPhase = t.cyclePhaseFollicular;
+        hormoneLabel = t.cycleHormoneFollicular;
+        break;
+      case CyclePhase.ovulation:
+        thumbIcon = Icons.flare;
+        thumbIconColor = const Color(0xFFFFA726);
+        exactPhase = t.cyclePhaseOvulation;
+        hormoneLabel = t.cycleHormoneOvulation;
+        break;
+      case CyclePhase.luteal:
+        thumbIcon = Icons.hourglass_bottom;
+        thumbIconColor = const Color(0xFFAB47BC);
+        exactPhase = t.cyclePhaseLuteal;
+        hormoneLabel = t.cycleHormoneLuteal;
+        break;
+      case CyclePhase.periodDueSoon:
+        thumbIcon = Icons.watch_later;
+        thumbIconColor = const Color(0xFF5C6BC0);
+        exactPhase = t.cyclePhasePeriodDueSoon;
+        hormoneLabel = t.cycleHormoneLateLuteal;
+        break;
     }
     // ------------------------------------
 
@@ -122,7 +132,7 @@ class CycleEnergyCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  "Health Score: $healthScore",
+                  t.cycleHealthScore(healthScore),
                   style: TextStyle(
                     color: healthColor,
                     fontSize: isNarrow ? 11 : 12,
@@ -201,7 +211,7 @@ class CycleEnergyCard extends StatelessWidget {
           const SizedBox(height: 28),
 
           Text(
-            "Current Cycle Day",
+            t.cycleCurrentDay,
             style: TextStyle(
               color: subtitleColor,
               fontSize: 15,
@@ -244,7 +254,7 @@ class CycleEnergyCard extends StatelessWidget {
               return SizedBox(
                 height: 50,
                 child: Stack(
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   children: [
                     Container(
                       width: maxWidth,
@@ -334,7 +344,7 @@ class CycleEnergyCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                "Next: $nextPeriodFormatted",
+                t.cycleNextLabel(nextPeriodFormatted),
                 style: TextStyle(
                   color: subtitleColor,
                   fontSize: 14,

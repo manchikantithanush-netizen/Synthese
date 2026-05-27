@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart' hide TextDirection;
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
@@ -234,7 +236,9 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
     }
   }
 
-  ({String prefix, String keyword, String suffix}) _buildInsight() {
+  ({String prefix, String keyword, String suffix}) _buildInsight(
+    AppLocalizations t,
+  ) {
     final int burned = _activeCalories;
     final int eaten = widget.eatenCalories;
     final int net = eaten - burned;
@@ -242,62 +246,63 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
 
     if (burned == 0 && eaten == 0) {
       return (
-        prefix: 'No activity ',
-        keyword: 'recorded',
-        suffix: ' yet today.',
+        prefix: t.calDetInsNoneP,
+        keyword: t.calDetInsNoneK,
+        suffix: t.calDetInsNoneS,
       );
     }
     if (burned == 0) {
       return (
-        prefix: 'You\'ve eaten but haven\'t ',
-        keyword: 'burned any calories',
-        suffix: ' yet.',
+        prefix: t.calDetInsNoBurnP,
+        keyword: t.calDetInsNoBurnK,
+        suffix: t.calDetInsNoBurnS,
       );
     }
     if (pct >= 1.0) {
       return (
-        prefix: 'You\'ve ',
-        keyword: 'hit your burn goal',
-        suffix: ' today!',
+        prefix: t.calDetInsGoalP,
+        keyword: t.calDetInsGoalK,
+        suffix: t.calDetInsGoalS,
       );
     }
     if (net < -500) {
       return (
-        prefix: 'You\'re in a ',
-        keyword: 'solid deficit',
-        suffix: ' today.',
+        prefix: t.calDetInsDeficitP,
+        keyword: t.calDetInsDeficitK,
+        suffix: t.calDetInsDeficitS,
       );
     }
     if (net > 500) {
       return (
-        prefix: 'You\'re in a ',
-        keyword: 'calorie surplus',
-        suffix: ' today.',
+        prefix: t.calDetInsSurplusP,
+        keyword: t.calDetInsSurplusK,
+        suffix: t.calDetInsSurplusS,
       );
     }
     if (net >= -200 && net <= 200) {
       return (
-        prefix: 'You\'re close to ',
-        keyword: 'maintenance',
-        suffix: ' today.',
+        prefix: t.calDetInsMaintP,
+        keyword: t.calDetInsMaintK,
+        suffix: t.calDetInsMaintS,
       );
     }
     if (pct >= 0.5) {
       return (
-        prefix: 'You\'re ',
-        keyword: 'halfway to your burn goal',
-        suffix: '.',
+        prefix: t.calDetInsHalfP,
+        keyword: t.calDetInsHalfK,
+        suffix: t.calDetInsHalfS,
       );
     }
     return (
-      prefix: 'Keep moving to ',
-      keyword: 'reach your goal',
-      suffix: ' today.',
+      prefix: t.calDetInsKeepP,
+      keyword: t.calDetInsKeepK,
+      suffix: t.calDetInsKeepS,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? const Color(0xFF111111) : const Color(0xFFF2F2F7);
     final textColor = isDark ? Colors.white : Colors.black;
@@ -314,13 +319,13 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
     final String netLabel;
     if (net < -1000 || net > 200) {
       netColor = const Color(0xFFFF453A);
-      netLabel = net > 200 ? 'Surplus' : 'Extreme deficit';
+      netLabel = net > 200 ? t.calDetSurplus : t.calDetExtremeDeficit;
     } else if (net >= -200 && net <= 200) {
       netColor = const Color(0xFFFFD60A);
-      netLabel = 'Maintenance';
+      netLabel = t.calDetMaintenance;
     } else {
       netColor = const Color(0xFF30D158);
-      netLabel = 'Deficit';
+      netLabel = t.calDetDeficit;
     }
     final String netStr = net >= 0 ? '+$net' : '$net';
 
@@ -388,7 +393,7 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                                 icon: Icon(Icons.add_rounded,
                                     size: 16, color: textColor),
                                 label: Text(
-                                  'Add data',
+                                  t.detailAddData,
                                   style: font(
                                     fontWeight: FontWeight.w700,
                                     color: textColor,
@@ -419,7 +424,7 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                           padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
                           child: Builder(
                             builder: (_) {
-                              final insight = _buildInsight();
+                              final insight = _buildInsight(t);
                               return RichText(
                                 text: TextSpan(
                                   style: font(
@@ -486,7 +491,7 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                                                 ),
                                               ),
                                               TextSpan(
-                                                text: ' kcal',
+                                                text: ' ${t.dashKcal}',
                                                 style: font(
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.w600,
@@ -500,7 +505,7 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'of $_burnGoal burn goal',
+                                          t.calDetBurnGoalOf(_burnGoal),
                                           style: font(
                                             fontSize: 13,
                                             fontWeight: FontWeight.w500,
@@ -533,7 +538,7 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Calorie Balance',
+                                  t.calDetBalanceTitle,
                                   style: font(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700,
@@ -545,8 +550,8 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
 
                                 // Burned row
                                 _CalRow(
-                                  label: 'Burned',
-                                  sublabel: 'Active energy today',
+                                  label: t.dashBurned,
+                                  sublabel: t.calDetActiveEnergyToday,
                                   value: burned,
                                   goal: _burnGoal,
                                   color: Colors.orange,
@@ -568,8 +573,8 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
 
                                 // Eaten row
                                 _CalRow(
-                                  label: 'Eaten',
-                                  sublabel: 'Calories consumed today',
+                                  label: t.dashEaten,
+                                  sublabel: t.calDetCaloriesConsumedToday,
                                   value: eaten,
                                   goal: _eatGoal,
                                   color: const Color(0xFF30A2FF),
@@ -606,7 +611,7 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'Net',
+                                            t.dashNet,
                                             style: font(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w700,
@@ -638,7 +643,7 @@ class _CaloriesDetailPageState extends State<CaloriesDetailPage>
                                             ),
                                           ),
                                           TextSpan(
-                                            text: ' kcal',
+                                            text: ' ${t.dashKcal}',
                                             style: font(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w600,
@@ -882,31 +887,22 @@ class _CalHeatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final localeName = Localizations.localeOf(context).toString();
     final font = GoogleFonts.plusJakartaSans;
     final now = DateTime.now();
     final int year = now.year;
     final int month = now.month;
     final int daysInMonth = DateUtils.getDaysInMonth(year, month);
-    const monthNames = [
-      '',
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
-    ];
-    final monthLabel = '${monthNames[month]} $year';
+    final monthLabel = DateFormat('MMMM yyyy', localeName).format(now);
     final int firstWeekday = (DateTime(year, month, 1).weekday - 1).clamp(0, 6);
     final int totalCells = firstWeekday + daysInMonth;
     final int rows = (totalCells / 7).ceil();
-    const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    final monday = now.subtract(Duration(days: now.weekday - 1));
+    final dayLabels = List.generate(
+      7,
+      (i) => DateFormat('EEEEE', localeName).format(monday.add(Duration(days: i))),
+    );
     final labelColor = textColor.withValues(alpha: 0.4);
     final emptyColor = isDark
         ? Colors.white.withValues(alpha: 0.06)
@@ -937,24 +933,24 @@ class _CalHeatmap extends StatelessWidget {
                   Container(
                     width: 10,
                     height: 10,
-                    margin: const EdgeInsets.only(right: 4),
+                    margin: const EdgeInsetsDirectional.only(end: 4),
                     decoration: BoxDecoration(
                       color: const Color(0xFF30D158).withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  Text('Deficit', style: font(fontSize: 11, color: labelColor)),
+                  Text(t.calDetDeficit, style: font(fontSize: 11, color: labelColor)),
                   const SizedBox(width: 10),
                   Container(
                     width: 10,
                     height: 10,
-                    margin: const EdgeInsets.only(right: 4),
+                    margin: const EdgeInsetsDirectional.only(end: 4),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF453A).withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  Text('Surplus', style: font(fontSize: 11, color: labelColor)),
+                  Text(t.calDetSurplus, style: font(fontSize: 11, color: labelColor)),
                 ],
               ),
             ],
@@ -1158,7 +1154,7 @@ class _CalRow extends StatelessWidget {
             color: trackColor,
             child: FractionallySizedBox(
               widthFactor: progress,
-              alignment: Alignment.centerLeft,
+              alignment: AlignmentDirectional.centerStart,
               child: Container(color: color),
             ),
           ),
@@ -1406,7 +1402,7 @@ class _CaloriesAddSheetState extends State<_CaloriesAddSheet> {
   Future<void> _submit() async {
     final burned = int.tryParse(_burnedCtrl.text.trim());
     if (burned == null || burned <= 0) {
-      setState(() => _error = 'Enter a valid calorie amount greater than 0.');
+      setState(() => _error = AppLocalizations.of(context).calDetErrorAmount);
       return;
     }
     setState(() { _error = null; _saving = true; });
@@ -1416,24 +1412,26 @@ class _CaloriesAddSheetState extends State<_CaloriesAddSheet> {
       Navigator.of(context).pop();
     } catch (e) {
       if (!mounted) return;
-      setState(() { _error = 'Failed to save. Please try again.'; _saving = false; });
+      setState(() {
+        _error = AppLocalizations.of(context).detailSaveFailed;
+        _saving = false;
+      });
     }
   }
 
   String _formatDate(DateTime dt) {
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat('d MMM yyyy', localeName).format(dt);
   }
 
   String _formatTime(DateTime dt) {
-    final h = dt.hour == 0 ? 12 : dt.hour > 12 ? dt.hour - 12 : dt.hour;
-    final m = dt.minute.toString().padLeft(2, '0');
-    final period = dt.hour < 12 ? 'AM' : 'PM';
-    return '$h:$m $period';
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat.jm(localeName).format(dt);
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = widget.isDark;
     final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF2F2F7);
     final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
@@ -1520,7 +1518,7 @@ class _CaloriesAddSheetState extends State<_CaloriesAddSheet> {
               // ── title ──
               Center(
                 child: Text(
-                  'Calories',
+                  t.calDetCaloriesTitle,
                   style: font(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
@@ -1544,7 +1542,7 @@ class _CaloriesAddSheetState extends State<_CaloriesAddSheet> {
                     children: [
                       // Date
                       _CalSheetRow(
-                        label: 'Date',
+                        label: t.detailDate,
                         subColor: subColor,
                         textColor: textColor,
                         font: font,
@@ -1571,7 +1569,7 @@ class _CaloriesAddSheetState extends State<_CaloriesAddSheet> {
                       Divider(height: 1, thickness: 0.5, indent: 16, color: divColor),
                       // Time
                       _CalSheetRow(
-                        label: 'Time',
+                        label: t.detailTime,
                         subColor: subColor,
                         textColor: textColor,
                         font: font,
@@ -1606,9 +1604,9 @@ class _CaloriesAddSheetState extends State<_CaloriesAddSheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text('Burned',
+                                Text(t.dashBurned,
                                     style: font(fontSize: 16, color: subColor)),
-                                Text('kcal',
+                                Text(t.dashKcal,
                                     style: font(
                                         fontSize: 11,
                                         color: Colors.orange.withValues(alpha: 0.8))),
@@ -1648,7 +1646,7 @@ class _CaloriesAddSheetState extends State<_CaloriesAddSheet> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                 child: Text(
-                  'To log gained (eaten) calories, use the Diet section.',
+                  t.calDetGainedNote,
                   style: font(
                     fontSize: 12,
                     color: isDark

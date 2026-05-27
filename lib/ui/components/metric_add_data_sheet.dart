@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class MetricAddDataSheet extends StatefulWidget {
   const MetricAddDataSheet({
@@ -89,7 +91,8 @@ class _MetricAddDataSheetState extends State<MetricAddDataSheet> {
   Future<void> _submit() async {
     final value = int.tryParse(_valueController.text.trim());
     if (value == null || value <= 0) {
-      setState(() => _error = 'Enter a valid ${widget.valueLabel.toLowerCase()}.');
+      setState(() => _error = AppLocalizations.of(context)
+          .metricEnterValid(widget.valueLabel.toLowerCase()));
       return;
     }
     setState(() { _error = null; _saving = true; });
@@ -100,26 +103,25 @@ class _MetricAddDataSheetState extends State<MetricAddDataSheet> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = 'Failed to save. Please try again.';
+        _error = AppLocalizations.of(context).detailSaveFailed;
         _saving = false;
       });
     }
   }
 
   String _formatDate(DateTime dt) {
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat('d MMM yyyy', localeName).format(dt);
   }
 
   String _formatTime(DateTime dt) {
-    final h = dt.hour == 0 ? 12 : dt.hour > 12 ? dt.hour - 12 : dt.hour;
-    final m = dt.minute.toString().padLeft(2, '0');
-    final period = dt.hour < 12 ? 'AM' : 'PM';
-    return '$h:$m $period';
+    final localeName = Localizations.localeOf(context).toString();
+    return DateFormat.jm(localeName).format(dt);
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = widget.isDark;
     final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF2F2F7);
     final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
@@ -231,7 +233,7 @@ class _MetricAddDataSheetState extends State<MetricAddDataSheet> {
                     children: [
                       // Date row
                       _SheetDataRow(
-                        label: 'Date',
+                        label: t.detailDate,
                         subColor: subColor,
                         textColor: textColor,
                         font: font,
@@ -258,7 +260,7 @@ class _MetricAddDataSheetState extends State<MetricAddDataSheet> {
                       Divider(height: 1, thickness: 0.5, indent: 16, color: divColor),
                       // Time row
                       _SheetDataRow(
-                        label: 'Time',
+                        label: t.detailTime,
                         subColor: subColor,
                         textColor: textColor,
                         font: font,

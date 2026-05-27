@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class ArticleOneView extends StatelessWidget {
   final bool isDark;
@@ -6,16 +7,17 @@ class ArticleOneView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final textColor = isDark ? Colors.white : Colors.black;
     final bodyColor = isDark ? const Color(0xFFEBEBF5) : const Color(0xFF3C3C43);
 
     return ListView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 60.0),
+      padding: const EdgeInsetsDirectional.only(start: 24.0, end: 24.0, bottom: 60.0),
       children: [
         // --- MAIN TITLE ---
         Text(
-          "What Is a Menstrual Cycle?",
+          t.cyA1Title,
           style: TextStyle(
             color: textColor,
             fontSize: 34,
@@ -26,7 +28,7 @@ class ArticleOneView extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          "The complete beginner's guide to understanding your body",
+          t.cyA1Sub,
           style: TextStyle(
             color: isDark
                 ? const Color(0xFFEBEBF5).withOpacity(0.6)
@@ -40,91 +42,91 @@ class ArticleOneView extends StatelessWidget {
         const SizedBox(height: 40),
 
         // --- SECTION 1 ---
-        _buildHeading("What is actually happening?", textColor),
-        _buildParagraph("Every month, your body goes through a series of changes designed to prepare for a possible pregnancy. This sequence of events is called the menstrual cycle. It involves your brain, your ovaries, your uterus, and a carefully timed series of hormonal signals that all work together in a coordinated rhythm.", bodyColor),
-        _buildParagraph("The menstrual cycle is a series of natural changes in hormone production and the structures of the uterus and ovaries of the female reproductive system. The ovarian cycle controls the production and release of eggs, and the uterine cycle governs the preparation and maintenance of the lining of the uterus to receive an embryo. These two cycles run concurrently and are coordinated with each other.", bodyColor, citation: "Children's Hospital of Philadelphia"),
-        _buildParagraph("In simple terms: your ovaries grow and release an egg. Your uterus builds up a thick, soft lining in case that egg gets fertilised. If it doesn't, the lining sheds. That shedding is your period. Then the whole process starts again.", bodyColor),
+        _buildHeading(t.cyA1S1H, textColor),
+        _buildParagraph(t.cyA1S1P1, bodyColor),
+        _buildParagraph(t.cyA1S1P2, bodyColor, citation: "Children's Hospital of Philadelphia"),
+        _buildParagraph(t.cyA1S1P3, bodyColor),
         const SizedBox(height: 32),
 
         // --- SECTION 2 ---
-        _buildHeading("The organs involved", textColor),
-        _buildParagraph("Understanding your cycle starts with knowing which parts of your body are involved:", bodyColor),
-        _buildBullet("The ovaries", "Two small, almond-shaped organs on either side of your uterus. They store your eggs and produce the hormones estrogen and progesterone. You are born with all the eggs you will ever have — roughly 1 to 2 million at birth, which reduces to around 300,000 by puberty.", bodyColor, textColor),
-        _buildBullet("The uterus", "A pear-shaped muscular organ where a baby grows during pregnancy. Its inner lining, called the endometrium, builds up and sheds every cycle.", bodyColor, textColor),
-        _buildBullet("The fallopian tubes", "Two narrow tubes connecting the ovaries to the uterus. When an egg is released, it travels down the fallopian tube toward the uterus.", bodyColor, textColor),
-        _buildBullet("The hypothalamus and pituitary gland", "Located in your brain. These send out the hormonal signals that start and control the entire cycle.", bodyColor, textColor),
+        _buildHeading(t.cyA1S2H, textColor),
+        _buildParagraph(t.cyA1S2P1, bodyColor),
+        _buildBullet(t.cyA1S2B1T, t.cyA1S2B1B, bodyColor, textColor),
+        _buildBullet(t.cyA1S2B2T, t.cyA1S2B2B, bodyColor, textColor),
+        _buildBullet(t.cyA1S2B3T, t.cyA1S2B3B, bodyColor, textColor),
+        _buildBullet(t.cyA1S2B4T, t.cyA1S2B4B, bodyColor, textColor),
         const SizedBox(height: 32),
 
         // --- SECTION 3 ---
-        _buildHeading("When does it all begin?", textColor),
-        _buildParagraph("Menarche — the first menstrual period — typically occurs between the ages of 10 and 16, with the average age of onset being 12.4 years.", bodyColor, citation: "American Academy of Family Physicians"),
-        _buildParagraph("Another way to predict when your period will come is to think back to when breast development began — menarche usually happens about 2 to 2.5 years after breasts start developing.", bodyColor, citation: "RCH Clinical Practice Guidelines"),
-        _buildParagraph("The age varies widely from person to person and is influenced by genetics, body composition, nutrition, and general health. People commonly get their periods at around the same time their mother did. Getting your first period any time between ages 9 and 15 is considered within the normal range.", bodyColor),
+        _buildHeading(t.cyA1S3H, textColor),
+        _buildParagraph(t.cyA1S3P1, bodyColor, citation: "American Academy of Family Physicians"),
+        _buildParagraph(t.cyA1S3P2, bodyColor, citation: "RCH Clinical Practice Guidelines"),
+        _buildParagraph(t.cyA1S3P3, bodyColor),
         const SizedBox(height: 32),
 
         // --- SECTION 4 ---
-        _buildHeading("How long is a normal cycle?", textColor),
-        _buildParagraph("This is where a lot of confusion starts. Most people have heard that a cycle is 28 days. That number is an average — not a rule.", bodyColor),
-        _buildParagraph("For teenagers, a normal menstrual cycle can be anywhere between 21 and 45 days. The average menstrual cycle length is approximately 28 days.", bodyColor, citation: "PubMed Central"),
-        _buildParagraph("A large-scale real-world study published in npj Digital Medicine analysed data from over 600,000 cycles and found that the mean cycle length across ovulatory cycles was 29.3 days, with a mean follicular phase length of 16.9 days and a mean luteal phase length of 12.4 days.", bodyColor, citation: "Amegroups"),
+        _buildHeading(t.cyA1S4H, textColor),
+        _buildParagraph(t.cyA1S4P1, bodyColor),
+        _buildParagraph(t.cyA1S4P2, bodyColor, citation: "PubMed Central"),
+        _buildParagraph(t.cyA1S4P3, bodyColor, citation: "Amegroups"),
         const SizedBox(height: 24),
-        
+
         // --- THE GRAPH ---
-        _buildAppleGraph(isDark),
+        _buildAppleGraph(t, isDark),
 
         const SizedBox(height: 24),
-        _buildParagraph("Research from the Apple Women's Health Study — one of the largest studies of its kind, conducted by Harvard T.H. Chan School of Public Health — analysed 165,668 cycles across 12,608 participants and found that cycle variability is considerably higher — by 46% — among those aged under 20 compared to those aged 35 to 39. In other words, irregular cycles are the norm for teenagers, not the exception.", bodyColor),
+        _buildParagraph(t.cyA1S4P4, bodyColor),
         const SizedBox(height: 32),
 
         // --- SECTION 5 ---
-        _buildHeading("How long does a period last?", textColor),
-        _buildParagraph("According to the International Federation of Gynecology and Obstetrics (FIGO), normal menstrual cycles should have consistent frequency, regularity, duration, and volume of flow.", bodyColor, citation: "Cleveland Clinic"),
-        _buildParagraph("A period typically lasts between 3 and 7 days, though anywhere in that range is normal. The amount of blood lost during a typical period is around 30 to 80 mL — roughly 2 to 6 tablespoons.", bodyColor),
+        _buildHeading(t.cyA1S5H, textColor),
+        _buildParagraph(t.cyA1S5P1, bodyColor, citation: "Cleveland Clinic"),
+        _buildParagraph(t.cyA1S5P2, bodyColor),
         const SizedBox(height: 32),
 
         // --- SECTION 6 ---
-        _buildHeading("Why are teenage cycles so irregular?", textColor),
-        _buildParagraph("In the first 1 to 2 years following your first period, it is very common and normal to have irregular cycles. In fact, in the first year after your first period, up to 80% of your menstrual cycles may be anovulatory — meaning no egg is released.", bodyColor, citation: "PubMed Central"),
-        _buildParagraph("This happens because the hormonal communication system between your brain and ovaries — called the HPO axis — is still maturing. It takes time for this system to find its rhythm. During the first two years following menarche, ovulation is absent in around half of cycles. Five years after menarche, ovulation occurs in around 75% of cycles.", bodyColor, citation: "Children's Hospital of Philadelphia"),
-        _buildParagraph("A 2024 study published in ScienceDirect, analysing 38,916 cycles from 6,486 adolescents aged 13–18 using the Clue app, found that individuals less than 1 year post-menarche had a 2.6 times higher odds of having a highly variable cycle and 5 times higher odds of short cycles compared to those further along in their reproductive development.", bodyColor, citation: "UChicago Medicine"),
+        _buildHeading(t.cyA1S6H, textColor),
+        _buildParagraph(t.cyA1S6P1, bodyColor, citation: "PubMed Central"),
+        _buildParagraph(t.cyA1S6P2, bodyColor, citation: "Children's Hospital of Philadelphia"),
+        _buildParagraph(t.cyA1S6P3, bodyColor, citation: "UChicago Medicine"),
 
         const SizedBox(height: 12),
-        Text("Key points:", style: TextStyle(color: textColor, fontSize: 17, fontWeight: FontWeight.bold)),
+        Text(t.cyArtKeyPoints, style: TextStyle(color: textColor, fontSize: 17, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
-        _buildSimpleBullet("Irregular cycles in your teens are biological, not a sign something is wrong.", bodyColor),
-        _buildSimpleBullet("It can take 2 to 5 years after your first period for cycles to stabilise.", bodyColor),
-        _buildSimpleBullet("The 28-day average applies to adults, not teenagers.", bodyColor),
-        _buildSimpleBullet("Your cycle length may vary by several days from month to month and that is completely normal.", bodyColor),
+        _buildSimpleBullet(t.cyA1S6KP1, bodyColor),
+        _buildSimpleBullet(t.cyA1S6KP2, bodyColor),
+        _buildSimpleBullet(t.cyA1S6KP3, bodyColor),
+        _buildSimpleBullet(t.cyA1S6KP4, bodyColor),
         const SizedBox(height: 32),
 
         // --- SECTION 7 ---
-        _buildHeading("What does \"Day 1\" mean?", textColor),
-        _buildParagraph("When discussing timing within the menstrual cycle, the first day of heavy menstrual flow is considered Day 1. This is the standard used by doctors and researchers worldwide. Every cycle is measured from Day 1 of one period to Day 1 of the next.", bodyColor),
+        _buildHeading(t.cyA1S7H, textColor),
+        _buildParagraph(t.cyA1S7P1, bodyColor),
         const SizedBox(height: 32),
 
         // --- SECTION 8 ---
-        _buildHeading("When should you talk to a doctor?", textColor),
-        _buildParagraph("Most cycle irregularities in teenagers are normal. However, there are specific situations where it is worth speaking to a doctor or a trusted adult:", bodyColor),
-        _buildSimpleBullet("Your first period has not arrived by age 15.", bodyColor),
-        _buildSimpleBullet("Your periods stop for 3 or more months in a row and you are not pregnant.", bodyColor),
-        _buildSimpleBullet("Your cycle is consistently shorter than 21 days or longer than 45 days.", bodyColor),
-        _buildSimpleBullet("Your period lasts longer than 7 days regularly.", bodyColor),
-        _buildSimpleBullet("You are soaking through a pad or tampon in under 2 hours.", bodyColor),
-        _buildSimpleBullet("Your periods cause pain severe enough to miss school or daily activities.", bodyColor),
+        _buildHeading(t.cyA1S8H, textColor),
+        _buildParagraph(t.cyA1S8P1, bodyColor),
+        _buildSimpleBullet(t.cyA1S8L1, bodyColor),
+        _buildSimpleBullet(t.cyA1S8L2, bodyColor),
+        _buildSimpleBullet(t.cyA1S8L3, bodyColor),
+        _buildSimpleBullet(t.cyA1S8L4, bodyColor),
+        _buildSimpleBullet(t.cyA1S8L5, bodyColor),
+        _buildSimpleBullet(t.cyA1S8L6, bodyColor),
         const SizedBox(height: 48),
 
         // --- SECTION 9: SOURCES ---
         Divider(color: isDark ? Colors.white24 : Colors.black12),
         const SizedBox(height: 24),
-        Text("Reviewed sources & bibliography", style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
+        Text(t.cyArtSourcesTitle, style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
         const SizedBox(height: 16),
-        _buildSourceItem("Primary research:", isDark),
+        _buildSourceItem(t.cyArtPrimaryResearch, isDark),
         _buildSourceItem("• Thiyagarajan DK, Basit H, Jeanmonod R. Physiology, Menstrual Cycle. StatPearls Publishing, Updated 2024.", isDark),
         _buildSourceItem("• Li H. et al. Menstrual cycle length variation by demographic characteristics from the Apple Women's Health Study. npj Digital Medicine, 2023.", isDark),
         _buildSourceItem("• Grieger JA et al. Real-world menstrual cycle characteristics of more than 600,000 menstrual cycles. npj Digital Medicine, 2019.", isDark),
         _buildSourceItem("• Kurmi M et al. Menstrual Cycle Characteristics of U.S. Adolescents. ScienceDirect, 2024.", isDark),
         const SizedBox(height: 12),
-        _buildSourceItem("Clinical and educational resources:", isDark),
+        _buildSourceItem(t.cyArtClinicalResources, isDark),
         _buildSourceItem("• Harvard T.H. Chan School of Public Health — Apple Women's Health Study", isDark),
         _buildSourceItem("• Nemours KidsHealth — Irregular Periods for Teens", isDark),
         _buildSourceItem("• Cleveland Clinic — Menarche", isDark),
@@ -182,7 +184,7 @@ class ArticleOneView extends StatelessWidget {
 
   Widget _buildBullet(String boldText, String normalText, Color bodyColor, Color titleColor) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0, left: 8.0),
+      padding: const EdgeInsetsDirectional.only(bottom: 12.0, start: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -205,7 +207,7 @@ class ArticleOneView extends StatelessWidget {
 
   Widget _buildSimpleBullet(String text, Color color) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0, left: 8.0),
+      padding: const EdgeInsetsDirectional.only(bottom: 12.0, start: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -235,7 +237,7 @@ class ArticleOneView extends StatelessWidget {
     );
   }
 
-  Widget _buildAppleGraph(bool isDark) {
+  Widget _buildAppleGraph(AppLocalizations t, bool isDark) {
     final graphBgColor = isDark ? const Color(0xFF252528) : Colors.white;
     final axisTextColor = isDark ? Colors.white : Colors.black;
     final mutedTextColor = isDark ? Colors.white70 : Colors.black54;
@@ -243,7 +245,7 @@ class ArticleOneView extends StatelessWidget {
     final outlineColor = isDark ? Colors.white30 : Colors.black26;
 
     final List<Map<String, dynamic>> data = [
-      {'age': 'Under\n20', 'val': 30.8, 'isUser': true},
+      {'age': t.cyA1GraphUnder20, 'val': 30.8, 'isUser': true},
       {'age': '20–24', 'val': 29.4, 'isUser': false},
       {'age': '25–29', 'val': 28.9, 'isUser': false},
       {'age': '30–34', 'val': 28.4, 'isUser': false},
@@ -274,7 +276,7 @@ class ArticleOneView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Average cycle length by age group — Apple Women's Health Study, 2023 (n = 165,668 cycles)",
+            t.cyA1GraphTitle,
             style: TextStyle(
               color: axisTextColor,
               fontSize: 13,
@@ -343,7 +345,7 @@ class ArticleOneView extends StatelessWidget {
                 decoration: BoxDecoration(color: pinkColor, borderRadius: BorderRadius.circular(2)),
               ),
               const SizedBox(width: 8),
-              Text("Your age group",
+              Text(t.cyA1GraphYourAge,
                   style:
                       TextStyle(color: axisTextColor, fontSize: 12, fontWeight: FontWeight.bold)),
               const SizedBox(width: 16),
@@ -355,7 +357,7 @@ class ArticleOneView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(2)),
               ),
               const SizedBox(width: 8),
-              Text("Other age groups",
+              Text(t.cyA1GraphOtherAge,
                   style:
                       TextStyle(color: axisTextColor, fontSize: 12, fontWeight: FontWeight.w600)),
             ],
@@ -367,7 +369,7 @@ class ArticleOneView extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            "Cycles are longest and most variable in the teenage years and gradually shorten and stabilise into the late twenties and thirties.",
+            t.cyA1GraphCaption,
             style: TextStyle(
               color: axisTextColor,
               fontSize: 16,

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:cupertino_native/cupertino_native.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 
 enum DayStatus { none, period, predictedPeriod, ovulation, fertile }
@@ -137,8 +138,10 @@ class _CycleCalendarState extends State<CycleCalendar> {
         ? const Color(0xFF2A2A2C)
         : const Color(0xFFF0F0F0);
 
+    final t = AppLocalizations.of(context);
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
     DateTime thursday = _currentWeekStart.add(const Duration(days: 4));
-    String monthYearStr = DateFormat('MMMM yyyy').format(thursday);
+    String monthYearStr = DateFormat('MMMM yyyy', localeTag).format(thursday);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,8 +194,8 @@ class _CycleCalendarState extends State<CycleCalendar> {
               bool isSimulatedToday = _dateOnly(
                 cellDate,
               ).isAtSameMomentAs(_dateOnly(widget.simulatedToday));
-              String dayName = DateFormat('E').format(cellDate).toUpperCase();
-              String dayNum = DateFormat('d').format(cellDate);
+              String dayName = DateFormat('E', localeTag).format(cellDate).toUpperCase();
+              String dayNum = DateFormat('d', localeTag).format(cellDate);
 
               BoxDecoration? decoration;
               CustomPainter? painter;
@@ -297,7 +300,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
             alignment: WrapAlignment.center,
             children: [
               _buildLegendItem(
-                "Period",
+                t.cycleCalLegendPeriod,
                 Container(
                   width: 10,
                   height: 10,
@@ -308,14 +311,14 @@ class _CycleCalendarState extends State<CycleCalendar> {
                 ),
               ),
               _buildLegendItem(
-                "Predicted",
+                t.cycleCalLegendPredicted,
                 CustomPaint(
                   size: const Size(10, 10),
                   painter: DashedCirclePainter(color: periodColor),
                 ),
               ),
               _buildLegendItem(
-                "Ovulation",
+                t.cycleCalLegendOvulation,
                 Container(
                   width: 10,
                   height: 10,
@@ -326,7 +329,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
                 ),
               ),
               _buildLegendItem(
-                "Fertile",
+                t.cycleCalLegendFertile,
                 Container(
                   width: 10,
                   height: 10,

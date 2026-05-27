@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/switch.dart';
 
 class OnboardingStage3 extends StatelessWidget {
@@ -42,6 +43,7 @@ class OnboardingStage3 extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).colorScheme.onSurface;
+    final t = AppLocalizations.of(context);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -49,7 +51,7 @@ class OnboardingStage3 extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Anything else\nwe should know?",
+            t.onboardingStage3Title,
             style: TextStyle(
               color: textColor,
               fontSize: 38,
@@ -60,7 +62,7 @@ class OnboardingStage3 extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            "Optional details that help us tailor your experience.",
+            t.onboardingStage3Body,
             style: TextStyle(
               color: textColor.withOpacity(0.55),
               fontSize: 16,
@@ -72,7 +74,7 @@ class OnboardingStage3 extends StatelessWidget {
           const SizedBox(height: 32),
 
           UniversalSwitchRow(
-            title: "Prescription Supplements",
+            title: t.onboardingStage3Supplements,
             value: hasSupplements,
             onChanged: onSupplementToggle,
             activeColor: const Color(0xFF4CD964),
@@ -84,14 +86,14 @@ class OnboardingStage3 extends StatelessWidget {
                 controller: supplementsController,
                 style: TextStyle(color: textColor),
                 decoration:
-                    _iosInput(context, "Details", Icons.medication),
+                    _iosInput(context, t.commonDetails, Icons.medication),
               ),
             ),
 
           const SizedBox(height: 20),
 
           UniversalSwitchRow(
-            title: "Physical Disabilities",
+            title: t.onboardingStage3Disabilities,
             value: hasDisabilities,
             onChanged: onDisabilityToggle,
             activeColor: const Color(0xFF4CD964),
@@ -103,14 +105,14 @@ class OnboardingStage3 extends StatelessWidget {
                 controller: disabilityController,
                 style: TextStyle(color: textColor),
                 decoration:
-                    _iosInput(context, "Details", Icons.info_outline),
+                    _iosInput(context, t.commonDetails, Icons.info_outline),
               ),
             ),
 
           const SizedBox(height: 28),
 
           Text(
-            "Injury & Health History",
+            t.onboardingStage3InjuryHistory,
             style:
                 TextStyle(color: textColor.withOpacity(0.5), fontSize: 14),
           ),
@@ -122,7 +124,7 @@ class OnboardingStage3 extends StatelessWidget {
             maxLines: 3,
             minLines: 1,
             decoration: InputDecoration(
-              hintText: "Describe past injuries or conditions",
+              hintText: t.onboardingStage3InjuryHint,
               hintStyle:
                   const TextStyle(color: Color(0xFF8E8E93), fontSize: 16),
               filled: true,
@@ -167,7 +169,7 @@ class OnboardingStage3 extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      "A note on AI",
+                      t.onboardingStage3AiTitle,
                       style: TextStyle(
                         color: textColor,
                         fontSize: 15,
@@ -178,7 +180,7 @@ class OnboardingStage3 extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  "We're not using AI on this information today. In the future, we may add AI-powered insights to help you better understand your goals, spot patterns in your training, and get personalized suggestions.",
+                  t.onboardingStage3AiBody,
                   style: TextStyle(
                     color: textColor.withOpacity(0.7),
                     fontSize: 13.5,
@@ -187,7 +189,7 @@ class OnboardingStage3 extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  "If we ever do, you'll see a clear consent prompt first — fully opt-in, your data stays yours.",
+                  t.onboardingStage3AiConsent,
                   style: TextStyle(
                     color: textColor.withOpacity(0.55),
                     fontSize: 13,

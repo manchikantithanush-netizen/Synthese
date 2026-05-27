@@ -5,6 +5,7 @@ import 'package:cupertino_native/cupertino_native.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class BreathingExerciseModal extends StatefulWidget {
   const BreathingExerciseModal({super.key});
@@ -36,6 +37,9 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
   Timer? _hapticTimer;
 
   String get _currentTechniqueName => _techniques[_selectedTechnique];
+
+  List<String> _techniqueLabels(AppLocalizations t) =>
+      [t.breatheBox, '4-7-8', t.breatheSimple];
 
   Map<String, List<int>> get _techniqueTimings => {
     'Box': [4, 4, 4, 4],
@@ -271,16 +275,16 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
     _resetAnimations();
   }
 
-  String get _instructionText {
+  String _instructionText(AppLocalizations t) {
     switch (_currentPhase) {
       case 'inhale':
-        return 'Breathe In';
+        return t.breatheInhale;
       case 'hold':
-        return 'Hold';
+        return t.breatheHold;
       case 'exhale':
-        return 'Breathe Out';
+        return t.breatheExhale;
       default:
-        return 'Tap Start';
+        return t.breatheTapStart;
     }
   }
 
@@ -302,6 +306,7 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     // Warm, calm background colors
     final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF5F5F5);
@@ -318,12 +323,12 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
           children: [
             // Header with title
             Padding(
-              padding: const EdgeInsets.only(top: 24, left: 20, right: 20),
+              padding: const EdgeInsetsDirectional.only(top: 24, start: 20, end: 20),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
                   Text(
-                    'Breathing Exercise',
+                    t.breatheTitle,
                     style: TextStyle(
                       color: textColor,
                       fontSize: 18,
@@ -331,7 +336,7 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
                     ),
                   ),
                   Align(
-                    alignment: Alignment.centerRight,
+                    alignment: AlignmentDirectional.centerEnd,
                     child: UniversalCloseButton(
                       onPressed: () {
                         if (_isRunning) {
@@ -350,7 +355,7 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: UniversalSegmentedControl<int>(
                 items: List.generate(_techniques.length, (i) => i),
-                labels: _techniques,
+                labels: _techniqueLabels(t),
                 selectedItem: _selectedTechnique,
                 onSelectionChanged: _onTechniqueChanged,
               ),
@@ -362,7 +367,7 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 child: Text(
-                  _instructionText,
+                  _instructionText(t),
                   key: ValueKey(_currentPhase + _isRunning.toString()),
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -434,7 +439,7 @@ class _BreathingExerciseModalState extends State<BreathingExerciseModal>
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 10, 24, 40),
               child: UniversalButton(
-                text: _isRunning ? 'Pause' : 'Start',
+                text: _isRunning ? t.breathePause : t.breatheStart,
                 onPressed: () {
                   HapticFeedback.mediumImpact();
                   if (_isRunning) {

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/auth/login_page.dart';
 import 'package:synthese/ui/dashboard.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
@@ -142,11 +143,11 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
                     AnimatedSize(
                       duration: const Duration(milliseconds: 220),
                       curve: Curves.easeInOut,
-                      alignment: Alignment.centerLeft,
+                      alignment: AlignmentDirectional.centerStart,
                       child: (_currentPage > 0 &&
                               _currentPage < blockBackFrom)
                           ? Padding(
-                              padding: const EdgeInsets.only(right: 16),
+                              padding: const EdgeInsetsDirectional.only(end: 16),
                               child: UniversalBackButton(onPressed: _prev),
                             )
                           : const SizedBox.shrink(),
@@ -186,9 +187,10 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
                     // ── Individual permission slides ──────────────────────
                     _SlidePermissionRequest(
                       imagePath: 'assets/notification.png',
-                      title: 'Stay in the loop',
-                      body: 'Synthese sends you workout reminders, hydration nudges, and important health alerts. We never send marketing or spam — only things that help you stay on track.',
-                      allowLabel: 'Allow Notifications',
+                      title: AppLocalizations.of(context).permNotificationTitle,
+                      body: AppLocalizations.of(context).permNotificationBody,
+                      allowLabel:
+                          AppLocalizations.of(context).permNotificationAllow,
                       isLoading: _loadingNotification,
                       onAllow: () => _requestThenAdvance(
                         _permService.requestNotification,
@@ -198,9 +200,10 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
                     ),
                     _SlidePermissionRequest(
                       imagePath: 'assets/gps.png',
-                      title: 'Track your route',
-                      body: 'Location access (coarse + fine) is used only during active workout sessions to map your run, cycle, or walk. Background location keeps your session running even when the screen is off — no interruptions mid-workout.',
-                      allowLabel: 'Allow Location',
+                      title: AppLocalizations.of(context).permLocationTitle,
+                      body: AppLocalizations.of(context).permLocationBody,
+                      allowLabel:
+                          AppLocalizations.of(context).permLocationAllow,
                       isLoading: _loadingLocation,
                       onAllow: () => _requestThenAdvance(
                         _permService.requestLocation,
@@ -210,9 +213,10 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
                     ),
                     _SlidePermissionRequest(
                       imagePath: 'assets/step.png',
-                      title: 'Count every step',
-                      body: 'Activity Recognition lets Synthese detect your movement and automatically count your steps throughout the day — no manual logging needed.',
-                      allowLabel: 'Allow Activity Recognition',
+                      title: AppLocalizations.of(context).permActivityTitle,
+                      body: AppLocalizations.of(context).permActivityBody,
+                      allowLabel:
+                          AppLocalizations.of(context).permActivityAllow,
                       isLoading: _loadingActivity,
                       onAllow: () => _requestThenAdvance(
                         _permService.requestActivityRecognition,
@@ -222,9 +226,10 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
                     ),
                     _SlidePermissionRequest(
                       imagePath: 'assets/camera.png',
-                      title: 'AI calorie analysis',
-                      body: 'Camera access powers the AI food analyser — snap a photo of your meal and Synthese instantly estimates calories, protein, carbs, and fats. Camera is only activated when you choose to use this feature.',
-                      allowLabel: 'Allow Camera',
+                      title: AppLocalizations.of(context).permCameraTitle,
+                      body: AppLocalizations.of(context).permCameraBody,
+                      allowLabel:
+                          AppLocalizations.of(context).permCameraAllow,
                       isLoading: _loadingCamera,
                       onAllow: () => _requestThenAdvance(
                         _permService.requestCamera,
@@ -234,9 +239,10 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
                     ),
                     _SlidePermissionRequest(
                       imagePath: 'assets/camera.png',
-                      title: 'Photos & media',
-                      body: 'Photo library access lets you upload a profile picture and pick meal images for AI analysis. We only read images you explicitly select — we never scan your gallery.',
-                      allowLabel: 'Allow Photos & Media',
+                      title: AppLocalizations.of(context).permPhotosTitle,
+                      body: AppLocalizations.of(context).permPhotosBody,
+                      allowLabel:
+                          AppLocalizations.of(context).permPhotosAllow,
                       isLoading: _loadingPhotos,
                       onAllow: () => _requestThenAdvance(
                         _permService.requestPhotos,
@@ -282,6 +288,7 @@ class _SlideWelcome extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).colorScheme.onSurface;
+    final t = AppLocalizations.of(context);
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 28),
       physics: const BouncingScrollPhysics(),
@@ -290,7 +297,7 @@ class _SlideWelcome extends StatelessWidget {
         children: [
           const SizedBox(height: 32),
           Text(
-            "Welcome to\nSynthese.",
+            t.permWelcomeTitle,
             style: TextStyle(
               color: textColor,
               fontSize: 38,
@@ -301,7 +308,7 @@ class _SlideWelcome extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            "A private, ad-free home for every part of your wellbeing — physical, mental, and financial.",
+            t.permWelcomeBody,
             style: TextStyle(
               color: textColor.withOpacity(0.55),
               fontSize: 16,
@@ -322,43 +329,43 @@ class _SlideWelcome extends StatelessWidget {
               children: [
                 _DimensionRow(
                   icon: Icons.home_rounded,
-                  title: "Home",
-                  desc: "Daily metrics — steps, heart rate, sleep.",
+                  title: t.permWelcomeDimHome,
+                  desc: t.permWelcomeDimHomeDesc,
                   textColor: textColor,
                   isLast: false,
                 ),
                 _DimensionRow(
                   icon: Icons.restaurant_menu_rounded,
-                  title: "Diet",
-                  desc: "AI nutrition tracking and water intake.",
+                  title: t.permWelcomeDimDiet,
+                  desc: t.permWelcomeDimDietDesc,
                   textColor: textColor,
                   isLast: false,
                 ),
                 _DimensionRow(
                   icon: Icons.directions_run_rounded,
-                  title: "Workout",
-                  desc: "GPS-tracked runs, rides, swims and more.",
+                  title: t.permWelcomeDimWorkout,
+                  desc: t.permWelcomeDimWorkoutDesc,
                   textColor: textColor,
                   isLast: false,
                 ),
                 _DimensionRow(
                   icon: Icons.self_improvement_rounded,
-                  title: "Mindfulness",
-                  desc: "Mood check-ins and breathing exercises.",
+                  title: t.permWelcomeDimMindfulness,
+                  desc: t.permWelcomeDimMindfulnessDesc,
                   textColor: textColor,
                   isLast: false,
                 ),
                 _DimensionRow(
                   icon: Icons.favorite_rounded,
-                  title: "Cycles",
-                  desc: "Cycle tracking for female users.",
+                  title: t.permWelcomeDimCycles,
+                  desc: t.permWelcomeDimCyclesDesc,
                   textColor: textColor,
                   isLast: false,
                 ),
                 _DimensionRow(
                   icon: Icons.account_balance_wallet_rounded,
-                  title: "Finance",
-                  desc: "Expenses, budgeting, and debts.",
+                  title: t.permWelcomeDimFinance,
+                  desc: t.permWelcomeDimFinanceDesc,
                   textColor: textColor,
                   isLast: true,
                 ),
@@ -373,7 +380,7 @@ class _SlideWelcome extends StatelessWidget {
               Expanded(
                 child: _TrustChip(
                   icon: Icons.block_outlined,
-                  label: "No ads",
+                  label: t.permTrustNoAds,
                   textColor: textColor,
                   isDark: isDark,
                 ),
@@ -382,7 +389,7 @@ class _SlideWelcome extends StatelessWidget {
               Expanded(
                 child: _TrustChip(
                   icon: Icons.gavel_rounded,
-                  label: "PDPL",
+                  label: t.permTrustPdpl,
                   textColor: textColor,
                   isDark: isDark,
                 ),
@@ -391,7 +398,7 @@ class _SlideWelcome extends StatelessWidget {
               Expanded(
                 child: _TrustChip(
                   icon: Icons.lock_outline_rounded,
-                  label: "Your data",
+                  label: t.permTrustYourData,
                   textColor: textColor,
                   isDark: isDark,
                 ),
@@ -400,7 +407,7 @@ class _SlideWelcome extends StatelessWidget {
           ),
 
           const SizedBox(height: 26),
-          PremiumButton(text: "Let's go", onPressed: onContinue),
+          PremiumButton(text: t.commonLetsGo, onPressed: onContinue),
           const SizedBox(height: 24),
         ],
       ),
@@ -598,7 +605,7 @@ class _SlidePermissionRequest extends StatelessWidget {
           ),
           TextButton(
             onPressed: isLoading ? null : onSkip,
-            child: Text('Skip for now',
+            child: Text(AppLocalizations.of(context).commonSkipForNow,
                 style: TextStyle(
                     color: textColor.withOpacity(0.35),
                     fontSize: 14,
@@ -630,16 +637,17 @@ class _SlidePrivacyPolicy extends StatelessWidget {
     final textColor = Theme.of(context).colorScheme.onSurface;
     final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.grey.shade100;
     final subColor = textColor.withOpacity(0.55);
+    final t = AppLocalizations.of(context);
 
     return Column(children: [
       const SizedBox(height: 28),
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text("Privacy Policy",
+          Text(t.permPrivacyTitle,
               style: TextStyle(color: textColor, fontSize: 34, fontWeight: FontWeight.w700, letterSpacing: -1.0)),
           const SizedBox(height: 6),
-          Text("Please read and agree to continue using Synthese.",
+          Text(t.permPrivacyBody,
               style: TextStyle(color: subColor, fontSize: 15, height: 1.4)),
         ]),
       ),
@@ -698,7 +706,7 @@ class _SlidePrivacyPolicy extends StatelessWidget {
                 child: agreed ? const Icon(Icons.check_rounded, color: Colors.white, size: 16) : null,
               ),
               const SizedBox(width: 14),
-              Expanded(child: Text("I have read and agree to the Privacy Policy",
+              Expanded(child: Text(t.permPrivacyAgreeCheckbox,
                   style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w500))),
             ]),
           ),
@@ -756,6 +764,7 @@ class _SlideFinishState extends State<_SlideFinish>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).colorScheme.onSurface;
+    final t = AppLocalizations.of(context);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -795,7 +804,7 @@ class _SlideFinishState extends State<_SlideFinish>
               ),
               SizedBox(height: vGapLarge),
               Text(
-                "Thank you for\ntrusting Synthese.",
+                t.permFinishTitle,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: textColor,
@@ -807,7 +816,7 @@ class _SlideFinishState extends State<_SlideFinish>
               ),
               SizedBox(height: vGapSmall),
               Text(
-                "You're all set. We hope Synthese helps you build a healthier, more balanced life.",
+                t.permFinishBody,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: textColor.withOpacity(0.55),
@@ -826,24 +835,24 @@ class _SlideFinishState extends State<_SlideFinish>
                   border: Border.all(color: textColor.withOpacity(0.07)),
                 ),
                 child: Column(children: [
-                  _CheckItem(label: "Privacy Policy agreed", textColor: textColor),
+                  _CheckItem(label: t.permFinishCheck1, textColor: textColor),
                   const SizedBox(height: 12),
-                  _CheckItem(label: "Permissions configured", textColor: textColor),
+                  _CheckItem(label: t.permFinishCheck2, textColor: textColor),
                   const SizedBox(height: 12),
-                  _CheckItem(label: "Account created & verified", textColor: textColor),
+                  _CheckItem(label: t.permFinishCheck3, textColor: textColor),
                   const SizedBox(height: 12),
-                  _CheckItem(label: "Profile set up", textColor: textColor),
+                  _CheckItem(label: t.permFinishCheck4, textColor: textColor),
                 ]),
               ),
               SizedBox(height: vGapLarge),
               _InlineLoadingButton(
-                text: "Let's go",
+                text: t.commonLetsGo,
                 isLoading: widget.isLoading,
                 onPressed: widget.onFinish,
               ),
               const SizedBox(height: 12),
               Text(
-                "You can review your permissions and privacy settings anytime in the Settings page.",
+                t.permFinishFooter,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: textColor.withOpacity(0.35),
@@ -927,7 +936,7 @@ class _AgreeButtonState extends State<_AgreeButton> with SingleTickerProviderSta
             ),
             child: Center(child: widget.isSaving
                 ? BouncingDotsLoader.compact(color: isDark ? Colors.black : Colors.white)
-                : Text("I Agree",
+                : Text(AppLocalizations.of(context).permPrivacyAgree,
                     style: TextStyle(color: isDark ? Colors.black : Colors.white, fontSize: 15, fontWeight: FontWeight.w600))),
           ),
         ),
@@ -977,8 +986,8 @@ class _DeclineButtonState extends State<_DeclineButton> with SingleTickerProvide
           ),
           child: Center(child: widget.isSaving
               ? const BouncingDotsLoader.compact(color: Colors.redAccent)
-              : const Text("I Do Not Agree",
-                  style: TextStyle(color: Colors.redAccent, fontSize: 15, fontWeight: FontWeight.w600))),
+              : Text(AppLocalizations.of(context).permPrivacyDecline,
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 15, fontWeight: FontWeight.w600))),
         ),
       ),
     );
@@ -1052,7 +1061,7 @@ class _PolicyContent extends StatelessWidget {
   );
 
   Widget _bullet(String text) => Padding(
-    padding: const EdgeInsets.only(bottom: 5, left: 4),
+    padding: const EdgeInsetsDirectional.only(bottom: 5, start: 4),
     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text("• ", style: TextStyle(color: subColor, fontSize: 13)),
       Expanded(child: Text(text, style: TextStyle(color: subColor, fontSize: 13, height: 1.5))),

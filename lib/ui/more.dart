@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class MorePage extends StatefulWidget {
   final bool isFemale;
@@ -49,7 +50,7 @@ class _MorePageState extends State<MorePage> {
         onChanged: (value) => setState(() => _searchQuery = value),
         style: TextStyle(color: textColor, fontSize: 16),
         decoration: InputDecoration(
-          hintText: 'Search sections...',
+          hintText: AppLocalizations.of(context).moreSearchHint,
           hintStyle: TextStyle(color: subTextColor, fontSize: 16),
           prefixIcon: Icon(
             CupertinoIcons.search,
@@ -81,6 +82,7 @@ class _MorePageState extends State<MorePage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = isDark
         ? const Color(0xFF2C2C2E)
@@ -92,16 +94,25 @@ class _MorePageState extends State<MorePage> {
     final query = _searchQuery.trim().toLowerCase();
     final items =
         <_MoreEntry>[
-          _MoreEntry(title: 'Mindfulness', tabIndex: 4),
-          _MoreEntry(title: 'Finance', tabIndex: 5),
-          if (widget.isFemale) _MoreEntry(title: 'Cycles', tabIndex: 6),
+          _MoreEntry(
+              title: t.moreMindfulness,
+              tabIndex: 4,
+              icon: CupertinoIcons.heart),
+          _MoreEntry(
+              title: t.moreFinance,
+              tabIndex: 5,
+              icon: CupertinoIcons.money_dollar_circle),
+          if (widget.isFemale)
+            _MoreEntry(
+                title: t.moreCycles,
+                tabIndex: 6,
+                icon: CupertinoIcons.calendar),
         ].where((item) {
           if (query.isEmpty) return true;
           return item.title.toLowerCase().contains(query);
         }).toList();
 
     return SingleChildScrollView(
-      key: const ValueKey('more_tab'),
       padding: EdgeInsets.only(
         top: safePadding.top + 24.0,
         bottom: safePadding.bottom + 120.0,
@@ -112,7 +123,7 @@ class _MorePageState extends State<MorePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'More',
+            t.moreTitle,
             style: TextStyle(
               color: textColor,
               fontSize: 32,
@@ -143,7 +154,7 @@ class _MorePageState extends State<MorePage> {
                           vertical: 20.0,
                         ),
                         child: Text(
-                          'No results',
+                          t.moreNoResults,
                           style: TextStyle(
                             color: subTextColor,
                             fontSize: 14,
@@ -158,6 +169,7 @@ class _MorePageState extends State<MorePage> {
                         children: [
                           _MoreMenuItem(
                             title: item.title,
+                            icon: item.icon,
                             isDark: isDark,
                             hlColor: hlColor,
                             onTap: () {
@@ -179,29 +191,18 @@ class _MorePageState extends State<MorePage> {
 
 class _MoreMenuItem extends StatelessWidget {
   final String title;
+  final IconData icon;
   final bool isDark;
   final Color hlColor;
   final VoidCallback onTap;
 
   const _MoreMenuItem({
     required this.title,
+    required this.icon,
     required this.isDark,
     required this.hlColor,
     required this.onTap,
   });
-
-  IconData _getIconForTitle(String title) {
-    switch (title) {
-      case 'Mindfulness':
-        return CupertinoIcons.heart;
-      case 'Finance':
-        return CupertinoIcons.money_dollar_circle;
-      case 'Cycles':
-        return CupertinoIcons.calendar;
-      default:
-        return CupertinoIcons.info_circle;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +211,7 @@ class _MoreMenuItem extends StatelessWidget {
       isDark: isDark,
       hlColor: hlColor,
       onTap: onTap,
-      icon: _getIconForTitle(title),
+      icon: icon,
     );
   }
 }
@@ -239,14 +240,14 @@ class _InstantRowState extends State<_InstantRow> {
 
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      onPointerDown: (_) => setState(() => _pressed = true),
-      onPointerUp: (_) {
-        setState(() => _pressed = false);
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      onTap: () {
         HapticFeedback.selectionClick();
         widget.onTap();
       },
-      onPointerCancel: (_) => setState(() => _pressed = false),
       child: Container(
         color: _pressed ? widget.hlColor : Colors.transparent,
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
@@ -302,6 +303,11 @@ class _MenuDivider extends StatelessWidget {
 class _MoreEntry {
   final String title;
   final int tabIndex;
+  final IconData icon;
 
-  const _MoreEntry({required this.title, required this.tabIndex});
+  const _MoreEntry({
+    required this.title,
+    required this.tabIndex,
+    required this.icon,
+  });
 }

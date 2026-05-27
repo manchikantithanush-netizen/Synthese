@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 
@@ -53,6 +54,7 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final t = AppLocalizations.of(context);
 
     final bgColor = isDark
         ? const Color.fromARGB(255, 26, 26, 28)
@@ -65,7 +67,7 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
           color: bgColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(38)),
         ),
-        padding: const EdgeInsets.only(top: 24.0, left: 20.0, right: 20.0),
+        padding: const EdgeInsetsDirectional.only(top: 24.0, start: 20.0, end: 20.0),
         child: Column(
           children: [
             // --- HEADER ---
@@ -75,7 +77,7 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                 Align(
                   alignment: Alignment.center,
                   child: Text(
-                    "Cycle History",
+                    t.cycleHistoryTitle,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -84,7 +86,7 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                   ),
                 ),
                 Align(
-                  alignment: Alignment.centerRight,
+                  alignment: AlignmentDirectional.centerEnd,
                   child: UniversalCloseButton(
                     onPressed: () {
                       Navigator.pop(context);
@@ -99,7 +101,7 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
             // --- MAIN CONTENT ---
             Expanded(
               child: _cyclesStream == null
-                  ? const Center(child: Text("Please log in to view history."))
+                  ? Center(child: Text(t.cyclesPleaseLogInHistory))
                   : StreamBuilder<QuerySnapshot>(
                       stream: _cyclesStream,
                       builder: (context, snapshot) {
@@ -135,7 +137,7 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                                 ),
                                 const SizedBox(height: 40),
                                 Text(
-                                  "No cycles logged yet.",
+                                  t.cycleHistoryEmpty,
                                   style: TextStyle(
                                     color: isDark
                                         ? Colors.white54
@@ -265,46 +267,51 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
         color: cardColor,
         borderRadius: BorderRadius.circular(24),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Expanded(
-            child: _buildStatColumn(
-              "Avg Cycle",
-              "$avgCycle",
-              "d",
-              textColor,
-              subTextColor,
-            ),
-          ),
-          Expanded(
-            child: _buildStatColumn(
-              "Avg Period",
-              "$avgPeriod",
-              "d",
-              textColor,
-              subTextColor,
-            ),
-          ),
-          Expanded(
-            child: _buildStatColumn(
-              "Longest",
-              "$maxCycle",
-              "d",
-              textColor,
-              subTextColor,
-            ),
-          ),
-          Expanded(
-            child: _buildStatColumn(
-              "Shortest",
-              "$minCycle",
-              "d",
-              textColor,
-              subTextColor,
-            ),
-          ),
-        ],
+      child: Builder(
+        builder: (ctx) {
+          final t = AppLocalizations.of(ctx);
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                child: _buildStatColumn(
+                  t.cycleHistoryAvgCycle,
+                  "$avgCycle",
+                  "d",
+                  textColor,
+                  subTextColor,
+                ),
+              ),
+              Expanded(
+                child: _buildStatColumn(
+                  t.cycleHistoryAvgPeriod,
+                  "$avgPeriod",
+                  "d",
+                  textColor,
+                  subTextColor,
+                ),
+              ),
+              Expanded(
+                child: _buildStatColumn(
+                  t.cycleHistoryLongest,
+                  "$maxCycle",
+                  "d",
+                  textColor,
+                  subTextColor,
+                ),
+              ),
+              Expanded(
+                child: _buildStatColumn(
+                  t.cycleHistoryShortest,
+                  "$minCycle",
+                  "d",
+                  textColor,
+                  subTextColor,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -383,14 +390,16 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
         color: cardColor,
         borderRadius: BorderRadius.circular(24),
       ),
-      child: Column(
+      child: Builder(builder: (ctx) {
+        final t = AppLocalizations.of(ctx);
+        return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Recent Cycles",
+                t.cycleHistoryRecentCycles,
                 style: TextStyle(
                   color: textColor,
                   fontSize: 16,
@@ -406,7 +415,7 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    "Average ($avgCycle d)",
+                    t.cycleHistoryAverageDays(avgCycle),
                     style: TextStyle(
                       color: subTextColor,
                       fontSize: 12,
@@ -442,8 +451,9 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                     bool isSelected = c['id'] == _selectedCycleId;
 
                     Timestamp? ts = c['startDate'] as Timestamp?;
+                    final localeTag = Localizations.localeOf(ctx).toLanguageTag();
                     String monthStr = ts != null
-                        ? DateFormat('MMM').format(ts.toDate())
+                        ? DateFormat('MMM', localeTag).format(ts.toDate())
                         : '-';
 
                     return GestureDetector(
@@ -501,7 +511,8 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
             ),
           ),
         ],
-      ),
+        );
+      }),
     );
   }
 
@@ -514,6 +525,8 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = isDark ? Colors.white54 : Colors.black54;
     const pinkColor = Color(0xFFEC548A);
+    final t = AppLocalizations.of(context);
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
 
     return Column(
       children: cycles.map((c) {
@@ -522,33 +535,31 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
 
         final Timestamp? ts = c['startDate'] as Timestamp?;
         final String dateStr = ts != null
-            ? DateFormat('MMMM d, yyyy').format(ts.toDate())
-            : 'Unknown Date';
+            ? DateFormat('MMMM d, yyyy', localeTag).format(ts.toDate())
+            : t.cycleHistoryUnknownDate;
 
         final int cLen = c['cycleLength'] as int? ?? 0;
         final int pLen = c['periodLength'] as int? ?? 0;
 
-        // Determine cycle status for colored dot
         Color statusColor;
         String statusText;
         if (cLen < 21) {
-          statusColor = const Color(0xFFFF9500); // iOS Orange
-          statusText = "Short Cycle";
+          statusColor = const Color(0xFFFF9500);
+          statusText = t.cycleHistoryShortCycle;
         } else if (cLen > 35) {
-          statusColor = const Color(0xFFAF52DE); // iOS Purple
-          statusText = "Long Cycle";
+          statusColor = const Color(0xFFAF52DE);
+          statusText = t.cycleHistoryLongCycle;
         } else {
-          statusColor = const Color(0xFF34C759); // iOS Green
-          statusText = "Normal Cycle";
+          statusColor = const Color(0xFF34C759);
+          statusText = t.cycleHistoryNormalCycle;
         }
 
-        // Pull symptoms (Assumes DB saves them as a list under "symptoms")
         List<dynamic> rawSymptoms = c['symptoms'] is List ? c['symptoms'] : [];
         String symText = rawSymptoms.isNotEmpty
             ? rawSymptoms
                   .take(3)
-                  .join(', ') // Takes top 3 symptoms
-            : "No symptoms logged";
+                  .join(', ')
+            : t.cycleHistoryNoSymptoms;
 
         return Container(
           key: _itemKeys[cycleId],
@@ -611,7 +622,7 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                       left: 20.0,
                     ), // Aligns with text, ignoring dot
                     child: Text(
-                      "Cycle: $cLen days  •  Period: $pLen days",
+                      t.cycleHistoryDaysSummary(cLen, pLen),
                       style: TextStyle(color: subTextColor, fontSize: 13),
                     ),
                   ),
@@ -700,7 +711,7 @@ class _HistoryCyclesModalState extends State<HistoryCyclesModal> {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
-                                      "Top Symptoms: $symText",
+                                      t.cycleHistoryTopSymptoms(symText),
                                       style: TextStyle(
                                         color: subTextColor,
                                         fontSize: 14,

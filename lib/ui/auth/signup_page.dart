@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
 import 'login_page.dart';
@@ -9,6 +12,7 @@ import 'package:synthese/onboarding/onboarding_intro.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -72,14 +76,84 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
+  Future<void> signInWithGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final webClientId = dotenv.env['GOOGLE_WEB_CLIENT_ID']?.trim();
+      final googleSignIn = GoogleSignIn(
+        // `clientId` is needed for Apple platforms; using it on Android can
+        // break the token handoff after account selection.
+        clientId: defaultTargetPlatform == TargetPlatform.iOS
+            ? '118165710666-mu9h11167ij8v9ttqs8u569g0d77bqke.apps.googleusercontent.com'
+            : null,
+        serverClientId: webClientId != null && webClientId.isNotEmpty
+            ? webClientId
+            : null,
+      );
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+      final googleAuth = await googleUser.authentication;
+      if (googleAuth.idToken == null && googleAuth.accessToken == null) {
+        throw FirebaseAuthException(
+          code: 'missing-google-token',
+          message: mounted
+              ? AppLocalizations.of(context).authGoogleNoToken
+              : 'Google sign-in did not return an auth token.',
+        );
+      }
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
+      );
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      if (mounted) {
+        HapticFeedback.mediumImpact();
+        Navigator.pushAndRemoveUntil(
+          context,
+          _fadeRoute(const OnboardingIntro()),
+          (route) => false,
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      _triggerError(
+          e.message ?? AppLocalizations.of(context).authGoogleFailedCode(e.code));
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+      final t = AppLocalizations.of(context);
+      final rawMessage = e.message ?? '';
+      if (e.code == 'sign_in_failed' &&
+          rawMessage.contains('ApiException: 10')) {
+        _triggerError(t.authGoogleAndroidConfig);
+        return;
+      }
+      final details = [
+        e.code,
+        e.message,
+      ].whereType<String>().where((part) => part.isNotEmpty).join(': ');
+      _triggerError(
+        '${t.authGoogleFailed}${details.isNotEmpty ? ' ($details)' : ''}',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _triggerError(
+          AppLocalizations.of(context).authGoogleFailedType('${e.runtimeType}'));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   Future<void> signUp() async {
     if (emailController.text.trim().isEmpty ||
         passwordController.text.trim().isEmpty) {
-      _triggerError('Please fill in all fields');
+      _triggerError(AppLocalizations.of(context).signupErrFillFields);
       return;
     }
     if (passwordController.text != confirmPasswordController.text) {
-      _triggerError('Passwords do not match');
+      _triggerError(AppLocalizations.of(context).signupErrPasswordMismatch);
       return;
     }
     setState(() => _isLoading = true);
@@ -108,7 +182,10 @@ class _SignupPageState extends State<SignupPage> {
         }
       }
     } on FirebaseAuthException catch (e) {
-      _triggerError(e.message ?? 'Sign up failed');
+      if (mounted) {
+        _triggerError(
+            e.message ?? AppLocalizations.of(context).signupErrFailed);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -136,6 +213,7 @@ class _SignupPageState extends State<SignupPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final textColor = Theme.of(context).colorScheme.onSurface;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -181,7 +259,7 @@ class _SignupPageState extends State<SignupPage> {
                     const SizedBox(height: 32),
 
                     Text(
-                      'Sign Up',
+                      t.signupTitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: textColor,
@@ -218,7 +296,7 @@ class _SignupPageState extends State<SignupPage> {
                       style: TextStyle(color: textColor),
                       decoration: _iosInputDecoration(
                         context,
-                        'Email',
+                        t.loginEmail,
                         Icons.mail_outline,
                       ),
                     ),
@@ -232,7 +310,7 @@ class _SignupPageState extends State<SignupPage> {
                       style: TextStyle(color: textColor),
                       decoration: _iosInputDecoration(
                         context,
-                        'Password',
+                        t.loginPassword,
                         Icons.lock_outline,
                       ),
                     ),
@@ -245,7 +323,7 @@ class _SignupPageState extends State<SignupPage> {
                       style: TextStyle(color: textColor),
                       decoration: _iosInputDecoration(
                         context,
-                        'Confirm Password',
+                        t.signupConfirmPassword,
                         Icons.lock_outline,
                       ),
                     ),
@@ -254,9 +332,24 @@ class _SignupPageState extends State<SignupPage> {
 
                     _isLoading
                         ? const Center(child: BouncingDotsLoader())
-                        : PremiumButton(
-                            text: 'Create Account',
-                            onPressed: signUp,
+                        : Column(
+                            children: [
+                              PremiumButton(
+                                text: t.signupCreateAccount,
+                                onPressed: signUp,
+                              ),
+                              const SizedBox(height: 14),
+                              PremiumButton(
+                                text: t.authContinueGoogle,
+                                onPressed: signInWithGoogle,
+                                showIcon: true,
+                                icon: Image.asset(
+                                  'assets/google.png',
+                                  width: 18,
+                                  height: 18,
+                                ),
+                              ),
+                            ],
                           ),
 
                     const SizedBox(height: 32),
@@ -277,9 +370,9 @@ class _SignupPageState extends State<SignupPage> {
                             fontSize: 14,
                           ),
                           children: [
-                            const TextSpan(text: 'Already have an account? '),
+                            TextSpan(text: t.signupHaveAccount),
                             TextSpan(
-                              text: 'Login',
+                              text: t.loginButton,
                               style: TextStyle(
                                 color: textColor,
                                 fontWeight: FontWeight.bold,
