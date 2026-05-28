@@ -83,8 +83,8 @@
   "permLocationBody": "स्थान एक्सेस (कोर्स + फाइन) का उपयोग केवल सक्रिय वर्कआउट सत्रों के दौरान आपकी दौड़, साइकलिंग या वॉक को मैप करने के लिए किया जाता है। बैकग्राउंड स्थान आपके सत्र को स्क्रीन बंद होने पर भी चालू रखता है — वर्कआउट में कोई बाधा नहीं।",
   "permLocationAllow": "स्थान की अनुमति दें",
   "permActivityTitle": "हर कदम गिनें",
-  "permActivityBody": "एक्टिविटी रिकग्निशन Synthese को आपकी गति का पता लगाने और दिन भर आपके कदमों को स्वचालित रूप से गिनने देता है — किसी मैन्युअल लॉगिंग की आवश्यकता नहीं।",
-  "permActivityAllow": "एक्टिविटी रिकग्निशन की अनुमति दें",
+  "permActivityBody": "Synthese आपके फ़ोन के पेडोमीटर का उपयोग करके कदमों को स्वचालित रूप से गिनता है — पूरे दिन बैकग्राउंड में और वर्कआउट के दौरान। आप किसी भी मोड को कभी भी सेटिंग्स से बदल सकते हैं।",
+  "permActivityAllow": "स्टेप ट्रैकिंग की अनुमति दें",
   "permCameraTitle": "AI कैलोरी विश्लेषण",
   "permCameraBody": "कैमरा एक्सेस AI फ़ूड एनालाइज़र को सशक्त बनाता है — अपने भोजन की तस्वीर लें और Synthese तुरंत कैलोरी, प्रोटीन, कार्ब्स और वसा का अनुमान लगाता है। कैमरा केवल तभी सक्रिय होता है जब आप इस सुविधा का उपयोग करना चुनते हैं।",
   "permCameraAllow": "कैमरा की अनुमति दें",
@@ -1479,6 +1479,18 @@
   "woActive": "सक्रिय",
   "woKcalValue": "{kcal} किलो कैलोरी",
   "woCaloriesLine": "कैलोरी: {kcal} किलो कैलोरी",
+  "woSteps": "कदम",
+  "woStepsLine": "कदम: {count}",
+  "@woStepsLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsBackgroundStepsTitle": "बैकग्राउंड स्टेप ट्रैकिंग",
+  "settingsBackgroundStepsSubtitle": "पूरे दिन स्वचालित रूप से कदम गिनें। बंद होने पर, कदम केवल वर्कआउट के दौरान गिने जाते हैं।",
+  "settingsBackgroundStepsDenied": "अपने कदमों को ट्रैक करने के लिए शारीरिक गतिविधि की अनुमति दें।",
   "woMinValue": "{minutes} मिनट",
   "woLoadingWeather": "मौसम लोड हो रहा है...",
   "woLocationUnavailable": "स्थान उपलब्ध नहीं",
@@ -1594,6 +1606,11 @@
   "startGuestFailed": "अतिथि एक्सेस विफल: {error}",
   "aboutTitle": "ऐप के बारे में",
   "aboutVersion": "संस्करण {version}",
+  "aboutCheckForUpdates": "अपडेट देखें",
+  "updateReadyRestart": "अपडेट डाउनलोड हो गया — इंस्टॉल करने के लिए रीस्टार्ट करें",
+  "updateRestartAction": "रीस्टार्ट",
+  "updateUpToDate": "आप नवीनतम संस्करण पर हैं",
+  "updateCheckFailed": "अपडेट की जाँच नहीं की जा सकी",
   "aboutSecDeveloper": "डेवलपर",
   "aboutDeveloper": "डेवलपर",
   "aboutSecLegal": "कानूनी",

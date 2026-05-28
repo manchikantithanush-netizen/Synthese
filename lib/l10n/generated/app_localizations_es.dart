@@ -278,10 +278,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get permActivityBody =>
-      'El reconocimiento de actividad permite a Synthese detectar tu movimiento y contar automáticamente tus pasos durante el día — sin registro manual.';
+      'Synthese usa el podómetro de tu teléfono para contar tus pasos automáticamente — todo el día en segundo plano y durante los entrenamientos. Puedes cambiar cualquiera de los modos en cualquier momento desde Ajustes.';
 
   @override
-  String get permActivityAllow => 'Permitir reconocimiento de actividad';
+  String get permActivityAllow => 'Permitir seguimiento de pasos';
 
   @override
   String get permCameraTitle => 'Análisis de calorías con IA';
@@ -4541,6 +4541,26 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get woSteps => 'Pasos';
+
+  @override
+  String woStepsLine(int count) {
+    return 'Pasos: $count';
+  }
+
+  @override
+  String get settingsBackgroundStepsTitle =>
+      'Seguimiento de pasos en segundo plano';
+
+  @override
+  String get settingsBackgroundStepsSubtitle =>
+      'Cuenta los pasos automáticamente durante todo el día. Cuando está desactivado, los pasos solo se cuentan durante los entrenamientos.';
+
+  @override
+  String get settingsBackgroundStepsDenied =>
+      'Permite el permiso de actividad física para registrar tus pasos.';
+
+  @override
   String woMinValue(int minutes) {
     return '$minutes min';
   }
@@ -4943,6 +4963,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String aboutVersion(String version) {
     return 'Versión $version';
   }
+
+  @override
+  String get aboutCheckForUpdates => 'Buscar actualizaciones';
+
+  @override
+  String get updateReadyRestart =>
+      'Actualización descargada: reinicia para instalar';
+
+  @override
+  String get updateRestartAction => 'Reiniciar';
+
+  @override
+  String get updateUpToDate => 'Estás en la última versión';
+
+  @override
+  String get updateCheckFailed => 'No se pudo buscar actualizaciones';
 
   @override
   String get aboutSecDeveloper => 'DESARROLLADOR';

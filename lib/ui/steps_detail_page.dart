@@ -18,11 +18,17 @@ class StepsDetailPage extends StatefulWidget {
   final int stepGoal;
   final ValueChanged<int>? onTodayManualStepsAdded;
 
+  /// Today's automatic (pedometer) hourly distribution. Shown on top of the
+  /// manually-entered hourly buckets in the daily chart; kept separate so the
+  /// manual-only data persisted to Firestore is never polluted with sensor data.
+  final List<int>? sensorHourlySteps;
+
   const StepsDetailPage({
     super.key,
     required this.todaySteps,
     this.stepGoal = 10000,
     this.onTodayManualStepsAdded,
+    this.sensorHourlySteps,
   });
 
   @override
@@ -279,16 +285,26 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
     final bool isDaily = _selectedTab == 0;
     final bool isLoading = isDaily ? _loadingDaily : _loadingWeekly;
 
+    // Combine manual hourly buckets with today's automatic pedometer buckets
+    // for display only (the persisted manual data is never modified).
+    final sensorHourly = widget.sensorHourlySteps;
+    final List<int> effectiveHourly = List<int>.generate(24, (i) {
+      final base = i < _hourlySteps.length ? _hourlySteps[i] : 0;
+      final sensor =
+          (sensorHourly != null && i < sensorHourly.length) ? sensorHourly[i] : 0;
+      return base + sensor;
+    });
+
     // Daily: trim to last active hour, min 8 bars
     int lastNonZero = 7;
     for (int i = 23; i >= 0; i--) {
-      if (_hourlySteps[i] > 0) {
+      if (effectiveHourly[i] > 0) {
         lastNonZero = i;
         break;
       }
     }
     final int hourCount = math.max(lastNonZero + 1, 8);
-    final List<int> dailyBars = _hourlySteps.sublist(0, hourCount);
+    final List<int> dailyBars = effectiveHourly.sublist(0, hourCount);
 
     final List<int> bars = isDaily ? dailyBars : _weeklySteps;
     final int maxVal = bars.isEmpty ? 1 : math.max(bars.reduce(math.max), 1);

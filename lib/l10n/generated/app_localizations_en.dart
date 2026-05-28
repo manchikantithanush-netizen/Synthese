@@ -278,10 +278,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permActivityBody =>
-      'Activity Recognition lets Synthese detect your movement and automatically count your steps throughout the day — no manual logging needed.';
+      'Synthese uses your phone\'s pedometer to count steps automatically — all day in the background and during workouts. You can change either mode anytime in Settings.';
 
   @override
-  String get permActivityAllow => 'Allow Activity Recognition';
+  String get permActivityAllow => 'Allow step tracking';
 
   @override
   String get permCameraTitle => 'AI calorie analysis';
@@ -4501,6 +4501,25 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get woSteps => 'Steps';
+
+  @override
+  String woStepsLine(int count) {
+    return 'Steps: $count';
+  }
+
+  @override
+  String get settingsBackgroundStepsTitle => 'Background step tracking';
+
+  @override
+  String get settingsBackgroundStepsSubtitle =>
+      'Count steps automatically all day. When off, steps are only counted during workouts.';
+
+  @override
+  String get settingsBackgroundStepsDenied =>
+      'Allow the Physical activity permission to track your steps.';
+
+  @override
   String woMinValue(int minutes) {
     return '$minutes min';
   }
@@ -4900,6 +4919,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String aboutVersion(String version) {
     return 'Version $version';
   }
+
+  @override
+  String get aboutCheckForUpdates => 'Check for updates';
+
+  @override
+  String get updateReadyRestart => 'Update downloaded — restart to install';
+
+  @override
+  String get updateRestartAction => 'Restart';
+
+  @override
+  String get updateUpToDate => 'You\'re on the latest version';
+
+  @override
+  String get updateCheckFailed => 'Couldn\'t check for updates';
 
   @override
   String get aboutSecDeveloper => 'DEVELOPER';

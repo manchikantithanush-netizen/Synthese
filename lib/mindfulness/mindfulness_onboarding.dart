@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
+import 'package:synthese/ui/components/adaptive_onboarding_slide.dart';
 
 class MindfulnessOnboarding extends StatelessWidget {
   final VoidCallback onContinue;
@@ -17,6 +18,10 @@ class MindfulnessOnboarding extends StatelessWidget {
         ? const Color(0xFF009688)
         : const Color(0xFF33BEBE);
     final t = AppLocalizations.of(context);
+    final isCompact = mediaQuery.size.height < 760;
+    final titleSize = isCompact ? 30.0 : 34.0;
+    final iconSize = isCompact ? 30.0 : 35.0;
+    final featureGap = isCompact ? 14.0 : 20.0;
 
     return Scaffold(
       body: SafeArea(
@@ -24,27 +29,8 @@ class MindfulnessOnboarding extends StatelessWidget {
           data: mediaQuery.copyWith(
             textScaler: TextScaler.linear(clampedTextScale.toDouble()),
           ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isCompact = constraints.maxHeight < 760;
-              final horizontalPadding = constraints.maxWidth < 370
-                  ? 20.0
-                  : 28.0;
-              final titleSize = isCompact ? 30.0 : 34.0;
-              final iconSize = isCompact ? 30.0 : 35.0;
-              final featureGap = isCompact ? 14.0 : 20.0;
-              final bottomSpacing = isCompact ? 12.0 : 24.0;
-
-              return Padding(
-                padding: EdgeInsets.fromLTRB(
-                  horizontalPadding,
-                  isCompact ? 10 : 16,
-                  horizontalPadding,
-                  bottomSpacing,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+          child: AdaptiveOnboardingSlide(
+            children: [
                     SizedBox(height: isCompact ? 12 : 32),
                     Text(
                       t.mindfulnessOnboardingTitle,
@@ -106,10 +92,7 @@ class MindfulnessOnboarding extends StatelessWidget {
                       onPressed: onContinue,
                       color: accentColor,
                     ),
-                  ],
-                ),
-              );
-            },
+            ],
           ),
         ),
       ),

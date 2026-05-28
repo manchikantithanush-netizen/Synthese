@@ -275,10 +275,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get permActivityBody =>
-      'يتيح تتبع النشاط لـ Synthese اكتشاف حركتك وعدّ خطواتك تلقائياً طوال اليوم — دون تسجيل يدوي.';
+      'يستخدم Synthese عدّاد الخطوات في هاتفك لاحتساب خطواتك تلقائيًا — طوال اليوم في الخلفية وأثناء التمارين. يمكنك تغيير أي من الوضعين في أي وقت من الإعدادات.';
 
   @override
-  String get permActivityAllow => 'السماح بتتبع النشاط';
+  String get permActivityAllow => 'السماح بتتبع الخطوات';
 
   @override
   String get permCameraTitle => 'تحليل السعرات بالذكاء الاصطناعي';
@@ -4467,6 +4467,25 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get woSteps => 'الخطوات';
+
+  @override
+  String woStepsLine(int count) {
+    return 'الخطوات: $count';
+  }
+
+  @override
+  String get settingsBackgroundStepsTitle => 'تتبع الخطوات في الخلفية';
+
+  @override
+  String get settingsBackgroundStepsSubtitle =>
+      'احسب الخطوات تلقائيًا طوال اليوم. عند الإيقاف، يتم احتساب الخطوات فقط أثناء التمرين.';
+
+  @override
+  String get settingsBackgroundStepsDenied =>
+      'اسمح بإذن النشاط البدني لتتبع خطواتك.';
+
+  @override
   String woMinValue(int minutes) {
     return '$minutes دقيقة';
   }
@@ -4865,6 +4884,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String aboutVersion(String version) {
     return 'الإصدار $version';
   }
+
+  @override
+  String get aboutCheckForUpdates => 'التحقق من التحديثات';
+
+  @override
+  String get updateReadyRestart => 'تم تنزيل التحديث — أعد التشغيل للتثبيت';
+
+  @override
+  String get updateRestartAction => 'إعادة التشغيل';
+
+  @override
+  String get updateUpToDate => 'أنت تستخدم أحدث إصدار';
+
+  @override
+  String get updateCheckFailed => 'تعذر التحقق من التحديثات';
 
   @override
   String get aboutSecDeveloper => 'المطوّر';

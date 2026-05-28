@@ -9,6 +9,7 @@ import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/services/app_notifications_service.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/services/locale_service.dart';
+import 'package:synthese/services/step_tracker_service.dart';
 
 import 'package:synthese/ui/start_page.dart';
 import 'package:synthese/onboarding/onboarding_intro.dart';
@@ -40,6 +41,7 @@ void main() async {
   await AppNotificationsService.instance.init();
   await AccentColor.init();
   await LocaleService.init();
+  await StepTracker.instance.init();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,

@@ -83,8 +83,8 @@
   "permLocationBody": "Location access (coarse + fine) is used only during active workout sessions to map your run, cycle, or walk. Background location keeps your session running even when the screen is off — no interruptions mid-workout.",
   "permLocationAllow": "Allow Location",
   "permActivityTitle": "Count every step",
-  "permActivityBody": "Activity Recognition lets Synthese detect your movement and automatically count your steps throughout the day — no manual logging needed.",
-  "permActivityAllow": "Allow Activity Recognition",
+  "permActivityBody": "Synthese uses your phone's pedometer to count steps automatically — all day in the background and during workouts. You can change either mode anytime in Settings.",
+  "permActivityAllow": "Allow step tracking",
   "permCameraTitle": "AI calorie analysis",
   "permCameraBody": "Camera access powers the AI food analyser — snap a photo of your meal and Synthese instantly estimates calories, protein, carbs, and fats. Camera is only activated when you choose to use this feature.",
   "permCameraAllow": "Allow Camera",
@@ -1559,6 +1559,18 @@
       }
     }
   },
+  "woSteps": "Steps",
+  "woStepsLine": "Steps: {count}",
+  "@woStepsLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsBackgroundStepsTitle": "Background step tracking",
+  "settingsBackgroundStepsSubtitle": "Count steps automatically all day. When off, steps are only counted during workouts.",
+  "settingsBackgroundStepsDenied": "Allow the Physical activity permission to track your steps.",
   "woMinValue": "{minutes} min",
   "@woMinValue": {
     "placeholders": {
@@ -1849,6 +1861,11 @@
       }
     }
   },
+  "aboutCheckForUpdates": "Check for updates",
+  "updateReadyRestart": "Update downloaded — restart to install",
+  "updateRestartAction": "Restart",
+  "updateUpToDate": "You're on the latest version",
+  "updateCheckFailed": "Couldn't check for updates",
   "aboutSecDeveloper": "DEVELOPER",
   "aboutDeveloper": "Developer",
   "aboutSecLegal": "LEGAL",

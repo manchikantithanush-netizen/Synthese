@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/update_reminder.dart';
+import 'package:synthese/services/app_update_service.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 
 class AboutAppPage extends StatelessWidget {
@@ -82,6 +83,25 @@ class AboutAppPage extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Check for updates
+                Container(
+                  decoration: BoxDecoration(
+                      color: cardColor, borderRadius: BorderRadius.circular(20)),
+                  clipBehavior: Clip.antiAlias,
+                  child: _TappableRow(
+                    icon: Icons.system_update_outlined,
+                    title: t.aboutCheckForUpdates,
+                    trailing: Icons.chevron_right_rounded,
+                    textColor: textColor,
+                    subColor: subColor,
+                    isDark: isDark,
+                    onTap: () => AppUpdateService.instance
+                        .checkAndPrompt(context, manual: true),
                   ),
                 ),
 

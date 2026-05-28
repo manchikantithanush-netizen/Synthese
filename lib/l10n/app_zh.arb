@@ -83,8 +83,8 @@
   "permLocationBody": "位置访问(粗略 + 精确)仅在你进行锻炼时使用,用于绘制跑步、骑行或散步路线。后台位置可让你的锻炼在屏幕关闭时也持续进行 — 不会中途中断。",
   "permLocationAllow": "允许位置访问",
   "permActivityTitle": "记录每一步",
-  "permActivityBody": "活动识别让 Synthese 能检测你的运动并自动统计全天的步数 — 无需手动记录。",
-  "permActivityAllow": "允许活动识别",
+  "permActivityBody": "Synthese 使用您手机的计步器自动统计步数 — 全天在后台运行，锻炼期间也会记录。您可以随时在设置中更改任一模式。",
+  "permActivityAllow": "允许步数追踪",
   "permCameraTitle": "AI 卡路里分析",
   "permCameraBody": "相机访问驱动 AI 食物分析器 — 拍下你的餐食,Synthese 即时估算卡路里、蛋白质、碳水和脂肪。仅在你选择使用此功能时启用相机。",
   "permCameraAllow": "允许相机",
@@ -1479,6 +1479,18 @@
   "woActive": "活动",
   "woKcalValue": "{kcal} 千卡",
   "woCaloriesLine": "卡路里：{kcal} 千卡",
+  "woSteps": "步数",
+  "woStepsLine": "步数：{count}",
+  "@woStepsLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsBackgroundStepsTitle": "后台步数追踪",
+  "settingsBackgroundStepsSubtitle": "全天自动统计步数。关闭后，仅在锻炼期间统计步数。",
+  "settingsBackgroundStepsDenied": "请允许身体活动权限以追踪您的步数。",
   "woMinValue": "{minutes} 分钟",
   "woLoadingWeather": "正在加载天气...",
   "woLocationUnavailable": "位置不可用",
@@ -1594,6 +1606,11 @@
   "startGuestFailed": "访客访问失败：{error}",
   "aboutTitle": "关于应用",
   "aboutVersion": "版本 {version}",
+  "aboutCheckForUpdates": "检查更新",
+  "updateReadyRestart": "更新已下载 — 重启以安装",
+  "updateRestartAction": "重启",
+  "updateUpToDate": "您已是最新版本",
+  "updateCheckFailed": "无法检查更新",
   "aboutSecDeveloper": "开发者",
   "aboutDeveloper": "开发者",
   "aboutSecLegal": "法律",

@@ -83,8 +83,8 @@
   "permLocationBody": "يُستخدم الوصول إلى الموقع (تقريبي ودقيق) فقط أثناء جلسات التمرين النشطة لرسم مسار الجري أو الدراجة أو المشي. يُبقي الموقع في الخلفية جلستك مستمرة حتى عند إيقاف الشاشة — دون انقطاع أثناء التمرين.",
   "permLocationAllow": "السماح بالموقع",
   "permActivityTitle": "احسب كل خطوة",
-  "permActivityBody": "يتيح تتبع النشاط لـ Synthese اكتشاف حركتك وعدّ خطواتك تلقائياً طوال اليوم — دون تسجيل يدوي.",
-  "permActivityAllow": "السماح بتتبع النشاط",
+  "permActivityBody": "يستخدم Synthese عدّاد الخطوات في هاتفك لاحتساب خطواتك تلقائيًا — طوال اليوم في الخلفية وأثناء التمارين. يمكنك تغيير أي من الوضعين في أي وقت من الإعدادات.",
+  "permActivityAllow": "السماح بتتبع الخطوات",
   "permCameraTitle": "تحليل السعرات بالذكاء الاصطناعي",
   "permCameraBody": "يُشغّل الوصول إلى الكاميرا محلّل الطعام بالذكاء الاصطناعي — التقط صورة لوجبتك وسيقدّر Synthese فوراً السعرات والبروتين والكربوهيدرات والدهون. تُفعَّل الكاميرا فقط عندما تختار استخدام هذه الميزة.",
   "permCameraAllow": "السماح بالكاميرا",
@@ -1479,6 +1479,18 @@
   "woActive": "النشاط",
   "woKcalValue": "{kcal} سعرة",
   "woCaloriesLine": "السعرات: {kcal} سعرة",
+  "woSteps": "الخطوات",
+  "woStepsLine": "الخطوات: {count}",
+  "@woStepsLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsBackgroundStepsTitle": "تتبع الخطوات في الخلفية",
+  "settingsBackgroundStepsSubtitle": "احسب الخطوات تلقائيًا طوال اليوم. عند الإيقاف، يتم احتساب الخطوات فقط أثناء التمرين.",
+  "settingsBackgroundStepsDenied": "اسمح بإذن النشاط البدني لتتبع خطواتك.",
   "woMinValue": "{minutes} دقيقة",
   "woLoadingWeather": "جارٍ تحميل الطقس...",
   "woLocationUnavailable": "الموقع غير متاح",
@@ -1594,6 +1606,11 @@
   "startGuestFailed": "فشل وصول الضيف: {error}",
   "aboutTitle": "حول التطبيق",
   "aboutVersion": "الإصدار {version}",
+  "aboutCheckForUpdates": "التحقق من التحديثات",
+  "updateReadyRestart": "تم تنزيل التحديث — أعد التشغيل للتثبيت",
+  "updateRestartAction": "إعادة التشغيل",
+  "updateUpToDate": "أنت تستخدم أحدث إصدار",
+  "updateCheckFailed": "تعذر التحقق من التحديثات",
   "aboutSecDeveloper": "المطوّر",
   "aboutDeveloper": "المطوّر",
   "aboutSecLegal": "قانوني",

@@ -276,10 +276,10 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get permActivityBody =>
-      'एक्टिविटी रिकग्निशन Synthese को आपकी गति का पता लगाने और दिन भर आपके कदमों को स्वचालित रूप से गिनने देता है — किसी मैन्युअल लॉगिंग की आवश्यकता नहीं।';
+      'Synthese आपके फ़ोन के पेडोमीटर का उपयोग करके कदमों को स्वचालित रूप से गिनता है — पूरे दिन बैकग्राउंड में और वर्कआउट के दौरान। आप किसी भी मोड को कभी भी सेटिंग्स से बदल सकते हैं।';
 
   @override
-  String get permActivityAllow => 'एक्टिविटी रिकग्निशन की अनुमति दें';
+  String get permActivityAllow => 'स्टेप ट्रैकिंग की अनुमति दें';
 
   @override
   String get permCameraTitle => 'AI कैलोरी विश्लेषण';
@@ -4522,6 +4522,25 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
+  String get woSteps => 'कदम';
+
+  @override
+  String woStepsLine(int count) {
+    return 'कदम: $count';
+  }
+
+  @override
+  String get settingsBackgroundStepsTitle => 'बैकग्राउंड स्टेप ट्रैकिंग';
+
+  @override
+  String get settingsBackgroundStepsSubtitle =>
+      'पूरे दिन स्वचालित रूप से कदम गिनें। बंद होने पर, कदम केवल वर्कआउट के दौरान गिने जाते हैं।';
+
+  @override
+  String get settingsBackgroundStepsDenied =>
+      'अपने कदमों को ट्रैक करने के लिए शारीरिक गतिविधि की अनुमति दें।';
+
+  @override
   String woMinValue(int minutes) {
     return '$minutes मिनट';
   }
@@ -4921,6 +4940,22 @@ class AppLocalizationsHi extends AppLocalizations {
   String aboutVersion(String version) {
     return 'संस्करण $version';
   }
+
+  @override
+  String get aboutCheckForUpdates => 'अपडेट देखें';
+
+  @override
+  String get updateReadyRestart =>
+      'अपडेट डाउनलोड हो गया — इंस्टॉल करने के लिए रीस्टार्ट करें';
+
+  @override
+  String get updateRestartAction => 'रीस्टार्ट';
+
+  @override
+  String get updateUpToDate => 'आप नवीनतम संस्करण पर हैं';
+
+  @override
+  String get updateCheckFailed => 'अपडेट की जाँच नहीं की जा सकी';
 
   @override
   String get aboutSecDeveloper => 'डेवलपर';

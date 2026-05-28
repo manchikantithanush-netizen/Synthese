@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:synthese/finance/models/finance_models.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
+import 'package:synthese/ui/components/adaptive_onboarding_slide.dart';
 
 class OnboardingFinance extends StatefulWidget {
   final VoidCallback onContinue;
@@ -364,11 +365,9 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
       );
     }
 
-    return _buildScrollablePage(
+    return AdaptiveOnboardingSlide(
       key: const ValueKey('welcome'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      children: [
           SizedBox(height: isCompact ? 14 : 32),
           Text(
             AppLocalizations.of(context).finOnbWelcome,
@@ -427,7 +426,6 @@ class _OnboardingFinanceState extends State<OnboardingFinance> {
             color: greenColor,
           ),
         ],
-      ),
     );
   }
 

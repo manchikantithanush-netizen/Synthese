@@ -10,6 +10,7 @@ import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/services/first_launch_permissions_service.dart';
+import 'package:synthese/services/step_tracker_service.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main stateful widget — owns the PageController and shared state
@@ -219,7 +220,13 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
                           AppLocalizations.of(context).permActivityAllow,
                       isLoading: _loadingActivity,
                       onAllow: () => _requestThenAdvance(
-                        _permService.requestActivityRecognition,
+                        // Route through StepTracker so the pedometer stream is
+                        // restarted right after the user grants the permission
+                        // (a stream subscribed at app start without permission
+                        // never emits, so we need to re-subscribe).
+                        () async {
+                          await StepTracker.instance.requestPermission();
+                        },
                         (v) => setState(() => _loadingActivity = v),
                       ),
                       onSkip: _next,

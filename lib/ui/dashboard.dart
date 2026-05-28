@@ -26,7 +26,9 @@ import 'package:synthese/services/data_aggregation_service.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/services/update_reminder_service.dart';
+import 'package:synthese/services/app_update_service.dart';
 import 'package:synthese/services/review_service.dart';
+import 'package:synthese/services/step_tracker_service.dart';
 import 'package:synthese/ui/steps_detail_page.dart';
 import 'package:synthese/ui/heart_rate_detail_page.dart';
 import 'package:synthese/ui/calories_detail_page.dart';
@@ -144,8 +146,13 @@ class _DashboardPageState extends State<DashboardPage>
       },
     );
     _updateScore();
+    // Reflect automatic pedometer steps as they update, on top of any manual
+    // adjustments the user has added.
+    StepTracker.instance.todaySteps.addListener(_handleSensorStepsChanged);
+    _handleSensorStepsChanged();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       UpdateReminderService.checkAndNotify(context);
+      AppUpdateService.instance.checkAndPrompt(context);
     });
     unawaited(_loadPersistedDashboardMetrics());
     _fetchUserGender();
@@ -170,14 +177,34 @@ class _DashboardPageState extends State<DashboardPage>
     _metricsPersistDebounce?.cancel();
     _notificationRulesTimer?.cancel();
     _dailyAggSub?.cancel();
+    StepTracker.instance.todaySteps.removeListener(_handleSensorStepsChanged);
     unawaited(_persistDashboardMetricsNow());
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
+  /// Recompute the displayed step count from the automatic pedometer value plus
+  /// the user's manual adjustments, and propagate to score / widgets / storage.
+  void _handleSensorStepsChanged() {
+    if (!mounted) return;
+    final sensorSteps = StepTracker.instance.todaySteps.value;
+    final combined =
+        (sensorSteps + _manualStepAdjustments).clamp(0, 1000000).toInt();
+    if (combined == _steps) return;
+    setState(() {
+      _steps = combined;
+      _updateScore();
+    });
+    _syncDashboardWidgets();
+    _schedulePersistDashboardMetrics();
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      // Catch the step count up after the app was backgrounded/closed.
+      StepTracker.instance.reconcile();
+      AppUpdateService.instance.resumeIfNeeded(context);
       unawaited(NotificationRulesEngine.evaluateGlobal());
     } else if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused ||
@@ -328,10 +355,18 @@ class _DashboardPageState extends State<DashboardPage>
         _activeCalories =
             (data['activeCalories'] as num?)?.toInt() ?? _activeCalories;
         _heartRate = (data['heartRate'] as num?)?.toInt() ?? _heartRate;
-        _steps = (data['steps'] as num?)?.toInt() ?? _steps;
         _manualStepAdjustments =
             (data['manualStepAdjustments'] as num?)?.toInt() ??
             _manualStepAdjustments;
+        // Steps are derived from the live pedometer value plus manual
+        // adjustments; the stored total is only a fallback until the sensor
+        // reports (avoids the number briefly regressing on cold start).
+        _steps = (StepTracker.instance.todaySteps.value + _manualStepAdjustments)
+            .clamp(0, 1000000)
+            .toInt();
+        if (_steps == 0) {
+          _steps = (data['steps'] as num?)?.toInt() ?? _steps;
+        }
         _exerciseMinutes =
             (data['exerciseMinutes'] as num?)?.toInt() ?? _exerciseMinutes;
         // Load sleep: full week from manualSleepTotal per day
@@ -979,6 +1014,7 @@ class _DashboardPageState extends State<DashboardPage>
                       builder: (_) => StepsDetailPage(
                         todaySteps: _steps,
                         stepGoal: _goalSteps,
+                        sensorHourlySteps: StepTracker.instance.hourlyToday,
                         onTodayManualStepsAdded: (addedSteps) {
                           setState(() {
                             _manualStepAdjustments =
@@ -1731,15 +1767,19 @@ class HeartRateCard extends StatelessWidget {
                 ),
               ],
             ),
-            const Spacer(),
-            SizedBox(
-              height: 36,
-              child: CustomPaint(
-                painter: _HeartWavePainter(
-                  color: AccentColor.notifier.value,
-                  hrHistory: hrHistory,
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
+                  height: 36,
+                  child: CustomPaint(
+                    painter: _HeartWavePainter(
+                      color: AccentColor.notifier.value,
+                      hrHistory: hrHistory,
+                    ),
+                    size: const Size(double.infinity, 54),
+                  ),
                 ),
-                size: const Size(double.infinity, 54),
               ),
             ),
           ],
@@ -1988,9 +2028,11 @@ class ExerciseTimeCard extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Spacer(),
             // Vertical pill bar chart — 7 days
-            SizedBox(
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: SizedBox(
               height: 54,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -2053,6 +2095,8 @@ class ExerciseTimeCard extends StatelessWidget {
                     ),
                   );
                 }),
+              ),
+                ),
               ),
             ),
           ],

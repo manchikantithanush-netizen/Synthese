@@ -12,6 +12,8 @@ import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/services/locale_service.dart';
+import 'package:synthese/services/step_tracker_service.dart';
+import 'package:synthese/ui/components/switch.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -1087,10 +1089,85 @@ class _SettingsPage extends StatelessWidget {
                 hlColor: hlColor,
                 onTap: () => onNavigate(AboutAppPage(onBack: onNavigateBack)),
               ),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 20.0),
+                child: Container(height: 0.5, color: hlColor),
+              ),
+              _BackgroundStepsToggleRow(isDark: isDark),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Settings row that toggles all-day background step tracking. When off, steps
+/// are only counted during recorded workouts.
+class _BackgroundStepsToggleRow extends StatelessWidget {
+  final bool isDark;
+  const _BackgroundStepsToggleRow({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final textColor = isDark ? Colors.white : Colors.black;
+    return ValueListenableBuilder<bool>(
+      valueListenable: StepTracker.instance.backgroundEnabled,
+      builder: (context, enabled, _) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 14.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      t.settingsBackgroundStepsTitle,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      t.settingsBackgroundStepsSubtitle,
+                      style: TextStyle(
+                        color: textColor.withValues(alpha: 0.5),
+                        fontSize: 13,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              UniversalSwitch(
+                value: enabled,
+                onChanged: (value) async {
+                  if (value) {
+                    final granted =
+                        await StepTracker.instance.requestPermission();
+                    if (!granted) {
+                      if (context.mounted) {
+                        AppToast.info(
+                          context,
+                          t.settingsBackgroundStepsDenied,
+                          icon: Icons.directions_walk_rounded,
+                        );
+                      }
+                      return; // leave the toggle off
+                    }
+                  }
+                  await StepTracker.instance.setBackgroundEnabled(value);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

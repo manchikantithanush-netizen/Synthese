@@ -247,24 +247,35 @@ class _StartPageState extends State<StartPage> {
             : 'Anonymous sign-in failed');
       }
 
+      // Force the freshly-issued auth token to propagate to the Firestore
+      // client before we issue any reads/writes — otherwise we can race the
+      // token plumbing and the rules engine sees an unauthenticated caller,
+      // yielding a transient permission-denied.
+      await user.getIdToken(true);
+
       final firestore = FirebaseFirestore.instance;
       final counterRef = firestore.collection('metadata').doc('guest_counter');
-      final guestNumber = await firestore.runTransaction<int>((tx) async {
-        final snap = await tx.get(counterRef);
-        final current = (snap.exists && snap.data()?['count'] is int)
-            ? snap.data()!['count'] as int
-            : 0;
-        final next = current + 1;
-        tx.set(counterRef, {'count': next}, SetOptions(merge: true));
-        return next;
+
+      final guestNumber = await _runWithAuthRetry<int>(() {
+        return firestore.runTransaction<int>((tx) async {
+          final snap = await tx.get(counterRef);
+          final current = (snap.exists && snap.data()?['count'] is int)
+              ? snap.data()!['count'] as int
+              : 0;
+          final next = current + 1;
+          tx.set(counterRef, {'count': next}, SetOptions(merge: true));
+          return next;
+        });
       });
 
-      await firestore.collection('users').doc(user.uid).set({
-        'fullName': 'GUEST#$guestNumber',
-        'isGuest': true,
-        'guestNumber': guestNumber,
-        'createdAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      await _runWithAuthRetry<void>(() {
+        return firestore.collection('users').doc(user.uid).set({
+          'fullName': 'GUEST#$guestNumber',
+          'isGuest': true,
+          'guestNumber': guestNumber,
+          'createdAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      });
 
       if (!mounted) return;
       Navigator.pushReplacement(context, _fadeRoute(const OnboardingIntro()));
@@ -274,10 +285,53 @@ class _StartPageState extends State<StartPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
               content: Text(
-                  AppLocalizations.of(context).startGuestFailed('$e'))),
+                  AppLocalizations.of(context).startGuestFailed(
+                      _friendlyGuestError(e)))),
         );
       }
     }
+  }
+
+  /// Retry a Firestore call a few times if it fails with a transient
+  /// `permission-denied` (auth token still propagating after anonymous
+  /// sign-in). Other errors are rethrown immediately.
+  Future<T> _runWithAuthRetry<T>(Future<T> Function() op) async {
+    const delays = [
+      Duration(milliseconds: 250),
+      Duration(milliseconds: 600),
+      Duration(milliseconds: 1200),
+    ];
+    Object? lastError;
+    for (var i = 0; i <= delays.length; i++) {
+      try {
+        return await op();
+      } on FirebaseException catch (e) {
+        lastError = e;
+        if (e.code != 'permission-denied' || i == delays.length) rethrow;
+        await Future.delayed(delays[i]);
+      }
+    }
+    throw lastError ?? Exception('Unknown error');
+  }
+
+  /// Map common Firebase failures to a short, user-readable message instead
+  /// of dumping the raw `[cloud_firestore/...]` exception into a snackbar.
+  String _friendlyGuestError(Object e) {
+    if (e is FirebaseException) {
+      switch (e.code) {
+        case 'permission-denied':
+        case 'unauthenticated':
+          return 'Something went wrong setting up guest access. Please try again.';
+        case 'unavailable':
+        case 'deadline-exceeded':
+        case 'network-request-failed':
+          return 'Network is unstable. Check your connection and try again.';
+        case 'aborted':
+        case 'failed-precondition':
+          return 'Please try again in a moment.';
+      }
+    }
+    return 'Couldn\'t continue as guest. Please try again.';
   }
 
   Route _fadeRoute(Widget page) {

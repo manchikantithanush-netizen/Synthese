@@ -244,7 +244,13 @@ class CycleEnergyCard extends StatelessWidget {
           ),
           const SizedBox(height: 32),
 
-          LayoutBuilder(
+          // The cycle-day bar is a start→end timeline (day 1 → cycle length) and
+          // must not mirror in RTL locales — otherwise the fill (aligned via
+          // AlignmentDirectional) and the thumb/markers (placed with physical
+          // Positioned.left) end up on opposite sides. Pin it to LTR.
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: LayoutBuilder(
             builder: (context, constraints) {
               final double maxWidth = constraints.maxWidth;
               double progressRatio = (cycleDayToday / avgCycleLength);
@@ -329,6 +335,7 @@ class CycleEnergyCard extends StatelessWidget {
                 ),
               );
             },
+            ),
           ),
 
           const SizedBox(height: 20),

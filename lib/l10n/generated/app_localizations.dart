@@ -605,13 +605,13 @@ abstract class AppLocalizations {
   /// No description provided for @permActivityBody.
   ///
   /// In en, this message translates to:
-  /// **'Activity Recognition lets Synthese detect your movement and automatically count your steps throughout the day — no manual logging needed.'**
+  /// **'Synthese uses your phone\'s pedometer to count steps automatically — all day in the background and during workouts. You can change either mode anytime in Settings.'**
   String get permActivityBody;
 
   /// No description provided for @permActivityAllow.
   ///
   /// In en, this message translates to:
-  /// **'Allow Activity Recognition'**
+  /// **'Allow step tracking'**
   String get permActivityAllow;
 
   /// No description provided for @permCameraTitle.
@@ -7908,6 +7908,36 @@ abstract class AppLocalizations {
   /// **'Calories: {kcal} kcal'**
   String woCaloriesLine(int kcal);
 
+  /// No description provided for @woSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps'**
+  String get woSteps;
+
+  /// No description provided for @woStepsLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps: {count}'**
+  String woStepsLine(int count);
+
+  /// No description provided for @settingsBackgroundStepsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Background step tracking'**
+  String get settingsBackgroundStepsTitle;
+
+  /// No description provided for @settingsBackgroundStepsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Count steps automatically all day. When off, steps are only counted during workouts.'**
+  String get settingsBackgroundStepsSubtitle;
+
+  /// No description provided for @settingsBackgroundStepsDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow the Physical activity permission to track your steps.'**
+  String get settingsBackgroundStepsDenied;
+
   /// No description provided for @woMinValue.
   ///
   /// In en, this message translates to:
@@ -8597,6 +8627,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version {version}'**
   String aboutVersion(String version);
+
+  /// No description provided for @aboutCheckForUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for updates'**
+  String get aboutCheckForUpdates;
+
+  /// No description provided for @updateReadyRestart.
+  ///
+  /// In en, this message translates to:
+  /// **'Update downloaded — restart to install'**
+  String get updateReadyRestart;
+
+  /// No description provided for @updateRestartAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart'**
+  String get updateRestartAction;
+
+  /// No description provided for @updateUpToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re on the latest version'**
+  String get updateUpToDate;
+
+  /// No description provided for @updateCheckFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check for updates'**
+  String get updateCheckFailed;
 
   /// No description provided for @aboutSecDeveloper.
   ///

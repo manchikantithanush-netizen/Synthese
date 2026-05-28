@@ -38,7 +38,7 @@ export default {
       const body = await res.text();
       return new Response(body, {
         status: res.status,
-        headers: { ...cors, "Content-Type": "application/json" },
+        headers: { ...cors, "Content-Type": "application/json; charset=utf-8" },
       });
     }
 
@@ -66,7 +66,7 @@ export default {
       const resBody = await res.text();
       return new Response(resBody, {
         status: res.status,
-        headers: { ...cors, "Content-Type": "application/json" },
+        headers: { ...cors, "Content-Type": "application/json; charset=utf-8" },
       });
     }
 

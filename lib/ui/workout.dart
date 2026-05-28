@@ -15,6 +15,7 @@ import 'package:synthese/ui/components/app_toast.dart';
 import 'package:synthese/services/app_notifications_service.dart';
 import 'package:synthese/services/review_service.dart';
 import 'package:synthese/services/home_widget_service.dart';
+import 'package:synthese/services/step_tracker_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -54,6 +55,23 @@ enum WorkoutMode {
   mountainBikeRide,
   eBikeRide,
   swimming,
+}
+
+/// Step counting only makes sense for foot-based workouts; cycling/swimming
+/// would record meaningless pedometer noise.
+bool _isFootBasedMode(WorkoutMode? mode) {
+  switch (mode) {
+    case WorkoutMode.running:
+    case WorkoutMode.trailRun:
+    case WorkoutMode.outdoorWalking:
+      return true;
+    case WorkoutMode.cycling:
+    case WorkoutMode.mountainBikeRide:
+    case WorkoutMode.eBikeRide:
+    case WorkoutMode.swimming:
+    case null:
+      return false;
+  }
 }
 
 WorkoutMode? _workoutModeFromName(String? raw) {
@@ -442,7 +460,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
         throw Exception('Weather API returned ${response.statusCode}');
       }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      // Decode as UTF-8 explicitly so localized place names (e.g. "Zürich")
+      // aren't mangled by the http package's latin-1 fallback.
+      final data = jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
       final location = data['location'] as Map<String, dynamic>?;
       final current = data['current'] as Map<String, dynamic>?;
       final condition = current?['condition'] as Map<String, dynamic>?;
@@ -978,6 +998,11 @@ class _WorkoutPageState extends State<WorkoutPage> {
           _routePoints.add(_currentPosition!);
         }
       });
+      // Begin counting steps for foot-based workouts (always counts toward the
+      // day, even when background step tracking is disabled).
+      if (_isFootBasedMode(_selectedMode)) {
+        StepTracker.instance.startWorkout();
+      }
       _notifyMetricsChangedIfNeeded();
       unawaited(_updateTrackingNotification());
       unawaited(_notifyWorkoutStarted());
@@ -1145,6 +1170,10 @@ class _WorkoutPageState extends State<WorkoutPage> {
     final distanceSnapshot = _totalDistanceMeters;
     final caloriesSnapshot = _estimatedCalories;
     final modeSnapshot = _selectedMode;
+    // Finalize the workout step count (0 for non-foot-based modes / no workout).
+    final stepsSnapshot = _isFootBasedMode(modeSnapshot)
+        ? StepTracker.instance.stopWorkout()
+        : 0;
 
     _cancelCountdown();
     _positionSubscription?.cancel();
@@ -1188,6 +1217,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
           calories: caloriesSnapshot,
           activeMinutes: durationSnapshot.inMinutes,
           routePoints: routeSnapshot,
+          steps: stepsSnapshot,
         ),
       );
     }
@@ -1218,6 +1248,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     required int calories,
     required int activeMinutes,
     required List<LatLng> routePoints,
+    int steps = 0,
   }) async {
     try {
       if (mounted) {
@@ -1253,6 +1284,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
             'distanceMeters': distanceMeters,
             'calories': calories,
             'activeMinutes': activeMinutes,
+            'steps': steps,
             'routePoints': routePoints
                 .map(
                   (point) => {
@@ -1762,6 +1794,38 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                         fontFamily: 'Helvetica',
                                       ),
                                     ),
+                                    if (_isFootBasedMode(_selectedMode)) ...[
+                                      const SizedBox(height: 16),
+                                      ValueListenableBuilder<int>(
+                                        valueListenable: StepTracker
+                                            .instance.currentWorkoutSteps,
+                                        builder: (context, ws, _) => Column(
+                                          children: [
+                                            Text(
+                                              '$ws',
+                                              style: TextStyle(
+                                                color: textColor,
+                                                fontSize:
+                                                    isNarrowLayout ? 40 : 48,
+                                                fontWeight: FontWeight.w800,
+                                                fontFamily: 'Helvetica',
+                                                height: 1.0,
+                                              ),
+                                            ),
+                                            Text(
+                                              t.woSteps,
+                                              style: TextStyle(
+                                                color: textColor
+                                                    .withValues(alpha: 0.6),
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                fontFamily: 'Helvetica',
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                     const SizedBox(height: 10),
                                     Container(
                                       width: double.infinity,
@@ -2139,9 +2203,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                   ],
                                 ),
                               ),
-                              Positioned(
+                              PositionedDirectional(
                                 top: -2,
-                                right: -6,
+                                end: -6,
                                 child: IconButton(
                                   onPressed: () {
                                     _forgetWorkoutMapController();
@@ -2182,6 +2246,24 @@ class _WorkoutPageState extends State<WorkoutPage> {
                                   fontSize: 14,
                                   fontWeight: FontWeight.w800,
                                   fontFamily: 'Helvetica',
+                                ),
+                              ),
+                            if (!_showMetricsFullscreen &&
+                                _isFootBasedMode(_selectedMode))
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: ValueListenableBuilder<int>(
+                                  valueListenable: StepTracker
+                                      .instance.currentWorkoutSteps,
+                                  builder: (context, ws, _) => Text(
+                                    t.woStepsLine(ws),
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      fontFamily: 'Helvetica',
+                                    ),
+                                  ),
                                 ),
                               ),
                             if (!_showMetricsFullscreen) ...[
@@ -2749,6 +2831,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                   (data['distanceMeters'] as num?)?.toDouble() ?? 0.0;
               final calories = (data['calories'] as num?)?.toInt() ?? 0;
               final activeMinutes = (data['activeMinutes'] as num?)?.toInt() ?? 0;
+              final steps = (data['steps'] as num?)?.toInt() ?? 0;
               final routeRaw = (data['routePoints'] as List<dynamic>? ?? const []);
               final routePoints = routeRaw
                   .map((entry) => entry as Map<String, dynamic>)
@@ -2876,6 +2959,21 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                             ),
                           ],
                         ),
+                        if (steps > 0) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _HistoryMetricChip(
+                                  label: t.woSteps,
+                                  value: '$steps',
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Expanded(child: SizedBox()),
+                            ],
+                          ),
+                        ],
                         if (routePoints.length >= 2) ...[
                           const SizedBox(height: 12),
                           ClipRRect(

@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
+import 'package:synthese/ui/components/adaptive_onboarding_slide.dart';
 
 class DietOnboarding extends StatefulWidget {
   final VoidCallback onContinue;
@@ -239,11 +240,9 @@ class _DietOnboardingState extends State<DietOnboarding> {
       );
     }
 
-    return _buildScrollablePage(
+    return AdaptiveOnboardingSlide(
       key: const ValueKey('welcome'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      children: [
           SizedBox(height: isCompact ? 14 : 32),
           Text(
             t.dietOnboardingWelcomeTitle,
@@ -283,7 +282,6 @@ class _DietOnboardingState extends State<DietOnboarding> {
           const Spacer(),
           PremiumButton(text: t.commonNext, onPressed: _nextPage, color: orangeColor),
         ],
-      ),
     );
   }
 

@@ -263,10 +263,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get permActivityTitle => '记录每一步';
 
   @override
-  String get permActivityBody => '活动识别让 Synthese 能检测你的运动并自动统计全天的步数 — 无需手动记录。';
+  String get permActivityBody =>
+      'Synthese 使用您手机的计步器自动统计步数 — 全天在后台运行，锻炼期间也会记录。您可以随时在设置中更改任一模式。';
 
   @override
-  String get permActivityAllow => '允许活动识别';
+  String get permActivityAllow => '允许步数追踪';
 
   @override
   String get permCameraTitle => 'AI 卡路里分析';
@@ -4172,6 +4173,23 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get woSteps => '步数';
+
+  @override
+  String woStepsLine(int count) {
+    return '步数：$count';
+  }
+
+  @override
+  String get settingsBackgroundStepsTitle => '后台步数追踪';
+
+  @override
+  String get settingsBackgroundStepsSubtitle => '全天自动统计步数。关闭后，仅在锻炼期间统计步数。';
+
+  @override
+  String get settingsBackgroundStepsDenied => '请允许身体活动权限以追踪您的步数。';
+
+  @override
   String woMinValue(int minutes) {
     return '$minutes 分钟';
   }
@@ -4560,6 +4578,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String aboutVersion(String version) {
     return '版本 $version';
   }
+
+  @override
+  String get aboutCheckForUpdates => '检查更新';
+
+  @override
+  String get updateReadyRestart => '更新已下载 — 重启以安装';
+
+  @override
+  String get updateRestartAction => '重启';
+
+  @override
+  String get updateUpToDate => '您已是最新版本';
+
+  @override
+  String get updateCheckFailed => '无法检查更新';
 
   @override
   String get aboutSecDeveloper => '开发者';

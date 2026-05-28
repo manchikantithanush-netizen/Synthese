@@ -126,7 +126,10 @@ Be realistic with estimates. All numeric fields should be whole numbers. If you 
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        // Decode as UTF-8 explicitly: the proxy returns `application/json`
+        // without a charset, so `response.body` would fall back to latin-1
+        // and mangle accented / non-Latin dish names (e.g. "Caffè", 카레).
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
         final content = data['choices'][0]['message']['content'] as String;
 
         return _parseResponse(content);
@@ -190,7 +193,8 @@ All numeric fields should be whole numbers. If too vague or not food, respond wi
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+        // Decode as UTF-8 explicitly — see note in analyzeFood().
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
         final content = data['choices'][0]['message']['content'] as String;
         return _parseResponse(content);
       } else {
@@ -207,7 +211,7 @@ All numeric fields should be whole numbers. If too vague or not food, respond wi
     try {
       String jsonStr = content.trim();
       
-      final jsonMatch = RegExp(r'\{[^}]+\}').firstMatch(jsonStr);
+      final jsonMatch = RegExp(r'\{.*\}', dotAll: true).firstMatch(jsonStr);
       if (jsonMatch != null) {
         jsonStr = jsonMatch.group(0)!;
       }

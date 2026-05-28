@@ -83,8 +83,8 @@
   "permLocationBody": "La ubicación (aproximada y precisa) se usa solo durante sesiones de entrenamiento activas para mapear tu carrera, bicicleta o caminata. La ubicación en segundo plano mantiene tu sesión activa aunque la pantalla esté apagada — sin interrupciones a mitad del entrenamiento.",
   "permLocationAllow": "Permitir ubicación",
   "permActivityTitle": "Cuenta cada paso",
-  "permActivityBody": "El reconocimiento de actividad permite a Synthese detectar tu movimiento y contar automáticamente tus pasos durante el día — sin registro manual.",
-  "permActivityAllow": "Permitir reconocimiento de actividad",
+  "permActivityBody": "Synthese usa el podómetro de tu teléfono para contar tus pasos automáticamente — todo el día en segundo plano y durante los entrenamientos. Puedes cambiar cualquiera de los modos en cualquier momento desde Ajustes.",
+  "permActivityAllow": "Permitir seguimiento de pasos",
   "permCameraTitle": "Análisis de calorías con IA",
   "permCameraBody": "El acceso a la cámara potencia el analizador de comida con IA — toma una foto de tu plato y Synthese estima al instante calorías, proteínas, carbohidratos y grasas. La cámara solo se activa cuando decides usar esta función.",
   "permCameraAllow": "Permitir cámara",
@@ -1479,6 +1479,18 @@
   "woActive": "Activo",
   "woKcalValue": "{kcal} kcal",
   "woCaloriesLine": "Calorías: {kcal} kcal",
+  "woSteps": "Pasos",
+  "woStepsLine": "Pasos: {count}",
+  "@woStepsLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsBackgroundStepsTitle": "Seguimiento de pasos en segundo plano",
+  "settingsBackgroundStepsSubtitle": "Cuenta los pasos automáticamente durante todo el día. Cuando está desactivado, los pasos solo se cuentan durante los entrenamientos.",
+  "settingsBackgroundStepsDenied": "Permite el permiso de actividad física para registrar tus pasos.",
   "woMinValue": "{minutes} min",
   "woLoadingWeather": "Cargando el clima...",
   "woLocationUnavailable": "Ubicación no disponible",
@@ -1594,6 +1606,11 @@
   "startGuestFailed": "Error de acceso de invitado: {error}",
   "aboutTitle": "Acerca de la app",
   "aboutVersion": "Versión {version}",
+  "aboutCheckForUpdates": "Buscar actualizaciones",
+  "updateReadyRestart": "Actualización descargada: reinicia para instalar",
+  "updateRestartAction": "Reiniciar",
+  "updateUpToDate": "Estás en la última versión",
+  "updateCheckFailed": "No se pudo buscar actualizaciones",
   "aboutSecDeveloper": "DESARROLLADOR",
   "aboutDeveloper": "Desarrollador",
   "aboutSecLegal": "LEGAL",
