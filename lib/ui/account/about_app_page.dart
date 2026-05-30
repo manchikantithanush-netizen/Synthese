@@ -126,20 +126,34 @@ class AboutAppPage extends StatelessWidget {
 
                 const SizedBox(height: 12),
 
-                // Privacy Policy
+                // Privacy Policy & Terms
                 _SectionLabel(label: t.aboutSecLegal, subColor: subColor),
                 Container(
                   decoration: BoxDecoration(
                       color: cardColor, borderRadius: BorderRadius.circular(20)),
                   clipBehavior: Clip.antiAlias,
-                  child: _TappableRow(
-                    icon: Icons.shield_outlined,
-                    title: t.aboutPrivacyPolicy,
-                    trailing: Icons.open_in_new_rounded,
-                    textColor: textColor,
-                    subColor: subColor,
-                    isDark: isDark,
-                    onTap: () => _launch('https://sites.google.com/view/synthese-workout-health/home'),
+                  child: Column(
+                    children: [
+                      _TappableRow(
+                        icon: Icons.shield_outlined,
+                        title: t.aboutPrivacyPolicy,
+                        trailing: Icons.open_in_new_rounded,
+                        textColor: textColor,
+                        subColor: subColor,
+                        isDark: isDark,
+                        onTap: () => _launch('https://sites.google.com/view/synthese-workout-health/home'),
+                      ),
+                      _Divider(isDark: isDark),
+                      _TappableRow(
+                        icon: Icons.description_outlined,
+                        title: t.aboutTermsAndConditions,
+                        trailing: Icons.open_in_new_rounded,
+                        textColor: textColor,
+                        subColor: subColor,
+                        isDark: isDark,
+                        onTap: () => _launch('https://sites.google.com/view/syntheseworkouthealthtandc/home'),
+                      ),
+                    ],
                   ),
                 ),
 

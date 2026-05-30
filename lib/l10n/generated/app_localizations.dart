@@ -8682,6 +8682,12 @@ abstract class AppLocalizations {
   /// **'Privacy Policy'**
   String get aboutPrivacyPolicy;
 
+  /// No description provided for @aboutTermsAndConditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms and Conditions'**
+  String get aboutTermsAndConditions;
+
   /// No description provided for @aboutSecPermissions.
   ///
   /// In en, this message translates to:

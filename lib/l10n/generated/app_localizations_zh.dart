@@ -4607,6 +4607,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aboutPrivacyPolicy => '隐私政策';
 
   @override
+  String get aboutTermsAndConditions => '条款和条件';
+
+  @override
   String get aboutSecPermissions => '权限';
 
   @override

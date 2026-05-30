@@ -13,8 +13,27 @@
 
 class UpdateReminder {
   /// Must match pubspec.yaml version exactly, e.g. "1.0.0+3"
-  static const String currentVersion = '1.10.0+14';
-
+  static const String currentVersion = '2.0.0+15';
   /// What to show the user when they open the app on this version for the first time.
-  static const String updateMessage = """Version 1.10.14: New features, To save the time of testers we added guest account option, which with one click the tester can go to the onboarding without needing to sign in, Also in the account page we added a button to donate to the project, which will open the browser and take you to our open collective page, where you can choose to donate any amount you want, and also see how much we have raised so far, and how much we need to reach our goal.""";
+  static const String updateMessage = """Version 2.0.0 — Major Update
+
+What's New:
+- Step Tracking — New pedometer with background or workout-only tracking, calories update automatically with your steps
+- 5 Languages — App now supports Spanish, Arabic, Hindi, and Mandarin alongside English
+- Detailed Nutrition — Food detection now includes proteins, fats, carbs, fibers, and micronutrients
+- Macros Dashboard — Full macros breakdown added to the diet section, with manual entry support
+- Smart Auto-Updater — New update system that tells you how urgent each update is
+- Guest Account — Try the app instantly with a 3-day guest session, no sign-in needed
+- Smoother Onboarding — Step counting permission added to the onboarding flow
+- UI Polish — Consistent colors throughout, redesigned buttons, and a slower intro animation for easier reading
+
+Fixes & Improvements:
+- Fixed scrolling in account details
+- Fixed text overflow in heart rate and Arabic layouts
+- Fixed bottom navigation bar stability
+- Fixed ChatGPT responses in non-English languages
+- Fixed background step tracking toggle
+- Fixed screen dimming during heart rate measurement
+- Updated Privacy Policy and Terms & Conditions
+- Various stability and layout fixes across sections""";
 }

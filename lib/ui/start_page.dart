@@ -643,12 +643,26 @@ class _StartPageState extends State<StartPage> {
                               ),
                             ),
                             TextSpan(text: t.startAnd),
-                            TextSpan(
-                              text: t.startTerms,
-                              style: TextStyle(
-                                color: textColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.baseline,
+                              baseline: TextBaseline.alphabetic,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  final uri = Uri.parse('https://sites.google.com/view/syntheseworkouthealthtandc/home');
+                                  try {
+                                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                  } catch (_) {
+                                    await launchUrl(uri, mode: LaunchMode.platformDefault);
+                                  }
+                                },
+                                child: Text(
+                                  t.startTerms,
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ),
                             ),
                             const TextSpan(text: '.'),
