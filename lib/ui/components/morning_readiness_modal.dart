@@ -160,11 +160,11 @@ class _MorningReadinessModalState extends State<MorningReadinessModal>
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF5F5F5);
+    final bgColor = isDark ? const Color(0xFF111111) : const Color(0xFFF2F2F7);
     final textColor = isDark ? Colors.white : Colors.black;
     final cardColor = isDark
-        ? const Color(0xFF252528)
-        : const Color(0xFFE5E5E7);
+        ? const Color(0xFF1C1C1E)
+        : Colors.white;
 
     return FractionallySizedBox(
       heightFactor: 0.93,

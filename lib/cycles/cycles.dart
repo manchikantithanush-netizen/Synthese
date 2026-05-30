@@ -81,63 +81,6 @@ class _CyclesPageState extends State<CyclesPage>
     }
   }
 
-  // UI-Specific Dialog for Resetting Data
-  Future<void> _handleResetCycleData() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-
-    final isLightMode = Theme.of(context).brightness == Brightness.light;
-    final dialogBg = isLightMode ? Colors.white : const Color(0xFF252528);
-    final textColor = isLightMode ? Colors.black : Colors.white;
-    final mutedText = isLightMode ? Colors.black54 : Colors.white70;
-
-    final t = AppLocalizations.of(context);
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: dialogBg,
-        title: Text(t.cyclesResetTitle, style: TextStyle(color: textColor)),
-        content: Text(
-          t.cyclesResetMsg,
-          style: TextStyle(color: mutedText),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(t.commonCancel, style: TextStyle(color: textColor)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              t.cyclesWipeData,
-              style: const TextStyle(
-                color: Colors.redAccent,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: BouncingDotsLoader(color: Color(0xFFEC548A)),
-        ),
-      );
-
-      await performDataWipe();
-
-      if (mounted) {
-        Navigator.pop(context);
-        setState(() => simulatedToday = DateTime.now());
-      }
-    }
-  }
-
   // --- POLISHED DIALOG POPUP ---
   // --- POLISHED DIALOG POPUP ---
   // --- POLISHED DIALOG POPUP (Redesigned to bypass IntrinsicWidth crash) ---
@@ -169,7 +112,9 @@ class _CyclesPageState extends State<CyclesPage>
   @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    final bgColor = Theme.of(context).scaffoldBackgroundColor;
+    final bgColor = Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF111111)
+        : const Color(0xFFF2F2F7);
     final textColor =
         Theme.of(context).textTheme.bodyLarge?.color ?? Colors.white;
 
@@ -284,19 +229,20 @@ class _CyclesPageState extends State<CyclesPage>
 
     // --- THEME ADAPTATION ---
     final isLightMode = Theme.of(context).brightness == Brightness.light;
-    final bgColor = Theme.of(context).scaffoldBackgroundColor;
+    final bgColor = Theme.of(context).brightness == Brightness.dark
+        ? const Color(0xFF111111)
+        : const Color(0xFFF2F2F7);
 
     final textColor = isLightMode ? Colors.black : Colors.white;
     final mutedTextColor = isLightMode ? Colors.grey[700]! : Colors.white70;
     final subtitleColor = isLightMode ? Colors.grey[600]! : Colors.grey[400]!;
 
     final cardBgColor = isLightMode
-        ? const Color(0xFFF4F4F5)
-        : const Color(0xFF151515);
+        ? Colors.white
+        : const Color(0xFF1C1C1E);
     final insightBgColor = isLightMode
         ? const Color(0xFFEC548A).withOpacity(0.08)
         : const Color(0xFF2C1924);
-    final iconColor = isLightMode ? Colors.black87 : Colors.white;
 
     // Alert Theming
     final alertBgColor = isLightMode
@@ -318,9 +264,6 @@ class _CyclesPageState extends State<CyclesPage>
       'MMM d',
       localeTag,
     ).format(data.nextPeriodDate);
-    bool isRealToday = dateOnly(
-      simulatedToday,
-    ).isAtSameMomentAs(dateOnly(DateTime.now()));
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -404,33 +347,6 @@ class _CyclesPageState extends State<CyclesPage>
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            // Reset button
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  _handleResetCycleData();
-                                },
-                                customBorder: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: isLightMode ? Colors.black.withValues(alpha: 0.08) : Colors.white.withValues(alpha: 0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    Icons.refresh_rounded,
-                                    size: 20,
-                                    color: isLightMode ? Colors.black : Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),
@@ -443,7 +359,7 @@ class _CyclesPageState extends State<CyclesPage>
                   child: Column(
                     children: [
                       Text(
-                        isRealToday ? t.cyclesToday : t.cyclesSimulatedDate,
+                        t.cyclesToday,
                         style: TextStyle(
                           color: subtitleColor,
                           fontSize: 16,
@@ -451,60 +367,15 @@ class _CyclesPageState extends State<CyclesPage>
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              Icons.chevron_left,
-                              color: iconColor,
-                              size: 30,
-                            ),
-                            onPressed: () => setState(
-                              () => simulatedToday = simulatedToday.subtract(
-                                const Duration(days: 1),
-                              ),
-                            ),
-                          ),
-                          Text(
-                            todayFormatted,
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.chevron_right,
-                              color: iconColor,
-                              size: 30,
-                            ),
-                            onPressed: () => setState(
-                              () => simulatedToday = simulatedToday.add(
-                                const Duration(days: 1),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (!isRealToday)
-                        GestureDetector(
-                          onTap: () =>
-                              setState(() => simulatedToday = DateTime.now()),
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
-                            child: Text(
-                              t.cyclesResetToPresent,
-                              style: const TextStyle(
-                                color: pinkColor,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
+                      Text(
+                        todayFormatted,
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.5,
                         ),
+                      ),
                       const SizedBox(height: 12),
                       Text(
                         data.countdownText,

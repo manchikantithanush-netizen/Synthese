@@ -6440,4 +6440,90 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get finOnbFinishSetup => 'सेटअप पूरा करें';
+
+  @override
+  String get dashStepTrackingOn => 'फ़ोन स्टेप ट्रैकिंग चालू';
+
+  @override
+  String get dashStepTrackingOff => 'फ़ोन स्टेप ट्रैकिंग बंद';
+
+  @override
+  String get stepsDetTrackOnTitle => 'फ़ोन स्टेप ट्रैकिंग चालू है';
+
+  @override
+  String get stepsDetTrackOffTitle => 'फ़ोन स्टेप ट्रैकिंग बंद है';
+
+  @override
+  String get stepsDetTrackOnSubtitle =>
+      'आपका फ़ोन पूरे दिन बैकग्राउंड में आपके कदम गिन रहा है।';
+
+  @override
+  String get stepsDetTrackOffSubtitle =>
+      'फ़िलहाल कदम केवल वर्कआउट के दौरान ही गिने जाते हैं।';
+
+  @override
+  String get stepsDetTrackHowTitle => 'इसे चालू या बंद कैसे करें';
+
+  @override
+  String get stepsDetTrackStep1 => 'Account टैब खोलें, फिर Settings पर जाएँ।';
+
+  @override
+  String get stepsDetTrackStep2 => '“Background step tracking” ढूँढें।';
+
+  @override
+  String get stepsDetTrackStep3 => 'इसे चालू या बंद करें।';
+
+  @override
+  String get stepsDetTrackInfoTitle => 'स्टेप ट्रैकिंग कैसे काम करती है';
+
+  @override
+  String get stepsDetTrackInfoP1 =>
+      'जब बैकग्राउंड ट्रैकिंग चालू होती है, तो Synthese आपके फ़ोन के बिल्ट-इन स्टेप काउंटर से पूरे दिन के कदम जोड़ता है — तब भी जब ऐप बंद हो। हर बार ऐप खोलने पर गिनती मिलाई जाती है।';
+
+  @override
+  String get stepsDetTrackInfoP2 =>
+      'बंद होने पर, कदम केवल किसी सक्रिय वॉकिंग, रनिंग या ट्रेल-रन वर्कआउट के दौरान दर्ज होते हैं। आपके दिन भर के कदम बैकग्राउंड में अपडेट नहीं होंगे।';
+
+  @override
+  String get stepsDetTrackInfoP3 =>
+      'स्टेप डेटा आपके डिवाइस और आपके अकाउंट में रहता है। आप Settings से कभी भी बैकग्राउंड ट्रैकिंग चालू या बंद कर सकते हैं।';
+
+  @override
+  String get guestDialogTitle => 'अतिथि के रूप में जारी रखें?';
+
+  @override
+  String get guestDialogIntro =>
+      'अतिथि मोड आपको बिना खाता बनाए Synthese आज़माने देता है।';
+
+  @override
+  String get guestDialogPoint1 =>
+      'आपका डेटा केवल इसी डिवाइस पर सहेजा जाता है — यह सिंक या बैकअप नहीं होगा।';
+
+  @override
+  String get guestDialogPoint2 =>
+      'अगर आप साइन आउट करते हैं या डिवाइस बदलते हैं, तो आपका डेटा खो जाएगा।';
+
+  @override
+  String get guestDialogPoint3 =>
+      'आपका अतिथि खाता 3 दिनों के बाद अपने आप साइन आउट हो जाएगा।';
+
+  @override
+  String get guestDialogCancel => 'रद्द करें';
+
+  @override
+  String get guestDialogConfirm => 'अतिथि के रूप में जारी रखें';
+
+  @override
+  String get guestBannerLabel => 'अतिथि मोड';
+
+  @override
+  String guestBannerDaysLeft(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days दिन शेष',
+      one: '1 दिन शेष',
+    );
+    return '$_temp0';
+  }
 }

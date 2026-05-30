@@ -6465,4 +6465,93 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get finOnbFinishSetup => 'Finalizar configuración';
+
+  @override
+  String get dashStepTrackingOn => 'Seguimiento de pasos del teléfono activado';
+
+  @override
+  String get dashStepTrackingOff =>
+      'Seguimiento de pasos del teléfono desactivado';
+
+  @override
+  String get stepsDetTrackOnTitle =>
+      'El conteo de pasos del teléfono está activado';
+
+  @override
+  String get stepsDetTrackOffTitle =>
+      'El conteo de pasos del teléfono está desactivado';
+
+  @override
+  String get stepsDetTrackOnSubtitle =>
+      'Tu teléfono cuenta los pasos durante todo el día en segundo plano.';
+
+  @override
+  String get stepsDetTrackOffSubtitle =>
+      'Por ahora, los pasos solo se cuentan durante los entrenamientos.';
+
+  @override
+  String get stepsDetTrackHowTitle => 'Cómo activarlo o desactivarlo';
+
+  @override
+  String get stepsDetTrackStep1 => 'Abre la pestaña Cuenta y luego Ajustes.';
+
+  @override
+  String get stepsDetTrackStep2 => 'Busca «Conteo de pasos en segundo plano».';
+
+  @override
+  String get stepsDetTrackStep3 => 'Actívalo o desactívalo.';
+
+  @override
+  String get stepsDetTrackInfoTitle => 'Cómo funciona el conteo de pasos';
+
+  @override
+  String get stepsDetTrackInfoP1 =>
+      'Cuando el conteo en segundo plano está activado, Synthese usa el contador de pasos integrado de tu teléfono para sumar tus pasos durante todo el día, incluso con la app cerrada. El total se actualiza cada vez que abres la app.';
+
+  @override
+  String get stepsDetTrackInfoP2 =>
+      'Cuando está desactivado, los pasos solo se registran durante un entrenamiento activo de caminata, carrera o trail. Tus pasos del día no se actualizarán en segundo plano.';
+
+  @override
+  String get stepsDetTrackInfoP3 =>
+      'Los datos de pasos permanecen en tu dispositivo y en tu cuenta. Puedes activar o desactivar el conteo en segundo plano cuando quieras desde Ajustes.';
+
+  @override
+  String get guestDialogTitle => '¿Continuar como invitado?';
+
+  @override
+  String get guestDialogIntro =>
+      'El modo invitado te permite probar Synthese sin crear una cuenta.';
+
+  @override
+  String get guestDialogPoint1 =>
+      'Tus datos se guardan solo en este dispositivo: no se sincronizarán ni se respaldarán.';
+
+  @override
+  String get guestDialogPoint2 =>
+      'Si cierras sesión o cambias de dispositivo, perderás tus datos.';
+
+  @override
+  String get guestDialogPoint3 =>
+      'Tu cuenta de invitado se cerrará automáticamente después de 3 días.';
+
+  @override
+  String get guestDialogCancel => 'Cancelar';
+
+  @override
+  String get guestDialogConfirm => 'Continuar como invitado';
+
+  @override
+  String get guestBannerLabel => 'Modo invitado';
+
+  @override
+  String guestBannerDaysLeft(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'Quedan $days días',
+      one: 'Queda 1 día',
+    );
+    return '$_temp0';
+  }
 }

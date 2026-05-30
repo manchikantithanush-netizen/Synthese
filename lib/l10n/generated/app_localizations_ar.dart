@@ -6376,4 +6376,90 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get finOnbFinishSetup => 'إنهاء الإعداد';
+
+  @override
+  String get dashStepTrackingOn => 'تتبّع خطوات الهاتف مفعّل';
+
+  @override
+  String get dashStepTrackingOff => 'تتبّع خطوات الهاتف معطّل';
+
+  @override
+  String get stepsDetTrackOnTitle => 'تتبّع خطوات الهاتف مفعّل';
+
+  @override
+  String get stepsDetTrackOffTitle => 'تتبّع خطوات الهاتف معطّل';
+
+  @override
+  String get stepsDetTrackOnSubtitle =>
+      'يقوم هاتفك بحساب خطواتك طوال اليوم في الخلفية.';
+
+  @override
+  String get stepsDetTrackOffSubtitle =>
+      'يتم حساب الخطوات حاليًا أثناء التمارين فقط.';
+
+  @override
+  String get stepsDetTrackHowTitle => 'كيفية تفعيله أو تعطيله';
+
+  @override
+  String get stepsDetTrackStep1 => 'افتح علامة التبويب الحساب، ثم الإعدادات.';
+
+  @override
+  String get stepsDetTrackStep2 => 'ابحث عن «تتبّع الخطوات في الخلفية».';
+
+  @override
+  String get stepsDetTrackStep3 => 'قم بتفعيله أو تعطيله.';
+
+  @override
+  String get stepsDetTrackInfoTitle => 'كيف يعمل تتبّع الخطوات';
+
+  @override
+  String get stepsDetTrackInfoP1 =>
+      'عند تفعيل التتبّع في الخلفية، يقرأ Synthese عدّاد الخطوات المدمج في هاتفك لحساب خطواتك طوال اليوم — حتى عندما يكون التطبيق مغلقًا. تتم مطابقة العدد في كل مرة تفتح فيها التطبيق.';
+
+  @override
+  String get stepsDetTrackInfoP2 =>
+      'عند التعطيل، تُسجّل الخطوات فقط أثناء تمرين مشي أو جري أو جري في المسارات. لن يتم تحديث خطوات يومك في الخلفية.';
+
+  @override
+  String get stepsDetTrackInfoP3 =>
+      'تبقى بيانات الخطوات على جهازك وفي حسابك. يمكنك تفعيل أو تعطيل التتبّع في الخلفية في أي وقت من الإعدادات.';
+
+  @override
+  String get guestDialogTitle => 'المتابعة كضيف؟';
+
+  @override
+  String get guestDialogIntro =>
+      'يتيح لك وضع الضيف تجربة Synthese دون إنشاء حساب.';
+
+  @override
+  String get guestDialogPoint1 =>
+      'تُحفظ بياناتك على هذا الجهاز فقط — ولن تتم مزامنتها أو نسخها احتياطيًا.';
+
+  @override
+  String get guestDialogPoint2 =>
+      'إذا سجّلت الخروج أو غيّرت الجهاز، ستفقد بياناتك.';
+
+  @override
+  String get guestDialogPoint3 =>
+      'سيتم تسجيل خروج حساب الضيف تلقائيًا بعد 3 أيام.';
+
+  @override
+  String get guestDialogCancel => 'إلغاء';
+
+  @override
+  String get guestDialogConfirm => 'المتابعة كضيف';
+
+  @override
+  String get guestBannerLabel => 'وضع الضيف';
+
+  @override
+  String guestBannerDaysLeft(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'يتبقى $days أيام',
+      one: 'يتبقى يوم واحد',
+    );
+    return '$_temp0';
+  }
 }

@@ -21,8 +21,8 @@ class CycleDeviationModal extends StatelessWidget {
 
     // Matches the exact background colors of HistoryCyclesModal
     final bgColor = isDark
-        ? const Color.fromARGB(255, 26, 26, 28)
-        : const Color.fromARGB(255, 245, 245, 245);
+        ? const Color(0xFF111111)
+        : const Color(0xFFF2F2F7);
 
     final textColor = isDark ? Colors.white : Colors.black;
     final bodyTextColor = isDark ? Colors.white70 : Colors.black87;

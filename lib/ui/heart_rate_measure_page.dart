@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
@@ -86,6 +87,10 @@ class _HeartRateMeasurePageState extends State<HeartRateMeasurePage>
   // to read instead of staring at the timer.
   int _tipIndex = 0;
   Timer? _tipTimer;
+  // The tip card eases in a beat after measuring begins instead of popping in
+  // instantly — gives the eye a moment to settle on the ring first.
+  bool _tipsVisible = false;
+  Timer? _tipRevealTimer;
 
   bool get _measuring =>
       _phase == _Phase.waiting || _phase == _Phase.measuring;
@@ -136,6 +141,12 @@ class _HeartRateMeasurePageState extends State<HeartRateMeasurePage>
     if (cam == null || _measuring) return;
 
     HapticFeedback.mediumImpact();
+    // Keep the display awake for the full ~30s reading — the user holds still
+    // and doesn't touch the screen, so without this the screen would dim and
+    // sleep mid-measurement, killing the camera/torch PPG signal.
+    try {
+      await WakelockPlus.enable();
+    } catch (_) {}
     _samples.clear();
     _detrended.clear();
     _peakTimes.clear();
@@ -177,7 +188,15 @@ class _HeartRateMeasurePageState extends State<HeartRateMeasurePage>
 
   void _startTipRotation() {
     _tipTimer?.cancel();
+    _tipRevealTimer?.cancel();
+    _tipsVisible = false;
     _tipIndex = math.Random().nextInt(_kHeartTipsCount);
+    // Hold the card hidden briefly, then fade it in, so it doesn't slam onto
+    // the screen the instant a finger is detected.
+    _tipRevealTimer = Timer(const Duration(milliseconds: 1500), () {
+      if (!mounted) return;
+      setState(() => _tipsVisible = true);
+    });
     _tipTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       if (!mounted) return;
       setState(() {
@@ -189,6 +208,9 @@ class _HeartRateMeasurePageState extends State<HeartRateMeasurePage>
   void _stopTipRotation() {
     _tipTimer?.cancel();
     _tipTimer = null;
+    _tipRevealTimer?.cancel();
+    _tipRevealTimer = null;
+    _tipsVisible = false;
   }
 
   void _onTick() {
@@ -267,6 +289,10 @@ class _HeartRateMeasurePageState extends State<HeartRateMeasurePage>
   }
 
   Future<void> _stopCameraStream() async {
+    // Let the screen sleep normally again once we're no longer measuring.
+    try {
+      await WakelockPlus.disable();
+    } catch (_) {}
     final cam = _camera;
     if (cam == null) return;
     try {
@@ -628,6 +654,7 @@ class _HeartRateMeasurePageState extends State<HeartRateMeasurePage>
   void dispose() {
     _ticker?.cancel();
     _tipTimer?.cancel();
+    _tipRevealTimer?.cancel();
     _pulseCtrl.dispose();
     () async {
       await _stopCameraStream();
@@ -1007,11 +1034,16 @@ class _HeartRateMeasurePageState extends State<HeartRateMeasurePage>
                       ),
                     ],
                   )
-                : _buildTipCard(
-                    isDark: isDark,
-                    textColor: textColor,
-                    subColor: subColor,
-                    cardColor: cardColor,
+                : AnimatedOpacity(
+                    opacity: _tipsVisible ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeOut,
+                    child: _buildTipCard(
+                      isDark: isDark,
+                      textColor: textColor,
+                      subColor: subColor,
+                      cardColor: cardColor,
+                    ),
                   ),
           ),
       ],

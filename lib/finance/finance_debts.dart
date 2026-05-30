@@ -146,8 +146,8 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
       isScrollControlled: true,
       useRootNavigator: true,
       backgroundColor: Theme.of(context).brightness == Brightness.dark
-          ? const Color.fromARGB(255, 26, 26, 28)
-          : const Color.fromARGB(255, 245, 245, 245),
+          ? const Color(0xFF111111)
+          : const Color(0xFFF2F2F7),
       builder: (context) => DebtDetailModal(debt: debt),
     );
   }
@@ -191,13 +191,13 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = isDark
-        ? const Color(0xFF19191A)
-        : const Color(0xFFF0F0F6);
+        ? const Color(0xFF1C1C1E)
+        : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = isDark ? Colors.white60 : Colors.black54;
     final backgroundColor = isDark
-        ? const Color(0xFF19191A)
-        : const Color(0xFFF0F0F6);
+        ? const Color(0xFF1C1C1E)
+        : Colors.white;
 
     return Container(
       decoration: BoxDecoration(
@@ -311,7 +311,7 @@ class _DebtsListScreenState extends State<DebtsListScreen> {
           return Container(
             color: isDark
                 ? Colors.black
-                : const Color.fromARGB(255, 245, 245, 245), // Match dashboard background
+                : const Color(0xFFF2F2F7), // Match dashboard background
             width: double.infinity,
             height: double.infinity,
             child: const Center(

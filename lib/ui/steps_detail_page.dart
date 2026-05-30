@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/services/accent_color_service.dart';
+import 'package:synthese/services/step_tracker_service.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
@@ -531,6 +532,19 @@ class _StepsDetailPageState extends State<StepsDetailPage> {
 
                         const SizedBox(height: 16),
 
+                        // Phone step-tracking status card
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: _StepTrackingInfoCard(
+                            cardColor: cardColor,
+                            textColor: textColor,
+                            accentColor: accentColor,
+                            isDark: isDark,
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
                         // Distance card
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1001,6 +1015,321 @@ class _SheetRow extends StatelessWidget {
               style: font(fontSize: 16, color: subColor)),
           trailing,
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Phone step-tracking status card
+// ─────────────────────────────────────────────
+
+class _StepTrackingInfoCard extends StatelessWidget {
+  final Color cardColor;
+  final Color textColor;
+  final Color accentColor;
+  final bool isDark;
+
+  const _StepTrackingInfoCard({
+    required this.cardColor,
+    required this.textColor,
+    required this.accentColor,
+    required this.isDark,
+  });
+
+  void _showInfoModal(BuildContext context) {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      builder: (_) => _StepTrackingInfoSheet(
+        isDark: isDark,
+        textColor: textColor,
+        accentColor: accentColor,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final font = GoogleFonts.plusJakartaSans;
+    final subColor = textColor.withValues(alpha: 0.55);
+    final dimColor = textColor.withValues(alpha: 0.4);
+
+    return ValueListenableBuilder<bool>(
+      valueListenable: StepTracker.instance.backgroundEnabled,
+      builder: (context, enabled, _) {
+        final statusColor = enabled ? const Color(0xFF22C55E) : dimColor;
+        return Container(
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 18, 16, 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.directions_walk_rounded,
+                      size: 20,
+                      color: accentColor,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: statusColor,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                enabled
+                                    ? t.stepsDetTrackOnTitle
+                                    : t.stepsDetTrackOffTitle,
+                                style: font(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: textColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          enabled
+                              ? t.stepsDetTrackOnSubtitle
+                              : t.stepsDetTrackOffSubtitle,
+                          style: font(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: subColor,
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _InfoIconButton(
+                    isDark: isDark,
+                    color: dimColor,
+                    onTap: () => _showInfoModal(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                t.stepsDetTrackHowTitle.toUpperCase(),
+                style: font(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: dimColor,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              _HowToStep(number: '1', text: t.stepsDetTrackStep1, color: dimColor),
+              const SizedBox(height: 5),
+              _HowToStep(number: '2', text: t.stepsDetTrackStep2, color: dimColor),
+              const SizedBox(height: 5),
+              _HowToStep(number: '3', text: t.stepsDetTrackStep3, color: dimColor),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _HowToStep extends StatelessWidget {
+  final String number;
+  final String text;
+  final Color color;
+
+  const _HowToStep({
+    required this.number,
+    required this.text,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final font = GoogleFonts.plusJakartaSans;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$number.',
+          style: font(fontSize: 12, fontWeight: FontWeight.w700, color: color),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: font(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: color,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _InfoIconButton extends StatelessWidget {
+  final bool isDark;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _InfoIconButton({
+    required this.isDark,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 32,
+      height: 32,
+      child: Material(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.06)
+            : Colors.black.withValues(alpha: 0.04),
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: Icon(Icons.info_outline_rounded, size: 18, color: color),
+        ),
+      ),
+    );
+  }
+}
+
+class _StepTrackingInfoSheet extends StatelessWidget {
+  final bool isDark;
+  final Color textColor;
+  final Color accentColor;
+
+  const _StepTrackingInfoSheet({
+    required this.isDark,
+    required this.textColor,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final font = GoogleFonts.plusJakartaSans;
+    final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF2F2F7);
+    final subColor = textColor.withValues(alpha: 0.6);
+    final handleColor = isDark ? Colors.white24 : Colors.black26;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(38)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  margin: const EdgeInsets.only(bottom: 22),
+                  decoration: BoxDecoration(
+                    color: handleColor,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ),
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  Icons.directions_walk_rounded,
+                  size: 28,
+                  color: accentColor,
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                t.stepsDetTrackInfoTitle,
+                style: font(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _InfoParagraph(text: t.stepsDetTrackInfoP1, color: subColor),
+              const SizedBox(height: 14),
+              _InfoParagraph(text: t.stepsDetTrackInfoP2, color: subColor),
+              const SizedBox(height: 14),
+              _InfoParagraph(text: t.stepsDetTrackInfoP3, color: subColor),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoParagraph extends StatelessWidget {
+  final String text;
+  final Color color;
+
+  const _InfoParagraph({required this.text, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: GoogleFonts.plusJakartaSans(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: color,
+        height: 1.5,
       ),
     );
   }

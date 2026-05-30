@@ -391,75 +391,6 @@ class _DietPageState extends State<DietPage> {
     _checkDietSetup(); // Refresh the goal data
   }
 
-  Future<void> _handleResetDietData() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final dialogBg = isDark ? const Color(0xFF252528) : Colors.white;
-    final textColor = isDark ? Colors.white : Colors.black;
-    final mutedText = isDark ? Colors.white70 : Colors.black54;
-
-    final t = AppLocalizations.of(context);
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: dialogBg,
-        title: Text(t.dietPageResetDietDataTitle, style: TextStyle(color: textColor)),
-        content: Text(
-          t.dietPageResetDietDataMsg,
-          style: TextStyle(color: mutedText),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(t.commonCancel, style: TextStyle(color: textColor)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              t.dietPageResetData,
-              style: const TextStyle(
-                color: Colors.redAccent,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      try {
-        await FirebaseFirestore.instance.collection('users').doc(uid).set({
-          'dietSetupCompleted': false,
-          'dailyCalorieGoal': 2000,
-          'dailyWaterGoalGlasses': 8,
-        }, SetOptions(merge: true));
-
-        if (mounted) {
-          setState(() {
-            _dietSetupCompleted = false;
-            _dailyCalorieGoal = 2000;
-            _dailyWaterGoal = 8;
-            _waterGlasses = 0;
-            _activeWaterDayKey = _waterDayKey(DateTime.now());
-            _weeklyWaterIntakeLitres = List.filled(7, 0.0);
-            _foodLog.clear();
-            _frequentFoods.clear();
-            _isLoadingFrequentFoods = false;
-            _selectedImage = null;
-            _analysisResult = null;
-          });
-        }
-
-        HapticFeedback.mediumImpact();
-      } catch (e) {
-        debugPrint("Error resetting diet data: $e");
-      }
-    }
-  }
-
   Future<void> _pickImage(ImageSource source) async {
     HapticFeedback.lightImpact();
 
@@ -674,7 +605,7 @@ class _DietPageState extends State<DietPage> {
     BuildContext context,
     bool isDark,
   ) async {
-    final dialogBg = isDark ? const Color(0xFF252528) : Colors.white;
+    final dialogBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final mutedText = isDark ? Colors.white70 : Colors.black54;
 
@@ -755,7 +686,7 @@ class _DietPageState extends State<DietPage> {
     HapticFeedback.lightImpact();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
-    final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
 
     showModalBottomSheet(
       context: context,
@@ -809,7 +740,7 @@ class _DietPageState extends State<DietPage> {
     final controller = TextEditingController();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
-    final cardColor = isDark ? const Color(0xFF1F1F1F) : Colors.white;
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final hintColor = isDark ? Colors.white54 : Colors.black45;
 
     showDialog<void>(
@@ -863,7 +794,7 @@ class _DietPageState extends State<DietPage> {
   }
 
   Widget _buildManualEntryButton(bool isDark, Color textColor) {
-    const bg = Color(0xFFE0E0E5); // slightly discolored white
+    const bg = Colors.white;
     return SizedBox(
       height: 48,
       width: double.infinity,
@@ -896,7 +827,7 @@ class _DietPageState extends State<DietPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = textColor.withOpacity(0.5);
-    final sheetColor = isDark ? const Color(0xFF1F1F1F) : Colors.white;
+    final sheetColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final fieldFill = isDark
         ? Colors.white.withOpacity(0.06)
         : Colors.black.withOpacity(0.04);
@@ -1459,7 +1390,7 @@ class _DietPageState extends State<DietPage> {
     required Stream<Map<String, int>> goalsByDateStream,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? const Color(0xFF151515) : Colors.grey.shade100;
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final now = DateTime.now();
     final isNarrow = MediaQuery.of(context).size.width < 380;
@@ -1704,10 +1635,10 @@ class _DietPageState extends State<DietPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final safePadding = mediaQuery.padding;
 
-    final bgColor = isDark ? const Color(0xFF111111) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF111111) : const Color(0xFFF2F2F7);
     final textColor = isDark ? Colors.white : Colors.black;
     final subTextColor = textColor.withOpacity(0.5);
-    final cardColor = isDark ? const Color(0xFF151515) : Colors.grey.shade100;
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final isNarrow = mediaQuery.size.width < 380;
     final t = AppLocalizations.of(context);
 
@@ -1727,33 +1658,17 @@ class _DietPageState extends State<DietPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with reset button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      t.dietPageTitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: isNarrow ? 28 : 32,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -1,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  CNButton.icon(
-                    icon: const CNSymbol('arrow.clockwise', size: 22),
-                    style: CNButtonStyle.glass,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      _handleResetDietData();
-                    },
-                  ),
-                ],
+              // Header
+              Text(
+                t.dietPageTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: isNarrow ? 28 : 32,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -1,
+                ),
               ),
               const SizedBox(height: 4),
               Text(

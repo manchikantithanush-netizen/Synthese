@@ -123,8 +123,8 @@ class _MetricAddDataSheetState extends State<MetricAddDataSheet> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     final isDark = widget.isDark;
-    final bgColor = isDark ? const Color(0xFF1A1A1C) : const Color(0xFFF2F2F7);
-    final cardColor = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF111111) : const Color(0xFFF2F2F7);
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = widget.textColor;
     final subColor = isDark ? Colors.white38 : Colors.black38;
     final pillBg = isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA);

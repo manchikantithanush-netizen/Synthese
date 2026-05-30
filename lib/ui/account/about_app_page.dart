@@ -139,7 +139,7 @@ class AboutAppPage extends StatelessWidget {
                     textColor: textColor,
                     subColor: subColor,
                     isDark: isDark,
-                    onTap: () => _launch('https://sites.google.com/view/syntheseapp/home'),
+                    onTap: () => _launch('https://sites.google.com/view/synthese-workout-health/home'),
                   ),
                 ),
 

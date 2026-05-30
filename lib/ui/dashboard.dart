@@ -29,6 +29,7 @@ import 'package:synthese/services/update_reminder_service.dart';
 import 'package:synthese/services/app_update_service.dart';
 import 'package:synthese/services/review_service.dart';
 import 'package:synthese/services/step_tracker_service.dart';
+import 'package:synthese/services/guest_session_service.dart';
 import 'package:synthese/ui/steps_detail_page.dart';
 import 'package:synthese/ui/heart_rate_detail_page.dart';
 import 'package:synthese/ui/calories_detail_page.dart';
@@ -66,6 +67,10 @@ class _DashboardPageState extends State<DashboardPage>
 
   // Cached profile photo URL for header avatar
   String? _profilePhotoUrl;
+
+  // Guest (anonymous) session countdown shown at the top of the dashboard.
+  bool _isGuest = false;
+  int? _guestDaysLeft;
 
   // Current values - completely zeroed out for new logins
   int _activeCalories = 0;
@@ -159,6 +164,7 @@ class _DashboardPageState extends State<DashboardPage>
     _fetchUserProfile();
     _fetchUserGoals();
     _fetchMindfulnessOnboarding();
+    unawaited(_initGuestSession());
     unawaited(_fetchEatenCalories());
     _listenEatenCalories();
     unawaited(
@@ -199,11 +205,83 @@ class _DashboardPageState extends State<DashboardPage>
     _schedulePersistDashboardMetrics();
   }
 
+  /// Set up the guest countdown for anonymous users (and back-fill a session
+  /// anchor for guests created before this feature existed).
+  Future<void> _initGuestSession() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || !user.isAnonymous) return;
+    await GuestSessionService.instance.ensureSession();
+    await _refreshGuestCountdown();
+  }
+
+  /// Refresh the guest countdown banner, and sign the guest out once the
+  /// 3-day session has elapsed.
+  Future<void> _refreshGuestCountdown() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null || !user.isAnonymous) return;
+    final left = await GuestSessionService.instance.timeLeft();
+    if (left == null) return;
+    if (left.isNegative || left == Duration.zero) {
+      await GuestSessionService.instance.clear();
+      await FirebaseAuth.instance.signOut();
+      return; // authStateChanges() routes back to the StartPage.
+    }
+    if (!mounted) return;
+    setState(() {
+      _isGuest = true;
+      _guestDaysLeft = (left.inMinutes / (60 * 24)).ceil().clamp(1, 9999);
+    });
+  }
+
+  Widget _buildGuestBanner(AppLocalizations t, Color textColor, bool isDark) {
+    const amber = Color(0xFFF59E0B);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      decoration: BoxDecoration(
+        color: amber.withValues(alpha: isDark ? 0.16 : 0.12),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: amber.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.hourglass_bottom_rounded, size: 18, color: amber),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '${t.guestBannerLabel} · ',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  TextSpan(
+                    text: t.guestBannerDaysLeft(_guestDaysLeft ?? 0),
+                    style: TextStyle(
+                      color: textColor.withValues(alpha: 0.7),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       // Catch the step count up after the app was backgrounded/closed.
       StepTracker.instance.reconcile();
+      unawaited(_refreshGuestCountdown());
       AppUpdateService.instance.resumeIfNeeded(context);
       unawaited(NotificationRulesEngine.evaluateGlobal());
     } else if (state == AppLifecycleState.inactive ||
@@ -925,6 +1003,11 @@ class _DashboardPageState extends State<DashboardPage>
             ),
             const SizedBox(height: 40),
 
+            if (_isGuest && _guestDaysLeft != null) ...[
+              _buildGuestBanner(t, textColor, isDark),
+              const SizedBox(height: 40),
+            ],
+
             // --- ANIMATED PROGRESS RING ---
             Center(
               child: TweenAnimationBuilder<double>(
@@ -992,8 +1075,11 @@ class _DashboardPageState extends State<DashboardPage>
 
             // --- STEPS ---
             SizedBox(
-              height: 230,
-              child: MetricCard(
+              height: 252,
+              child: ValueListenableBuilder<bool>(
+                valueListenable: StepTracker.instance.backgroundEnabled,
+                builder: (context, stepsBgEnabled, _) => MetricCard(
+                stepsTrackingEnabled: stepsBgEnabled,
                 cardColor: cardColor,
                 textColor: textColor,
                 subTextColor: subTextColor,
@@ -1033,6 +1119,7 @@ class _DashboardPageState extends State<DashboardPage>
                     ),
                   );
                 },
+                ),
               ),
             ),
 
@@ -1358,6 +1445,9 @@ class MetricCard extends StatelessWidget {
   final double? stepsProgress;
   // Optional label rendered above the steps pill bar (e.g. "Goal 10,000")
   final String? stepsGoalLabel;
+  // Optional phone step-tracking status badge. Null hides it; true/false show
+  // an "on"/"off" label reflecting the background step-tracking setting.
+  final bool? stepsTrackingEnabled;
   final VoidCallback? onTap;
 
   const MetricCard({
@@ -1376,6 +1466,7 @@ class MetricCard extends StatelessWidget {
     this.compact = false,
     this.stepsProgress,
     this.stepsGoalLabel,
+    this.stepsTrackingEnabled,
     this.onTap,
   });
 
@@ -1446,6 +1537,35 @@ class MetricCard extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
+            if (stepsTrackingEnabled != null) ...[
+              const SizedBox(height: 6),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: stepsTrackingEnabled!
+                          ? const Color(0xFF22C55E)
+                          : subTextColor,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    stepsTrackingEnabled!
+                        ? t.dashStepTrackingOn
+                        : t.dashStepTrackingOff,
+                    style: TextStyle(
+                      color: subTextColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 8),
 
             if (valueInlineUnit)

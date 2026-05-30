@@ -6419,4 +6419,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get finOnbFinishSetup => 'Finish Setup';
+
+  @override
+  String get dashStepTrackingOn => 'Phone step tracking on';
+
+  @override
+  String get dashStepTrackingOff => 'Phone step tracking off';
+
+  @override
+  String get stepsDetTrackOnTitle => 'Phone step tracking is on';
+
+  @override
+  String get stepsDetTrackOffTitle => 'Phone step tracking is off';
+
+  @override
+  String get stepsDetTrackOnSubtitle =>
+      'Your phone is counting steps all day in the background.';
+
+  @override
+  String get stepsDetTrackOffSubtitle =>
+      'Steps are only counted during workouts right now.';
+
+  @override
+  String get stepsDetTrackHowTitle => 'How to turn it on or off';
+
+  @override
+  String get stepsDetTrackStep1 => 'Open the Account tab, then Settings.';
+
+  @override
+  String get stepsDetTrackStep2 => 'Find “Background step tracking”.';
+
+  @override
+  String get stepsDetTrackStep3 => 'Toggle it on or off.';
+
+  @override
+  String get stepsDetTrackInfoTitle => 'How step tracking works';
+
+  @override
+  String get stepsDetTrackInfoP1 =>
+      'When background tracking is on, Synthese reads your phone’s built-in step counter to total your steps all day — even while the app is closed. The count is reconciled each time you open the app.';
+
+  @override
+  String get stepsDetTrackInfoP2 =>
+      'When it’s off, steps are only recorded during an active walking, running, or trail-run workout. Your all-day steps won’t update in the background.';
+
+  @override
+  String get stepsDetTrackInfoP3 =>
+      'Step data stays on your device and in your account. You can switch background tracking on or off anytime from Settings.';
+
+  @override
+  String get guestDialogTitle => 'Continue as guest?';
+
+  @override
+  String get guestDialogIntro =>
+      'Guest mode lets you try Synthese without creating an account.';
+
+  @override
+  String get guestDialogPoint1 =>
+      'Your data is saved only on this device — it won’t be synced or backed up.';
+
+  @override
+  String get guestDialogPoint2 =>
+      'If you sign out or switch devices, your data will be lost.';
+
+  @override
+  String get guestDialogPoint3 =>
+      'Your guest account is automatically signed out after 3 days.';
+
+  @override
+  String get guestDialogCancel => 'Cancel';
+
+  @override
+  String get guestDialogConfirm => 'Continue as guest';
+
+  @override
+  String get guestBannerLabel => 'Guest mode';
+
+  @override
+  String guestBannerDaysLeft(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days left',
+      one: '1 day left',
+    );
+    return '$_temp0';
+  }
 }

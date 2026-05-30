@@ -11483,6 +11483,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Finish Setup'**
   String get finOnbFinishSetup;
+
+  /// No description provided for @dashStepTrackingOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone step tracking on'**
+  String get dashStepTrackingOn;
+
+  /// No description provided for @dashStepTrackingOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone step tracking off'**
+  String get dashStepTrackingOff;
+
+  /// No description provided for @stepsDetTrackOnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone step tracking is on'**
+  String get stepsDetTrackOnTitle;
+
+  /// No description provided for @stepsDetTrackOffTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone step tracking is off'**
+  String get stepsDetTrackOffTitle;
+
+  /// No description provided for @stepsDetTrackOnSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone is counting steps all day in the background.'**
+  String get stepsDetTrackOnSubtitle;
+
+  /// No description provided for @stepsDetTrackOffSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Steps are only counted during workouts right now.'**
+  String get stepsDetTrackOffSubtitle;
+
+  /// No description provided for @stepsDetTrackHowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How to turn it on or off'**
+  String get stepsDetTrackHowTitle;
+
+  /// No description provided for @stepsDetTrackStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the Account tab, then Settings.'**
+  String get stepsDetTrackStep1;
+
+  /// No description provided for @stepsDetTrackStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'Find “Background step tracking”.'**
+  String get stepsDetTrackStep2;
+
+  /// No description provided for @stepsDetTrackStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle it on or off.'**
+  String get stepsDetTrackStep3;
+
+  /// No description provided for @stepsDetTrackInfoTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How step tracking works'**
+  String get stepsDetTrackInfoTitle;
+
+  /// No description provided for @stepsDetTrackInfoP1.
+  ///
+  /// In en, this message translates to:
+  /// **'When background tracking is on, Synthese reads your phone’s built-in step counter to total your steps all day — even while the app is closed. The count is reconciled each time you open the app.'**
+  String get stepsDetTrackInfoP1;
+
+  /// No description provided for @stepsDetTrackInfoP2.
+  ///
+  /// In en, this message translates to:
+  /// **'When it’s off, steps are only recorded during an active walking, running, or trail-run workout. Your all-day steps won’t update in the background.'**
+  String get stepsDetTrackInfoP2;
+
+  /// No description provided for @stepsDetTrackInfoP3.
+  ///
+  /// In en, this message translates to:
+  /// **'Step data stays on your device and in your account. You can switch background tracking on or off anytime from Settings.'**
+  String get stepsDetTrackInfoP3;
+
+  /// No description provided for @guestDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue as guest?'**
+  String get guestDialogTitle;
+
+  /// No description provided for @guestDialogIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest mode lets you try Synthese without creating an account.'**
+  String get guestDialogIntro;
+
+  /// No description provided for @guestDialogPoint1.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is saved only on this device — it won’t be synced or backed up.'**
+  String get guestDialogPoint1;
+
+  /// No description provided for @guestDialogPoint2.
+  ///
+  /// In en, this message translates to:
+  /// **'If you sign out or switch devices, your data will be lost.'**
+  String get guestDialogPoint2;
+
+  /// No description provided for @guestDialogPoint3.
+  ///
+  /// In en, this message translates to:
+  /// **'Your guest account is automatically signed out after 3 days.'**
+  String get guestDialogPoint3;
+
+  /// No description provided for @guestDialogCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get guestDialogCancel;
+
+  /// No description provided for @guestDialogConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue as guest'**
+  String get guestDialogConfirm;
+
+  /// No description provided for @guestBannerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest mode'**
+  String get guestBannerLabel;
+
+  /// No description provided for @guestBannerDaysLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =1{1 day left} other{{days} days left}}'**
+  String guestBannerDaysLeft(int days);
 }
 
 class _AppLocalizationsDelegate

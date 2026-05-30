@@ -1095,7 +1095,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF252528) : const Color(0xFFEDEDEF);
+    final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final mutedColor = textColor.withValues(alpha: 0.65);
     final t = AppLocalizations.of(context);
@@ -1513,7 +1513,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     final clampedTextScale = mediaQuery.textScaler.scale(1.0).clamp(0.9, 1.0);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
-    final cardColor = isDark ? const Color(0xFF1F1F1F) : Colors.white;
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final safePadding = mediaQuery.padding;
     final isNarrowLayout = mediaQuery.size.width < 390;
     final displayedDistance =
@@ -2675,7 +2675,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
 
   Future<bool> _showDeleteConfirmation(BuildContext context) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final dialogBg = isDark ? const Color(0xFF252528) : Colors.white;
+    final dialogBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final mutedText = isDark ? Colors.white70 : Colors.black54;
     final t = AppLocalizations.of(context);
@@ -2726,8 +2726,8 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
     final t = AppLocalizations.of(context);
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF111111) : Colors.white;    final textColor = isDark ? Colors.white : Colors.black;
-    final cardColor = isDark ? const Color(0xFF1F1F1F) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF111111) : const Color(0xFFF2F2F7);    final textColor = isDark ? Colors.white : Colors.black;
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     // Match finance page search field in light mode (finance.dart cardColor).
     final searchBarFillColor =
         isDark ? cardColor : const Color(0xFFE5E5E7);

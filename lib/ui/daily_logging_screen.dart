@@ -544,7 +544,7 @@ class _DailyLoggingScreenState extends State<DailyLoggingScreen>
     final dashWidth = isNarrow ? 14.0 : 24.0;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final t = AppLocalizations.of(context);
-    final screenBgColor = isDark ? Colors.black : const Color(0xFFF2F2F7);
+    final screenBgColor = isDark ? const Color(0xFF111111) : const Color(0xFFF2F2F7);
     final textColor = isDark ? Colors.white : Colors.black;
 
     return Scaffold(

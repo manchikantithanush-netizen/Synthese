@@ -249,8 +249,8 @@ class _MoodTrackerModalState extends State<MoodTrackerModal>
 
   Color _getModalBackground(bool isDark) {
     final baseColor = isDark
-        ? const Color(0xFF252528)
-        : const Color(0xFFE5E5E7);
+        ? const Color(0xFF111111)
+        : const Color(0xFFF2F2F7);
     final tint = _getInterpolatedColor();
     return Color.lerp(baseColor, tint, 0.08) ?? baseColor;
   }

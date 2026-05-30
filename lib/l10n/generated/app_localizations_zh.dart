@@ -6046,4 +6046,81 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get finOnbFinishSetup => '完成设置';
+
+  @override
+  String get dashStepTrackingOn => '手机计步已开启';
+
+  @override
+  String get dashStepTrackingOff => '手机计步已关闭';
+
+  @override
+  String get stepsDetTrackOnTitle => '手机计步已开启';
+
+  @override
+  String get stepsDetTrackOffTitle => '手机计步已关闭';
+
+  @override
+  String get stepsDetTrackOnSubtitle => '你的手机正在后台全天统计步数。';
+
+  @override
+  String get stepsDetTrackOffSubtitle => '目前仅在运动期间统计步数。';
+
+  @override
+  String get stepsDetTrackHowTitle => '如何开启或关闭';
+
+  @override
+  String get stepsDetTrackStep1 => '打开“账户”标签，然后进入“设置”。';
+
+  @override
+  String get stepsDetTrackStep2 => '找到“后台计步”。';
+
+  @override
+  String get stepsDetTrackStep3 => '将其开启或关闭。';
+
+  @override
+  String get stepsDetTrackInfoTitle => '计步功能的工作原理';
+
+  @override
+  String get stepsDetTrackInfoP1 =>
+      '开启后台计步后，Synthese 会读取手机内置的计步器，全天统计你的步数——即使应用已关闭。每次打开应用时都会重新核对步数。';
+
+  @override
+  String get stepsDetTrackInfoP2 => '关闭时，仅在进行步行、跑步或越野跑等运动时记录步数。全天步数不会在后台更新。';
+
+  @override
+  String get stepsDetTrackInfoP3 => '步数数据仅保存在你的设备和账户中。你可以随时在“设置”中开启或关闭后台计步。';
+
+  @override
+  String get guestDialogTitle => '以访客身份继续？';
+
+  @override
+  String get guestDialogIntro => '访客模式可让你在不创建账户的情况下试用 Synthese。';
+
+  @override
+  String get guestDialogPoint1 => '你的数据仅保存在此设备上，不会同步或备份。';
+
+  @override
+  String get guestDialogPoint2 => '如果你退出登录或更换设备，数据将会丢失。';
+
+  @override
+  String get guestDialogPoint3 => '你的访客账户将在 3 天后自动退出登录。';
+
+  @override
+  String get guestDialogCancel => '取消';
+
+  @override
+  String get guestDialogConfirm => '以访客身份继续';
+
+  @override
+  String get guestBannerLabel => '访客模式';
+
+  @override
+  String guestBannerDaysLeft(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '剩余 $days 天',
+    );
+    return '$_temp0';
+  }
 }

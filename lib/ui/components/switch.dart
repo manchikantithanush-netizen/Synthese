@@ -93,8 +93,17 @@ class _UniversalSwitchState extends State<UniversalSwitch>
     final switchWidth = widget.width ?? 48.0;
     final switchHeight = widget.height ?? 28.0;
     final activeColor = widget.activeColor ?? const Color(0xFF34C759); // Green color
-    final inactiveColor = widget.inactiveColor ?? 
-        (isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade300);
+    // Off-state track: a clearly visible grey pill. The previous dark value
+    // blended into dark cards, leaving only the white thumb showing, so the
+    // control didn't read as a switch. Lift the dark track and add a hairline
+    // border so the pill shape is always distinct from the surface behind it.
+    final inactiveColor = widget.inactiveColor ??
+        (isDark ? const Color(0xFF48484A) : const Color(0xFFD1D1D6));
+    final borderColor = widget.value
+        ? Colors.transparent
+        : (isDark
+            ? Colors.white.withOpacity(0.16)
+            : Colors.black.withOpacity(0.10));
 
     return GestureDetector(
       onTap: _handleTap,
@@ -107,6 +116,11 @@ class _UniversalSwitchState extends State<UniversalSwitch>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16), // More oval shape
               color: widget.value ? activeColor : inactiveColor,
+            ),
+            // Border drawn on top so it doesn't inset the thumb's coordinates.
+            foregroundDecoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: borderColor, width: 1),
             ),
             child: Stack(
               children: [

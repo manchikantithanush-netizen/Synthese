@@ -4,8 +4,8 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:synthese/services/guest_session_service.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/ui/auth/login_page.dart';
@@ -234,6 +234,103 @@ class _StartPageState extends State<StartPage> {
     }
   }
 
+  /// Explain the guest-mode limitations, then continue only if confirmed.
+  Future<void> _showGuestDialog() async {
+    if (_isGuestLoading) return;
+    HapticFeedback.lightImpact();
+    final t = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = Theme.of(context).colorScheme.onSurface;
+    final dialogBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final subColor = textColor.withOpacity(0.65);
+
+    Widget point(IconData icon, String text) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, size: 18, color: textColor.withOpacity(0.55)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  text,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13.5,
+                    height: 1.4,
+                    color: subColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: dialogBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+        contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+        title: Text(
+          t.guestDialogTitle,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: textColor,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              t.guestDialogIntro,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 14,
+                height: 1.45,
+                color: subColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 18),
+            point(Icons.cloud_off_rounded, t.guestDialogPoint1),
+            point(Icons.devices_rounded, t.guestDialogPoint2),
+            point(Icons.timer_outlined, t.guestDialogPoint3),
+          ],
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              t.guestDialogCancel,
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w600,
+                color: textColor.withOpacity(0.6),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              t.guestDialogConfirm,
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w800,
+                color: textColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _continueAsGuest();
+    }
+  }
+
   Future<void> _continueAsGuest() async {
     if (_isGuestLoading) return;
     setState(() => _isGuestLoading = true);
@@ -276,6 +373,9 @@ class _StartPageState extends State<StartPage> {
           'createdAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
       });
+
+      // Anchor the local 3-day guest session timer.
+      await GuestSessionService.instance.startSession();
 
       if (!mounted) return;
       Navigator.pushReplacement(context, _fadeRoute(const OnboardingIntro()));
@@ -438,63 +538,72 @@ class _StartPageState extends State<StartPage> {
                         },
                       ),
                       const SizedBox(height: 14),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(50),
-                        child: SizedBox(
-                          height: 56,
-                          width: double.infinity,
-                          child: Theme(
-                            data: Theme.of(context).copyWith(
-                              colorScheme: Theme.of(
-                                context,
-                              ).colorScheme.copyWith(primary: Colors.green),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.push(
+                              context,
+                              _fadeRoute(const LoginPage()),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: textColor,
+                            backgroundColor: isDark
+                                ? Colors.white.withOpacity(0.04)
+                                : Colors.black.withOpacity(0.03),
+                            side: BorderSide(
+                              color: textColor.withOpacity(isDark ? 0.30 : 0.22),
+                              width: 1.5,
                             ),
-                            child: CNButton(
-                              label: t.startSignIn,
-                              style: CNButtonStyle.bordered,
-                              onPressed: () {
-                                HapticFeedback.lightImpact();
-                                Navigator.push(
-                                  context,
-                                  _fadeRoute(const LoginPage()),
-                                );
-                              },
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
+                          child: Text(
+                            t.startSignIn,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              height: 1.1,
+                              color: textColor,
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 14),
-                      GestureDetector(
-                        onTap: _isGuestLoading ? null : _continueAsGuest,
-                        behavior: HitTestBehavior.opaque,
-                        child: Container(
-                          height: 44,
-                          alignment: Alignment.center,
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: TextButton(
+                          onPressed:
+                              _isGuestLoading ? null : _showGuestDialog,
+                          style: TextButton.styleFrom(
+                            foregroundColor: textColor,
+                            backgroundColor: isDark
+                                ? Colors.white.withOpacity(0.06)
+                                : Colors.black.withOpacity(0.04),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
                           child: _isGuestLoading
-                              ? const BouncingDotsLoader()
+                              // Nudge down to offset the dots' upward bounce so
+                              // they read as vertically centered in the button.
+                              ? Transform.translate(
+                                  offset: const Offset(0, 6),
+                                  child: const BouncingDotsLoader(),
+                                )
                               : Text(
                                   t.startGuest,
-                                  style: TextStyle(
-                                    color: textColor.withOpacity(0.75),
-                                    fontSize: 14,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    color: textColor.withOpacity(0.8),
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w600,
-                                    decoration: TextDecoration.underline,
-                                    decorationColor:
-                                        textColor.withOpacity(0.45),
                                   ),
                                 ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          t.startTestingNote,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: textColor.withOpacity(0.45),
-                            fontSize: 11,
-                            fontStyle: FontStyle.italic,
-                          ),
                         ),
                       ),
                       const SizedBox(height: 18),
@@ -516,7 +625,7 @@ class _StartPageState extends State<StartPage> {
                               baseline: TextBaseline.alphabetic,
                               child: GestureDetector(
                                 onTap: () async {
-                                  final uri = Uri.parse('https://sites.google.com/view/syntheseapp/home');
+                                  final uri = Uri.parse('https://sites.google.com/view/synthese-workout-health/home');
                                   try {
                                     await launchUrl(uri, mode: LaunchMode.externalApplication);
                                   } catch (_) {

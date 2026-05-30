@@ -53,37 +53,6 @@ mixin CyclesMechanism<T extends StatefulWidget> on State<T> {
 
   DateTime dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
 
-  // --- FIRESTORE BATCH OVERFLOW & BUG 4 FIX ---
-  Future<void> performDataWipe() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-
-    final userRef = FirebaseFirestore.instance.collection('users').doc(uid);
-
-    final logsSnap = await userRef.collection('daily_logs').get();
-    final cyclesSnap = await userRef.collection('cycles').get();
-
-    final allDocs = [...logsSnap.docs, ...cyclesSnap.docs];
-
-    const int chunkSize = 400;
-    for (int i = 0; i < allDocs.length; i += chunkSize) {
-      final batch = FirebaseFirestore.instance.batch();
-      final chunk = allDocs.sublist(i, min(i + chunkSize, allDocs.length));
-      for (var doc in chunk) {
-        batch.delete(doc.reference);
-      }
-      await batch.commit();
-    }
-
-    await userRef.update({
-      'cyclesSetupCompleted': false,
-      'loggedCyclesCount': 0, 
-      'pastCycles': FieldValue.delete(), 
-      'dismissedAlerts': FieldValue.delete(), 
-      'lastPeriodStart': FieldValue.delete(),
-    });
-  }
-
   double calculateStdDev(List<int> values) {
     if (values.length < 2) return 0.0;
     double mean = values.reduce((a, b) => a + b) / values.length;

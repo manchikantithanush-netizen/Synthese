@@ -476,13 +476,13 @@ class _DebtDetailModalState extends State<DebtDetailModal>
       isScrollControlled: true,
       builder: (context) {
         final bgColor = isDark
-            ? const Color(0xFF19191A)
-            : const Color(0xFFF0F0F6);
+            ? const Color(0xFF1C1C1E)
+            : Colors.white;
         final textColor = isDark ? Colors.white : Colors.black;
         final subtextColor = isDark ? Colors.white54 : Colors.black54;
         final cardColor = isDark
-            ? const Color(0xFF19191A)
-            : const Color(0xFFF0F0F6);
+            ? const Color(0xFF1C1C1E)
+            : Colors.white;
 
         return Padding(
           padding: EdgeInsets.only(
@@ -709,9 +709,9 @@ class _DebtDetailModalState extends State<DebtDetailModal>
     final category = _getCategoryInfo(_debt.category);
 
     final bgColor = isDark
-        ? const Color.fromARGB(255, 26, 26, 28)
-        : const Color.fromARGB(255, 245, 245, 245);
-    final cardColor = isDark ? const Color(0xFF151515) : Colors.white;
+        ? const Color(0xFF111111)
+        : const Color(0xFFF2F2F7);
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtextColor = isDark ? Colors.white54 : Colors.black54;
 
@@ -1284,8 +1284,8 @@ class _DebtDetailModalState extends State<DebtDetailModal>
       child: Container(
         decoration: BoxDecoration(
           color: isDark
-              ? const Color.fromARGB(255, 26, 26, 28)
-              : const Color.fromARGB(255, 245, 245, 245),
+              ? const Color(0xFF111111)
+              : const Color(0xFFF2F2F7),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(38)),
         ),
         child: Center(

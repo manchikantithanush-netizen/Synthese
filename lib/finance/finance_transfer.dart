@@ -231,10 +231,10 @@ class _TransferModalState extends State<TransferModal> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final bgColor = isDark
-        ? const Color.fromARGB(255, 26, 26, 28)
-        : const Color.fromARGB(255, 245, 245, 245);
+        ? const Color(0xFF111111)
+        : const Color(0xFFF2F2F7);
 
-    final cardColor = isDark ? const Color(0xFF151515) : Colors.white;
+    final cardColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final subtextColor = isDark ? Colors.white54 : Colors.black54;
 
@@ -529,7 +529,7 @@ class _TransferModalState extends State<TransferModal> {
   }) {
     HapticFeedback.lightImpact();
 
-    final bgColor = isDark ? const Color(0xFF151515) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
 
     showModalBottomSheet(

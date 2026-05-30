@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'package:intl/intl.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/mood_tracker_modal.dart';
@@ -14,9 +13,6 @@ import '../ui/components/morning_readiness_modal.dart';
 import 'package:synthese/mindfulness/questionnaire_screen.dart';
 import 'package:synthese/mindfulness/questionnaire_results_screen.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
-import 'package:synthese/ui/components/universalbackbutton.dart';
-import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
-import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
 
 class MindfulnessPage extends StatefulWidget {
@@ -192,105 +188,13 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
     }
   }
 
-  Future<void> _handleResetMentalHealthData() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-
-    final isLightMode = Theme.of(context).brightness == Brightness.light;
-    final dialogBg = isLightMode ? Colors.white : const Color(0xFF151515);
-    final textColor = isLightMode ? Colors.black : Colors.white;
-    final mutedText = isLightMode ? Colors.black54 : Colors.white70;
-
-    final t = AppLocalizations.of(context);
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: dialogBg,
-        title: Text(
-          t.mindfulnessResetTitle,
-          style: TextStyle(color: textColor),
-        ),
-        content: Text(
-          t.mindfulnessResetMsg,
-          style: TextStyle(color: mutedText),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(t.commonCancel, style: TextStyle(color: textColor)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              t.mindfulnessDeleteAll,
-              style: const TextStyle(
-                color: Colors.redAccent,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: BouncingDotsLoader(color: Color(0xFF33BEBE)),
-        ),
-      );
-
-      try {
-        final userRef = FirebaseFirestore.instance.collection('users').doc(uid);
-        final logsSnap = await userRef.collection('mood_logs').get();
-
-        // Delete in batches of 400
-        const int chunkSize = 400;
-        for (int i = 0; i < logsSnap.docs.length; i += chunkSize) {
-          final batch = FirebaseFirestore.instance.batch();
-          final chunk = logsSnap.docs.sublist(
-            i,
-            (i + chunkSize < logsSnap.docs.length)
-                ? i + chunkSize
-                : logsSnap.docs.length,
-          );
-          for (var doc in chunk) {
-            batch.delete(doc.reference);
-          }
-          await batch.commit();
-        }
-      } catch (e) {
-        debugPrint('Error deleting mental health data: $e');
-      }
-
-      if (mounted) {
-        Navigator.pop(context); // Close loading dialog
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context).mindfulnessDeletedSnackbar),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-
-        setState(() {
-          _moodValue = null;
-          _moodLabel = null;
-          _cachedMoodColor = null;
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final clampedTextScale = mediaQuery.textScaler.scale(1.0).clamp(0.9, 1.0);
     final uid = FirebaseAuth.instance.currentUser?.uid;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF111111) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF111111) : const Color(0xFFF2F2F7);
     final safePadding = MediaQuery.of(context).padding;
     final isNarrow = MediaQuery.of(context).size.width < 380;
 
@@ -311,38 +215,22 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with title and reset button
+              // Header
               Builder(
                 builder: (context) {
                   final isLightMode =
                       Theme.of(context).brightness == Brightness.light;
                   final textColor = isLightMode ? Colors.black : Colors.white;
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          AppLocalizations.of(context).mindfulnessPageTitle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: textColor,
-                            fontSize: isNarrow ? 28 : 32,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -1,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      CNButton.icon(
-                        icon: const CNSymbol('arrow.clockwise', size: 22),
-                        style: CNButtonStyle.glass,
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          _handleResetMentalHealthData();
-                        },
-                      ),
-                    ],
+                  return Text(
+                    AppLocalizations.of(context).mindfulnessPageTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: isNarrow ? 28 : 32,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -1,
+                    ),
                   );
                 },
               ),
@@ -406,7 +294,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
 
   Widget _buildMoodCalendar(BuildContext context, String? uid) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF151515) : const Color.fromARGB(255, 245, 245, 245);
+    final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final now = DateTime.now();
     final isNarrow = MediaQuery.of(context).size.width < 380;
@@ -586,7 +474,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
 
   Widget _buildReadinessCard(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF151515) : const Color.fromARGB(255, 245, 245, 245);
+    final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
 
     return GestureDetector(
       onTap: () => _showReadinessModal(context),
@@ -824,7 +712,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
 
   Widget _buildBreathingCard(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF151515) : const Color.fromARGB(255, 245, 245, 245);
+    final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
 
     return GestureDetector(
       onTap: () => _showBreathingModal(context),
@@ -893,7 +781,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
 
   Widget _buildAssessmentCard(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF151515) : const Color.fromARGB(255, 245, 245, 245);
+    final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
 
     return Container(
@@ -943,7 +831,7 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
 
   Widget _buildMoodInsightsGraph(BuildContext context, String? uid) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF151515) : const Color.fromARGB(255, 245, 245, 245);
+    final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final now = DateTime.now();
     const tealColor = Color(0xFF33BEBE);
@@ -1217,7 +1105,7 @@ class _MoodGraphPainter extends CustomPainter {
 
       // White/dark border
       final borderPaint = Paint()
-        ..color = isDark ? const Color(0xFF151515) : const Color.fromARGB(255, 245, 245, 245)
+        ..color = isDark ? const Color(0xFF1C1C1E) : Colors.white
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2;
       canvas.drawCircle(Offset(x, y), 5, borderPaint);

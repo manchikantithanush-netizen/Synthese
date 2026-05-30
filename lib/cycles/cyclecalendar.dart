@@ -120,7 +120,7 @@ class _CycleCalendarState extends State<CycleCalendar> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isNarrow = screenWidth < 390;
 
-    final bgColor = isDark ? const Color(0xFF151515) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black;
     final mutedTextColor = isDark ? Colors.white54 : Colors.black54;
     final arrowTint = isDark ? Colors.white60 : Colors.black54;

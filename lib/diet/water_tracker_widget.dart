@@ -225,13 +225,22 @@ class _WaterTrackerSectionState extends State<WaterTrackerSection>
                                     }
                                   },
                                   child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12),
                                     decoration: BoxDecoration(
                                       color: waterColor.withOpacity(0.15),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
+                                    // One line, kept at a readable size. maxLines
+                                    // prevents the old text-stacking; ellipsis is
+                                    // a last resort so the label never shrinks to
+                                    // a tiny size on narrow phones.
                                     child: Center(
                                       child: Text(
                                         t.waterAddGlass,
+                                        maxLines: 1,
+                                        textAlign: TextAlign.center,
+                                        overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
                                           color: waterColor,
                                           fontWeight: FontWeight.w600,
