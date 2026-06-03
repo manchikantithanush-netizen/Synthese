@@ -6784,4 +6784,50 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get reportFlagButton => 'الإبلاغ عن نتيجة غير دقيقة';
+
+  @override
+  String get disclaimerGateTitle => 'قبل المتابعة';
+
+  @override
+  String get disclaimerGateSubtitle =>
+      'Synthese أداة شخصية لتتبع الصحة، وليست خدمة طبية أو سريرية أو مالية. يرجى قراءة هذا قبل استخدام التطبيق.';
+
+  @override
+  String get disclaimerGatePoint1Title => 'ليس جهازاً طبياً';
+
+  @override
+  String get disclaimerGatePoint1Body =>
+      'ميزات تتبع الصحة (معدل ضربات القلب، الخطوات، النوم، الدورات) تستخدم خوارزميات لأغراض العافية العامة فقط. استشر طبيباً دائماً للمخاوف الطبية.';
+
+  @override
+  String get disclaimerGatePoint2Title => 'ليس خدمة صحة نفسية';
+
+  @override
+  String get disclaimerGatePoint2Body =>
+      'ميزات تتبع المزاج والتأمل للتأمل الشخصي فقط، وليست بديلاً عن الرعاية النفسية أو الطب النفسي المتخصص.';
+
+  @override
+  String get disclaimerGatePoint3Title => 'تقديرات ذكاء اصطناعي للتغذية';
+
+  @override
+  String get disclaimerGatePoint3Body =>
+      'يستخدم الكشف عن الطعام الذكاء الاصطناعي لتقدير القيم الغذائية، وقد تكون غير دقيقة. استشر أخصائي تغذية مسجلاً للحصول على إرشادات غذائية.';
+
+  @override
+  String get disclaimerGatePoint4Title => 'ليس نصيحة مالية';
+
+  @override
+  String get disclaimerGatePoint4Body =>
+      'ميزات تتبع الشؤون المالية للميزانية الشخصية فقط، وليست بديلاً عن المشورة المالية أو القانونية المتخصصة.';
+
+  @override
+  String get disclaimerGateAiNote =>
+      'قد يُخطئ الذكاء الاصطناعي. لا تتخذ قرارات صحية أو غذائية أو مالية بناءً على معلومات هذا التطبيق وحده.';
+
+  @override
+  String get disclaimerGateAccept => 'أفهم ذلك';
+
+  @override
+  String get disclaimerGateFooter =>
+      'بالمتابعة، تقرّ بأن Synthese ليست خدمة متخصصة وتوافق على استخدامها بمسؤولية.';
 }

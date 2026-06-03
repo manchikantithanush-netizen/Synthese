@@ -6843,4 +6843,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reportFlagButton => 'Flag inaccurate result';
+
+  @override
+  String get disclaimerGateTitle => 'Before You Continue';
+
+  @override
+  String get disclaimerGateSubtitle =>
+      'Synthese is a personal wellness tracking tool — not a medical, clinical, or financial service. Please read this before using the app.';
+
+  @override
+  String get disclaimerGatePoint1Title => 'Not a medical device';
+
+  @override
+  String get disclaimerGatePoint1Body =>
+      'Health tracking features (heart rate, steps, sleep, cycles) use algorithms for general wellness purposes only. Always consult a doctor for medical concerns.';
+
+  @override
+  String get disclaimerGatePoint2Title => 'Not a mental health service';
+
+  @override
+  String get disclaimerGatePoint2Body =>
+      'Mood tracking and mindfulness features are for personal reflection only. They are not a substitute for professional psychological or psychiatric care.';
+
+  @override
+  String get disclaimerGatePoint3Title => 'AI nutritional estimates';
+
+  @override
+  String get disclaimerGatePoint3Body =>
+      'Food detection uses AI to estimate nutritional values. These estimates may be inaccurate. Consult a registered dietitian for dietary guidance.';
+
+  @override
+  String get disclaimerGatePoint4Title => 'Not financial advice';
+
+  @override
+  String get disclaimerGatePoint4Body =>
+      'Finance tracking features are for personal budgeting only. They are not a substitute for professional financial or legal advice.';
+
+  @override
+  String get disclaimerGateAiNote =>
+      'AI can and does make mistakes. Never make health, dietary, or financial decisions based solely on information from this app.';
+
+  @override
+  String get disclaimerGateAccept => 'I Understand';
+
+  @override
+  String get disclaimerGateFooter =>
+      'By continuing you acknowledge that Synthese is not a professional service and agree to use it responsibly.';
 }

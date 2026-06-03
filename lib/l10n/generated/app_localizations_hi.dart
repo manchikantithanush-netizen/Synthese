@@ -6851,4 +6851,50 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get reportFlagButton => 'गलत परिणाम की रिपोर्ट करें';
+
+  @override
+  String get disclaimerGateTitle => 'जारी रखने से पहले';
+
+  @override
+  String get disclaimerGateSubtitle =>
+      'Synthese एक व्यक्तिगत वेलनेस ट्रैकिंग टूल है — यह कोई चिकित्सा, नैदानिक या वित्तीय सेवा नहीं है। ऐप का उपयोग करने से पहले कृपया यह पढ़ें।';
+
+  @override
+  String get disclaimerGatePoint1Title => 'चिकित्सा उपकरण नहीं';
+
+  @override
+  String get disclaimerGatePoint1Body =>
+      'हृदय गति, कदम, नींद और चक्र जैसी स्वास्थ्य ट्रैकिंग सुविधाएं केवल सामान्य वेलनेस के लिए एल्गोरिदम का उपयोग करती हैं। चिकित्सा संबंधी चिंताओं के लिए हमेशा डॉक्टर से परामर्श लें।';
+
+  @override
+  String get disclaimerGatePoint2Title => 'मानसिक स्वास्थ्य सेवा नहीं';
+
+  @override
+  String get disclaimerGatePoint2Body =>
+      'मूड ट्रैकिंग और माइंडफुलनेस सुविधाएं केवल व्यक्तिगत चिंतन के लिए हैं। ये पेशेवर मनोवैज्ञानिक या मनोचिकित्सा देखभाल का विकल्प नहीं हैं।';
+
+  @override
+  String get disclaimerGatePoint3Title => 'AI पोषण अनुमान';
+
+  @override
+  String get disclaimerGatePoint3Body =>
+      'खाद्य पहचान पोषण मूल्यों का अनुमान लगाने के लिए AI का उपयोग करती है। ये अनुमान गलत हो सकते हैं। आहार संबंधी मार्गदर्शन के लिए पंजीकृत आहार विशेषज्ञ से परामर्श लें।';
+
+  @override
+  String get disclaimerGatePoint4Title => 'वित्तीय सलाह नहीं';
+
+  @override
+  String get disclaimerGatePoint4Body =>
+      'वित्त ट्रैकिंग सुविधाएं केवल व्यक्तिगत बजट के लिए हैं। ये पेशेवर वित्तीय या कानूनी सलाह का विकल्प नहीं हैं।';
+
+  @override
+  String get disclaimerGateAiNote =>
+      'AI गलतियाँ कर सकता है। केवल इस ऐप की जानकारी के आधार पर स्वास्थ्य, आहार या वित्त संबंधी निर्णय कभी न लें।';
+
+  @override
+  String get disclaimerGateAccept => 'मैं समझता/समझती हूँ';
+
+  @override
+  String get disclaimerGateFooter =>
+      'जारी रखकर आप स्वीकार करते हैं कि Synthese कोई पेशेवर सेवा नहीं है और इसे जिम्मेदारी से उपयोग करने पर सहमत हैं।';
 }

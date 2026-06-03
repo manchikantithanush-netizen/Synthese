@@ -2203,5 +2203,19 @@
   "reportSuccessTitle": "Reporte enviado",
   "reportSuccessBody": "Gracias por ayudar a mejorar Synthese. Revisaremos este resultado de IA.",
   "reportSuccessDone": "Listo",
-  "reportFlagButton": "Reportar resultado incorrecto"
+  "reportFlagButton": "Reportar resultado incorrecto",
+
+  "disclaimerGateTitle": "Antes de continuar",
+  "disclaimerGateSubtitle": "Synthese es una herramienta personal de seguimiento del bienestar, no un servicio médico, clínico o financiero. Por favor lee esto antes de usar la app.",
+  "disclaimerGatePoint1Title": "No es un dispositivo médico",
+  "disclaimerGatePoint1Body": "Las funciones de salud (frecuencia cardíaca, pasos, sueño, ciclos) usan algoritmos solo para bienestar general. Consulta siempre a un médico ante cualquier preocupación médica.",
+  "disclaimerGatePoint2Title": "No es un servicio de salud mental",
+  "disclaimerGatePoint2Body": "El seguimiento del estado de ánimo y las funciones de mindfulness son solo para reflexión personal. No sustituyen la atención psicológica o psiquiátrica profesional.",
+  "disclaimerGatePoint3Title": "Estimaciones nutricionales con IA",
+  "disclaimerGatePoint3Body": "La detección de alimentos usa IA para estimar valores nutricionales. Estas estimaciones pueden ser imprecisas. Consulta a un dietista registrado para orientación dietética.",
+  "disclaimerGatePoint4Title": "No es asesoramiento financiero",
+  "disclaimerGatePoint4Body": "Las funciones de seguimiento financiero son solo para presupuesto personal. No sustituyen el asesoramiento financiero o legal profesional.",
+  "disclaimerGateAiNote": "La IA puede cometer errores. Nunca tomes decisiones de salud, dietéticas o financieras basándote únicamente en la información de esta app.",
+  "disclaimerGateAccept": "Lo entiendo",
+  "disclaimerGateFooter": "Al continuar reconoces que Synthese no es un servicio profesional y aceptas usarla de forma responsable."
 }

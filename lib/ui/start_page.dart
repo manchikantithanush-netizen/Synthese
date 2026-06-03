@@ -14,7 +14,6 @@ import 'package:synthese/ui/auth/login_page.dart';
 import 'package:synthese/ui/auth/signup_page.dart';
 import 'package:synthese/onboarding/onboarding_intro.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
-import 'package:synthese/ui/components/disclaimer_banner.dart';
 
 class StartPage extends StatefulWidget {
   const StartPage({super.key});
@@ -623,12 +622,6 @@ class _StartPageState extends State<StartPage> {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      // ── Disclaimer ──────────────────────────────────────
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4),
-                        child: DisclaimerBanner.general(),
-                      ),
-                      const SizedBox(height: 4),
                       RichText(
                         textAlign: TextAlign.center,
                         text: TextSpan(

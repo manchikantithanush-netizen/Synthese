@@ -6896,4 +6896,50 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get reportFlagButton => 'Reportar resultado incorrecto';
+
+  @override
+  String get disclaimerGateTitle => 'Antes de continuar';
+
+  @override
+  String get disclaimerGateSubtitle =>
+      'Synthese es una herramienta personal de seguimiento del bienestar, no un servicio médico, clínico o financiero. Por favor lee esto antes de usar la app.';
+
+  @override
+  String get disclaimerGatePoint1Title => 'No es un dispositivo médico';
+
+  @override
+  String get disclaimerGatePoint1Body =>
+      'Las funciones de salud (frecuencia cardíaca, pasos, sueño, ciclos) usan algoritmos solo para bienestar general. Consulta siempre a un médico ante cualquier preocupación médica.';
+
+  @override
+  String get disclaimerGatePoint2Title => 'No es un servicio de salud mental';
+
+  @override
+  String get disclaimerGatePoint2Body =>
+      'El seguimiento del estado de ánimo y las funciones de mindfulness son solo para reflexión personal. No sustituyen la atención psicológica o psiquiátrica profesional.';
+
+  @override
+  String get disclaimerGatePoint3Title => 'Estimaciones nutricionales con IA';
+
+  @override
+  String get disclaimerGatePoint3Body =>
+      'La detección de alimentos usa IA para estimar valores nutricionales. Estas estimaciones pueden ser imprecisas. Consulta a un dietista registrado para orientación dietética.';
+
+  @override
+  String get disclaimerGatePoint4Title => 'No es asesoramiento financiero';
+
+  @override
+  String get disclaimerGatePoint4Body =>
+      'Las funciones de seguimiento financiero son solo para presupuesto personal. No sustituyen el asesoramiento financiero o legal profesional.';
+
+  @override
+  String get disclaimerGateAiNote =>
+      'La IA puede cometer errores. Nunca tomes decisiones de salud, dietéticas o financieras basándote únicamente en la información de esta app.';
+
+  @override
+  String get disclaimerGateAccept => 'Lo entiendo';
+
+  @override
+  String get disclaimerGateFooter =>
+      'Al continuar reconoces que Synthese no es un servicio profesional y aceptas usarla de forma responsable.';
 }

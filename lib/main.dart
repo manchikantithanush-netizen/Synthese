@@ -17,6 +17,7 @@ import 'package:synthese/services/step_tracker_service.dart';
 import 'package:synthese/services/session_guard_service.dart';
 
 import 'package:synthese/ui/start_page.dart';
+import 'package:synthese/ui/disclaimer_gate.dart';
 import 'package:synthese/onboarding/onboarding_intro.dart';
 import 'package:synthese/onboarding/onboarding_permissions.dart';
 import 'package:synthese/theme/app_theme.dart';
@@ -112,7 +113,7 @@ class MyApp extends StatelessWidget {
               if (snapshot.hasData) {
                 return const AuthWrapper();
               }
-              return const StartPage();
+              return const DisclaimerGate();
             },
           ),
         ),

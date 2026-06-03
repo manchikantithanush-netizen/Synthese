@@ -13,7 +13,7 @@
 
 class UpdateReminder {
   /// Must match pubspec.yaml version exactly, e.g. "1.0.0+3"
-  static const String currentVersion = '2.2.1+19';
+  static const String currentVersion = '2.2.2+20';
   /// What to show the user when they open the app on this version for the first time.
-  static const String updateMessage = """New privacy policy and Google play policy regulatory changes.""";
+  static const String updateMessage = """More privacy policy and Google play policy regulatory changes.""";
 }

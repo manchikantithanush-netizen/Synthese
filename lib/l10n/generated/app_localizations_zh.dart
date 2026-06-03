@@ -6424,4 +6424,46 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reportFlagButton => '举报不准确的结果';
+
+  @override
+  String get disclaimerGateTitle => '继续之前';
+
+  @override
+  String get disclaimerGateSubtitle =>
+      'Synthese 是个人健康追踪工具，而非医疗、临床或财务服务。使用前请阅读以下内容。';
+
+  @override
+  String get disclaimerGatePoint1Title => '非医疗设备';
+
+  @override
+  String get disclaimerGatePoint1Body =>
+      '心率、步数、睡眠和周期等健康追踪功能仅供个人健康参考。如有医疗问题，请始终咨询医生。';
+
+  @override
+  String get disclaimerGatePoint2Title => '非心理健康服务';
+
+  @override
+  String get disclaimerGatePoint2Body => '情绪追踪和正念功能仅供个人反思，不能替代专业心理或精神科治疗。';
+
+  @override
+  String get disclaimerGatePoint3Title => 'AI 营养估算';
+
+  @override
+  String get disclaimerGatePoint3Body =>
+      '食物检测使用 AI 估算营养数值，结果可能不准确。如需饮食指导，请咨询注册营养师。';
+
+  @override
+  String get disclaimerGatePoint4Title => '非财务建议';
+
+  @override
+  String get disclaimerGatePoint4Body => '财务追踪功能仅供个人预算管理，不能替代专业财务或法律建议。';
+
+  @override
+  String get disclaimerGateAiNote => 'AI 可能出错。请勿仅凭本应用中的信息做出健康、饮食或财务决策。';
+
+  @override
+  String get disclaimerGateAccept => '我明白了';
+
+  @override
+  String get disclaimerGateFooter => '继续即表示您认可 Synthese 不是专业服务，并同意负责任地使用它。';
 }

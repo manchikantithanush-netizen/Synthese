@@ -12161,6 +12161,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Flag inaccurate result'**
   String get reportFlagButton;
+
+  /// No description provided for @disclaimerGateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before You Continue'**
+  String get disclaimerGateTitle;
+
+  /// No description provided for @disclaimerGateSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Synthese is a personal wellness tracking tool — not a medical, clinical, or financial service. Please read this before using the app.'**
+  String get disclaimerGateSubtitle;
+
+  /// No description provided for @disclaimerGatePoint1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a medical device'**
+  String get disclaimerGatePoint1Title;
+
+  /// No description provided for @disclaimerGatePoint1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Health tracking features (heart rate, steps, sleep, cycles) use algorithms for general wellness purposes only. Always consult a doctor for medical concerns.'**
+  String get disclaimerGatePoint1Body;
+
+  /// No description provided for @disclaimerGatePoint2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a mental health service'**
+  String get disclaimerGatePoint2Title;
+
+  /// No description provided for @disclaimerGatePoint2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood tracking and mindfulness features are for personal reflection only. They are not a substitute for professional psychological or psychiatric care.'**
+  String get disclaimerGatePoint2Body;
+
+  /// No description provided for @disclaimerGatePoint3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'AI nutritional estimates'**
+  String get disclaimerGatePoint3Title;
+
+  /// No description provided for @disclaimerGatePoint3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Food detection uses AI to estimate nutritional values. These estimates may be inaccurate. Consult a registered dietitian for dietary guidance.'**
+  String get disclaimerGatePoint3Body;
+
+  /// No description provided for @disclaimerGatePoint4Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Not financial advice'**
+  String get disclaimerGatePoint4Title;
+
+  /// No description provided for @disclaimerGatePoint4Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Finance tracking features are for personal budgeting only. They are not a substitute for professional financial or legal advice.'**
+  String get disclaimerGatePoint4Body;
+
+  /// No description provided for @disclaimerGateAiNote.
+  ///
+  /// In en, this message translates to:
+  /// **'AI can and does make mistakes. Never make health, dietary, or financial decisions based solely on information from this app.'**
+  String get disclaimerGateAiNote;
+
+  /// No description provided for @disclaimerGateAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'I Understand'**
+  String get disclaimerGateAccept;
+
+  /// No description provided for @disclaimerGateFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing you acknowledge that Synthese is not a professional service and agree to use it responsibly.'**
+  String get disclaimerGateFooter;
 }
 
 class _AppLocalizationsDelegate
