@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -20,6 +19,8 @@ import 'package:synthese/services/data_aggregation_service.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
 import 'package:synthese/services/review_service.dart';
 import 'package:synthese/ui/components/app_toast.dart';
+import 'package:synthese/ui/components/disclaimer_banner.dart';
+import 'package:synthese/diet/food_report_sheet.dart';
 
 class DietPage extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -1120,10 +1121,16 @@ class _DietPageState extends State<DietPage> {
                       Row(
                         children: [
                           Expanded(
-                            child: CNButton(
-                              label: t.commonCancel,
-                              style: CNButtonStyle.glass,
+                            child: CupertinoButton(
+                              color: CupertinoColors.systemGrey5.resolveFrom(ctx),
+                              borderRadius: BorderRadius.circular(12),
                               onPressed: () => Navigator.pop(sheetCtx),
+                              child: Text(
+                                t.commonCancel,
+                                style: TextStyle(
+                                  color: CupertinoColors.label.resolveFrom(ctx),
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -1679,7 +1686,10 @@ class _DietPageState extends State<DietPage> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
+              // ── Disclaimer ──────────────────────────────────────────
+              const DisclaimerBanner.ai(),
+              const SizedBox(height: 16),
 
               _buildGoalCalendar(
                 context: context,
@@ -2240,6 +2250,29 @@ class _DietPageState extends State<DietPage> {
                                     ),
                                   ],
                                 ),
+                                const SizedBox(height: 8),
+                                // ── Report button ──────────────────────────
+                                Center(
+                                  child: TextButton.icon(
+                                    onPressed: () => showFoodReportSheet(
+                                      context,
+                                      _analysisResult!,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.flag_outlined,
+                                      size: 15,
+                                      color: Color(0xFFFF3B30),
+                                    ),
+                                    label: Text(
+                                      t.reportFlagButton,
+                                      style: const TextStyle(
+                                        color: Color(0xFFFF3B30),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -2271,10 +2304,18 @@ class _DietPageState extends State<DietPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          CNButton(
-                            label: t.commonTryAgain,
-                            style: CNButtonStyle.glass,
+                          CupertinoButton(
+                            color: isDark
+                                ? const Color(0xFF2C2C2E)
+                                : const Color(0xFFE5E5EA),
+                            borderRadius: BorderRadius.circular(12),
                             onPressed: _analyzeImage,
+                            child: Text(
+                              t.commonTryAgain,
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                            ),
                           ),
                         ],
                       ],
@@ -2488,6 +2529,29 @@ class _DietPageState extends State<DietPage> {
                                     ),
                                   ],
                                 ),
+                                const SizedBox(height: 8),
+                                // ── Report button ──────────────────────────
+                                Center(
+                                  child: TextButton.icon(
+                                    onPressed: () => showFoodReportSheet(
+                                      context,
+                                      _analysisResult!,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.flag_outlined,
+                                      size: 15,
+                                      color: Color(0xFFFF3B30),
+                                    ),
+                                    label: Text(
+                                      t.reportFlagButton,
+                                      style: const TextStyle(
+                                        color: Color(0xFFFF3B30),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                 const SizedBox(height: 12),
                                 UniversalButton(
                                   text: t.dietPageTypeAnotherMeal,
@@ -2527,10 +2591,18 @@ class _DietPageState extends State<DietPage> {
                           Row(
                             children: [
                               Expanded(
-                                child: CNButton(
-                                  label: t.commonTryAgain,
-                                  style: CNButtonStyle.glass,
+                                child: CupertinoButton(
+                                  color: isDark
+                                      ? const Color(0xFF2C2C2E)
+                                      : const Color(0xFFE5E5EA),
+                                  borderRadius: BorderRadius.circular(12),
                                   onPressed: _showTextFoodInputDialog,
+                                  child: Text(
+                                    t.commonTryAgain,
+                                    style: TextStyle(
+                                      color: isDark ? Colors.white : Colors.black,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],

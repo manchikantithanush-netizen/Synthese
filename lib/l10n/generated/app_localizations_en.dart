@@ -80,7 +80,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingStage1MinorNotice =>
-      'You\'re under 16. Parental guidance is required when using this app.';
+      'You must be 18 or older to use this app. You won\'t be able to continue.';
+
+  @override
+  String get onboardingAgeGateError =>
+      'You must be 18 or older to use Synthese.';
 
   @override
   String get onboardingStage1Gender => 'Gender';
@@ -309,6 +313,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get permPrivacyBody =>
       'Please read and agree to continue using Synthese.';
+
+  @override
+  String get permPrivacyReadLabel => 'Tap to read the full Privacy Policy';
 
   @override
   String get permPrivacyAgreeCheckbox =>
@@ -1186,11 +1193,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mindfulnessLegendUnpleasant => 'Unpleasant';
 
   @override
-  String get disclaimerTitle => 'Before You Begin';
+  String get disclaimerTitle => '⚠️ Not for Professional Use';
 
   @override
   String get disclaimerBody =>
-      'This assessment is designed for personal reflection and self-awareness. It is not a clinical diagnosis tool and should not replace professional mental health advice.';
+      'Synthese is a general wellness tracking tool. Nothing in this app constitutes medical, nutritional, psychological, or financial advice. Always consult a qualified professional before making decisions about your health or finances.';
 
   @override
   String get disclaimerCredits =>
@@ -6508,4 +6515,332 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get stepNotifChannelOngoing => 'Step tracking';
+
+  @override
+  String get stepNotifChannelMilestone => 'Step milestones';
+
+  @override
+  String get stepNotifOngoingTitle => 'Step tracking active';
+
+  @override
+  String stepNotifOngoingBody(String steps) {
+    return '$steps steps today';
+  }
+
+  @override
+  String get stepNotif1kTitle => '1,000 steps!';
+
+  @override
+  String get stepNotif1kBody =>
+      'Great start — you\'ve passed 1,000 steps today.';
+
+  @override
+  String get stepNotif5kTitle => '5,000 steps!';
+
+  @override
+  String get stepNotif5kBody => 'You\'re on a roll — 5,000 steps and counting.';
+
+  @override
+  String get stepNotifGoalTitle => 'Goal reached!';
+
+  @override
+  String stepNotifGoalBody(String goal) {
+    return 'You hit your $goal-step goal for today. Amazing!';
+  }
+
+  @override
+  String get settingsStepMilestonesTitle => 'Step milestone alerts';
+
+  @override
+  String get settingsStepMilestonesSubtitle =>
+      'Get notified when you pass 1,000, 5,000 and your daily goal — even with the app closed.';
+
+  @override
+  String get settingsStepMilestonesDisabled =>
+      'Turn on background step tracking to use milestone alerts.';
+
+  @override
+  String get sessionSignedOutOtherDevice =>
+      'You\'ve been signed out because your account was signed in on another device.';
+
+  @override
+  String get notifDietMealTitle => 'Log today\'s meals';
+
+  @override
+  String get notifDietMealBody =>
+      'Keep your nutrition streak alive by logging at least one meal.';
+
+  @override
+  String get notifDietWaterTitle => 'Hydration check';
+
+  @override
+  String notifDietWaterBody(int current, int goal) {
+    return 'You are at $current/$goal glasses today. Drink a glass now.';
+  }
+
+  @override
+  String get notifDietCalorieNudgeTitle => 'You\'re close to your calorie goal';
+
+  @override
+  String notifDietCalorieNudgeBody(int logged, int goal) {
+    return 'You\'ve logged $logged/$goal kcal. Finish strong.';
+  }
+
+  @override
+  String notifDietStreakTitle(int days) {
+    return 'Nutrition streak: $days days';
+  }
+
+  @override
+  String notifDietStreakBody(int days) {
+    return 'You have hit your calorie goal for $days days in a row.';
+  }
+
+  @override
+  String get notifMindfulnessMoodTitle => 'Mood check-in';
+
+  @override
+  String get notifMindfulnessMoodBody =>
+      'Take 10 seconds to log your mood today.';
+
+  @override
+  String get notifMindfulnessReadinessTitle => 'Morning readiness';
+
+  @override
+  String get notifMindfulnessReadinessBody =>
+      'Log sleep, energy and stress to tune your day better.';
+
+  @override
+  String get notifMindfulnessBreatheTitle => 'Take a short breathing break';
+
+  @override
+  String get notifMindfulnessBreatheBody =>
+      'A 2-minute breathing session can help close your day calmly.';
+
+  @override
+  String get notifCyclesDailyLogTitle => 'Cycle log reminder';
+
+  @override
+  String get notifCyclesDailyLogBody =>
+      'Log today\'s flow/symptoms to keep cycle predictions accurate.';
+
+  @override
+  String get notifCyclesPeriodSoonTitle => 'Period likely in ~2 days';
+
+  @override
+  String get notifCyclesPeriodSoonBody =>
+      'Keep products handy and track symptoms today.';
+
+  @override
+  String get notifCyclesPeriodDueTodayTitle => 'Period due today';
+
+  @override
+  String get notifCyclesPeriodDueTodayBody =>
+      'Your cycle suggests today may be day 1 of your period.';
+
+  @override
+  String get notifCyclesLate7Title => 'Period is 7+ days late';
+
+  @override
+  String get notifCyclesLate7Body =>
+      'Stress and routine changes can delay periods. Keep tracking.';
+
+  @override
+  String get notifCyclesLate14Title => 'Period is 14+ days late';
+
+  @override
+  String get notifCyclesLate14Body =>
+      'If this is unusual for you, consider checking with a doctor.';
+
+  @override
+  String get notifCyclesLate90Title => 'Period over 3 months late';
+
+  @override
+  String get notifCyclesLate90Body =>
+      'Please consult a healthcare provider as soon as possible.';
+
+  @override
+  String get notifCyclesOvulationWindowTitle =>
+      'Fertile window likely starting';
+
+  @override
+  String get notifCyclesOvulationWindowBody =>
+      'You may be entering your ovulation window.';
+
+  @override
+  String get notifCyclesOvulationPeakTitle => 'Ovulation likely today';
+
+  @override
+  String get notifCyclesOvulationPeakBody =>
+      'Your cycle indicates ovulation is likely around today.';
+
+  @override
+  String get notifCyclesShortCycleTitle => 'Pattern: short cycles';
+
+  @override
+  String get notifCyclesShortCycleBody =>
+      'Your last 3 cycles were unusually short. Keep monitoring.';
+
+  @override
+  String get notifCyclesLongCycleTitle => 'Pattern: long cycles';
+
+  @override
+  String get notifCyclesLongCycleBody =>
+      'Your last 3 cycles were unusually long. Track closely.';
+
+  @override
+  String get notifCyclesLongPeriodTitle => 'Long periods detected';
+
+  @override
+  String get notifCyclesLongPeriodBody =>
+      'Your period length has been above 8 days recently.';
+
+  @override
+  String get notifCyclesHeavyBleedingTitle => 'Heavy bleeding trend';
+
+  @override
+  String get notifCyclesHeavyBleedingBody =>
+      'Your last cycle had 5+ very heavy flow days.';
+
+  @override
+  String get notifFinanceDebtClearedTitle => 'Debt cleared';
+
+  @override
+  String notifFinanceDebtClearedBody(String name) {
+    return '$name has been marked as fully paid. Great progress!';
+  }
+
+  @override
+  String notifFinanceDebtDueTitle(String name) {
+    return 'Debt reminder: $name';
+  }
+
+  @override
+  String get notifFinanceDebtDueTodayBody => 'This payment is due today.';
+
+  @override
+  String notifFinanceDebtDueDaysBody(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 's',
+      one: '',
+    );
+    return 'Payment due in $days day$_temp0.';
+  }
+
+  @override
+  String get notifFinanceDebtOverdueTitle => 'Payment overdue';
+
+  @override
+  String notifFinanceDebtOverdueBody(String name, int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 's',
+      one: '',
+    );
+    return '$name is overdue by $days day$_temp0.';
+  }
+
+  @override
+  String get notifFinanceInstallmentTitle => 'Installment reminder';
+
+  @override
+  String notifFinanceInstallmentBody(String name) {
+    return '$name installment is coming up soon.';
+  }
+
+  @override
+  String get notifFinanceLowBalanceTitle => 'Low balance alert';
+
+  @override
+  String notifFinanceLowBalanceBody(String name, String balance) {
+    return '$name is at $balance. Consider topping up soon.';
+  }
+
+  @override
+  String get notifFinanceLargeExpenseTitle => 'Large expense detected';
+
+  @override
+  String notifFinanceLargeExpenseBody(String amount) {
+    return 'A large spend of $amount was recorded.';
+  }
+
+  @override
+  String get notifFinanceBudgetPacingTitle => 'Budget pacing alert';
+
+  @override
+  String notifFinanceBudgetPacingBody(String spent) {
+    return 'You are spending faster than this month\'s pace ($spent used).';
+  }
+
+  @override
+  String get notifDashboardHealthTitle => 'Daily health score reminder';
+
+  @override
+  String get notifDashboardHealthBody =>
+      'No health update yet today. Log activity to refresh your score.';
+
+  @override
+  String get disclaimerShort =>
+      'Not a substitute for professional medical, nutritional, mental health, or financial advice. Always consult a qualified professional.';
+
+  @override
+  String get disclaimerAiTitle => '⚠️ AI Estimates — Not for Professional Use';
+
+  @override
+  String get disclaimerAiBody =>
+      'Nutritional values are estimated by AI and may not be accurate. AI can and does make mistakes. This is not professional dietary or medical advice. Always consult a registered dietitian or healthcare provider for nutritional guidance.';
+
+  @override
+  String get disclaimerAiShort =>
+      'Nutritional values are AI estimates and may be inaccurate. Not a substitute for professional dietary or medical advice.';
+
+  @override
+  String get reportTitle => 'Report inaccurate result';
+
+  @override
+  String get reportSelectIssue => 'What\'s wrong?';
+
+  @override
+  String get reportIssueWrongFood => 'Wrong food identified';
+
+  @override
+  String get reportIssueCaloriesOff => 'Calories way off';
+
+  @override
+  String get reportIssueMacrosOff => 'Macros incorrect';
+
+  @override
+  String get reportIssueMicronutrientsOff => 'Micronutrients incorrect';
+
+  @override
+  String get reportIssueOther => 'Other';
+
+  @override
+  String get reportNoteLabel => 'Additional details (optional)';
+
+  @override
+  String get reportNoteHint =>
+      'e.g. It identified this as pasta but it\'s rice...';
+
+  @override
+  String get reportSubmit => 'Submit report';
+
+  @override
+  String get reportSuccessTitle => 'Report submitted';
+
+  @override
+  String get reportSuccessBody =>
+      'Thanks for helping improve Synthese. We\'ll review this AI result.';
+
+  @override
+  String get reportSuccessDone => 'Done';
+
+  @override
+  String get reportFlagButton => 'Flag inaccurate result';
 }

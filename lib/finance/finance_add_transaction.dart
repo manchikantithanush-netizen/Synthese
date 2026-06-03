@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -759,7 +759,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                   ),
                 ),
               ),
-              CNSwitch(
+              CupertinoSwitch(
                 value: _isRecurring,
                 onChanged: (v) => setState(() => _isRecurring = v),
               ),

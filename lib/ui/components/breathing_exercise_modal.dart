@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';

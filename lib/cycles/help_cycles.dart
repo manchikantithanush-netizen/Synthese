@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';

@@ -32,9 +32,16 @@ class StepTracker {
   static const String _kSensorToday = 'step_sensor_today';
   static const String _kWorkoutToday = 'step_workout_today';
   static const String _kHourly = 'step_hourly_today';
+  static const String _kMilestoneNotifications =
+      'step_milestone_notifications_enabled';
 
   /// Whether passive all-day background counting is enabled. Defaults to true.
   final ValueNotifier<bool> backgroundEnabled = ValueNotifier<bool>(true);
+
+  /// Whether step-milestone notifications (1k / 5k / goal) are enabled. Only
+  /// has an effect while [backgroundEnabled] is also on. Defaults to true.
+  final ValueNotifier<bool> milestoneNotificationsEnabled =
+      ValueNotifier<bool>(true);
 
   /// Today's automatic step count (does NOT include the dashboard's manual
   /// step adjustments — those are added on top by the dashboard):
@@ -73,6 +80,8 @@ class StepTracker {
     _prefs = await SharedPreferences.getInstance();
 
     backgroundEnabled.value = _prefs!.getBool(_kBackgroundEnabled) ?? true;
+    milestoneNotificationsEnabled.value =
+        _prefs!.getBool(_kMilestoneNotifications) ?? true;
     _baselineDate = _prefs!.getString(_kBaselineDate) ?? '';
     _baselineCumulative = _prefs!.getInt(_kBaselineCumulative) ?? -1;
     _sensorToday = _prefs!.getInt(_kSensorToday) ?? 0;
@@ -214,6 +223,14 @@ class StepTracker {
       _stopListening();
     }
     _publishToday();
+  }
+
+  /// Enable/disable step-milestone notifications (1k / 5k / goal). Only has an
+  /// effect while [backgroundEnabled] is also on; the native foreground service
+  /// is started/stopped from the dashboard in response to this flag.
+  Future<void> setMilestoneNotificationsEnabled(bool enabled) async {
+    milestoneNotificationsEnabled.value = enabled;
+    await _prefs?.setBool(_kMilestoneNotifications, enabled);
   }
 
   /// Begin counting steps for a workout. The caller is responsible for only

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/mindfulness/questionnaire_data.dart';
 import 'package:synthese/mindfulness/questionnaire_screen.dart';

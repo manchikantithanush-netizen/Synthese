@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +15,7 @@ import 'cycle_energy.dart';
 import 'cyclecalendar.dart';
 import 'help_cycles.dart'; // <--- ADD THIS IMPORT
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
+import 'package:synthese/ui/components/disclaimer_banner.dart';
 
 class CyclesPage extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -353,9 +353,13 @@ class _CyclesPageState extends State<CyclesPage>
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-                Center(
+              // ── Disclaimer ──────────────────────────────────────────
+              const DisclaimerBanner.generalShort(),
+              const SizedBox(height: 6),
+
+              Center(
                   child: Column(
                     children: [
                       Text(
@@ -462,10 +466,11 @@ class _CyclesPageState extends State<CyclesPage>
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                CNButton(
-                                  label: t.cyclesDismiss,
-                                  style: CNButtonStyle.plain,
-                                  tint: subtitleColor,
+                                CupertinoButton(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
                                   onPressed: () {
                                     HapticFeedback.lightImpact();
                                     dismissAlert(
@@ -473,16 +478,27 @@ class _CyclesPageState extends State<CyclesPage>
                                       data.currentCycleId,
                                     );
                                   },
+                                  child: Text(
+                                    t.cyclesDismiss,
+                                    style: TextStyle(color: subtitleColor),
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
-                                CNButton(
-                                  label: t.cyclesLearnMore,
-                                  style: CNButtonStyle.tinted,
-                                  tint: alertIconColor,
+                                CupertinoButton(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  color: alertIconColor.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(8),
                                   onPressed: () {
                                     HapticFeedback.lightImpact();
                                     _showLearnMoreArticle(alert['id']!);
                                   },
+                                  child: Text(
+                                    t.cyclesLearnMore,
+                                    style: TextStyle(color: alertIconColor),
+                                  ),
                                 ),
                               ],
                             ),
@@ -778,14 +794,20 @@ class PremiumButton extends StatelessWidget {
                   ),
                 ),
               )
-            : CNButton(
-                label: text,
-                style: CNButtonStyle.prominentGlass,
-                tint: buttonColor,
+            : CupertinoButton(
+                color: buttonColor,
+                borderRadius: BorderRadius.circular(12),
                 onPressed: () {
                   HapticFeedback.lightImpact();
                   onPressed();
                 },
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
       ),
     );

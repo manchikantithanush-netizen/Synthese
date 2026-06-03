@@ -15,6 +15,7 @@ import 'package:synthese/onboarding/onboarding_finance.dart';
 import 'package:synthese/finance/finance_insights.dart';
 import 'package:synthese/finance/finance_debts.dart';
 import 'package:synthese/finance/finance_contextual_insights.dart';
+import 'package:synthese/ui/components/disclaimer_banner.dart';
 
 class FinancePage extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -450,7 +451,10 @@ class _FinancePageState extends State<FinancePage> {
                 letterSpacing: -1,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
+            // ── Disclaimer ────────────────────────────────────────────
+            const DisclaimerBanner.generalShort(),
+            const SizedBox(height: 16),
 
             // Total Balance Card
             _buildTotalBalanceCard(

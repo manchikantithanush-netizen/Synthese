@@ -876,13 +876,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
             intervalDuration: const Duration(seconds: 1),
             forceLocationManager: true,
           )
-        : Platform.isIOS
-        ? AppleSettings(
-            accuracy: LocationAccuracy.bestForNavigation,
-            distanceFilter: 0,
-            activityType: ActivityType.fitness,
-            pauseLocationUpdatesAutomatically: false,
-          )
         : const LocationSettings(
             accuracy: LocationAccuracy.best,
             distanceFilter: 0,
@@ -926,14 +919,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
                 enableWakeLock: true,
                 setOngoing: true,
               ),
-            )
-          : Platform.isIOS
-          ? AppleSettings(
-              accuracy: LocationAccuracy.bestForNavigation,
-              distanceFilter: 0,
-              activityType: ActivityType.fitness,
-              pauseLocationUpdatesAutomatically: false,
-              showBackgroundLocationIndicator: true,
             )
           : const LocationSettings(
               accuracy: LocationAccuracy.high,

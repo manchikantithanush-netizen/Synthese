@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:synthese/finance/models/finance_models.dart';

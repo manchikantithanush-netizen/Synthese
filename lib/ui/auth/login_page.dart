@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:synthese/services/session_guard_service.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -90,6 +90,9 @@ class _LoginPageState extends State<LoginPage> {
         setState(() => _isLoading = false);
         return;
       }
+      if (user != null) {
+        await SessionGuardService.instance.claimSession(user.uid);
+      }
       if (mounted) {
         HapticFeedback.mediumImpact();
         Navigator.pushAndRemoveUntil(
@@ -113,11 +116,6 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final webClientId = dotenv.env['GOOGLE_WEB_CLIENT_ID']?.trim();
       final googleSignIn = GoogleSignIn(
-        // `clientId` is needed for Apple platforms; using it on Android can
-        // break the token handoff after account selection.
-        clientId: defaultTargetPlatform == TargetPlatform.iOS
-            ? '118165710666-mu9h11167ij8v9ttqs8u569g0d77bqke.apps.googleusercontent.com'
-            : null,
         serverClientId: webClientId != null && webClientId.isNotEmpty
             ? webClientId
             : null,
@@ -141,6 +139,10 @@ class _LoginPageState extends State<LoginPage> {
         accessToken: googleAuth.accessToken,
       );
       await FirebaseAuth.instance.signInWithCredential(credential);
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid != null) {
+        await SessionGuardService.instance.claimSession(uid);
+      }
       if (mounted) {
         HapticFeedback.mediumImpact();
         Navigator.pushAndRemoveUntil(

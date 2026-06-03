@@ -128,6 +128,17 @@ class _OnboardingDataState extends State<OnboardingData> {
         return _triggerError(
             AppLocalizations.of(context).commonCompleteAllFields);
       }
+      // Age gate — must be 18 or older
+      final now = DateTime.now();
+      int age = now.year - dob!.year;
+      if (now.month < dob!.month ||
+          (now.month == dob!.month && now.day < dob!.day)) {
+        age--;
+      }
+      if (age < 18) {
+        return _triggerError(
+            AppLocalizations.of(context).onboardingAgeGateError);
+      }
     }
 
     if (_currentStep < _totalSteps - 1) {
@@ -192,14 +203,11 @@ class _OnboardingDataState extends State<OnboardingData> {
 
   void _showDatePicker() async {
     HapticFeedback.selectionClick();
-    final maxDate = DateTime(
-      DateTime.now().year - 4,
-      DateTime.now().month,
-      DateTime.now().day,
-    );
+    final now = DateTime.now();
+    final maxDate = DateTime(now.year - 18, now.month, now.day);
     final picked = await showDatePicker(
       context: context,
-      initialDate: dob ?? DateTime(DateTime.now().year - 18),
+      initialDate: dob ?? maxDate,
       firstDate: DateTime(1940),
       lastDate: maxDate,
       builder: (context, child) {

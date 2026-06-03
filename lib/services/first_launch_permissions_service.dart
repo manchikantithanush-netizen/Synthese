@@ -19,10 +19,6 @@ class FirstLaunchPermissionsService {
         await Permission.activityRecognition.request();
         await Permission.camera.request();
         await Permission.photos.request();
-      } else if (Platform.isIOS) {
-        await Permission.notification.request();
-        await Permission.camera.request();
-        await Permission.photos.request();
       }
     } catch (_) {
     } finally {

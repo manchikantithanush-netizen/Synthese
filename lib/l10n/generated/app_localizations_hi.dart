@@ -80,7 +80,11 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get onboardingStage1MinorNotice =>
-      'आप 16 वर्ष से कम हैं। इस ऐप का उपयोग करते समय अभिभावक मार्गदर्शन आवश्यक है।';
+      'इस ऐप का उपयोग करने के लिए आपकी आयु 18 वर्ष या उससे अधिक होनी चाहिए। आप आगे नहीं बढ़ सकते।';
+
+  @override
+  String get onboardingAgeGateError =>
+      'Synthese का उपयोग करने के लिए आपकी आयु 18 वर्ष या उससे अधिक होनी चाहिए।';
 
   @override
   String get onboardingStage1Gender => 'लिंग';
@@ -307,6 +311,9 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get permPrivacyBody =>
       'Synthese का उपयोग जारी रखने के लिए कृपया पढ़ें और सहमत हों।';
+
+  @override
+  String get permPrivacyReadLabel => 'पूरी गोपनीयता नीति पढ़ने के लिए टैप करें';
 
   @override
   String get permPrivacyAgreeCheckbox =>
@@ -1190,11 +1197,11 @@ class AppLocalizationsHi extends AppLocalizations {
   String get mindfulnessLegendUnpleasant => 'अप्रिय';
 
   @override
-  String get disclaimerTitle => 'शुरू करने से पहले';
+  String get disclaimerTitle => '⚠️ पेशेवर उपयोग के लिए नहीं';
 
   @override
   String get disclaimerBody =>
-      'यह मूल्यांकन व्यक्तिगत चिंतन और आत्म-जागरूकता के लिए डिज़ाइन किया गया है। यह नैदानिक निदान उपकरण नहीं है और इसे पेशेवर मानसिक स्वास्थ्य सलाह की जगह नहीं लेनी चाहिए।';
+      'Synthese एक सामान्य वेलनेस ट्रैकिंग टूल है। इस ऐप में कुछ भी चिकित्सा, पोषण, मनोवैज्ञानिक या वित्तीय सलाह नहीं है। अपने स्वास्थ्य या वित्त से जुड़े निर्णय लेने से पहले हमेशा किसी योग्य पेशेवर से परामर्श लें।';
 
   @override
   String get disclaimerCredits =>
@@ -6529,4 +6536,319 @@ class AppLocalizationsHi extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get stepNotifChannelOngoing => 'स्टेप ट्रैकिंग';
+
+  @override
+  String get stepNotifChannelMilestone => 'स्टेप माइलस्टोन';
+
+  @override
+  String get stepNotifOngoingTitle => 'स्टेप ट्रैकिंग चालू है';
+
+  @override
+  String stepNotifOngoingBody(String steps) {
+    return 'आज $steps कदम';
+  }
+
+  @override
+  String get stepNotif1kTitle => '1,000 कदम!';
+
+  @override
+  String get stepNotif1kBody => 'बढ़िया शुरुआत — आपने आज 1,000 कदम पार कर लिए।';
+
+  @override
+  String get stepNotif5kTitle => '5,000 कदम!';
+
+  @override
+  String get stepNotif5kBody =>
+      'आप कमाल कर रहे हैं — 5,000 कदम और बढ़ते जा रहे हैं।';
+
+  @override
+  String get stepNotifGoalTitle => 'लक्ष्य पूरा!';
+
+  @override
+  String stepNotifGoalBody(String goal) {
+    return 'आपने आज $goal कदम का अपना लक्ष्य पूरा किया। शानदार!';
+  }
+
+  @override
+  String get settingsStepMilestonesTitle => 'स्टेप माइलस्टोन अलर्ट';
+
+  @override
+  String get settingsStepMilestonesSubtitle =>
+      '1,000, 5,000 और अपने दैनिक लक्ष्य को पार करने पर सूचना पाएं — ऐप बंद होने पर भी।';
+
+  @override
+  String get settingsStepMilestonesDisabled =>
+      'माइलस्टोन अलर्ट इस्तेमाल करने के लिए बैकग्राउंड स्टेप ट्रैकिंग चालू करें।';
+
+  @override
+  String get sessionSignedOutOtherDevice =>
+      'आपको साइन आउट कर दिया गया क्योंकि आपका खाता किसी अन्य डिवाइस पर साइन इन किया गया।';
+
+  @override
+  String get notifDietMealTitle => 'आज की खाने की जानकारी दर्ज करें';
+
+  @override
+  String get notifDietMealBody =>
+      'कम से कम एक भोजन दर्ज करके अपनी पोषण श्रृंखला बनाए रखें।';
+
+  @override
+  String get notifDietWaterTitle => 'हाइड्रेशन जांच';
+
+  @override
+  String notifDietWaterBody(int current, int goal) {
+    return 'आज आपने $current/$goal गिलास पिए हैं। अभी एक गिलास पिएं।';
+  }
+
+  @override
+  String get notifDietCalorieNudgeTitle => 'आप अपने कैलोरी लक्ष्य के करीब हैं';
+
+  @override
+  String notifDietCalorieNudgeBody(int logged, int goal) {
+    return 'आपने $logged/$goal kcal दर्ज किए हैं। मजबूती से पूरा करें।';
+  }
+
+  @override
+  String notifDietStreakTitle(int days) {
+    return 'पोषण श्रृंखला: $days दिन';
+  }
+
+  @override
+  String notifDietStreakBody(int days) {
+    return 'आपने लगातार $days दिनों तक अपना कैलोरी लक्ष्य पूरा किया है।';
+  }
+
+  @override
+  String get notifMindfulnessMoodTitle => 'मूड चेक-इन';
+
+  @override
+  String get notifMindfulnessMoodBody =>
+      'आज अपना मूड दर्ज करने के लिए 10 सेकंड लें।';
+
+  @override
+  String get notifMindfulnessReadinessTitle => 'सुबह की तैयारी';
+
+  @override
+  String get notifMindfulnessReadinessBody =>
+      'अपने दिन को बेहतर बनाने के लिए नींद, ऊर्जा और तनाव दर्ज करें।';
+
+  @override
+  String get notifMindfulnessBreatheTitle => 'एक छोटा सांस लेने का ब्रेक लें';
+
+  @override
+  String get notifMindfulnessBreatheBody =>
+      '2 मिनट की सांस लेने की सत्र आपके दिन को शांति से बंद करने में मदद कर सकती है।';
+
+  @override
+  String get notifCyclesDailyLogTitle => 'साइकिल लॉग रिमाइंडर';
+
+  @override
+  String get notifCyclesDailyLogBody =>
+      'सटीक भविष्यवाणियों के लिए आज का प्रवाह/लक्षण दर्ज करें।';
+
+  @override
+  String get notifCyclesPeriodSoonTitle => 'पीरियड ~2 दिनों में संभावित';
+
+  @override
+  String get notifCyclesPeriodSoonBody =>
+      'उत्पाद पास रखें और आज लक्षण ट्रैक करें।';
+
+  @override
+  String get notifCyclesPeriodDueTodayTitle => 'आज पीरियड की तारीख है';
+
+  @override
+  String get notifCyclesPeriodDueTodayBody =>
+      'आपका साइकिल बताता है कि आज पहला दिन हो सकता है।';
+
+  @override
+  String get notifCyclesLate7Title => 'पीरियड 7+ दिन देर से';
+
+  @override
+  String get notifCyclesLate7Body =>
+      'तनाव और दिनचर्या में बदलाव पीरियड में देरी कर सकते हैं। ट्रैक करते रहें।';
+
+  @override
+  String get notifCyclesLate14Title => 'पीरियड 14+ दिन देर से';
+
+  @override
+  String get notifCyclesLate14Body =>
+      'अगर यह आपके लिए असामान्य है, तो डॉक्टर से मिलने पर विचार करें।';
+
+  @override
+  String get notifCyclesLate90Title => 'पीरियड 3 महीने से अधिक देर से';
+
+  @override
+  String get notifCyclesLate90Body =>
+      'कृपया जल्द से जल्द किसी स्वास्थ्य सेवा प्रदाता से परामर्श करें।';
+
+  @override
+  String get notifCyclesOvulationWindowTitle =>
+      'उपजाऊ खिड़की शुरू होने की संभावना';
+
+  @override
+  String get notifCyclesOvulationWindowBody =>
+      'आप अपनी ओव्यूलेशन विंडो में प्रवेश कर सकती हैं।';
+
+  @override
+  String get notifCyclesOvulationPeakTitle => 'आज ओव्यूलेशन की संभावना';
+
+  @override
+  String get notifCyclesOvulationPeakBody =>
+      'आपका साइकिल बताता है कि आज ओव्यूलेशन संभव है।';
+
+  @override
+  String get notifCyclesShortCycleTitle => 'पैटर्न: छोटे साइकिल';
+
+  @override
+  String get notifCyclesShortCycleBody =>
+      'आपके पिछले 3 साइकिल असामान्य रूप से छोटे थे। निगरानी जारी रखें।';
+
+  @override
+  String get notifCyclesLongCycleTitle => 'पैटर्न: लंबे साइकिल';
+
+  @override
+  String get notifCyclesLongCycleBody =>
+      'आपके पिछले 3 साइकिल असामान्य रूप से लंबे थे। ध्यान से ट्रैक करें।';
+
+  @override
+  String get notifCyclesLongPeriodTitle => 'लंबे पीरियड का पता चला';
+
+  @override
+  String get notifCyclesLongPeriodBody =>
+      'हाल ही में आपके पीरियड की अवधि 8 दिनों से अधिक रही है।';
+
+  @override
+  String get notifCyclesHeavyBleedingTitle => 'भारी रक्तस्राव का रुझान';
+
+  @override
+  String get notifCyclesHeavyBleedingBody =>
+      'आपके पिछले साइकिल में 5+ बहुत भारी प्रवाह के दिन थे।';
+
+  @override
+  String get notifFinanceDebtClearedTitle => 'कर्ज चुकाया गया';
+
+  @override
+  String notifFinanceDebtClearedBody(String name) {
+    return '$name को पूरी तरह भुगतान किया गया के रूप में चिह्नित किया गया है। शानदार प्रगति!';
+  }
+
+  @override
+  String notifFinanceDebtDueTitle(String name) {
+    return 'कर्ज रिमाइंडर: $name';
+  }
+
+  @override
+  String get notifFinanceDebtDueTodayBody => 'यह भुगतान आज देय है।';
+
+  @override
+  String notifFinanceDebtDueDaysBody(int days) {
+    return 'भुगतान $days दिन में देय है।';
+  }
+
+  @override
+  String get notifFinanceDebtOverdueTitle => 'भुगतान अतिदेय';
+
+  @override
+  String notifFinanceDebtOverdueBody(String name, int days) {
+    return '$name $days दिन से अतिदेय है।';
+  }
+
+  @override
+  String get notifFinanceInstallmentTitle => 'किस्त रिमाइंडर';
+
+  @override
+  String notifFinanceInstallmentBody(String name) {
+    return '$name की किस्त जल्द आने वाली है।';
+  }
+
+  @override
+  String get notifFinanceLowBalanceTitle => 'कम बैलेंस अलर्ट';
+
+  @override
+  String notifFinanceLowBalanceBody(String name, String balance) {
+    return '$name का बैलेंस $balance है। जल्द टॉप अप करने पर विचार करें।';
+  }
+
+  @override
+  String get notifFinanceLargeExpenseTitle => 'बड़ा खर्च पाया गया';
+
+  @override
+  String notifFinanceLargeExpenseBody(String amount) {
+    return '$amount का एक बड़ा खर्च दर्ज किया गया।';
+  }
+
+  @override
+  String get notifFinanceBudgetPacingTitle => 'बजट गति अलर्ट';
+
+  @override
+  String notifFinanceBudgetPacingBody(String spent) {
+    return 'आप इस महीने की गति से तेज खर्च कर रहे हैं ($spent उपयोग किया गया)।';
+  }
+
+  @override
+  String get notifDashboardHealthTitle => 'दैनिक स्वास्थ्य स्कोर रिमाइंडर';
+
+  @override
+  String get notifDashboardHealthBody =>
+      'आज अभी तक कोई स्वास्थ्य अपडेट नहीं। अपना स्कोर रिफ्रेश करने के लिए गतिविधि दर्ज करें।';
+
+  @override
+  String get disclaimerShort =>
+      'पेशेवर चिकित्सा, पोषण, मानसिक स्वास्थ्य या वित्तीय सलाह का विकल्प नहीं। हमेशा किसी योग्य पेशेवर से परामर्श लें।';
+
+  @override
+  String get disclaimerAiTitle => '⚠️ AI अनुमान — पेशेवर उपयोग के लिए नहीं';
+
+  @override
+  String get disclaimerAiBody =>
+      'पोषण मूल्य AI द्वारा अनुमानित हैं और सटीक नहीं हो सकते। AI गलतियाँ कर सकता है। यह पेशेवर आहार या चिकित्सा सलाह नहीं है। पोषण मार्गदर्शन के लिए हमेशा किसी पंजीकृत आहार विशेषज्ञ या स्वास्थ्य सेवा प्रदाता से परामर्श लें।';
+
+  @override
+  String get disclaimerAiShort =>
+      'पोषण मूल्य AI के अनुमान हैं और गलत हो सकते हैं। पेशेवर आहार या चिकित्सा सलाह का विकल्प नहीं।';
+
+  @override
+  String get reportTitle => 'गलत परिणाम की रिपोर्ट करें';
+
+  @override
+  String get reportSelectIssue => 'क्या गलत है?';
+
+  @override
+  String get reportIssueWrongFood => 'गलत खाना पहचाना गया';
+
+  @override
+  String get reportIssueCaloriesOff => 'कैलोरी बहुत गलत है';
+
+  @override
+  String get reportIssueMacrosOff => 'मैक्रोज़ गलत हैं';
+
+  @override
+  String get reportIssueMicronutrientsOff => 'माइक्रोन्यूट्रिएंट्स गलत हैं';
+
+  @override
+  String get reportIssueOther => 'अन्य';
+
+  @override
+  String get reportNoteLabel => 'अतिरिक्त विवरण (वैकल्पिक)';
+
+  @override
+  String get reportNoteHint => 'जैसे: इसे पास्ता बताया लेकिन यह चावल है...';
+
+  @override
+  String get reportSubmit => 'रिपोर्ट सबमिट करें';
+
+  @override
+  String get reportSuccessTitle => 'रिपोर्ट सबमिट हो गई';
+
+  @override
+  String get reportSuccessBody =>
+      'Synthese को बेहतर बनाने में मदद के लिए धन्यवाद। हम इस AI परिणाम की समीक्षा करेंगे।';
+
+  @override
+  String get reportSuccessDone => 'ठीक है';
+
+  @override
+  String get reportFlagButton => 'गलत परिणाम की रिपोर्ट करें';
 }

@@ -80,7 +80,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get onboardingStage1MinorNotice =>
-      'Eres menor de 16 años. Se requiere supervisión parental para usar esta app.';
+      'Debes tener 18 años o más para usar esta app. No podrás continuar.';
+
+  @override
+  String get onboardingAgeGateError =>
+      'Debes tener 18 años o más para usar Synthese.';
 
   @override
   String get onboardingStage1Gender => 'Género';
@@ -309,6 +313,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get permPrivacyBody =>
       'Por favor lee y acepta para continuar usando Synthese.';
+
+  @override
+  String get permPrivacyReadLabel =>
+      'Toca para leer la Política de privacidad completa';
 
   @override
   String get permPrivacyAgreeCheckbox =>
@@ -1195,11 +1203,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get mindfulnessLegendUnpleasant => 'Desagradable';
 
   @override
-  String get disclaimerTitle => 'Antes de comenzar';
+  String get disclaimerTitle => '⚠️ No apto para uso profesional';
 
   @override
   String get disclaimerBody =>
-      'Esta evaluación está diseñada para la reflexión personal y la autoconciencia. No es una herramienta de diagnóstico clínico y no debe reemplazar el consejo profesional de salud mental.';
+      'Synthese es una herramienta general de seguimiento del bienestar. Nada en esta app constituye asesoramiento médico, nutricional, psicológico o financiero. Consulta siempre a un profesional cualificado antes de tomar decisiones sobre tu salud o finanzas.';
 
   @override
   String get disclaimerCredits =>
@@ -6557,4 +6565,335 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get stepNotifChannelOngoing => 'Seguimiento de pasos';
+
+  @override
+  String get stepNotifChannelMilestone => 'Logros de pasos';
+
+  @override
+  String get stepNotifOngoingTitle => 'Seguimiento de pasos activo';
+
+  @override
+  String stepNotifOngoingBody(String steps) {
+    return '$steps pasos hoy';
+  }
+
+  @override
+  String get stepNotif1kTitle => '¡1.000 pasos!';
+
+  @override
+  String get stepNotif1kBody =>
+      'Buen comienzo: has superado los 1.000 pasos hoy.';
+
+  @override
+  String get stepNotif5kTitle => '¡5.000 pasos!';
+
+  @override
+  String get stepNotif5kBody => '¡Vas genial! 5.000 pasos y subiendo.';
+
+  @override
+  String get stepNotifGoalTitle => '¡Meta alcanzada!';
+
+  @override
+  String stepNotifGoalBody(String goal) {
+    return 'Has alcanzado tu meta de $goal pasos de hoy. ¡Increíble!';
+  }
+
+  @override
+  String get settingsStepMilestonesTitle => 'Avisos de logros de pasos';
+
+  @override
+  String get settingsStepMilestonesSubtitle =>
+      'Recibe una notificación al superar los 1.000, 5.000 y tu meta diaria, incluso con la app cerrada.';
+
+  @override
+  String get settingsStepMilestonesDisabled =>
+      'Activa el seguimiento de pasos en segundo plano para usar los avisos de logros.';
+
+  @override
+  String get sessionSignedOutOtherDevice =>
+      'Se ha cerrado tu sesión porque tu cuenta se inició en otro dispositivo.';
+
+  @override
+  String get notifDietMealTitle => 'Registra tus comidas de hoy';
+
+  @override
+  String get notifDietMealBody =>
+      'Mantén tu racha de nutrición registrando al menos una comida.';
+
+  @override
+  String get notifDietWaterTitle => 'Control de hidratación';
+
+  @override
+  String notifDietWaterBody(int current, int goal) {
+    return 'Llevas $current/$goal vasos hoy. Bebe un vaso ahora.';
+  }
+
+  @override
+  String get notifDietCalorieNudgeTitle =>
+      'Estás cerca de tu objetivo calórico';
+
+  @override
+  String notifDietCalorieNudgeBody(int logged, int goal) {
+    return 'Has registrado $logged/$goal kcal. Termina con fuerza.';
+  }
+
+  @override
+  String notifDietStreakTitle(int days) {
+    return 'Racha de nutrición: $days días';
+  }
+
+  @override
+  String notifDietStreakBody(int days) {
+    return 'Has alcanzado tu objetivo calórico durante $days días seguidos.';
+  }
+
+  @override
+  String get notifMindfulnessMoodTitle => 'Registro de estado de ánimo';
+
+  @override
+  String get notifMindfulnessMoodBody =>
+      'Tómate 10 segundos para registrar tu estado de ánimo hoy.';
+
+  @override
+  String get notifMindfulnessReadinessTitle => 'Preparación matutina';
+
+  @override
+  String get notifMindfulnessReadinessBody =>
+      'Registra sueño, energía y estrés para organizar mejor tu día.';
+
+  @override
+  String get notifMindfulnessBreatheTitle =>
+      'Tómate un descanso de respiración';
+
+  @override
+  String get notifMindfulnessBreatheBody =>
+      'Una sesión de respiración de 2 minutos puede ayudarte a cerrar el día con calma.';
+
+  @override
+  String get notifCyclesDailyLogTitle => 'Recordatorio de registro del ciclo';
+
+  @override
+  String get notifCyclesDailyLogBody =>
+      'Registra el flujo/síntomas de hoy para mantener predicciones precisas.';
+
+  @override
+  String get notifCyclesPeriodSoonTitle => 'Período probable en ~2 días';
+
+  @override
+  String get notifCyclesPeriodSoonBody =>
+      'Ten los productos a mano y registra los síntomas hoy.';
+
+  @override
+  String get notifCyclesPeriodDueTodayTitle => 'Período previsto para hoy';
+
+  @override
+  String get notifCyclesPeriodDueTodayBody =>
+      'Tu ciclo sugiere que hoy podría ser el día 1 de tu período.';
+
+  @override
+  String get notifCyclesLate7Title => 'Período con 7+ días de retraso';
+
+  @override
+  String get notifCyclesLate7Body =>
+      'El estrés y los cambios de rutina pueden retrasar el período. Sigue registrando.';
+
+  @override
+  String get notifCyclesLate14Title => 'Período con 14+ días de retraso';
+
+  @override
+  String get notifCyclesLate14Body =>
+      'Si esto es inusual para ti, considera consultar a un médico.';
+
+  @override
+  String get notifCyclesLate90Title => 'Período con más de 3 meses de retraso';
+
+  @override
+  String get notifCyclesLate90Body =>
+      'Por favor, consulta a un profesional de salud lo antes posible.';
+
+  @override
+  String get notifCyclesOvulationWindowTitle =>
+      'Ventana fértil probablemente iniciando';
+
+  @override
+  String get notifCyclesOvulationWindowBody =>
+      'Es posible que estés entrando en tu ventana de ovulación.';
+
+  @override
+  String get notifCyclesOvulationPeakTitle => 'Ovulación probable hoy';
+
+  @override
+  String get notifCyclesOvulationPeakBody =>
+      'Tu ciclo indica que la ovulación es probable hoy.';
+
+  @override
+  String get notifCyclesShortCycleTitle => 'Patrón: ciclos cortos';
+
+  @override
+  String get notifCyclesShortCycleBody =>
+      'Tus últimos 3 ciclos fueron inusualmente cortos. Sigue monitoreando.';
+
+  @override
+  String get notifCyclesLongCycleTitle => 'Patrón: ciclos largos';
+
+  @override
+  String get notifCyclesLongCycleBody =>
+      'Tus últimos 3 ciclos fueron inusualmente largos. Registra de cerca.';
+
+  @override
+  String get notifCyclesLongPeriodTitle => 'Períodos largos detectados';
+
+  @override
+  String get notifCyclesLongPeriodBody =>
+      'La duración de tu período ha superado los 8 días recientemente.';
+
+  @override
+  String get notifCyclesHeavyBleedingTitle => 'Tendencia de sangrado abundante';
+
+  @override
+  String get notifCyclesHeavyBleedingBody =>
+      'Tu último ciclo tuvo 5+ días de flujo muy abundante.';
+
+  @override
+  String get notifFinanceDebtClearedTitle => 'Deuda saldada';
+
+  @override
+  String notifFinanceDebtClearedBody(String name) {
+    return '$name ha sido marcado como totalmente pagado. ¡Gran progreso!';
+  }
+
+  @override
+  String notifFinanceDebtDueTitle(String name) {
+    return 'Recordatorio de deuda: $name';
+  }
+
+  @override
+  String get notifFinanceDebtDueTodayBody => 'Este pago vence hoy.';
+
+  @override
+  String notifFinanceDebtDueDaysBody(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 's',
+      one: '',
+    );
+    return 'Pago vence en $days día$_temp0.';
+  }
+
+  @override
+  String get notifFinanceDebtOverdueTitle => 'Pago vencido';
+
+  @override
+  String notifFinanceDebtOverdueBody(String name, int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 's',
+      one: '',
+    );
+    return '$name lleva $days día$_temp0 de retraso.';
+  }
+
+  @override
+  String get notifFinanceInstallmentTitle => 'Recordatorio de cuota';
+
+  @override
+  String notifFinanceInstallmentBody(String name) {
+    return 'La cuota de $name se acerca pronto.';
+  }
+
+  @override
+  String get notifFinanceLowBalanceTitle => 'Alerta de saldo bajo';
+
+  @override
+  String notifFinanceLowBalanceBody(String name, String balance) {
+    return '$name tiene un saldo de $balance. Considera recargarlo pronto.';
+  }
+
+  @override
+  String get notifFinanceLargeExpenseTitle => 'Gasto grande detectado';
+
+  @override
+  String notifFinanceLargeExpenseBody(String amount) {
+    return 'Se registró un gasto grande de $amount.';
+  }
+
+  @override
+  String get notifFinanceBudgetPacingTitle => 'Alerta de ritmo de presupuesto';
+
+  @override
+  String notifFinanceBudgetPacingBody(String spent) {
+    return 'Estás gastando más rápido que el ritmo de este mes ($spent usado).';
+  }
+
+  @override
+  String get notifDashboardHealthTitle =>
+      'Recordatorio de puntuación de salud diaria';
+
+  @override
+  String get notifDashboardHealthBody =>
+      'Aún no hay actualización de salud hoy. Registra actividad para actualizar tu puntuación.';
+
+  @override
+  String get disclaimerShort =>
+      'No sustituye el asesoramiento médico, nutricional, de salud mental o financiero profesional. Consulta siempre a un profesional cualificado.';
+
+  @override
+  String get disclaimerAiTitle =>
+      '⚠️ Estimaciones de IA — No apto para uso profesional';
+
+  @override
+  String get disclaimerAiBody =>
+      'Los valores nutricionales son estimados por IA y pueden no ser precisos. La IA puede cometer errores. Esto no es asesoramiento dietético o médico profesional. Consulta siempre a un dietista registrado o proveedor de salud para orientación nutricional.';
+
+  @override
+  String get disclaimerAiShort =>
+      'Los valores nutricionales son estimaciones de IA y pueden ser imprecisos. No sustituyen el asesoramiento dietético o médico profesional.';
+
+  @override
+  String get reportTitle => 'Reportar resultado incorrecto';
+
+  @override
+  String get reportSelectIssue => '¿Qué está mal?';
+
+  @override
+  String get reportIssueWrongFood => 'Alimento identificado incorrectamente';
+
+  @override
+  String get reportIssueCaloriesOff => 'Calorías muy incorrectas';
+
+  @override
+  String get reportIssueMacrosOff => 'Macros incorrectos';
+
+  @override
+  String get reportIssueMicronutrientsOff => 'Micronutrientes incorrectos';
+
+  @override
+  String get reportIssueOther => 'Otro';
+
+  @override
+  String get reportNoteLabel => 'Detalles adicionales (opcional)';
+
+  @override
+  String get reportNoteHint => 'Ej: Lo identificó como pasta pero es arroz...';
+
+  @override
+  String get reportSubmit => 'Enviar reporte';
+
+  @override
+  String get reportSuccessTitle => 'Reporte enviado';
+
+  @override
+  String get reportSuccessBody =>
+      'Gracias por ayudar a mejorar Synthese. Revisaremos este resultado de IA.';
+
+  @override
+  String get reportSuccessDone => 'Listo';
+
+  @override
+  String get reportFlagButton => 'Reportar resultado incorrecto';
 }

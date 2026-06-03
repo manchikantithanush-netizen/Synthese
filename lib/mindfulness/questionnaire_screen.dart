@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/mindfulness/questionnaire_data.dart';
 import 'package:synthese/ui/components/universalclosebutton.dart';
+import 'package:synthese/ui/components/disclaimer_banner.dart';
 
 class QuestionnaireScreen extends StatefulWidget {
   const QuestionnaireScreen({super.key});
@@ -117,6 +118,12 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                   ),
                 ],
               ),
+            ),
+
+            // ── Disclaimer ──────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+              child: const DisclaimerBanner.generalShort(),
             ),
 
             // PageView for questions

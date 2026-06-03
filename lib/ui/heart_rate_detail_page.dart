@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+import 'package:synthese/data/heart_rate_repository.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
@@ -55,22 +54,7 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
     required DateTime when,
     required int bpm,
   }) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
-    final dayKey = _dateKey(when);
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .collection('dashboardDaily')
-        .doc(dayKey)
-        .set({
-          'heartRate': bpm,
-          'hrHistory': FieldValue.arrayUnion([
-            {'bpm': bpm, 'time': Timestamp.fromDate(when)},
-          ]),
-          'dateKey': dayKey,
-          'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+    await HeartRateRepository.instance.addReading(when: when, bpm: bpm);
 
     if (!mounted) return;
     setState(() {
@@ -127,50 +111,19 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
     );
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
-
-  String _dateKey(DateTime d) {
-    final m = d.month.toString().padLeft(2, '0');
-    final day = d.day.toString().padLeft(2, '0');
-    return '${d.year}-$m-$day';
-  }
-
-  DateTime get _thisMonday {
-    final now = DateTime.now();
-    return DateTime(now.year, now.month, now.day - (now.weekday - 1));
-  }
-
   // ── Daily fetch ───────────────────────────────────────────────────────────
-  // Loads persisted readings from Firestore (survives restarts)
+  // Loads persisted readings (survives restarts) via HeartRateRepository.
 
   Future<void> _fetchDailyHr() async {
     setState(() => _loadingDaily = true);
     try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return;
       final now = DateTime.now();
       final todayStart = DateTime(now.year, now.month, now.day);
-      final dayKey = _dateKey(now);
-
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .collection('dashboardDaily')
-          .doc(dayKey)
-          .get();
-      final raw = doc.data()?['hrHistory'] as List<dynamic>?;
-      if (raw != null) {
-        final stored = raw
-            .map((e) {
-              final bpm = (e['bpm'] as num?)?.toInt() ?? 0;
-              final ts = (e['time'] as Timestamp?)?.toDate() ?? now;
-              return (bpm: bpm, time: ts);
-            })
-            .where((r) => r.bpm > 0 && !r.time.isBefore(todayStart))
-            .toList()
-          ..sort((a, b) => a.time.compareTo(b.time));
-        if (mounted) setState(() => _dailyHistory = stored);
-      }
+      final readings = await HeartRateRepository.instance.readingsForDay(now);
+      final stored = readings
+          .where((r) => !r.time.isBefore(todayStart))
+          .toList();
+      if (mounted) setState(() => _dailyHistory = stored);
     } catch (_) {
     } finally {
       if (mounted) setState(() => _loadingDaily = false);
@@ -185,52 +138,9 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
   Future<void> _fetchWeeklyHr() async {
     setState(() => _loadingWeekly = true);
     try {
-      final uid = FirebaseAuth.instance.currentUser?.uid;
-      if (uid == null) return;
-
-      final now = DateTime.now();
-      final monday = _thisMonday;
-      final int daysSinceMonday = now.weekday - 1;
-      final List<int> maxes = List.filled(7, 0);
-
-      // Seed today's slot with currentBpm immediately so it always shows
-      maxes[daysSinceMonday] = _currentBpm;
-
-      final futures = <Future<void>>[];
-      for (int i = 0; i <= daysSinceMonday; i++) {
-        final day = monday.add(Duration(days: i));
-        final key = _dateKey(day);
-        futures.add(
-          FirebaseFirestore.instance
-              .collection('users')
-              .doc(uid)
-              .collection('dashboardDaily')
-              .doc(key)
-              .get()
-              .then((doc) {
-                final data = doc.data();
-                if (data == null) return;
-                // Compute peak BPM from hrHistory (preferred — full picture)
-                final raw = data['hrHistory'] as List<dynamic>?;
-                if (raw != null && raw.isNotEmpty) {
-                  final bpms = raw
-                      .map((e) => (e['bpm'] as num?)?.toInt() ?? 0)
-                      .where((b) => b > 0)
-                      .toList();
-                  if (bpms.isNotEmpty) {
-                    maxes[i] = bpms.reduce(math.max);
-                    return;
-                  }
-                }
-                // Fallback to stored heartRate field
-                final hr = (data['heartRate'] as num?)?.toInt();
-                if (hr != null && hr > 0) {
-                  maxes[i] = hr;
-                }
-              }),
-        );
-      }
-      await Future.wait(futures);
+      final maxes = await HeartRateRepository.instance.weeklyMax(
+        seedTodayBpm: _currentBpm,
+      );
       if (mounted) setState(() => _weeklyMax = maxes);
     } catch (_) {
     } finally {

@@ -95,7 +95,7 @@ class OnboardingStage1 extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).colorScheme.onSurface;
-    final isMinor = dob != null && _calculateAge(dob!) < 16;
+    final isMinor = dob != null && _calculateAge(dob!) < 18;
     final t = AppLocalizations.of(context);
     final localeTag = Localizations.localeOf(context).toLanguageTag();
 

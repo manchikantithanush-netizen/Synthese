@@ -6,12 +6,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:synthese/services/guest_session_service.dart';
+import 'package:synthese/services/session_guard_service.dart';
+import 'package:synthese/ui/components/app_toast.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/ui/auth/login_page.dart';
 import 'package:synthese/ui/auth/signup_page.dart';
 import 'package:synthese/onboarding/onboarding_intro.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
+import 'package:synthese/ui/components/disclaimer_banner.dart';
 
 class StartPage extends StatefulWidget {
   const StartPage({super.key});
@@ -49,6 +52,19 @@ class _StartPageState extends State<StartPage> {
     super.initState();
     _dictText = '$_defWord$_defPron$_defPos$_defMeaning$_defOrigin';
     _startSequence();
+    // If we landed here because the account was logged in on another device,
+    // let the user know why they were signed out.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final superseded =
+          await SessionGuardService.instance.consumeSupersededFlag();
+      if (superseded && mounted) {
+        AppToast.info(
+          context,
+          AppLocalizations.of(context).sessionSignedOutOtherDevice,
+          icon: Icons.devices_other,
+        );
+      }
+    });
   }
 
   @override
@@ -606,7 +622,13 @@ class _StartPageState extends State<StartPage> {
                                 ),
                         ),
                       ),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 14),
+                      // ── Disclaimer ──────────────────────────────────────
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4),
+                        child: DisclaimerBanner.general(),
+                      ),
+                      const SizedBox(height: 4),
                       RichText(
                         textAlign: TextAlign.center,
                         text: TextSpan(

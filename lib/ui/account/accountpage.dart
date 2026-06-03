@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cupertino_native/cupertino_native.dart';
 
 import 'package:synthese/main.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
@@ -1094,6 +1093,11 @@ class _SettingsPage extends StatelessWidget {
                 child: Container(height: 0.5, color: hlColor),
               ),
               _BackgroundStepsToggleRow(isDark: isDark),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 20.0),
+                child: Container(height: 0.5, color: hlColor),
+              ),
+              _MilestoneNotificationsToggleRow(isDark: isDark),
             ],
           ),
         ),
@@ -1166,6 +1170,85 @@ class _BackgroundStepsToggleRow extends StatelessWidget {
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+}
+
+/// Settings row that toggles step-milestone notifications (1k / 5k / goal).
+/// This is a sub-setting of background step tracking: it's disabled (and has no
+/// effect) while background tracking is off, since milestone alerts rely on
+/// all-day counting.
+class _MilestoneNotificationsToggleRow extends StatelessWidget {
+  final bool isDark;
+  const _MilestoneNotificationsToggleRow({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
+    final textColor = isDark ? Colors.white : Colors.black;
+    return ValueListenableBuilder<bool>(
+      valueListenable: StepTracker.instance.backgroundEnabled,
+      builder: (context, backgroundOn, __) {
+        return ValueListenableBuilder<bool>(
+          valueListenable: StepTracker.instance.milestoneNotificationsEnabled,
+          builder: (context, enabled, _) {
+            final disabled = !backgroundOn;
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 14.0,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          t.settingsStepMilestonesTitle,
+                          style: TextStyle(
+                            color: textColor.withValues(
+                              alpha: disabled ? 0.35 : 1.0,
+                            ),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          disabled
+                              ? t.settingsStepMilestonesDisabled
+                              : t.settingsStepMilestonesSubtitle,
+                          style: TextStyle(
+                            color: textColor.withValues(
+                              alpha: disabled ? 0.35 : 0.5,
+                            ),
+                            fontSize: 13,
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Opacity(
+                    opacity: disabled ? 0.4 : 1.0,
+                    child: UniversalSwitch(
+                      value: enabled && backgroundOn,
+                      onChanged: disabled
+                          ? null
+                          : (value) async {
+                              await StepTracker.instance
+                                  .setMilestoneNotificationsEnabled(value);
+                            },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       },
     );

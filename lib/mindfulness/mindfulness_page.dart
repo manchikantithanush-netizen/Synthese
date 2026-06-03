@@ -14,6 +14,7 @@ import 'package:synthese/mindfulness/questionnaire_screen.dart';
 import 'package:synthese/mindfulness/questionnaire_results_screen.dart';
 import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
+import 'package:synthese/ui/components/disclaimer_banner.dart';
 
 class MindfulnessPage extends StatefulWidget {
   final Function(bool)? onModalStateChanged;
@@ -235,6 +236,10 @@ class _MindfulnessPageState extends State<MindfulnessPage> {
                 },
               ),
               const SizedBox(height: 24),
+
+              // ── Disclaimer ──────────────────────────────────────────
+              const DisclaimerBanner.generalShort(),
+              const SizedBox(height: 12),
 
               // Mood Calendar (shows logged days)
               _buildMoodCalendar(context, uid),

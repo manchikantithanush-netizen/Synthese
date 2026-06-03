@@ -3,12 +3,17 @@ import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/services/app_notifications_service.dart';
 
 class NotificationRulesEngine {
   NotificationRulesEngine._();
 
   static bool _running = false;
+
+  /// Cache the last known localizations so timer-based calls (no context)
+  /// can still use the correct locale.
+  static AppLocalizations? _cachedT;
 
   static DateTime _dayStart(DateTime value) =>
       DateTime(value.year, value.month, value.day);
@@ -24,10 +29,17 @@ class NotificationRulesEngine {
     return '${date.year}-$month';
   }
 
-  static Future<void> evaluateGlobal() async {
+  static Future<void> evaluateGlobal({AppLocalizations? t}) async {
     if (_running) return;
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return;
+
+    // Update cache if a fresh instance was provided.
+    if (t != null) _cachedT = t;
+    final localizations = _cachedT;
+    // If we have no localizations at all yet, skip — will run again once
+    // a widget provides them.
+    if (localizations == null) return;
 
     _running = true;
     try {
@@ -38,16 +50,17 @@ class NotificationRulesEngine {
       final userData = userDoc.data() ?? const <String, dynamic>{};
 
       await Future.wait([
-        _evaluateDiet(userRef: userRef, uid: uid, userData: userData, now: now),
+        _evaluateDiet(t: localizations, userRef: userRef, uid: uid, userData: userData, now: now),
         _evaluateMindfulness(
+          t: localizations,
           userRef: userRef,
           uid: uid,
           userData: userData,
           now: now,
         ),
-        _evaluateCycles(userRef: userRef, userData: userData, now: now),
-        _evaluateFinance(userRef: userRef, uid: uid, userData: userData, now: now),
-        _evaluateDashboard(userRef: userRef, now: now),
+        _evaluateCycles(t: localizations, userRef: userRef, userData: userData, now: now),
+        _evaluateFinance(t: localizations, userRef: userRef, uid: uid, userData: userData, now: now),
+        _evaluateDashboard(t: localizations, userRef: userRef, now: now),
       ]);
     } catch (error) {
       debugNotification('Rules engine failed: $error');
@@ -57,12 +70,12 @@ class NotificationRulesEngine {
   }
 
   static Future<void> _evaluateDiet({
+    required AppLocalizations t,
     required DocumentReference<Map<String, dynamic>> userRef,
     required String uid,
     required Map<String, dynamic> userData,
     required DateTime now,
   }) async {
-    final todayStart = _dayStart(now);
     final todayKey = _dateKey(now);
     final dailyCalorieGoal =
         (userData['dailyCalorieGoal'] as num?)?.toInt() ?? 2000;
@@ -76,8 +89,8 @@ class NotificationRulesEngine {
     if (!hasMealToday && now.hour >= 20) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'diet_meal_logging_$todayKey',
-        title: 'Log today\'s meals',
-        body: 'Keep your nutrition streak alive by logging at least one meal.',
+        title: t.notifDietMealTitle,
+        body: t.notifDietMealBody,
         now: now,
       );
     }
@@ -85,9 +98,8 @@ class NotificationRulesEngine {
     if (waterGlasses < waterGoal && now.hour >= 12 && now.hour <= 21) {
       await AppNotificationsService.instance.showWithCooldown(
         uniqueKey: 'diet_water_behind',
-        title: 'Hydration check',
-        body:
-            'You are at $waterGlasses/$waterGoal glasses today. Drink a glass now.',
+        title: t.notifDietWaterTitle,
+        body: t.notifDietWaterBody(waterGlasses, waterGoal),
         cooldown: const Duration(hours: 4),
         now: now,
       );
@@ -99,9 +111,8 @@ class NotificationRulesEngine {
         now.hour >= 12) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'diet_goal_nudge_$todayKey',
-        title: 'You\'re close to your calorie goal',
-        body:
-            'You\'ve logged $todayCalories/$dailyCalorieGoal kcal. Finish strong.',
+        title: t.notifDietCalorieNudgeTitle,
+        body: t.notifDietCalorieNudgeBody(todayCalories, dailyCalorieGoal),
         now: now,
       );
     }
@@ -127,15 +138,16 @@ class NotificationRulesEngine {
     }
     if (streak > 0 && streak % 3 == 0) {
       await AppNotificationsService.instance.showOncePerDay(
-        uniqueKey: 'diet_streak_$streak\_$todayKey',
-        title: 'Nutrition streak: $streak days',
-        body: 'You have hit your calorie goal for $streak days in a row.',
+        uniqueKey: 'diet_streak_${streak}_$todayKey',
+        title: t.notifDietStreakTitle(streak),
+        body: t.notifDietStreakBody(streak),
         now: now,
       );
     }
   }
 
   static Future<void> _evaluateMindfulness({
+    required AppLocalizations t,
     required DocumentReference<Map<String, dynamic>> userRef,
     required String uid,
     required Map<String, dynamic> userData,
@@ -146,11 +158,12 @@ class NotificationRulesEngine {
     final dailyAgg = dailyAggDoc.data() ?? const <String, dynamic>{};
     final moodLogged = (dailyAgg['moodLogged'] as bool?) ?? false;
     final readinessLogged = (dailyAgg['readinessLogged'] as bool?) ?? false;
+
     if (!moodLogged && now.hour >= 19) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'mindfulness_mood_check_$todayKey',
-        title: 'Mood check-in',
-        body: 'Take 10 seconds to log your mood today.',
+        title: t.notifMindfulnessMoodTitle,
+        body: t.notifMindfulnessMoodBody,
         now: now,
       );
     }
@@ -158,27 +171,26 @@ class NotificationRulesEngine {
     if (!readinessLogged && now.hour >= 10 && now.hour <= 14) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'mindfulness_readiness_$todayKey',
-        title: 'Morning readiness',
-        body: 'Log sleep, energy and stress to tune your day better.',
+        title: t.notifMindfulnessReadinessTitle,
+        body: t.notifMindfulnessReadinessBody,
         now: now,
       );
     }
 
-    // Small evening breathing nudge if both entries are missing.
     if (!moodLogged && !readinessLogged && now.hour >= 21) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'mindfulness_breathe_$todayKey',
-        title: 'Take a short breathing break',
-        body: 'A 2-minute breathing session can help close your day calmly.',
+        title: t.notifMindfulnessBreatheTitle,
+        body: t.notifMindfulnessBreatheBody,
         now: now,
       );
     }
 
-    // Access userData to avoid analyzer warning for future rule extensions.
     if (userData.isEmpty || uid.isEmpty) return;
   }
 
   static Future<void> _evaluateCycles({
+    required AppLocalizations t,
     required DocumentReference<Map<String, dynamic>> userRef,
     required Map<String, dynamic> userData,
     required DateTime now,
@@ -201,8 +213,8 @@ class NotificationRulesEngine {
     if (!logDoc.exists && now.hour >= 20) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'cycles_daily_log_$todayKey',
-        title: 'Cycle log reminder',
-        body: 'Log today\'s flow/symptoms to keep cycle predictions accurate.',
+        title: t.notifCyclesDailyLogTitle,
+        body: t.notifCyclesDailyLogBody,
         now: now,
       );
     }
@@ -210,36 +222,36 @@ class NotificationRulesEngine {
     if (daysUntilNext == 2) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'cycles_period_soon_$todayKey',
-        title: 'Period likely in ~2 days',
-        body: 'Keep products handy and track symptoms today.',
+        title: t.notifCyclesPeriodSoonTitle,
+        body: t.notifCyclesPeriodSoonBody,
         now: now,
       );
     } else if (daysUntilNext == 0) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'cycles_due_today_$todayKey',
-        title: 'Period due today',
-        body: 'Your cycle suggests today may be day 1 of your period.',
+        title: t.notifCyclesPeriodDueTodayTitle,
+        body: t.notifCyclesPeriodDueTodayBody,
         now: now,
       );
     } else if (daysUntilNext <= -7 && daysUntilNext > -14) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'cycles_late_7_$todayKey',
-        title: 'Period is 7+ days late',
-        body: 'Stress and routine changes can delay periods. Keep tracking.',
+        title: t.notifCyclesLate7Title,
+        body: t.notifCyclesLate7Body,
         now: now,
       );
     } else if (daysUntilNext <= -14 && daysUntilNext > -90) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'cycles_late_14_$todayKey',
-        title: 'Period is 14+ days late',
-        body: 'If this is unusual for you, consider checking with a doctor.',
+        title: t.notifCyclesLate14Title,
+        body: t.notifCyclesLate14Body,
         now: now,
       );
     } else if (daysUntilNext <= -90) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'cycles_late_90_$todayKey',
-        title: 'Period over 3 months late',
-        body: 'Please consult a healthcare provider as soon as possible.',
+        title: t.notifCyclesLate90Title,
+        body: t.notifCyclesLate90Body,
         now: now,
       );
     }
@@ -247,16 +259,16 @@ class NotificationRulesEngine {
     if (cycleDay == ovulationDay - 2) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'cycles_ovulation_window_$todayKey',
-        title: 'Fertile window likely starting',
-        body: 'You may be entering your ovulation window.',
+        title: t.notifCyclesOvulationWindowTitle,
+        body: t.notifCyclesOvulationWindowBody,
         now: now,
       );
     }
     if (cycleDay == ovulationDay) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'cycles_ovulation_peak_$todayKey',
-        title: 'Ovulation likely today',
-        body: 'Your cycle indicates ovulation is likely around today.',
+        title: t.notifCyclesOvulationPeakTitle,
+        body: t.notifCyclesOvulationPeakBody,
         now: now,
       );
     }
@@ -278,16 +290,16 @@ class NotificationRulesEngine {
       if (allShort) {
         await AppNotificationsService.instance.showOncePerDay(
           uniqueKey: 'cycles_short_cycle_$todayKey',
-          title: 'Pattern: short cycles',
-          body: 'Your last 3 cycles were unusually short. Keep monitoring.',
+          title: t.notifCyclesShortCycleTitle,
+          body: t.notifCyclesShortCycleBody,
           now: now,
         );
       }
       if (allLong) {
         await AppNotificationsService.instance.showOncePerDay(
           uniqueKey: 'cycles_long_cycle_$todayKey',
-          title: 'Pattern: long cycles',
-          body: 'Your last 3 cycles were unusually long. Track closely.',
+          title: t.notifCyclesLongCycleTitle,
+          body: t.notifCyclesLongCycleBody,
           now: now,
         );
       }
@@ -300,8 +312,8 @@ class NotificationRulesEngine {
       if (longPeriods) {
         await AppNotificationsService.instance.showOncePerDay(
           uniqueKey: 'cycles_long_period_$todayKey',
-          title: 'Long periods detected',
-          body: 'Your period length has been above 8 days recently.',
+          title: t.notifCyclesLongPeriodTitle,
+          body: t.notifCyclesLongPeriodBody,
           now: now,
         );
       }
@@ -312,8 +324,8 @@ class NotificationRulesEngine {
       if (veryHeavyDays >= 5) {
         await AppNotificationsService.instance.showOncePerDay(
           uniqueKey: 'cycles_heavy_bleeding_$todayKey',
-          title: 'Heavy bleeding trend',
-          body: 'Your last cycle had 5+ very heavy flow days.',
+          title: t.notifCyclesHeavyBleedingTitle,
+          body: t.notifCyclesHeavyBleedingBody,
           now: now,
         );
       }
@@ -321,6 +333,7 @@ class NotificationRulesEngine {
   }
 
   static Future<void> _evaluateFinance({
+    required AppLocalizations t,
     required DocumentReference<Map<String, dynamic>> userRef,
     required String uid,
     required Map<String, dynamic> userData,
@@ -346,8 +359,8 @@ class NotificationRulesEngine {
         if (!alreadyMarked) {
           await AppNotificationsService.instance.show(
             uniqueKey: paidKey,
-            title: 'Debt cleared',
-            body: '$title has been marked as fully paid. Great progress!',
+            title: t.notifFinanceDebtClearedTitle,
+            body: t.notifFinanceDebtClearedBody(title),
           );
           await AppNotificationsService.instance.markOnce(uniqueKey: paidKey);
         }
@@ -364,18 +377,18 @@ class NotificationRulesEngine {
             daysUntilDue == 0) {
           await AppNotificationsService.instance.showOncePerDay(
             uniqueKey: 'finance_debt_due_${debtDoc.id}_$todayKey',
-            title: 'Debt reminder: $title',
+            title: t.notifFinanceDebtDueTitle(title),
             body: daysUntilDue == 0
-                ? 'This payment is due today.'
-                : 'Payment due in $daysUntilDue day${daysUntilDue == 1 ? '' : 's'}.',
+                ? t.notifFinanceDebtDueTodayBody
+                : t.notifFinanceDebtDueDaysBody(daysUntilDue),
             now: now,
           );
         } else if (daysUntilDue < 0) {
           final overdueDays = daysUntilDue.abs();
           await AppNotificationsService.instance.showOncePerDay(
             uniqueKey: 'finance_debt_overdue_${debtDoc.id}_$todayKey',
-            title: 'Payment overdue',
-            body: '$title is overdue by $overdueDays day${overdueDays == 1 ? '' : 's'}.',
+            title: t.notifFinanceDebtOverdueTitle,
+            body: t.notifFinanceDebtOverdueBody(title, overdueDays),
             now: now,
           );
         }
@@ -388,8 +401,8 @@ class NotificationRulesEngine {
         if (daysUntilDue <= 2 && daysUntilDue >= 0) {
           await AppNotificationsService.instance.showOncePerDay(
             uniqueKey: 'finance_installment_${debtDoc.id}_$todayKey',
-            title: 'Installment reminder',
-            body: '$title installment is coming up soon.',
+            title: t.notifFinanceInstallmentTitle,
+            body: t.notifFinanceInstallmentBody(title),
             now: now,
           );
         }
@@ -406,9 +419,8 @@ class NotificationRulesEngine {
       if (balance <= lowBalanceThreshold) {
         await AppNotificationsService.instance.showOncePerDay(
           uniqueKey: 'finance_low_balance_${accountDoc.id}_$todayKey',
-          title: 'Low balance alert',
-          body:
-              '$name is at ${balance.toStringAsFixed(2)}. Consider topping up soon.',
+          title: t.notifFinanceLowBalanceTitle,
+          body: t.notifFinanceLowBalanceBody(name, balance.toStringAsFixed(2)),
           now: now,
         );
       }
@@ -440,8 +452,8 @@ class NotificationRulesEngine {
         if (!already) {
           await AppNotificationsService.instance.show(
             uniqueKey: key,
-            title: 'Large expense detected',
-            body: 'A large spend of ${amount.toStringAsFixed(2)} was recorded.',
+            title: t.notifFinanceLargeExpenseTitle,
+            body: t.notifFinanceLargeExpenseBody(amount.toStringAsFixed(2)),
           );
           await AppNotificationsService.instance.markOnce(uniqueKey: key);
         }
@@ -468,11 +480,11 @@ class NotificationRulesEngine {
             ),
           )
           .get();
-      monthExpense = fallbackMonthSnap.docs.fold<double>(0.0, (sum, txDoc) {
+      monthExpense = fallbackMonthSnap.docs.fold<double>(0.0, (acc, txDoc) {
         final tx = txDoc.data();
         final type = (tx['type'] as String?) ?? 'expense';
-        if (type != 'expense') return sum;
-        return sum + ((tx['amount'] as num?)?.toDouble() ?? 0);
+        if (type != 'expense') return acc;
+        return acc + ((tx['amount'] as num?)?.toDouble() ?? 0);
       });
     }
 
@@ -481,9 +493,8 @@ class NotificationRulesEngine {
     if (monthExpense > expectedSpendByNow * 1.2 && now.day >= 10) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'finance_budget_pacing_$todayKey',
-        title: 'Budget pacing alert',
-        body:
-            'You are spending faster than this month\'s pace (${monthExpense.toStringAsFixed(0)} used).',
+        title: t.notifFinanceBudgetPacingTitle,
+        body: t.notifFinanceBudgetPacingBody(monthExpense.toStringAsFixed(0)),
         now: now,
       );
     }
@@ -492,6 +503,7 @@ class NotificationRulesEngine {
   }
 
   static Future<void> _evaluateDashboard({
+    required AppLocalizations t,
     required DocumentReference<Map<String, dynamic>> userRef,
     required DateTime now,
   }) async {
@@ -506,8 +518,8 @@ class NotificationRulesEngine {
         now.hour >= 19) {
       await AppNotificationsService.instance.showOncePerDay(
         uniqueKey: 'dashboard_daily_health_reminder_$todayKey',
-        title: 'Daily health score reminder',
-        body: 'No health update yet today. Log activity to refresh your score.',
+        title: t.notifDashboardHealthTitle,
+        body: t.notifDashboardHealthBody,
         now: now,
       );
     }

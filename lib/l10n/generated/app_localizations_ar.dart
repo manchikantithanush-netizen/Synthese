@@ -79,7 +79,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onboardingStage1MinorNotice =>
-      'عمرك أقل من 16 عاماً. يلزم وجود إشراف من ولي الأمر لاستخدام هذا التطبيق.';
+      'يجب أن يكون عمرك 18 عامًا أو أكثر لاستخدام هذا التطبيق. لن تتمكن من المتابعة.';
+
+  @override
+  String get onboardingAgeGateError =>
+      'يجب أن يكون عمرك 18 عامًا أو أكثر لاستخدام Synthese.';
 
   @override
   String get onboardingStage1Gender => 'الجنس';
@@ -306,6 +310,9 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get permPrivacyBody =>
       'يرجى القراءة والموافقة للمتابعة في استخدام Synthese.';
+
+  @override
+  String get permPrivacyReadLabel => 'اضغط لقراءة سياسة الخصوصية كاملةً';
 
   @override
   String get permPrivacyAgreeCheckbox => 'قرأت وأوافق على سياسة الخصوصية';
@@ -1179,11 +1186,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get mindfulnessLegendUnpleasant => 'غير مريح';
 
   @override
-  String get disclaimerTitle => 'قبل أن تبدئي';
+  String get disclaimerTitle => '⚠️ ليس للاستخدام المهني';
 
   @override
   String get disclaimerBody =>
-      'هذا التقييم مصمَّم للتأمل الذاتي والوعي الذاتي. ليس أداة تشخيص سريري ولا يجب أن يحل محل المشورة المهنية للصحة النفسية.';
+      'Synthese أداة عامة لتتبع الصحة. لا يُعدّ أي محتوى في هذا التطبيق نصيحة طبية أو غذائية أو نفسية أو مالية. استشر دائماً متخصصاً مؤهلاً قبل اتخاذ قرارات تتعلق بصحتك أو أموالك.';
 
   @override
   String get disclaimerCredits =>
@@ -6465,4 +6472,316 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get stepNotifChannelOngoing => 'تتبع الخطوات';
+
+  @override
+  String get stepNotifChannelMilestone => 'إنجازات الخطوات';
+
+  @override
+  String get stepNotifOngoingTitle => 'تتبع الخطوات نشط';
+
+  @override
+  String stepNotifOngoingBody(String steps) {
+    return '$steps خطوة اليوم';
+  }
+
+  @override
+  String get stepNotif1kTitle => '1٬000 خطوة!';
+
+  @override
+  String get stepNotif1kBody => 'بداية رائعة — لقد تجاوزت 1٬000 خطوة اليوم.';
+
+  @override
+  String get stepNotif5kTitle => '5٬000 خطوة!';
+
+  @override
+  String get stepNotif5kBody => 'أنت في تألق — 5٬000 خطوة وأكثر.';
+
+  @override
+  String get stepNotifGoalTitle => 'تم تحقيق الهدف!';
+
+  @override
+  String stepNotifGoalBody(String goal) {
+    return 'لقد حققت هدفك البالغ $goal خطوة لهذا اليوم. رائع!';
+  }
+
+  @override
+  String get settingsStepMilestonesTitle => 'تنبيهات إنجازات الخطوات';
+
+  @override
+  String get settingsStepMilestonesSubtitle =>
+      'احصل على إشعار عند تجاوزك 1٬000 و5٬000 وهدفك اليومي — حتى مع إغلاق التطبيق.';
+
+  @override
+  String get settingsStepMilestonesDisabled =>
+      'فعّل تتبع الخطوات في الخلفية لاستخدام تنبيهات الإنجازات.';
+
+  @override
+  String get sessionSignedOutOtherDevice =>
+      'تم تسجيل خروجك لأنه تم تسجيل الدخول إلى حسابك على جهاز آخر.';
+
+  @override
+  String get notifDietMealTitle => 'سجّل وجباتك اليوم';
+
+  @override
+  String get notifDietMealBody =>
+      'حافظ على سلسلة تغذيتك بتسجيل وجبة واحدة على الأقل.';
+
+  @override
+  String get notifDietWaterTitle => 'تحقق من الترطيب';
+
+  @override
+  String notifDietWaterBody(int current, int goal) {
+    return 'لديك $current/$goal كوب اليوم. اشرب كوبًا الآن.';
+  }
+
+  @override
+  String get notifDietCalorieNudgeTitle => 'أنت قريب من هدف السعرات';
+
+  @override
+  String notifDietCalorieNudgeBody(int logged, int goal) {
+    return 'سجّلت $logged/$goal سعرة. أكمل بقوة.';
+  }
+
+  @override
+  String notifDietStreakTitle(int days) {
+    return 'سلسلة التغذية: $days أيام';
+  }
+
+  @override
+  String notifDietStreakBody(int days) {
+    return 'لقد حققت هدف السعرات لمدة $days أيام متتالية.';
+  }
+
+  @override
+  String get notifMindfulnessMoodTitle => 'تسجيل المزاج';
+
+  @override
+  String get notifMindfulnessMoodBody => 'خذ 10 ثوانٍ لتسجيل مزاجك اليوم.';
+
+  @override
+  String get notifMindfulnessReadinessTitle => 'جاهزية الصباح';
+
+  @override
+  String get notifMindfulnessReadinessBody =>
+      'سجّل النوم والطاقة والتوتر لتنظيم يومك بشكل أفضل.';
+
+  @override
+  String get notifMindfulnessBreatheTitle => 'خذ استراحة تنفس قصيرة';
+
+  @override
+  String get notifMindfulnessBreatheBody =>
+      'جلسة تنفس لمدة دقيقتين يمكن أن تساعدك على إنهاء يومك بهدوء.';
+
+  @override
+  String get notifCyclesDailyLogTitle => 'تذكير بتسجيل الدورة';
+
+  @override
+  String get notifCyclesDailyLogBody =>
+      'سجّل التدفق/الأعراض اليوم للحفاظ على دقة التنبؤات.';
+
+  @override
+  String get notifCyclesPeriodSoonTitle => 'الدورة متوقعة خلال ~يومين';
+
+  @override
+  String get notifCyclesPeriodSoonBody =>
+      'احتفظي بالمستلزمات في متناول اليد وتابعي الأعراض اليوم.';
+
+  @override
+  String get notifCyclesPeriodDueTodayTitle => 'الدورة مستحقة اليوم';
+
+  @override
+  String get notifCyclesPeriodDueTodayBody =>
+      'تشير دورتك إلى أن اليوم قد يكون اليوم الأول من دورتك.';
+
+  @override
+  String get notifCyclesLate7Title => 'الدورة متأخرة 7+ أيام';
+
+  @override
+  String get notifCyclesLate7Body =>
+      'الإجهاد وتغيرات الروتين قد تؤخر الدورة. استمري في التتبع.';
+
+  @override
+  String get notifCyclesLate14Title => 'الدورة متأخرة 14+ يومًا';
+
+  @override
+  String get notifCyclesLate14Body =>
+      'إذا كان هذا غير معتاد بالنسبة لك، فكّري في استشارة طبيب.';
+
+  @override
+  String get notifCyclesLate90Title => 'الدورة متأخرة أكثر من 3 أشهر';
+
+  @override
+  String get notifCyclesLate90Body =>
+      'يرجى استشارة مقدم رعاية صحية في أقرب وقت ممكن.';
+
+  @override
+  String get notifCyclesOvulationWindowTitle => 'نافذة الخصوبة تبدأ على الأرجح';
+
+  @override
+  String get notifCyclesOvulationWindowBody =>
+      'قد تكونين على وشك الدخول في نافذة التبويض.';
+
+  @override
+  String get notifCyclesOvulationPeakTitle => 'التبويض على الأرجح اليوم';
+
+  @override
+  String get notifCyclesOvulationPeakBody =>
+      'تشير دورتك إلى أن التبويض محتمل اليوم.';
+
+  @override
+  String get notifCyclesShortCycleTitle => 'نمط: دورات قصيرة';
+
+  @override
+  String get notifCyclesShortCycleBody =>
+      'دوراتك الثلاث الأخيرة كانت قصيرة بشكل غير معتاد. استمري في المراقبة.';
+
+  @override
+  String get notifCyclesLongCycleTitle => 'نمط: دورات طويلة';
+
+  @override
+  String get notifCyclesLongCycleBody =>
+      'دوراتك الثلاث الأخيرة كانت طويلة بشكل غير معتاد. تابعي عن كثب.';
+
+  @override
+  String get notifCyclesLongPeriodTitle => 'فترات طويلة مكتشفة';
+
+  @override
+  String get notifCyclesLongPeriodBody => 'مدة دورتك تجاوزت 8 أيام مؤخرًا.';
+
+  @override
+  String get notifCyclesHeavyBleedingTitle => 'نمط نزيف غزير';
+
+  @override
+  String get notifCyclesHeavyBleedingBody =>
+      'دورتك الأخيرة كانت فيها 5+ أيام نزيف غزير جدًا.';
+
+  @override
+  String get notifFinanceDebtClearedTitle => 'تم سداد الدين';
+
+  @override
+  String notifFinanceDebtClearedBody(String name) {
+    return 'تم تحديد $name كمدفوع بالكامل. تقدم رائع!';
+  }
+
+  @override
+  String notifFinanceDebtDueTitle(String name) {
+    return 'تذكير بالدين: $name';
+  }
+
+  @override
+  String get notifFinanceDebtDueTodayBody => 'هذا الدفع مستحق اليوم.';
+
+  @override
+  String notifFinanceDebtDueDaysBody(int days) {
+    return 'الدفع مستحق خلال $days يوم.';
+  }
+
+  @override
+  String get notifFinanceDebtOverdueTitle => 'الدفع متأخر';
+
+  @override
+  String notifFinanceDebtOverdueBody(String name, int days) {
+    return '$name متأخر بـ $days يوم.';
+  }
+
+  @override
+  String get notifFinanceInstallmentTitle => 'تذكير بالقسط';
+
+  @override
+  String notifFinanceInstallmentBody(String name) {
+    return 'قسط $name قادم قريبًا.';
+  }
+
+  @override
+  String get notifFinanceLowBalanceTitle => 'تنبيه رصيد منخفض';
+
+  @override
+  String notifFinanceLowBalanceBody(String name, String balance) {
+    return 'رصيد $name هو $balance. فكّر في إعادة الشحن قريبًا.';
+  }
+
+  @override
+  String get notifFinanceLargeExpenseTitle => 'تم رصد إنفاق كبير';
+
+  @override
+  String notifFinanceLargeExpenseBody(String amount) {
+    return 'تم تسجيل إنفاق كبير بقيمة $amount.';
+  }
+
+  @override
+  String get notifFinanceBudgetPacingTitle => 'تنبيه وتيرة الميزانية';
+
+  @override
+  String notifFinanceBudgetPacingBody(String spent) {
+    return 'أنت تنفق أسرع من وتيرة هذا الشهر ($spent مستخدم).';
+  }
+
+  @override
+  String get notifDashboardHealthTitle => 'تذكير بنقاط الصحة اليومية';
+
+  @override
+  String get notifDashboardHealthBody =>
+      'لا يوجد تحديث صحي اليوم بعد. سجّل نشاطك لتحديث نقاطك.';
+
+  @override
+  String get disclaimerShort =>
+      'لا يُغني هذا التطبيق عن الاستشارة الطبية أو الغذائية أو النفسية أو المالية المتخصصة. استشر دائماً متخصصاً مؤهلاً.';
+
+  @override
+  String get disclaimerAiTitle =>
+      '⚠️ تقديرات الذكاء الاصطناعي — ليس للاستخدام المهني';
+
+  @override
+  String get disclaimerAiBody =>
+      'يتم تقدير القيم الغذائية بواسطة الذكاء الاصطناعي وقد لا تكون دقيقة. الذكاء الاصطناعي يمكن أن يُخطئ. هذا ليس نصيحة غذائية أو طبية متخصصة. استشر دائماً أخصائي تغذية مسجلاً أو مقدم رعاية صحية للحصول على إرشادات غذائية.';
+
+  @override
+  String get disclaimerAiShort =>
+      'القيم الغذائية تقديرات ذكاء اصطناعي وقد تكون غير دقيقة. لا تُغني عن النصيحة الغذائية أو الطبية المتخصصة.';
+
+  @override
+  String get reportTitle => 'الإبلاغ عن نتيجة غير دقيقة';
+
+  @override
+  String get reportSelectIssue => 'ما المشكلة؟';
+
+  @override
+  String get reportIssueWrongFood => 'طعام محدد بشكل خاطئ';
+
+  @override
+  String get reportIssueCaloriesOff => 'السعرات الحرارية غير دقيقة';
+
+  @override
+  String get reportIssueMacrosOff => 'المغذيات الكبرى غير صحيحة';
+
+  @override
+  String get reportIssueMicronutrientsOff => 'المغذيات الدقيقة غير صحيحة';
+
+  @override
+  String get reportIssueOther => 'أخرى';
+
+  @override
+  String get reportNoteLabel => 'تفاصيل إضافية (اختياري)';
+
+  @override
+  String get reportNoteHint => 'مثال: حدّده كمعكرونة لكنه أرز...';
+
+  @override
+  String get reportSubmit => 'إرسال التقرير';
+
+  @override
+  String get reportSuccessTitle => 'تم إرسال التقرير';
+
+  @override
+  String get reportSuccessBody =>
+      'شكراً لمساعدتك في تحسين Synthese. سنراجع نتيجة الذكاء الاصطناعي هذه.';
+
+  @override
+  String get reportSuccessDone => 'تم';
+
+  @override
+  String get reportFlagButton => 'الإبلاغ عن نتيجة غير دقيقة';
 }

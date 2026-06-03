@@ -239,8 +239,14 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingStage1MinorNotice.
   ///
   /// In en, this message translates to:
-  /// **'You\'re under 16. Parental guidance is required when using this app.'**
+  /// **'You must be 18 or older to use this app. You won\'t be able to continue.'**
   String get onboardingStage1MinorNotice;
+
+  /// No description provided for @onboardingAgeGateError.
+  ///
+  /// In en, this message translates to:
+  /// **'You must be 18 or older to use Synthese.'**
+  String get onboardingAgeGateError;
 
   /// No description provided for @onboardingStage1Gender.
   ///
@@ -661,6 +667,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please read and agree to continue using Synthese.'**
   String get permPrivacyBody;
+
+  /// No description provided for @permPrivacyReadLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to read the full Privacy Policy'**
+  String get permPrivacyReadLabel;
 
   /// No description provided for @permPrivacyAgreeCheckbox.
   ///
@@ -2235,13 +2247,13 @@ abstract class AppLocalizations {
   /// No description provided for @disclaimerTitle.
   ///
   /// In en, this message translates to:
-  /// **'Before You Begin'**
+  /// **'⚠️ Not for Professional Use'**
   String get disclaimerTitle;
 
   /// No description provided for @disclaimerBody.
   ///
   /// In en, this message translates to:
-  /// **'This assessment is designed for personal reflection and self-awareness. It is not a clinical diagnosis tool and should not replace professional mental health advice.'**
+  /// **'Synthese is a general wellness tracking tool. Nothing in this app constitutes medical, nutritional, psychological, or financial advice. Always consult a qualified professional before making decisions about your health or finances.'**
   String get disclaimerBody;
 
   /// No description provided for @disclaimerCredits.
@@ -11627,6 +11639,528 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{days, plural, =1{1 day left} other{{days} days left}}'**
   String guestBannerDaysLeft(int days);
+
+  /// No description provided for @stepNotifChannelOngoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Step tracking'**
+  String get stepNotifChannelOngoing;
+
+  /// No description provided for @stepNotifChannelMilestone.
+  ///
+  /// In en, this message translates to:
+  /// **'Step milestones'**
+  String get stepNotifChannelMilestone;
+
+  /// No description provided for @stepNotifOngoingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Step tracking active'**
+  String get stepNotifOngoingTitle;
+
+  /// No description provided for @stepNotifOngoingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{steps} steps today'**
+  String stepNotifOngoingBody(String steps);
+
+  /// No description provided for @stepNotif1kTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'1,000 steps!'**
+  String get stepNotif1kTitle;
+
+  /// No description provided for @stepNotif1kBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Great start — you\'ve passed 1,000 steps today.'**
+  String get stepNotif1kBody;
+
+  /// No description provided for @stepNotif5kTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'5,000 steps!'**
+  String get stepNotif5kTitle;
+
+  /// No description provided for @stepNotif5kBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re on a roll — 5,000 steps and counting.'**
+  String get stepNotif5kBody;
+
+  /// No description provided for @stepNotifGoalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached!'**
+  String get stepNotifGoalTitle;
+
+  /// No description provided for @stepNotifGoalBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You hit your {goal}-step goal for today. Amazing!'**
+  String stepNotifGoalBody(String goal);
+
+  /// No description provided for @settingsStepMilestonesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Step milestone alerts'**
+  String get settingsStepMilestonesTitle;
+
+  /// No description provided for @settingsStepMilestonesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified when you pass 1,000, 5,000 and your daily goal — even with the app closed.'**
+  String get settingsStepMilestonesSubtitle;
+
+  /// No description provided for @settingsStepMilestonesDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on background step tracking to use milestone alerts.'**
+  String get settingsStepMilestonesDisabled;
+
+  /// No description provided for @sessionSignedOutOtherDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve been signed out because your account was signed in on another device.'**
+  String get sessionSignedOutOtherDevice;
+
+  /// No description provided for @notifDietMealTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log today\'s meals'**
+  String get notifDietMealTitle;
+
+  /// No description provided for @notifDietMealBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your nutrition streak alive by logging at least one meal.'**
+  String get notifDietMealBody;
+
+  /// No description provided for @notifDietWaterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hydration check'**
+  String get notifDietWaterTitle;
+
+  /// No description provided for @notifDietWaterBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You are at {current}/{goal} glasses today. Drink a glass now.'**
+  String notifDietWaterBody(int current, int goal);
+
+  /// No description provided for @notifDietCalorieNudgeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re close to your calorie goal'**
+  String get notifDietCalorieNudgeTitle;
+
+  /// No description provided for @notifDietCalorieNudgeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve logged {logged}/{goal} kcal. Finish strong.'**
+  String notifDietCalorieNudgeBody(int logged, int goal);
+
+  /// No description provided for @notifDietStreakTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition streak: {days} days'**
+  String notifDietStreakTitle(int days);
+
+  /// No description provided for @notifDietStreakBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You have hit your calorie goal for {days} days in a row.'**
+  String notifDietStreakBody(int days);
+
+  /// No description provided for @notifMindfulnessMoodTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mood check-in'**
+  String get notifMindfulnessMoodTitle;
+
+  /// No description provided for @notifMindfulnessMoodBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Take 10 seconds to log your mood today.'**
+  String get notifMindfulnessMoodBody;
+
+  /// No description provided for @notifMindfulnessReadinessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning readiness'**
+  String get notifMindfulnessReadinessTitle;
+
+  /// No description provided for @notifMindfulnessReadinessBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Log sleep, energy and stress to tune your day better.'**
+  String get notifMindfulnessReadinessBody;
+
+  /// No description provided for @notifMindfulnessBreatheTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a short breathing break'**
+  String get notifMindfulnessBreatheTitle;
+
+  /// No description provided for @notifMindfulnessBreatheBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A 2-minute breathing session can help close your day calmly.'**
+  String get notifMindfulnessBreatheBody;
+
+  /// No description provided for @notifCyclesDailyLogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycle log reminder'**
+  String get notifCyclesDailyLogTitle;
+
+  /// No description provided for @notifCyclesDailyLogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Log today\'s flow/symptoms to keep cycle predictions accurate.'**
+  String get notifCyclesDailyLogBody;
+
+  /// No description provided for @notifCyclesPeriodSoonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Period likely in ~2 days'**
+  String get notifCyclesPeriodSoonTitle;
+
+  /// No description provided for @notifCyclesPeriodSoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep products handy and track symptoms today.'**
+  String get notifCyclesPeriodSoonBody;
+
+  /// No description provided for @notifCyclesPeriodDueTodayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Period due today'**
+  String get notifCyclesPeriodDueTodayTitle;
+
+  /// No description provided for @notifCyclesPeriodDueTodayBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cycle suggests today may be day 1 of your period.'**
+  String get notifCyclesPeriodDueTodayBody;
+
+  /// No description provided for @notifCyclesLate7Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Period is 7+ days late'**
+  String get notifCyclesLate7Title;
+
+  /// No description provided for @notifCyclesLate7Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Stress and routine changes can delay periods. Keep tracking.'**
+  String get notifCyclesLate7Body;
+
+  /// No description provided for @notifCyclesLate14Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Period is 14+ days late'**
+  String get notifCyclesLate14Title;
+
+  /// No description provided for @notifCyclesLate14Body.
+  ///
+  /// In en, this message translates to:
+  /// **'If this is unusual for you, consider checking with a doctor.'**
+  String get notifCyclesLate14Body;
+
+  /// No description provided for @notifCyclesLate90Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Period over 3 months late'**
+  String get notifCyclesLate90Title;
+
+  /// No description provided for @notifCyclesLate90Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Please consult a healthcare provider as soon as possible.'**
+  String get notifCyclesLate90Body;
+
+  /// No description provided for @notifCyclesOvulationWindowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fertile window likely starting'**
+  String get notifCyclesOvulationWindowTitle;
+
+  /// No description provided for @notifCyclesOvulationWindowBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You may be entering your ovulation window.'**
+  String get notifCyclesOvulationWindowBody;
+
+  /// No description provided for @notifCyclesOvulationPeakTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ovulation likely today'**
+  String get notifCyclesOvulationPeakTitle;
+
+  /// No description provided for @notifCyclesOvulationPeakBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cycle indicates ovulation is likely around today.'**
+  String get notifCyclesOvulationPeakBody;
+
+  /// No description provided for @notifCyclesShortCycleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pattern: short cycles'**
+  String get notifCyclesShortCycleTitle;
+
+  /// No description provided for @notifCyclesShortCycleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your last 3 cycles were unusually short. Keep monitoring.'**
+  String get notifCyclesShortCycleBody;
+
+  /// No description provided for @notifCyclesLongCycleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pattern: long cycles'**
+  String get notifCyclesLongCycleTitle;
+
+  /// No description provided for @notifCyclesLongCycleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your last 3 cycles were unusually long. Track closely.'**
+  String get notifCyclesLongCycleBody;
+
+  /// No description provided for @notifCyclesLongPeriodTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Long periods detected'**
+  String get notifCyclesLongPeriodTitle;
+
+  /// No description provided for @notifCyclesLongPeriodBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your period length has been above 8 days recently.'**
+  String get notifCyclesLongPeriodBody;
+
+  /// No description provided for @notifCyclesHeavyBleedingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Heavy bleeding trend'**
+  String get notifCyclesHeavyBleedingTitle;
+
+  /// No description provided for @notifCyclesHeavyBleedingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your last cycle had 5+ very heavy flow days.'**
+  String get notifCyclesHeavyBleedingBody;
+
+  /// No description provided for @notifFinanceDebtClearedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Debt cleared'**
+  String get notifFinanceDebtClearedTitle;
+
+  /// No description provided for @notifFinanceDebtClearedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} has been marked as fully paid. Great progress!'**
+  String notifFinanceDebtClearedBody(String name);
+
+  /// No description provided for @notifFinanceDebtDueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Debt reminder: {name}'**
+  String notifFinanceDebtDueTitle(String name);
+
+  /// No description provided for @notifFinanceDebtDueTodayBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This payment is due today.'**
+  String get notifFinanceDebtDueTodayBody;
+
+  /// No description provided for @notifFinanceDebtDueDaysBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment due in {days} day{days, plural, =1{} other{s}}.'**
+  String notifFinanceDebtDueDaysBody(int days);
+
+  /// No description provided for @notifFinanceDebtOverdueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment overdue'**
+  String get notifFinanceDebtOverdueTitle;
+
+  /// No description provided for @notifFinanceDebtOverdueBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is overdue by {days} day{days, plural, =1{} other{s}}.'**
+  String notifFinanceDebtOverdueBody(String name, int days);
+
+  /// No description provided for @notifFinanceInstallmentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Installment reminder'**
+  String get notifFinanceInstallmentTitle;
+
+  /// No description provided for @notifFinanceInstallmentBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} installment is coming up soon.'**
+  String notifFinanceInstallmentBody(String name);
+
+  /// No description provided for @notifFinanceLowBalanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Low balance alert'**
+  String get notifFinanceLowBalanceTitle;
+
+  /// No description provided for @notifFinanceLowBalanceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is at {balance}. Consider topping up soon.'**
+  String notifFinanceLowBalanceBody(String name, String balance);
+
+  /// No description provided for @notifFinanceLargeExpenseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Large expense detected'**
+  String get notifFinanceLargeExpenseTitle;
+
+  /// No description provided for @notifFinanceLargeExpenseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A large spend of {amount} was recorded.'**
+  String notifFinanceLargeExpenseBody(String amount);
+
+  /// No description provided for @notifFinanceBudgetPacingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget pacing alert'**
+  String get notifFinanceBudgetPacingTitle;
+
+  /// No description provided for @notifFinanceBudgetPacingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You are spending faster than this month\'s pace ({spent} used).'**
+  String notifFinanceBudgetPacingBody(String spent);
+
+  /// No description provided for @notifDashboardHealthTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily health score reminder'**
+  String get notifDashboardHealthTitle;
+
+  /// No description provided for @notifDashboardHealthBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No health update yet today. Log activity to refresh your score.'**
+  String get notifDashboardHealthBody;
+
+  /// No description provided for @disclaimerShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a substitute for professional medical, nutritional, mental health, or financial advice. Always consult a qualified professional.'**
+  String get disclaimerShort;
+
+  /// No description provided for @disclaimerAiTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'⚠️ AI Estimates — Not for Professional Use'**
+  String get disclaimerAiTitle;
+
+  /// No description provided for @disclaimerAiBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutritional values are estimated by AI and may not be accurate. AI can and does make mistakes. This is not professional dietary or medical advice. Always consult a registered dietitian or healthcare provider for nutritional guidance.'**
+  String get disclaimerAiBody;
+
+  /// No description provided for @disclaimerAiShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutritional values are AI estimates and may be inaccurate. Not a substitute for professional dietary or medical advice.'**
+  String get disclaimerAiShort;
+
+  /// No description provided for @reportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report inaccurate result'**
+  String get reportTitle;
+
+  /// No description provided for @reportSelectIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s wrong?'**
+  String get reportSelectIssue;
+
+  /// No description provided for @reportIssueWrongFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong food identified'**
+  String get reportIssueWrongFood;
+
+  /// No description provided for @reportIssueCaloriesOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories way off'**
+  String get reportIssueCaloriesOff;
+
+  /// No description provided for @reportIssueMacrosOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Macros incorrect'**
+  String get reportIssueMacrosOff;
+
+  /// No description provided for @reportIssueMicronutrientsOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Micronutrients incorrect'**
+  String get reportIssueMicronutrientsOff;
+
+  /// No description provided for @reportIssueOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get reportIssueOther;
+
+  /// No description provided for @reportNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional details (optional)'**
+  String get reportNoteLabel;
+
+  /// No description provided for @reportNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. It identified this as pasta but it\'s rice...'**
+  String get reportNoteHint;
+
+  /// No description provided for @reportSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit report'**
+  String get reportSubmit;
+
+  /// No description provided for @reportSuccessTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report submitted'**
+  String get reportSuccessTitle;
+
+  /// No description provided for @reportSuccessBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks for helping improve Synthese. We\'ll review this AI result.'**
+  String get reportSuccessBody;
+
+  /// No description provided for @reportSuccessDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get reportSuccessDone;
+
+  /// No description provided for @reportFlagButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Flag inaccurate result'**
+  String get reportFlagButton;
 }
 
 class _AppLocalizationsDelegate

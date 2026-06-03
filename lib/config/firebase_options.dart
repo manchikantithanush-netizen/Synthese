@@ -23,17 +23,6 @@ class DefaultFirebaseOptions {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
-      case TargetPlatform.iOS:
-        return ios;
-      case TargetPlatform.macOS:
-        return macos;
-      case TargetPlatform.windows:
-        return windows;
-      case TargetPlatform.linux:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for linux - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
       default:
         throw UnsupportedError(
           'DefaultFirebaseOptions are not supported for this platform.',
@@ -57,33 +46,5 @@ class DefaultFirebaseOptions {
     messagingSenderId: '118165710666',
     projectId: 'synthese-c2958',
     storageBucket: 'synthese-c2958.firebasestorage.app',
-  );
-
-  static FirebaseOptions get ios => FirebaseOptions(
-    apiKey: const String.fromEnvironment('FIREBASE_IOS_API_KEY', defaultValue: ''),
-    appId: '1:118165710666:ios:2e1b89b25926f09b7143b3',
-    messagingSenderId: '118165710666',
-    projectId: 'synthese-c2958',
-    storageBucket: 'synthese-c2958.firebasestorage.app',
-    iosBundleId: 'com.example.synthese',
-  );
-
-  static FirebaseOptions get macos => FirebaseOptions(
-    apiKey: const String.fromEnvironment('FIREBASE_IOS_API_KEY', defaultValue: ''),
-    appId: '1:118165710666:ios:2e1b89b25926f09b7143b3',
-    messagingSenderId: '118165710666',
-    projectId: 'synthese-c2958',
-    storageBucket: 'synthese-c2958.firebasestorage.app',
-    iosBundleId: 'com.example.synthese',
-  );
-
-  static FirebaseOptions get windows => FirebaseOptions(
-    apiKey: dotenv.env['FIREBASE_WEB_API_KEY'] ?? '',
-    appId: '1:118165710666:web:9721809990eb81bc7143b3',
-    messagingSenderId: '118165710666',
-    projectId: 'synthese-c2958',
-    authDomain: 'synthese-c2958.firebaseapp.com',
-    storageBucket: 'synthese-c2958.firebasestorage.app',
-    measurementId: 'G-T92B1887WM',
   );
 }

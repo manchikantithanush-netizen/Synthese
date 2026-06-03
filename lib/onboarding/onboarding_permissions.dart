@@ -11,6 +11,8 @@ import 'package:synthese/ui/components/universalbutton.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/services/first_launch_permissions_service.dart';
 import 'package:synthese/services/step_tracker_service.dart';
+import 'package:synthese/ui/components/disclaimer_banner.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main stateful widget — owns the PageController and shared state
@@ -638,6 +640,18 @@ class _SlidePrivacyPolicy extends StatelessWidget {
     required this.onAgreedChanged, required this.onAccept, required this.onDecline,
   });
 
+  static const _privacyUrl =
+      'https://sites.google.com/view/synthese-workout-health/home';
+
+  Future<void> _openPolicy() async {
+    final uri = Uri.parse(_privacyUrl);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      await launchUrl(uri, mode: LaunchMode.platformDefault);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -646,90 +660,167 @@ class _SlidePrivacyPolicy extends StatelessWidget {
     final subColor = textColor.withOpacity(0.55);
     final t = AppLocalizations.of(context);
 
-    return Column(children: [
-      const SizedBox(height: 28),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 28),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(t.permPrivacyTitle,
-              style: TextStyle(color: textColor, fontSize: 34, fontWeight: FontWeight.w700, letterSpacing: -1.0)),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(28, 28, 28, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Title
+          Text(
+            t.permPrivacyTitle,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 34,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -1.0,
+            ),
+          ),
           const SizedBox(height: 6),
-          Text(t.permPrivacyBody,
-              style: TextStyle(color: subColor, fontSize: 15, height: 1.4)),
-        ]),
-      ),
-      const SizedBox(height: 20),
-      Expanded(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28),
-          child: Container(
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: textColor.withOpacity(0.08)),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                physics: const BouncingScrollPhysics(),
-                child: _PolicyContent(textColor: textColor, subColor: subColor),
-              ),
-            ),
+          Text(
+            t.permPrivacyBody,
+            style: TextStyle(color: subColor, fontSize: 15, height: 1.4),
           ),
-        ),
-      ),
-      const SizedBox(height: 16),
-      // Checkbox
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: GestureDetector(
-          onTap: () { HapticFeedback.selectionClick(); onAgreedChanged(!agreed); },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: agreed
-                  ? (isDark ? const Color(0xFF1C3A2A) : const Color(0xFFE8F5E9))
-                  : cardColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: agreed ? const Color(0xFF4CD964) : textColor.withOpacity(0.12),
-                width: 1.5,
+
+          const SizedBox(height: 28),
+
+          // Big privacy policy button
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              _openPolicy();
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: cardColor,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: textColor.withOpacity(0.10), width: 1),
               ),
-            ),
-            child: Row(children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 24, height: 24,
-                decoration: BoxDecoration(
-                  color: agreed ? const Color(0xFF4CD964) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(7),
-                  border: Border.all(
-                    color: agreed ? const Color(0xFF4CD964) : textColor.withOpacity(0.3),
-                    width: 2,
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF007AFF).withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.policy_rounded,
+                      color: Color(0xFF007AFF),
+                      size: 28,
+                    ),
                   ),
-                ),
-                child: agreed ? const Icon(Icons.check_rounded, color: Colors.white, size: 16) : null,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          t.permPrivacyTitle,
+                          style: TextStyle(
+                            color: textColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          t.permPrivacyReadLabel,
+                          style: TextStyle(
+                            color: const Color(0xFF007AFF),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.open_in_new_rounded,
+                    color: Color(0xFF007AFF),
+                    size: 20,
+                  ),
+                ],
               ),
-              const SizedBox(width: 14),
-              Expanded(child: Text(t.permPrivacyAgreeCheckbox,
-                  style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w500))),
-            ]),
+            ),
           ),
-        ),
-      ),
-      const SizedBox(height: 12),
-      Padding(
-        padding: const EdgeInsets.fromLTRB(28, 0, 28, 0),
-        child: Column(children: [
-          _AgreeButton(agreed: agreed, isSaving: isSaving, onAccept: onAccept),
+
+          const SizedBox(height: 28),
+
+          // Checkbox agree row
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              onAgreedChanged(!agreed);
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: agreed
+                    ? (isDark ? const Color(0xFF1C3A2A) : const Color(0xFFE8F5E9))
+                    : cardColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: agreed
+                      ? const Color(0xFF4CD964)
+                      : textColor.withOpacity(0.12),
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: agreed ? const Color(0xFF4CD964) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(7),
+                      border: Border.all(
+                        color: agreed
+                            ? const Color(0xFF4CD964)
+                            : textColor.withOpacity(0.3),
+                        width: 2,
+                      ),
+                    ),
+                    child: agreed
+                        ? const Icon(Icons.check_rounded,
+                            color: Colors.white, size: 16)
+                        : null,
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Text(
+                      t.permPrivacyAgreeCheckbox,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Accept / Decline buttons
+          _AgreeButton(
+            agreed: agreed,
+            isSaving: isSaving,
+            onAccept: onAccept,
+          ),
           const SizedBox(height: 10),
           _DeclineButton(onPressed: onDecline, isSaving: isSaving),
-        ]),
+        ],
       ),
-      const SizedBox(height: 32),
-    ]);
+    );
   }
 }
 
@@ -852,6 +943,9 @@ class _SlideFinishState extends State<_SlideFinish>
                 ]),
               ),
               SizedBox(height: vGapLarge),
+              // ── Disclaimer ────────────────────────────────────────────
+              const DisclaimerBanner.general(),
+              SizedBox(height: vGapSmall),
               _InlineLoadingButton(
                 text: t.commonLetsGo,
                 isLoading: widget.isLoading,
@@ -1089,7 +1183,7 @@ class _PolicyContent extends StatelessWidget {
       _section("2. Data Controller",
           "Synthese is developed and operated from the UAE. We are the sole data controller. We do not share, sell, or transfer your data to any third-party businesses, marketing partners, or affiliates."),
       _section("3. Who This Policy Applies To",
-          "This App is for users aged 13 and older. Users aged 13–17 require parental or guardian consent before using the App."),
+          "This App is for users aged 18 and older. By using Synthese, you confirm that you are at least 18 years of age. Users under 18 are not permitted to create an account or use the App."),
       Text("4. Data We Collect", style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w700)),
       const SizedBox(height: 8),
       Text("Personal Information", style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.w600)),
@@ -1144,7 +1238,7 @@ class _PolicyContent extends StatelessWidget {
       _section("9. Data Retention",
           "We retain your data only as long as necessary. Upon account deletion, your data is deleted or anonymised within 90 days."),
       _section("10. Minors",
-          "Users under 13 are not permitted. Users aged 13–17 may only use the App with verified parental or guardian consent."),
+          "Synthese is strictly for users aged 18 and older. Users under 18 are not permitted to use this App. The onboarding flow enforces a minimum age of 18 at the point of account setup. If we become aware that a user under 18 has created an account, we will delete their data and terminate their account without notice."),
       _section("11. Changes to This Policy",
           "We may update this policy periodically and will notify you of material changes through the App or via email."),
       _section("12. Governing Law",

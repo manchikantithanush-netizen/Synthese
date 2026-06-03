@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:synthese/data/heart_rate_repository.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 
 import 'package:synthese/ui/account/accountpage.dart';
@@ -24,11 +25,13 @@ import 'package:synthese/services/first_launch_permissions_service.dart';
 import 'package:synthese/services/home_widget_service.dart';
 import 'package:synthese/services/data_aggregation_service.dart';
 import 'package:synthese/services/notification_rules_engine.dart';
+import 'package:synthese/ui/components/disclaimer_banner.dart';
 import 'package:synthese/services/accent_color_service.dart';
 import 'package:synthese/services/update_reminder_service.dart';
 import 'package:synthese/services/app_update_service.dart';
 import 'package:synthese/services/review_service.dart';
 import 'package:synthese/services/step_tracker_service.dart';
+import 'package:synthese/services/step_milestone_service.dart';
 import 'package:synthese/services/guest_session_service.dart';
 import 'package:synthese/ui/steps_detail_page.dart';
 import 'package:synthese/ui/heart_rate_detail_page.dart';
@@ -78,6 +81,10 @@ class _DashboardPageState extends State<DashboardPage>
   int _steps = 0;
   int _manualStepAdjustments = 0;
   int _exerciseMinutes = 0;
+  // Guards against persisting before today's stored metrics have been read.
+  // Without this, an early save (step-sensor debounce / app pause) can race the
+  // async load and overwrite real Firestore data with empty in-memory defaults.
+  bool _metricsLoaded = false;
   int _eatenCalories = 0; // from diet logs via dailyAgg — live stream
   StreamSubscription<DocumentSnapshot>? _dailyAggSub;
   List<int> _sleepData = [0, 0, 0, 0, 0, 0, 0];
@@ -155,6 +162,12 @@ class _DashboardPageState extends State<DashboardPage>
     // adjustments the user has added.
     StepTracker.instance.todaySteps.addListener(_handleSensorStepsChanged);
     _handleSensorStepsChanged();
+    // Keep the native all-day milestone service in sync with both the
+    // background-tracking and milestone toggles (so flipping either in Settings
+    // starts/stops the service).
+    StepTracker.instance.backgroundEnabled.addListener(_syncStepMilestones);
+    StepTracker.instance.milestoneNotificationsEnabled
+        .addListener(_syncStepMilestones);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       UpdateReminderService.checkAndNotify(context);
       AppUpdateService.instance.checkAndPrompt(context);
@@ -184,9 +197,46 @@ class _DashboardPageState extends State<DashboardPage>
     _notificationRulesTimer?.cancel();
     _dailyAggSub?.cancel();
     StepTracker.instance.todaySteps.removeListener(_handleSensorStepsChanged);
+    StepTracker.instance.backgroundEnabled.removeListener(_syncStepMilestones);
+    StepTracker.instance.milestoneNotificationsEnabled
+        .removeListener(_syncStepMilestones);
     unawaited(_persistDashboardMetricsNow());
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Runs after initState (localizations available) and again on locale
+    // change, so the service always has the goal + current-language text.
+    _syncStepMilestones();
+    // Seed / refresh the localizations cache in the rules engine so that
+    // timer-based calls (no context) use the correct locale.
+    unawaited(NotificationRulesEngine.evaluateGlobal(
+      t: AppLocalizations.of(context),
+    ));
+  }
+
+  /// Push the latest goal, localized text and current step count to the native
+  /// milestone service, starting or stopping it as appropriate. Gated on the
+  /// activity-recognition permission so we never try to start a health
+  /// foreground service the OS would reject.
+  void _syncStepMilestones() => unawaited(_pushStepMilestoneConfig());
+
+  Future<void> _pushStepMilestoneConfig() async {
+    if (!mounted) return;
+    final granted = await StepTracker.instance.isPermissionGranted();
+    if (!mounted) return;
+    await StepMilestoneService.instance.configure(
+      t: AppLocalizations.of(context),
+      // Milestone alerts need all-day counting, so both toggles must be on.
+      enabled: StepTracker.instance.backgroundEnabled.value &&
+          StepTracker.instance.milestoneNotificationsEnabled.value &&
+          granted,
+      goal: _goalSteps,
+      initialSteps: StepTracker.instance.todaySteps.value,
+    );
   }
 
   /// Recompute the displayed step count from the automatic pedometer value plus
@@ -281,6 +331,9 @@ class _DashboardPageState extends State<DashboardPage>
     if (state == AppLifecycleState.resumed) {
       // Catch the step count up after the app was backgrounded/closed.
       StepTracker.instance.reconcile();
+      // Re-sync the milestone service: refreshes the seed count and (re)starts
+      // it if the activity-recognition permission was just granted.
+      _syncStepMilestones();
       unawaited(_refreshGuestCountdown());
       AppUpdateService.instance.resumeIfNeeded(context);
       unawaited(NotificationRulesEngine.evaluateGlobal());
@@ -399,6 +452,10 @@ class _DashboardPageState extends State<DashboardPage>
           .doc(dayKey)
           .get();
 
+      // We've now read today's stored state (even if the doc doesn't exist yet),
+      // so it's safe to start persisting without clobbering real data.
+      _metricsLoaded = true;
+
       final data = doc.data();
       if (data == null || !mounted) return;
 
@@ -406,11 +463,7 @@ class _DashboardPageState extends State<DashboardPage>
           ?.map((e) => (e as num).toInt())
           .toList();
 
-      final loadedHrHistory = (data['hrHistory'] as List<dynamic>?)?.map((e) {
-        final bpm = (e['bpm'] as num?)?.toInt() ?? 0;
-        final ts = (e['time'] as Timestamp?)?.toDate() ?? DateTime.now();
-        return (bpm: bpm, time: ts);
-      }).toList();
+      final loadedHrHistory = HeartRateRepository.parseReadings(data);
 
       // Load sleep for the full week from manualSleepTotal per day
       final now = DateTime.now();
@@ -432,7 +485,8 @@ class _DashboardPageState extends State<DashboardPage>
       setState(() {
         _activeCalories =
             (data['activeCalories'] as num?)?.toInt() ?? _activeCalories;
-        _heartRate = (data['heartRate'] as num?)?.toInt() ?? _heartRate;
+        final loadedHr = HeartRateRepository.parseScalar(data);
+        if (loadedHr > 0) _heartRate = loadedHr;
         _manualStepAdjustments =
             (data['manualStepAdjustments'] as num?)?.toInt() ??
             _manualStepAdjustments;
@@ -456,7 +510,7 @@ class _DashboardPageState extends State<DashboardPage>
           final todayIdx = (DateTime.now().weekday - 1).clamp(0, 6);
           _exHistory[todayIdx] = _exerciseMinutes;
         }
-        if (loadedHrHistory != null) {
+        if (loadedHrHistory.isNotEmpty) {
           _hrHistory.clear();
           _hrHistory.addAll(loadedHrHistory);
         }
@@ -494,7 +548,9 @@ class _DashboardPageState extends State<DashboardPage>
 
   Future<void> _persistDashboardMetricsNow() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
+    // Don't write until today's metrics have been loaded — otherwise a save
+    // that races the initial load overwrites stored data with empty defaults.
+    if (uid == null || !_metricsLoaded) return;
 
     try {
       final dayKey = _dateKey(DateTime.now());
@@ -505,14 +561,15 @@ class _DashboardPageState extends State<DashboardPage>
           .doc(dayKey)
           .set({
             'activeCalories': _activeCalories,
-            'heartRate': _heartRate,
             'steps': _steps,
             'manualStepAdjustments': _manualStepAdjustments,
             'exerciseMinutes': _exerciseMinutes,
             'exHistory': _exHistory,
-            'hrHistory': _hrHistory
-                .map((r) => {'bpm': r.bpm, 'time': Timestamp.fromDate(r.time)})
-                .toList(),
+            // NOTE: 'heartRate' and 'hrHistory' are intentionally NOT written
+            // here. The heart-rate page is their sole writer (scalar set +
+            // arrayUnion append); the dashboard only reads them. Writing the
+            // full in-memory array back would overwrite appends from this or
+            // another device.
             'lastWorkoutCaloriesReported': _lastWorkoutCaloriesReported,
             'lastWorkoutMinutesReported': _lastWorkoutMinutesReported,
             'updatedAt': FieldValue.serverTimestamp(),
@@ -602,6 +659,8 @@ class _DashboardPageState extends State<DashboardPage>
             (data['goalSleepHours'] as num?)?.toDouble() ?? _goalSleepHours;
       });
       _updateScore();
+      // Push the (possibly updated) step goal to the milestone service.
+      _syncStepMilestones();
     } catch (e) {
       debugPrint('Error fetching user goals: $e');
     }
@@ -693,13 +752,21 @@ class _DashboardPageState extends State<DashboardPage>
     if (mounted && context.mounted) {
       if (!_stepsGoalToasted && _steps >= _goalSteps) {
         _stepsGoalToasted = true;
-        AppToast.success(
-          context,
-          AppLocalizations.of(context).dashStepsGoalReached(
-            _formatNumber(_goalSteps),
-          ),
-          icon: Icons.directions_walk_rounded,
-        );
+        // When the milestone service is active it fires its own goal
+        // notification, so skip the in-app toast to avoid a duplicate alert.
+        // (We still mark it toasted and request a review.)
+        final milestoneServiceActive =
+            StepTracker.instance.backgroundEnabled.value &&
+                StepTracker.instance.milestoneNotificationsEnabled.value;
+        if (!milestoneServiceActive) {
+          AppToast.success(
+            context,
+            AppLocalizations.of(context).dashStepsGoalReached(
+              _formatNumber(_goalSteps),
+            ),
+            icon: Icons.directions_walk_rounded,
+          );
+        }
         ReviewService.instance.maybeRequestAfterGoal();
       }
       if (!_caloriesGoalToasted && _activeCalories >= _goalCaloriesBurnt) {
@@ -1072,6 +1139,11 @@ class _DashboardPageState extends State<DashboardPage>
             ),
 
             const SizedBox(height: 40),
+
+            // ── Disclaimer ────────────────────────────────────────────
+            const DisclaimerBanner.generalShort(),
+
+            const SizedBox(height: 24),
 
             // --- STEPS ---
             SizedBox(

@@ -75,7 +75,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get onboardingStage1Dob => '出生日期';
 
   @override
-  String get onboardingStage1MinorNotice => '你未满 16 岁。使用此应用需要家长指导。';
+  String get onboardingStage1MinorNotice => '您必须年满 18 岁才能使用此应用。您将无法继续。';
+
+  @override
+  String get onboardingAgeGateError => '您必须年满 18 岁才能使用 Synthese。';
 
   @override
   String get onboardingStage1Gender => '性别';
@@ -294,6 +297,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get permPrivacyBody => '请阅读并同意以继续使用 Synthese。';
+
+  @override
+  String get permPrivacyReadLabel => '点击阅读完整隐私政策';
 
   @override
   String get permPrivacyAgreeCheckbox => '我已阅读并同意隐私政策';
@@ -1137,10 +1143,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mindfulnessLegendUnpleasant => '不愉快';
 
   @override
-  String get disclaimerTitle => '开始之前';
+  String get disclaimerTitle => '⚠️ 非供专业使用';
 
   @override
-  String get disclaimerBody => '本评估旨在用于个人反思和自我意识。它不是临床诊断工具,不应取代专业心理健康建议。';
+  String get disclaimerBody =>
+      'Synthese 是一款通用健康追踪工具。本应用中的任何内容均不构成医疗、营养、心理或财务建议。在做出任何健康或财务决策之前，请始终咨询合格的专业人士。';
 
   @override
   String get disclaimerCredits =>
@@ -6126,4 +6133,295 @@ class AppLocalizationsZh extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get stepNotifChannelOngoing => '步数跟踪';
+
+  @override
+  String get stepNotifChannelMilestone => '步数里程碑';
+
+  @override
+  String get stepNotifOngoingTitle => '步数跟踪进行中';
+
+  @override
+  String stepNotifOngoingBody(String steps) {
+    return '今天 $steps 步';
+  }
+
+  @override
+  String get stepNotif1kTitle => '1,000 步！';
+
+  @override
+  String get stepNotif1kBody => '良好的开端——你今天已超过 1,000 步。';
+
+  @override
+  String get stepNotif5kTitle => '5,000 步！';
+
+  @override
+  String get stepNotif5kBody => '你状态正佳——已达 5,000 步，继续加油。';
+
+  @override
+  String get stepNotifGoalTitle => '达成目标！';
+
+  @override
+  String stepNotifGoalBody(String goal) {
+    return '你完成了今天 $goal 步的目标。太棒了！';
+  }
+
+  @override
+  String get settingsStepMilestonesTitle => '步数里程碑提醒';
+
+  @override
+  String get settingsStepMilestonesSubtitle =>
+      '当你超过 1,000、5,000 步及每日目标时收到通知——即使应用已关闭。';
+
+  @override
+  String get settingsStepMilestonesDisabled => '开启后台步数跟踪以使用里程碑提醒。';
+
+  @override
+  String get sessionSignedOutOtherDevice => '您已退出登录，因为您的账户在另一台设备上登录了。';
+
+  @override
+  String get notifDietMealTitle => '记录今天的饮食';
+
+  @override
+  String get notifDietMealBody => '至少记录一餐，保持您的营养连续记录。';
+
+  @override
+  String get notifDietWaterTitle => '补水检查';
+
+  @override
+  String notifDietWaterBody(int current, int goal) {
+    return '今天已喝 $current/$goal 杯水。现在喝一杯吧。';
+  }
+
+  @override
+  String get notifDietCalorieNudgeTitle => '您接近卡路里目标';
+
+  @override
+  String notifDietCalorieNudgeBody(int logged, int goal) {
+    return '已记录 $logged/$goal 千卡。坚持完成目标。';
+  }
+
+  @override
+  String notifDietStreakTitle(int days) {
+    return '营养连续记录：$days 天';
+  }
+
+  @override
+  String notifDietStreakBody(int days) {
+    return '您已连续 $days 天达到卡路里目标。';
+  }
+
+  @override
+  String get notifMindfulnessMoodTitle => '情绪打卡';
+
+  @override
+  String get notifMindfulnessMoodBody => '花10秒记录今天的情绪。';
+
+  @override
+  String get notifMindfulnessReadinessTitle => '早晨准备状态';
+
+  @override
+  String get notifMindfulnessReadinessBody => '记录睡眠、精力和压力，更好地规划您的一天。';
+
+  @override
+  String get notifMindfulnessBreatheTitle => '进行短暂的呼吸练习';
+
+  @override
+  String get notifMindfulnessBreatheBody => '2分钟的呼吸练习可以帮助您平静地结束一天。';
+
+  @override
+  String get notifCyclesDailyLogTitle => '周期记录提醒';
+
+  @override
+  String get notifCyclesDailyLogBody => '记录今天的流量/症状，保持周期预测的准确性。';
+
+  @override
+  String get notifCyclesPeriodSoonTitle => '月经可能在约2天后到来';
+
+  @override
+  String get notifCyclesPeriodSoonBody => '备好用品，今天追踪症状。';
+
+  @override
+  String get notifCyclesPeriodDueTodayTitle => '今天是预计月经日';
+
+  @override
+  String get notifCyclesPeriodDueTodayBody => '您的周期显示今天可能是月经第一天。';
+
+  @override
+  String get notifCyclesLate7Title => '月经推迟7天以上';
+
+  @override
+  String get notifCyclesLate7Body => '压力和作息变化可能导致月经推迟。继续追踪。';
+
+  @override
+  String get notifCyclesLate14Title => '月经推迟14天以上';
+
+  @override
+  String get notifCyclesLate14Body => '如果这对您来说不寻常，请考虑咨询医生。';
+
+  @override
+  String get notifCyclesLate90Title => '月经推迟超过3个月';
+
+  @override
+  String get notifCyclesLate90Body => '请尽快咨询医疗保健提供者。';
+
+  @override
+  String get notifCyclesOvulationWindowTitle => '排卵窗口可能开始';
+
+  @override
+  String get notifCyclesOvulationWindowBody => '您可能正在进入排卵窗口期。';
+
+  @override
+  String get notifCyclesOvulationPeakTitle => '今天可能是排卵日';
+
+  @override
+  String get notifCyclesOvulationPeakBody => '您的周期显示今天可能是排卵日。';
+
+  @override
+  String get notifCyclesShortCycleTitle => '规律：周期偏短';
+
+  @override
+  String get notifCyclesShortCycleBody => '您最近3个周期异常偏短。请继续监测。';
+
+  @override
+  String get notifCyclesLongCycleTitle => '规律：周期偏长';
+
+  @override
+  String get notifCyclesLongCycleBody => '您最近3个周期异常偏长。请密切追踪。';
+
+  @override
+  String get notifCyclesLongPeriodTitle => '检测到经期偏长';
+
+  @override
+  String get notifCyclesLongPeriodBody => '您最近的经期超过8天。';
+
+  @override
+  String get notifCyclesHeavyBleedingTitle => '经量过多趋势';
+
+  @override
+  String get notifCyclesHeavyBleedingBody => '您上个周期有5天以上经量非常大。';
+
+  @override
+  String get notifFinanceDebtClearedTitle => '债务已结清';
+
+  @override
+  String notifFinanceDebtClearedBody(String name) {
+    return '$name 已标记为全额还清。进展很好！';
+  }
+
+  @override
+  String notifFinanceDebtDueTitle(String name) {
+    return '债务提醒：$name';
+  }
+
+  @override
+  String get notifFinanceDebtDueTodayBody => '此款项今天到期。';
+
+  @override
+  String notifFinanceDebtDueDaysBody(int days) {
+    return '款项将在 $days 天后到期。';
+  }
+
+  @override
+  String get notifFinanceDebtOverdueTitle => '款项已逾期';
+
+  @override
+  String notifFinanceDebtOverdueBody(String name, int days) {
+    return '$name 已逾期 $days 天。';
+  }
+
+  @override
+  String get notifFinanceInstallmentTitle => '分期付款提醒';
+
+  @override
+  String notifFinanceInstallmentBody(String name) {
+    return '$name 的分期付款即将到来。';
+  }
+
+  @override
+  String get notifFinanceLowBalanceTitle => '余额不足提醒';
+
+  @override
+  String notifFinanceLowBalanceBody(String name, String balance) {
+    return '$name 余额为 $balance。请考虑尽快充值。';
+  }
+
+  @override
+  String get notifFinanceLargeExpenseTitle => '检测到大额支出';
+
+  @override
+  String notifFinanceLargeExpenseBody(String amount) {
+    return '记录了一笔 $amount 的大额支出。';
+  }
+
+  @override
+  String get notifFinanceBudgetPacingTitle => '预算进度提醒';
+
+  @override
+  String notifFinanceBudgetPacingBody(String spent) {
+    return '您的支出速度超过本月预算进度（已用 $spent）。';
+  }
+
+  @override
+  String get notifDashboardHealthTitle => '每日健康评分提醒';
+
+  @override
+  String get notifDashboardHealthBody => '今天尚无健康更新。记录活动以刷新您的评分。';
+
+  @override
+  String get disclaimerShort => '不能替代专业的医疗、营养、心理健康或财务建议。请始终咨询合格的专业人士。';
+
+  @override
+  String get disclaimerAiTitle => '⚠️ AI 估算 — 非供专业使用';
+
+  @override
+  String get disclaimerAiBody =>
+      '营养数值由 AI 估算，可能不准确。AI 可能出错。这不是专业的饮食或医疗建议。如需营养指导，请始终咨询注册营养师或医疗服务提供者。';
+
+  @override
+  String get disclaimerAiShort => '营养数值为 AI 估算，可能不准确。不能替代专业的饮食或医疗建议。';
+
+  @override
+  String get reportTitle => '举报不准确的结果';
+
+  @override
+  String get reportSelectIssue => '哪里有问题？';
+
+  @override
+  String get reportIssueWrongFood => '识别的食物错误';
+
+  @override
+  String get reportIssueCaloriesOff => '卡路里严重不准确';
+
+  @override
+  String get reportIssueMacrosOff => '宏量营养素不正确';
+
+  @override
+  String get reportIssueMicronutrientsOff => '微量营养素不正确';
+
+  @override
+  String get reportIssueOther => '其他';
+
+  @override
+  String get reportNoteLabel => '补充说明（可选）';
+
+  @override
+  String get reportNoteHint => '例如：识别为意面，但实际上是米饭...';
+
+  @override
+  String get reportSubmit => '提交举报';
+
+  @override
+  String get reportSuccessTitle => '举报已提交';
+
+  @override
+  String get reportSuccessBody => '感谢您帮助改进 Synthese。我们将审核此 AI 结果。';
+
+  @override
+  String get reportSuccessDone => '完成';
+
+  @override
+  String get reportFlagButton => '举报不准确的结果';
 }
