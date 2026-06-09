@@ -16,6 +16,8 @@ import 'package:synthese/services/locale_service.dart';
 import 'package:synthese/services/step_tracker_service.dart';
 import 'package:synthese/services/session_guard_service.dart';
 
+import 'package:synthese/services/age_signals_service.dart';
+import 'package:synthese/ui/minor_restriction_screen.dart';
 import 'package:synthese/ui/start_page.dart';
 import 'package:synthese/ui/disclaimer_gate.dart';
 import 'package:synthese/onboarding/onboarding_intro.dart';
@@ -104,21 +106,60 @@ class MyApp extends StatelessWidget {
             ));
             return child!;
           },
-          home: StreamBuilder<User?>(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const LoadingScreen();
-              }
-              if (snapshot.hasData) {
-                return const AuthWrapper();
-              }
-              return const DisclaimerGate();
-            },
+          home: AgeGate(
+            child: StreamBuilder<User?>(
+              stream: FirebaseAuth.instance.authStateChanges(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const LoadingScreen();
+                }
+                if (snapshot.hasData) {
+                  return const AuthWrapper();
+                }
+                return const DisclaimerGate();
+              },
+            ),
           ),
         ),
       ),
     );
+  }
+}
+
+/// Wraps the whole app and enforces the 18+ requirement using the Play Age
+/// Signals API (Texas SB 2420 and similar laws). The [child] renders
+/// immediately so there is no startup delay for the vast majority of users;
+/// the age check runs in the background and, only if Google Play confirms the
+/// user is a minor, swaps the UI for a non-dismissible restriction screen.
+class AgeGate extends StatefulWidget {
+  final Widget child;
+  const AgeGate({super.key, required this.child});
+
+  @override
+  State<AgeGate> createState() => _AgeGateState();
+}
+
+class _AgeGateState extends State<AgeGate> {
+  bool _blocked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _evaluate();
+  }
+
+  Future<void> _evaluate() async {
+    final signal = await AgeSignalsService.instance.check();
+    if (!mounted) return;
+    if (signal.isMinor) {
+      setState(() => _blocked = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_blocked) return const MinorRestrictionScreen();
+    return widget.child;
   }
 }
 

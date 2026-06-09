@@ -5,6 +5,9 @@ import android.os.Build
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import com.google.android.play.agesignals.AgeSignalsManagerFactory
+import com.google.android.play.agesignals.AgeSignalsRequest
+import com.google.android.play.agesignals.model.AgeSignalsVerificationStatus
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
@@ -13,9 +16,20 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
 
     private val stepChannelName = "com.thanush.synthesehealth/step_milestones"
+    private val ageChannelName = "com.thanush.synthesehealth/age_signals"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            ageChannelName,
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "checkAgeSignals" -> checkAgeSignals(result)
+                else -> result.notImplemented()
+            }
+        }
 
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -84,6 +98,48 @@ class MainActivity : FlutterActivity() {
         key: String,
     ) {
         call.argument<String>(arg)?.let { editor.putString(key, it) }
+    }
+
+    /**
+     * Calls the Play Age Signals API and returns the raw signal to Flutter as a
+     * map. Google Play performs the age verification / parental-consent flow;
+     * here we only read the result it hands back. The Dart side decides what to
+     * do with it. We never block here so a transient API failure can't lock out
+     * legitimate adult users.
+     */
+    private fun checkAgeSignals(result: MethodChannel.Result) {
+        try {
+            val manager = AgeSignalsManagerFactory.create(applicationContext)
+            manager.checkAgeSignals(AgeSignalsRequest.builder().build())
+                .addOnSuccessListener { signals ->
+                    val map = HashMap<String, Any?>()
+                    map["status"] = statusToString(runCatching { signals.userStatus() }.getOrNull())
+                    map["ageLower"] = runCatching { signals.ageLower() }.getOrNull()
+                    map["ageUpper"] = runCatching { signals.ageUpper() }.getOrNull()
+                    map["installId"] = runCatching { signals.installId() }.getOrNull()
+                    result.success(map)
+                }
+                .addOnFailureListener { e ->
+                    // Not enrolled / not in an applicable region / Play unavailable.
+                    // Report as unavailable; Dart treats this as "allow".
+                    result.success(hashMapOf<String, Any?>("status" to "UNAVAILABLE"))
+                }
+        } catch (e: Throwable) {
+            // Library missing at runtime or any unexpected error — fail open.
+            result.success(hashMapOf<String, Any?>("status" to "UNAVAILABLE"))
+        }
+    }
+
+    /** Map the numeric verification-status code to a stable string for Dart. */
+    private fun statusToString(status: Int?): String = when (status) {
+        null -> "NONE"
+        AgeSignalsVerificationStatus.VERIFIED -> "VERIFIED"
+        AgeSignalsVerificationStatus.DECLARED -> "DECLARED"
+        AgeSignalsVerificationStatus.SUPERVISED -> "SUPERVISED"
+        AgeSignalsVerificationStatus.SUPERVISED_APPROVAL_PENDING -> "SUPERVISED_APPROVAL_PENDING"
+        AgeSignalsVerificationStatus.SUPERVISED_APPROVAL_DENIED -> "SUPERVISED_APPROVAL_DENIED"
+        AgeSignalsVerificationStatus.UNKNOWN -> "UNKNOWN"
+        else -> "UNKNOWN"
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

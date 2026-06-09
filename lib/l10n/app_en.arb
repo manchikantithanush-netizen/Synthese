@@ -262,6 +262,8 @@
       }
     }
   },
+  "dietPageAiCameraToggleTitle": "AI Camera Analysis",
+  "dietPageAiCameraToggleBody": "Photos are sent to AI for nutrition analysis. Disable to use text or manual entry only.",
   "waterIntakeTitle": "Water Intake",
   "waterGlassCount": "{current} / {total} glasses",
   "@waterGlassCount": {
@@ -1368,6 +1370,9 @@
   "hrDetZoneElevated": "Elevated",
   "hrDetZoneHigh": "High",
   "hrDetReadNow": "Read your heart now",
+  "hrDetCameraPermTitle": "Camera Access Required",
+  "hrDetCameraPermBody": "To measure your heart rate, Synthese needs camera access. Your camera is used only for the 30-second reading — no photos are taken or stored.",
+  "hrDetOpenSettings": "Open Settings",
   "hrDetReadNowSub": "Use camera & flashlight to measure BPM",
   "hrDetInsNoneP": "No heart rate data recorded ",
   "hrDetInsNoneK": "yet today",

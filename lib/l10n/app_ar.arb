@@ -262,6 +262,8 @@
       }
     }
   },
+  "dietPageAiCameraToggleTitle": "تحليل الكاميرا بالذكاء الاصطناعي",
+  "dietPageAiCameraToggleBody": "يتم إرسال الصور إلى الذكاء الاصطناعي لتحليل التغذية. أوقف التشغيل لاستخدام الإدخال النصي أو اليدوي فقط.",
   "waterIntakeTitle": "شرب الماء",
   "waterGlassCount": "{current} / {total} كوب",
   "@waterGlassCount": {
@@ -1324,6 +1326,9 @@
   "hrDetZoneHigh": "مرتفع جداً",
   "hrDetReadNow": "اقرئي نبضك الآن",
   "hrDetReadNowSub": "استخدمي الكاميرا والفلاش لقياس النبض",
+  "hrDetCameraPermTitle": "مطلوب الوصول للكاميرا",
+  "hrDetCameraPermBody": "لقياس معدل ضربات قلبك، تحتاج Synthese إلى الوصول إلى الكاميرا. تُستخدم الكاميرا فقط لمدة 30 ثانية — لا يتم التقاط أي صور أو تخزينها.",
+  "hrDetOpenSettings": "فتح الإعدادات",
   "hrDetInsNoneP": "لم تُسجَّل بيانات معدل ضربات القلب ",
   "hrDetInsNoneK": "بعد اليوم",
   "hrDetInsNoneS": ".",

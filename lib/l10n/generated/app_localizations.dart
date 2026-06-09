@@ -1280,6 +1280,18 @@ abstract class AppLocalizations {
   /// **'{date} at {time}'**
   String dietPageTimeOnDate(String date, String time);
 
+  /// No description provided for @dietPageAiCameraToggleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Camera Analysis'**
+  String get dietPageAiCameraToggleTitle;
+
+  /// No description provided for @dietPageAiCameraToggleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos are sent to AI for nutrition analysis. Disable to use text or manual entry only.'**
+  String get dietPageAiCameraToggleBody;
+
   /// No description provided for @waterIntakeTitle.
   ///
   /// In en, this message translates to:
@@ -6971,6 +6983,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Read your heart now'**
   String get hrDetReadNow;
+
+  /// No description provided for @hrDetCameraPermTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera Access Required'**
+  String get hrDetCameraPermTitle;
+
+  /// No description provided for @hrDetCameraPermBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To measure your heart rate, Synthese needs camera access. Your camera is used only for the 30-second reading — no photos are taken or stored.'**
+  String get hrDetCameraPermBody;
+
+  /// No description provided for @hrDetOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings'**
+  String get hrDetOpenSettings;
 
   /// No description provided for @hrDetReadNowSub.
   ///

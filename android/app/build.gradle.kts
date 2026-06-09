@@ -55,4 +55,8 @@ flutter {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     implementation("androidx.core:core-ktx:1.13.1")
+    // Play Age Signals API (beta) — used to satisfy age-verification laws
+    // (e.g. Texas SB 2420). Google Play performs the actual age check; this
+    // library only delivers the resulting signal to the app.
+    implementation("com.google.android.play:age-signals:0.0.3")
 }

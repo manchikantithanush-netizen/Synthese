@@ -12,6 +12,20 @@ class AppNotificationsService {
       'Health, wellness and finance reminders.';
   static const String _metaPrefix = 'notif_meta_';
 
+  // Notification group keys — one group per section so Android bundles them.
+  static const String _groupHealth    = 'com.synthese.group.health';
+  static const String _groupDiet      = 'com.synthese.group.diet';
+  static const String _groupMindful   = 'com.synthese.group.mindfulness';
+  static const String _groupCycles    = 'com.synthese.group.cycles';
+  static const String _groupFinance   = 'com.synthese.group.finance';
+
+  // Summary notification IDs (one per group — must be stable).
+  static const int _summaryHealth   = 9001;
+  static const int _summaryDiet     = 9002;
+  static const int _summaryMindful  = 9003;
+  static const int _summaryCycles   = 9004;
+  static const int _summaryFinance  = 9005;
+
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
   bool _initialized = false;
@@ -37,6 +51,23 @@ class AppNotificationsService {
     _initialized = true;
   }
 
+  /// Resolve which group key + summary ID to use based on the uniqueKey prefix.
+  ({String group, int summaryId, String summaryTitle}) _groupForKey(String uniqueKey) {
+    if (uniqueKey.startsWith('diet_')) {
+      return (group: _groupDiet, summaryId: _summaryDiet, summaryTitle: 'Nutrition');
+    }
+    if (uniqueKey.startsWith('mindfulness_')) {
+      return (group: _groupMindful, summaryId: _summaryMindful, summaryTitle: 'Mindfulness');
+    }
+    if (uniqueKey.startsWith('cycles_')) {
+      return (group: _groupCycles, summaryId: _summaryCycles, summaryTitle: 'Cycle tracking');
+    }
+    if (uniqueKey.startsWith('finance_')) {
+      return (group: _groupFinance, summaryId: _summaryFinance, summaryTitle: 'Finance');
+    }
+    return (group: _groupHealth, summaryId: _summaryHealth, summaryTitle: 'Synthese');
+  }
+
   Future<void> show({
     required String uniqueKey,
     required String title,
@@ -44,6 +75,9 @@ class AppNotificationsService {
     String? payload,
   }) async {
     await init();
+    final groupInfo = _groupForKey(uniqueKey);
+
+    // Individual notification — belongs to a group.
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
         _defaultChannelId,
@@ -51,6 +85,9 @@ class AppNotificationsService {
         channelDescription: _defaultChannelDescription,
         importance: Importance.defaultImportance,
         priority: Priority.defaultPriority,
+        groupKey: groupInfo.group,
+        // setAsGroupSummary must be false for individual notifications.
+        setAsGroupSummary: false,
       ),
     );
     await _plugin.show(
@@ -59,6 +96,29 @@ class AppNotificationsService {
       body,
       details,
       payload: payload,
+    );
+
+    // Post/refresh the silent group summary so Android collapses the group.
+    // The summary is invisible on its own but required for grouping to work.
+    final summaryDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        _defaultChannelId,
+        _defaultChannelName,
+        channelDescription: _defaultChannelDescription,
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+        groupKey: groupInfo.group,
+        setAsGroupSummary: true,
+        // Suppress the summary's own alert sound/vibration.
+        playSound: false,
+        enableVibration: false,
+      ),
+    );
+    await _plugin.show(
+      groupInfo.summaryId,
+      groupInfo.summaryTitle,
+      '', // body intentionally empty — users see the individual notifications
+      summaryDetails,
     );
   }
 

@@ -661,6 +661,13 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get dietPageAiCameraToggleTitle => 'Análisis IA con cámara';
+
+  @override
+  String get dietPageAiCameraToggleBody =>
+      'Las fotos se envían a IA para analizar la nutrición. Desactívalo para usar solo texto o entrada manual.';
+
+  @override
   String get waterIntakeTitle => 'Consumo de agua';
 
   @override
@@ -4032,6 +4039,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get hrDetReadNow => 'Mide tu corazón ahora';
+
+  @override
+  String get hrDetCameraPermTitle => 'Acceso a la cámara requerido';
+
+  @override
+  String get hrDetCameraPermBody =>
+      'Para medir tu frecuencia cardíaca, Synthese necesita acceso a la cámara. La cámara se usa solo durante 30 segundos — no se toman ni almacenan fotos.';
+
+  @override
+  String get hrDetOpenSettings => 'Abrir ajustes';
 
   @override
   String get hrDetReadNowSub => 'Usa la cámara y la linterna para medir BPM';

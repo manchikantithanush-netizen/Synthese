@@ -342,7 +342,11 @@ class _AccountPageModalState extends State<AccountPageModal> {
       collection: userRef.collection('morning_readiness'),
     );
     await _deleteCollectionDocs(collection: userRef.collection('cycles'));
+    await _deleteCollectionDocs(collection: userRef.collection('daily_logs'));
     await _deleteCollectionDocs(collection: userRef.collection('dashboardDaily'));
+    await _deleteCollectionDocs(collection: userRef.collection('dailyAgg'));
+    await _deleteCollectionDocs(collection: userRef.collection('accounts'));
+    await _deleteCollectionDocs(collection: userRef.collection('financeMonthly'));
     await _deleteCollectionDocs(collection: userRef.collection('finance_accounts'));
     await _deleteCollectionDocs(
       collection: userRef.collection('finance_categories'),
@@ -354,6 +358,18 @@ class _AccountPageModalState extends State<AccountPageModal> {
 
     // Finally delete the root user document.
     await userRef.delete();
+
+    // Delete the profile photo from Firebase Storage.
+    // We do this after Firestore so even if Storage deletion fails the
+    // Firestore data is gone. catchError swallows "object not found" when
+    // the user never set a custom photo.
+    try {
+      await FirebaseStorage.instance
+          .ref('user_profile_photos/$uid.jpg')
+          .delete();
+    } catch (_) {
+      // No photo existed, or Storage deletion failed — not critical.
+    }
   }
 
   bool _canEditPhoto() {

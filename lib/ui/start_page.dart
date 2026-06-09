@@ -351,40 +351,39 @@ class _StartPageState extends State<StartPage> {
     setState(() => _isGuestLoading = true);
     try {
       HapticFeedback.lightImpact();
-      final cred = await FirebaseAuth.instance.signInAnonymously();
-      final user = cred.user;
+
+      // Reuse an existing anonymous session if one is already active (e.g. a
+      // repeated tap, or an earlier attempt that signed in but didn't finish),
+      // otherwise create a fresh one. This stops multiple taps from minting
+      // duplicate anonymous accounts.
+      final auth = FirebaseAuth.instance;
+      User? user = auth.currentUser;
+      if (user == null || !user.isAnonymous) {
+        user = (await auth.signInAnonymously()).user;
+      }
       if (user == null) {
         throw Exception(mounted
             ? AppLocalizations.of(context).startAnonFailed
             : 'Anonymous sign-in failed');
       }
+      final uid = user.uid;
 
-      // Force the freshly-issued auth token to propagate to the Firestore
-      // client before we issue any reads/writes — otherwise we can race the
-      // token plumbing and the rules engine sees an unauthenticated caller,
-      // yielding a transient permission-denied.
-      await user.getIdToken(true);
+      // Make sure the freshly-minted anonymous auth token has actually reached
+      // the Firestore SDK's credential provider before we attempt the first
+      // write. Without this, the write below can race ahead of token
+      // propagation and come back as `unauthenticated` / `permission-denied`,
+      // which is what made the guest button "not work" on real devices.
+      await user.getIdToken();
 
-      final firestore = FirebaseFirestore.instance;
-      final counterRef = firestore.collection('metadata').doc('guest_counter');
-
-      final guestNumber = await _runWithAuthRetry<int>(() {
-        return firestore.runTransaction<int>((tx) async {
-          final snap = await tx.get(counterRef);
-          final current = (snap.exists && snap.data()?['count'] is int)
-              ? snap.data()!['count'] as int
-              : 0;
-          final next = current + 1;
-          tx.set(counterRef, {'count': next}, SetOptions(merge: true));
-          return next;
-        });
-      });
-
+      // Minimal profile doc so the rest of the app has a users/{uid} to read.
+      // The guest label is derived from the uid — there's no global counter, so
+      // no shared-document contention to slow this down or make it fail under
+      // load. _runWithAuthRetry covers the brief window before the freshly
+      // issued auth token reaches the Firestore client.
       await _runWithAuthRetry<void>(() {
-        return firestore.collection('users').doc(user.uid).set({
-          'fullName': 'GUEST#$guestNumber',
+        return FirebaseFirestore.instance.collection('users').doc(uid).set({
+          'fullName': 'GUEST#${uid.substring(0, 6).toUpperCase()}',
           'isGuest': true,
-          'guestNumber': guestNumber,
           'createdAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true));
       });
@@ -407,10 +406,12 @@ class _StartPageState extends State<StartPage> {
     }
   }
 
-  /// Retry a Firestore call a few times if it fails with a transient
-  /// `permission-denied` (auth token still propagating after anonymous
-  /// sign-in). Other errors are rethrown immediately.
+  /// Retry a Firestore call a few times if it fails with a transient auth
+  /// error (`permission-denied` or `unauthenticated`) — both can happen while
+  /// the auth token is still propagating to the Firestore SDK right after
+  /// anonymous sign-in. Other errors are rethrown immediately.
   Future<T> _runWithAuthRetry<T>(Future<T> Function() op) async {
+    const retryableCodes = {'permission-denied', 'unauthenticated'};
     const delays = [
       Duration(milliseconds: 250),
       Duration(milliseconds: 600),
@@ -422,7 +423,7 @@ class _StartPageState extends State<StartPage> {
         return await op();
       } on FirebaseException catch (e) {
         lastError = e;
-        if (e.code != 'permission-denied' || i == delays.length) rethrow;
+        if (!retryableCodes.contains(e.code) || i == delays.length) rethrow;
         await Future.delayed(delays[i]);
       }
     }
@@ -619,6 +620,24 @@ class _StartPageState extends State<StartPage> {
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Honest caveat: guest sign-in needs a network round-trip
+                      // and can occasionally fail on a poor connection.
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'Guest mode may occasionally fail on a weak '
+                          'connection. For the most reliable experience, we '
+                          'recommend signing in normally.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.plusJakartaSans(
+                            color: textColor.withOpacity(0.45),
+                            fontSize: 11.5,
+                            height: 1.4,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 14),

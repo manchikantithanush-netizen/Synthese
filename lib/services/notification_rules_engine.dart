@@ -76,6 +76,9 @@ class NotificationRulesEngine {
     required Map<String, dynamic> userData,
     required DateTime now,
   }) async {
+    // Don't send diet notifications until the user has completed diet setup.
+    final dietSetupDone = (userData['dietSetupCompleted'] as bool?) ?? false;
+    if (!dietSetupDone) return;
     final todayKey = _dateKey(now);
     final dailyCalorieGoal =
         (userData['dailyCalorieGoal'] as num?)?.toInt() ?? 2000;
@@ -153,6 +156,11 @@ class NotificationRulesEngine {
     required Map<String, dynamic> userData,
     required DateTime now,
   }) async {
+    // Don't send mindfulness notifications until the user has completed
+    // mindfulness onboarding.
+    final mindfulnessDone =
+        (userData['mindfulnessOnboardingCompleted'] as bool?) ?? false;
+    if (!mindfulnessDone) return;
     final todayKey = _dateKey(now);
     final dailyAggDoc = await userRef.collection('dailyAgg').doc(todayKey).get();
     final dailyAgg = dailyAggDoc.data() ?? const <String, dynamic>{};
@@ -339,6 +347,10 @@ class NotificationRulesEngine {
     required Map<String, dynamic> userData,
     required DateTime now,
   }) async {
+    // Don't send finance notifications until the user has completed finance
+    // onboarding (set up their accounts and budget).
+    final financeSetupDone = (userData['financeSetupCompleted'] as bool?) ?? false;
+    if (!financeSetupDone) return;
     final financeDebtsRef = userRef.collection('finance_debts');
     final debtsSnap = await financeDebtsRef.get();
     final todayKey = _dateKey(now);

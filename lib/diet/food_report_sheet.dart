@@ -31,6 +31,7 @@ class _FoodReportSheet extends StatefulWidget {
 
 class _FoodReportSheetState extends State<_FoodReportSheet> {
   static const List<String> _issueKeys = [
+    'offensive',
     'wrong_food',
     'calories_off',
     'macros_off',
@@ -51,6 +52,10 @@ class _FoodReportSheetState extends State<_FoodReportSheet> {
 
   String _issueLabel(AppLocalizations t, String key) {
     switch (key) {
+      // Required by Google Play's AI-generated content policy: users must be
+      // able to flag offensive/inappropriate AI output. Hardcoded English (not
+      // yet localized) so the option exists everywhere.
+      case 'offensive':       return 'Offensive or inappropriate content';
       case 'wrong_food':      return t.reportIssueWrongFood;
       case 'calories_off':    return t.reportIssueCaloriesOff;
       case 'macros_off':      return t.reportIssueMacrosOff;

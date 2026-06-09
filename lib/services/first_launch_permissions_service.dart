@@ -18,7 +18,9 @@ class FirstLaunchPermissionsService {
         await Permission.location.request();
         await Permission.activityRecognition.request();
         await Permission.camera.request();
-        await Permission.photos.request();
+        // NOTE: We intentionally do NOT request Permission.photos on Android.
+        // The app uses the Android Photo Picker (via image_picker) which
+        // requires zero permissions — the system picker handles file access.
       }
     } catch (_) {
     } finally {
@@ -44,7 +46,13 @@ class FirstLaunchPermissionsService {
   }
 
   Future<void> requestPhotos() async {
-    try { await Permission.photos.request(); } catch (_) {}
+    // On Android we use the Android Photo Picker (zero-permission model).
+    // image_picker launches the system picker directly — no READ_MEDIA_IMAGES
+    // or READ_EXTERNAL_STORAGE grant is needed or declared in the manifest.
+    // On iOS, the photos permission is meaningful and handled by the OS prompt.
+    if (!Platform.isAndroid) {
+      try { await Permission.photos.request(); } catch (_) {}
+    }
   }
 
   Future<void> markAllAsked() async {

@@ -329,18 +329,43 @@ class _TappableRow extends StatefulWidget {
 
 class _TappableRowState extends State<_TappableRow> {
   bool _pressed = false;
+  Offset? _downPosition;
+  // How many logical pixels the finger can drift before we cancel the tap.
+  static const double _slopThreshold = 8.0;
 
   @override
   Widget build(BuildContext context) {
     final hlColor = widget.isDark ? Colors.white12 : Colors.black12;
     return Listener(
-      onPointerDown: (_) => setState(() => _pressed = true),
-      onPointerUp: (_) {
-        setState(() => _pressed = false);
-        HapticFeedback.selectionClick();
-        widget.onTap();
+      onPointerDown: (e) {
+        _downPosition = e.localPosition;
+        setState(() => _pressed = true);
       },
-      onPointerCancel: (_) => setState(() => _pressed = false),
+      onPointerMove: (e) {
+        // If the finger has drifted beyond the slop threshold the user is
+        // scrolling — cancel the visual pressed state so the row un-highlights.
+        if (_pressed && _downPosition != null) {
+          final delta = (e.localPosition - _downPosition!).distance;
+          if (delta > _slopThreshold) {
+            setState(() => _pressed = false);
+          }
+        }
+      },
+      onPointerUp: (e) {
+        // Only fire the tap if the pressed state is still active (i.e. the
+        // finger didn't drift far enough to be classified as a scroll).
+        final wasTap = _pressed;
+        _downPosition = null;
+        setState(() => _pressed = false);
+        if (wasTap) {
+          HapticFeedback.selectionClick();
+          widget.onTap();
+        }
+      },
+      onPointerCancel: (_) {
+        _downPosition = null;
+        setState(() => _pressed = false);
+      },
       child: Container(
         color: _pressed ? hlColor : Colors.transparent,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),

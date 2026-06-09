@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 
 import 'food_analysis_service.dart';
@@ -53,6 +54,13 @@ class _DietPageState extends State<DietPage> {
   // Orange theme color
   static const Color orangeColor = Color(0xFFFF9500);
 
+  // AI camera analysis opt-in — persisted so the user's choice survives restarts.
+  // Default true (opted in). When false, the camera button is hidden and only
+  // manual text / manual-entry modes are available, satisfying the UAE PDPL
+  // "Right to Object" for AI processing of food image data.
+  bool _aiCameraEnabled = true;
+  static const String _kAiCameraEnabled = 'diet_ai_camera_enabled';
+
   // Onboarding state
   bool? _dietSetupCompleted;
   int _dailyCalorieGoal = 2000;
@@ -68,6 +76,7 @@ class _DietPageState extends State<DietPage> {
     _loadFrequentFoods();
     _loadTodayWaterIntake();
     _loadWaterHistory();
+    _loadAiCameraPref();
     unawaited(NotificationRulesEngine.evaluateGlobal());
   }
 
@@ -81,6 +90,34 @@ class _DietPageState extends State<DietPage> {
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
     return '${date.year}-$month-$day';
+  }
+
+  // ── AI camera preference ──────────────────────────────────────────────────
+
+  Future<void> _loadAiCameraPref() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _aiCameraEnabled = prefs.getBool(_kAiCameraEnabled) ?? true;
+      });
+    }
+  }
+
+  Future<void> _setAiCameraEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kAiCameraEnabled, value);
+    if (mounted) setState(() => _aiCameraEnabled = value);
+    // If the user disables AI and there's a pending image analysis, clear it.
+    if (!value && (_selectedImage != null || _isAnalyzing)) {
+      if (mounted) {
+        setState(() {
+          _selectedImage = null;
+          _isAnalyzing = false;
+          _analysisResult = null;
+          _lastTypedFood = null;
+        });
+      }
+    }
   }
 
   Future<void> _checkDietSetup() async {
@@ -2032,6 +2069,66 @@ class _DietPageState extends State<DietPage> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    const SizedBox(height: 12),
+
+                    // ── AI Camera Analysis opt-in toggle ──────────────────
+                    // Users have the right to object to AI processing of their
+                    // food images (UAE PDPL). Default is on; turning it off
+                    // hides the camera scan option and uses text/manual only.
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withOpacity(0.06)
+                            : Colors.black.withOpacity(0.04),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            CupertinoIcons.sparkles,
+                            size: 16,
+                            color: _aiCameraEnabled
+                                ? orangeColor
+                                : subTextColor,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  t.dietPageAiCameraToggleTitle,
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  t.dietPageAiCameraToggleBody,
+                                  style: TextStyle(
+                                    color: subTextColor,
+                                    fontSize: 11,
+                                    height: 1.3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Switch.adaptive(
+                            value: _aiCameraEnabled,
+                            activeColor: orangeColor,
+                            onChanged: (v) {
+                              HapticFeedback.selectionClick();
+                              _setAiCameraEnabled(v);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 16),
 
                     // Image Preview or Upload Button
@@ -2612,54 +2709,56 @@ class _DietPageState extends State<DietPage> {
                       ],
 
                       // Empty state - upload button
-                      GestureDetector(
-                        onTap: _showImageSourcePicker,
-                        child: Container(
-                          width: double.infinity,
-                          height: 160,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withOpacity(0.05)
-                                : Colors.black.withOpacity(0.03),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
+                      if (_aiCameraEnabled) ...[
+                        GestureDetector(
+                          onTap: _showImageSourcePicker,
+                          child: Container(
+                            width: double.infinity,
+                            height: 160,
+                            decoration: BoxDecoration(
                               color: isDark
-                                  ? Colors.white.withOpacity(0.1)
-                                  : Colors.black.withOpacity(0.1),
-                              width: 2,
-                              strokeAlign: BorderSide.strokeAlignInside,
+                                  ? Colors.white.withOpacity(0.05)
+                                  : Colors.black.withOpacity(0.03),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.1)
+                                    : Colors.black.withOpacity(0.1),
+                                width: 2,
+                                strokeAlign: BorderSide.strokeAlignInside,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  CupertinoIcons.camera_fill,
+                                  color: subTextColor,
+                                  size: 40,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  t.dietPageTapToUpload,
+                                  style: TextStyle(
+                                    color: subTextColor,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  t.dietPageCameraOrPhotoLibrary,
+                                  style: TextStyle(
+                                    color: subTextColor.withOpacity(0.6),
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                CupertinoIcons.camera_fill,
-                                color: subTextColor,
-                                size: 40,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                t.dietPageTapToUpload,
-                                style: TextStyle(
-                                  color: subTextColor,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                t.dietPageCameraOrPhotoLibrary,
-                                style: TextStyle(
-                                  color: subTextColor.withOpacity(0.6),
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
+                        const SizedBox(height: 12),
+                      ],
                       UniversalButton(
                         text: t.dietPageTypeFoodInstead,
                         onPressed: _showTextFoodInputDialog,

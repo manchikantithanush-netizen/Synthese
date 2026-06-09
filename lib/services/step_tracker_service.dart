@@ -29,6 +29,7 @@ class StepTracker {
   static const String _kBackgroundEnabled = 'step_background_enabled';
   static const String _kBaselineDate = 'step_baseline_date';
   static const String _kBaselineCumulative = 'step_baseline_cumulative';
+  static const String _kLastCumulative = 'step_last_cumulative';
   static const String _kSensorToday = 'step_sensor_today';
   static const String _kWorkoutToday = 'step_workout_today';
   static const String _kHourly = 'step_hourly_today';
@@ -79,11 +80,12 @@ class StepTracker {
     _initialized = true;
     _prefs = await SharedPreferences.getInstance();
 
-    backgroundEnabled.value = _prefs!.getBool(_kBackgroundEnabled) ?? true;
+    backgroundEnabled.value = _prefs!.getBool(_kBackgroundEnabled) ?? false;
     milestoneNotificationsEnabled.value =
         _prefs!.getBool(_kMilestoneNotifications) ?? true;
     _baselineDate = _prefs!.getString(_kBaselineDate) ?? '';
     _baselineCumulative = _prefs!.getInt(_kBaselineCumulative) ?? -1;
+    _lastCumulative = _prefs!.getInt(_kLastCumulative) ?? -1;
     _sensorToday = _prefs!.getInt(_kSensorToday) ?? 0;
     _workoutToday = _prefs!.getInt(_kWorkoutToday) ?? 0;
     final hourlyRaw = _prefs!.getStringList(_kHourly);
@@ -95,6 +97,17 @@ class StepTracker {
 
     // Reset per-day accumulators if the stored day isn't today.
     _rolloverIfNeeded(persist: false);
+
+    // If we have a last-known cumulative and a valid baseline, recompute
+    // _sensorToday immediately on cold start — same logic as reconcile().
+    if (_lastCumulative >= 0 && _baselineCumulative >= 0 && backgroundEnabled.value) {
+      var computed = _lastCumulative - _baselineCumulative;
+      if (computed < 0) computed = 0;
+      if (computed > _sensorToday) {
+        _sensorToday = computed;
+      }
+    }
+
     _publishToday();
 
     if (backgroundEnabled.value) {
@@ -183,16 +196,39 @@ class StepTracker {
     if (p == null) return;
     p.setString(_kBaselineDate, _baselineDate);
     p.setInt(_kBaselineCumulative, _baselineCumulative);
+    if (_lastCumulative >= 0) p.setInt(_kLastCumulative, _lastCumulative);
     p.setInt(_kSensorToday, _sensorToday);
     p.setInt(_kWorkoutToday, _workoutToday);
     p.setStringList(_kHourly, _hourly.map((e) => e.toString()).toList());
   }
 
   /// Call when the app resumes so the day's total catches up after the app was
-  /// backgrounded/closed. Handles day rollover immediately; the next sensor
-  /// event reconciles the cumulative count.
+  /// backgrounded/closed. Handles day rollover immediately; uses the last
+  /// persisted cumulative sensor value to compute today's steps without
+  /// waiting for the next sensor event (fixes the "shows 0 on open" bug).
   void reconcile() {
     _rolloverIfNeeded(persist: true);
+
+    // If we have a last-known cumulative value and a valid baseline, recompute
+    // _sensorToday immediately so the UI shows the correct count before the
+    // next step event arrives. This is the key fix for background step tracking:
+    // the hardware counter kept incrementing while the app was closed, and we
+    // can derive today's count from the last persisted cumulative.
+    if (_lastCumulative >= 0 && _baselineCumulative >= 0 && backgroundEnabled.value) {
+      var computed = _lastCumulative - _baselineCumulative;
+      if (computed < 0) computed = 0;
+      if (computed > _sensorToday) {
+        // Only update forward — never regress the count.
+        final delta = computed - _sensorToday;
+        if (delta > 0) {
+          final hour = DateTime.now().hour;
+          _hourly[hour >= 0 && hour <= 23 ? hour : 0] += delta;
+        }
+        _sensorToday = computed;
+        _persist();
+      }
+    }
+
     if (backgroundEnabled.value) {
       _startListening(); // no-op if already listening
     }
@@ -207,8 +243,10 @@ class StepTracker {
   Future<bool> requestPermission() async {
     final status = await Permission.activityRecognition.request();
     final granted = status.isGranted;
-    if (granted && (backgroundEnabled.value || _workoutActive)) {
-      _restartListening();
+    if (granted) {
+      // Explicitly enable background tracking now that permission is granted
+      // and persist the preference so the green dot stays correct on restart.
+      await setBackgroundEnabled(true);
     }
     return granted;
   }

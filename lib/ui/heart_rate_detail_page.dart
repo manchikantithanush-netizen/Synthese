@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart' hide TextDirection;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:synthese/data/heart_rate_repository.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/services/accent_color_service.dart';
@@ -72,6 +73,50 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
   }
 
   Future<void> _measureHeartRateLive() async {
+    // Check camera permission before opening the measurement page.
+    // On Android 13+ a missing permission throws CameraException before
+    // the page can catch it, so we gate here and explain if denied.
+    final status = await Permission.camera.status;
+    if (!status.isGranted) {
+      final result = await Permission.camera.request();
+      if (!result.isGranted) {
+        if (!mounted) return;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final textColor = isDark ? Colors.white : Colors.black;
+        await showDialog<void>(
+          context: context,
+          builder: (_) => AlertDialog(
+            backgroundColor: isDark ? const Color(0xFF252528) : Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text(
+              AppLocalizations.of(context).hrDetCameraPermTitle,
+              style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
+            ),
+            content: Text(
+              AppLocalizations.of(context).hrDetCameraPermBody,
+              style: TextStyle(color: textColor.withValues(alpha: 0.65)),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(AppLocalizations.of(context).commonOk,
+                    style: TextStyle(color: textColor)),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  openAppSettings();
+                },
+                child: Text(AppLocalizations.of(context).hrDetOpenSettings,
+                    style: const TextStyle(color: Color(0xFF007AFF))),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+    }
+
     HapticFeedback.mediumImpact();
     final result = await Navigator.of(context).push<int>(
       MaterialPageRoute(

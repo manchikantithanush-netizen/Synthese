@@ -652,6 +652,13 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get dietPageAiCameraToggleTitle => 'تحليل الكاميرا بالذكاء الاصطناعي';
+
+  @override
+  String get dietPageAiCameraToggleBody =>
+      'يتم إرسال الصور إلى الذكاء الاصطناعي لتحليل التغذية. أوقف التشغيل لاستخدام الإدخال النصي أو اليدوي فقط.';
+
+  @override
   String get waterIntakeTitle => 'شرب الماء';
 
   @override
@@ -3970,6 +3977,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get hrDetReadNow => 'اقرئي نبضك الآن';
+
+  @override
+  String get hrDetCameraPermTitle => 'مطلوب الوصول للكاميرا';
+
+  @override
+  String get hrDetCameraPermBody =>
+      'لقياس معدل ضربات قلبك، تحتاج Synthese إلى الوصول إلى الكاميرا. تُستخدم الكاميرا فقط لمدة 30 ثانية — لا يتم التقاط أي صور أو تخزينها.';
+
+  @override
+  String get hrDetOpenSettings => 'فتح الإعدادات';
 
   @override
   String get hrDetReadNowSub => 'استخدمي الكاميرا والفلاش لقياس النبض';

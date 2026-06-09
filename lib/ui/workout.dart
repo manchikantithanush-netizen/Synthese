@@ -109,6 +109,35 @@ String formatWorkoutDistance(WorkoutMode? mode, double meters) {
   }
 }
 
+// ── Google Maps dark style ────────────────────────────────────────────────────
+// Shared by both the live tracking map and the history map.
+// Palette matches the app's dark background (#1a1a1e ≈ #111111).
+const String _kDarkMapStyle = '''
+[
+  {"elementType":"geometry","stylers":[{"color":"#1a1a1e"}]},
+  {"elementType":"labels.text.fill","stylers":[{"color":"#8a8a8a"}]},
+  {"elementType":"labels.text.stroke","stylers":[{"color":"#1a1a1e"}]},
+  {"featureType":"administrative","elementType":"geometry","stylers":[{"visibility":"off"}]},
+  {"featureType":"administrative.country","elementType":"labels.text.fill","stylers":[{"color":"#9e9e9e"}]},
+  {"featureType":"administrative.land_parcel","stylers":[{"visibility":"off"}]},
+  {"featureType":"administrative.locality","elementType":"labels.text.fill","stylers":[{"color":"#bdbdbd"}]},
+  {"featureType":"poi","stylers":[{"visibility":"off"}]},
+  {"featureType":"poi.park","elementType":"geometry","stylers":[{"color":"#181c1e"}]},
+  {"featureType":"poi.park","elementType":"labels.text.fill","stylers":[{"color":"#616161"}]},
+  {"featureType":"poi.park","elementType":"labels.text.stroke","stylers":[{"color":"#1b1b1b"}]},
+  {"featureType":"road","elementType":"geometry.fill","stylers":[{"color":"#2c2c2e"}]},
+  {"featureType":"road","elementType":"labels.icon","stylers":[{"visibility":"off"}]},
+  {"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#8a8a8a"}]},
+  {"featureType":"road.arterial","elementType":"geometry","stylers":[{"color":"#373737"}]},
+  {"featureType":"road.highway","elementType":"geometry","stylers":[{"color":"#3c3c3e"}]},
+  {"featureType":"road.highway.controlled_access","elementType":"geometry","stylers":[{"color":"#4e4e52"}]},
+  {"featureType":"road.local","elementType":"labels.text.fill","stylers":[{"color":"#616161"}]},
+  {"featureType":"transit","stylers":[{"visibility":"off"}]},
+  {"featureType":"water","elementType":"geometry","stylers":[{"color":"#000000"}]},
+  {"featureType":"water","elementType":"labels.text.fill","stylers":[{"color":"#3d3d3d"}]}
+]
+''';
+
 class WorkoutPage extends StatefulWidget {
   const WorkoutPage({
     super.key,
@@ -131,6 +160,7 @@ class WorkoutPage extends StatefulWidget {
 class _WorkoutPageState extends State<WorkoutPage> {
   static const LatLng _defaultStart = LatLng(25.2048, 55.2708);
   static const int _trackingNotificationId = 4501;
+
   static const String _trackingChannelId = 'workout_tracking_channel';
   static const String _trackingChannelName = 'Workout tracking';
   static const String _trackingChannelDescription =
@@ -1951,6 +1981,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                             target: initialTarget,
                             zoom: _currentPosition == null ? 13 : 17,
                           ),
+                          style: isDark ? _kDarkMapStyle : null,
                           markers: mapMarkers,
                           polylines: mapPolylines,
                           myLocationButtonEnabled: false,
@@ -2970,6 +3001,7 @@ class _WorkoutHistoryPageState extends State<WorkoutHistoryPage> {
                                   target: routePoints.first,
                                   zoom: 14,
                                 ),
+                                style: isDark ? _kDarkMapStyle : null,
                                 markers: {
                                   Marker(
                                     markerId: const MarkerId('history_start'),

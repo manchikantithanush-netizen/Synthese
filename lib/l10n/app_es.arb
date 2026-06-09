@@ -262,6 +262,8 @@
       }
     }
   },
+  "dietPageAiCameraToggleTitle": "Análisis IA con cámara",
+  "dietPageAiCameraToggleBody": "Las fotos se envían a IA para analizar la nutrición. Desactívalo para usar solo texto o entrada manual.",
   "waterIntakeTitle": "Consumo de agua",
   "waterGlassCount": "{current} / {total} vasos",
   "@waterGlassCount": {
@@ -1324,6 +1326,9 @@
   "hrDetZoneHigh": "Alta",
   "hrDetReadNow": "Mide tu corazón ahora",
   "hrDetReadNowSub": "Usa la cámara y la linterna para medir BPM",
+  "hrDetCameraPermTitle": "Acceso a la cámara requerido",
+  "hrDetCameraPermBody": "Para medir tu frecuencia cardíaca, Synthese necesita acceso a la cámara. La cámara se usa solo durante 30 segundos — no se toman ni almacenan fotos.",
+  "hrDetOpenSettings": "Abrir ajustes",
   "hrDetInsNoneP": "No se han registrado datos de frecuencia cardíaca ",
   "hrDetInsNoneK": "aún hoy",
   "hrDetInsNoneS": ".",

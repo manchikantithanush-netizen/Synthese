@@ -262,6 +262,8 @@
       }
     }
   },
+  "dietPageAiCameraToggleTitle": "AI 摄像头分析",
+  "dietPageAiCameraToggleBody": "照片将发送给 AI 进行营养分析。关闭后仅使用文字或手动输入。",
   "waterIntakeTitle": "饮水量",
   "waterGlassCount": "{current} / {total} 杯",
   "@waterGlassCount": {
@@ -1324,6 +1326,9 @@
   "hrDetZoneHigh": "高",
   "hrDetReadNow": "立即测量心率",
   "hrDetReadNowSub": "使用摄像头和闪光灯测量心率",
+  "hrDetCameraPermTitle": "需要摄像头访问权限",
+  "hrDetCameraPermBody": "为了测量您的心率，Synthese 需要摄像头访问权限。摄像头仅在30秒测量期间使用——不拍摄或存储任何照片。",
+  "hrDetOpenSettings": "打开设置",
   "hrDetInsNoneP": "今天还没有记录",
   "hrDetInsNoneK": "心率数据",
   "hrDetInsNoneS": "。",

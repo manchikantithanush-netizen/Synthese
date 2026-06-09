@@ -628,6 +628,12 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get dietPageAiCameraToggleTitle => 'AI 摄像头分析';
+
+  @override
+  String get dietPageAiCameraToggleBody => '照片将发送给 AI 进行营养分析。关闭后仅使用文字或手动输入。';
+
+  @override
   String get waterIntakeTitle => '饮水量';
 
   @override
@@ -3694,6 +3700,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get hrDetReadNow => '立即测量心率';
+
+  @override
+  String get hrDetCameraPermTitle => '需要摄像头访问权限';
+
+  @override
+  String get hrDetCameraPermBody =>
+      '为了测量您的心率，Synthese 需要摄像头访问权限。摄像头仅在30秒测量期间使用——不拍摄或存储任何照片。';
+
+  @override
+  String get hrDetOpenSettings => '打开设置';
 
   @override
   String get hrDetReadNowSub => '使用摄像头和闪光灯测量心率';

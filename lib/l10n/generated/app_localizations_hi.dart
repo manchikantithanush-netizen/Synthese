@@ -657,6 +657,13 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
+  String get dietPageAiCameraToggleTitle => 'AI कैमरा विश्लेषण';
+
+  @override
+  String get dietPageAiCameraToggleBody =>
+      'पोषण विश्लेषण के लिए फ़ोटो AI को भेजी जाती हैं। केवल टेक्स्ट या मैन्युअल एंट्री के लिए बंद करें।';
+
+  @override
   String get waterIntakeTitle => 'पानी का सेवन';
 
   @override
@@ -4019,6 +4026,16 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get hrDetReadNow => 'अभी अपनी हृदय गति मापें';
+
+  @override
+  String get hrDetCameraPermTitle => 'कैमरा एक्सेस आवश्यक है';
+
+  @override
+  String get hrDetCameraPermBody =>
+      'हृदय गति मापने के लिए Synthese को कैमरा एक्सेस चाहिए। कैमरा केवल 30 सेकंड के लिए उपयोग होता है — कोई फ़ोटो नहीं ली या संग्रहीत की जाती है।';
+
+  @override
+  String get hrDetOpenSettings => 'सेटिंग खोलें';
 
   @override
   String get hrDetReadNowSub =>

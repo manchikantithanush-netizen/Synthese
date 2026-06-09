@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 import 'package:synthese/ui/auth/login_page.dart';
 import 'package:synthese/ui/dashboard.dart';
@@ -119,10 +121,11 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).colorScheme.onSurface;
-    // 1 welcome + 5 permissions + privacy + finish = 8
-    const totalPages = 8;
+    // 1 welcome + 4 permissions (5 on iOS, photos hidden on Android)
+    // + privacy + finish
+    final totalPages = Platform.isAndroid ? 7 : 8;
     // Back is blocked on the Finish slide only.
-    const blockBackFrom = 7;
+    final blockBackFrom = totalPages - 1;
 
     return PopScope(
       canPop: false,
@@ -195,6 +198,7 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
                       allowLabel:
                           AppLocalizations.of(context).permNotificationAllow,
                       isLoading: _loadingNotification,
+                      permission: Permission.notification,
                       onAllow: () => _requestThenAdvance(
                         _permService.requestNotification,
                         (v) => setState(() => _loadingNotification = v),
@@ -208,6 +212,7 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
                       allowLabel:
                           AppLocalizations.of(context).permLocationAllow,
                       isLoading: _loadingLocation,
+                      permission: Permission.location,
                       onAllow: () => _requestThenAdvance(
                         _permService.requestLocation,
                         (v) => setState(() => _loadingLocation = v),
@@ -221,17 +226,32 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
                       allowLabel:
                           AppLocalizations.of(context).permActivityAllow,
                       isLoading: _loadingActivity,
+                      permission: Permission.activityRecognition,
                       onAllow: () => _requestThenAdvance(
                         // Route through StepTracker so the pedometer stream is
                         // restarted right after the user grants the permission
                         // (a stream subscribed at app start without permission
                         // never emits, so we need to re-subscribe).
+                        // If the user denies the OS dialog, disable background
+                        // tracking so the green dot doesn't light up falsely.
                         () async {
-                          await StepTracker.instance.requestPermission();
+                          final granted =
+                              await StepTracker.instance.requestPermission();
+                          if (!granted) {
+                            await StepTracker.instance
+                                .setBackgroundEnabled(false);
+                          }
                         },
                         (v) => setState(() => _loadingActivity = v),
                       ),
-                      onSkip: _next,
+                      onSkip: () async {
+                        // User explicitly skipped — disable background step
+                        // tracking so the green dot and foreground service don't
+                        // activate without permission. The user can enable it
+                        // later from Settings once they grant the permission.
+                        await StepTracker.instance.setBackgroundEnabled(false);
+                        _next();
+                      },
                     ),
                     _SlidePermissionRequest(
                       imagePath: 'assets/camera.png',
@@ -240,25 +260,33 @@ class _OnboardingPermissionsState extends State<OnboardingPermissions> {
                       allowLabel:
                           AppLocalizations.of(context).permCameraAllow,
                       isLoading: _loadingCamera,
+                      permission: Permission.camera,
                       onAllow: () => _requestThenAdvance(
                         _permService.requestCamera,
                         (v) => setState(() => _loadingCamera = v),
                       ),
                       onSkip: _next,
                     ),
-                    _SlidePermissionRequest(
-                      imagePath: 'assets/camera.png',
-                      title: AppLocalizations.of(context).permPhotosTitle,
-                      body: AppLocalizations.of(context).permPhotosBody,
-                      allowLabel:
-                          AppLocalizations.of(context).permPhotosAllow,
-                      isLoading: _loadingPhotos,
-                      onAllow: () => _requestThenAdvance(
-                        _permService.requestPhotos,
-                        (v) => setState(() => _loadingPhotos = v),
+                    // Photos slide — only shown on iOS where the Photos
+                    // permission is meaningful. On Android we use the system
+                    // Photo Picker which needs zero permissions, so showing
+                    // this slide would be misleading (the Allow button would
+                    // show a spinner but never open an OS dialog).
+                    if (!Platform.isAndroid)
+                      _SlidePermissionRequest(
+                        imagePath: 'assets/camera.png',
+                        title: AppLocalizations.of(context).permPhotosTitle,
+                        body: AppLocalizations.of(context).permPhotosBody,
+                        allowLabel:
+                            AppLocalizations.of(context).permPhotosAllow,
+                        isLoading: _loadingPhotos,
+                        permission: Permission.photos,
+                        onAllow: () => _requestThenAdvance(
+                          _permService.requestPhotos,
+                          (v) => setState(() => _loadingPhotos = v),
+                        ),
+                        onSkip: _next,
                       ),
-                      onSkip: _next,
-                    ),
 
                     // ── Privacy & finish ──────────────────────────────────
                     _SlidePrivacyPolicy(
@@ -540,9 +568,9 @@ class _TrustChip extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SLIDES 4–9 — Individual permission request slides
+// SLIDES — Individual permission request slides
 // ─────────────────────────────────────────────────────────────────────────────
-class _SlidePermissionRequest extends StatelessWidget {
+class _SlidePermissionRequest extends StatefulWidget {
   final String imagePath;
   final String title;
   final String body;
@@ -550,6 +578,9 @@ class _SlidePermissionRequest extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onAllow;
   final VoidCallback onSkip;
+  /// The permission to check for the status indicator. Null = no indicator
+  /// (used for the Photos slide on iOS where we don't need one).
+  final Permission? permission;
 
   const _SlidePermissionRequest({
     required this.imagePath,
@@ -559,12 +590,50 @@ class _SlidePermissionRequest extends StatelessWidget {
     required this.isLoading,
     required this.onAllow,
     required this.onSkip,
+    this.permission,
   });
+
+  @override
+  State<_SlidePermissionRequest> createState() =>
+      _SlidePermissionRequestState();
+}
+
+class _SlidePermissionRequestState extends State<_SlidePermissionRequest> {
+  // null = still loading, true = granted, false = denied/restricted
+  bool? _isGranted;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkStatus();
+  }
+
+  Future<void> _checkStatus() async {
+    final p = widget.permission;
+    if (p == null) return;
+    final status = await p.status;
+    if (mounted) {
+      setState(() => _isGranted = status.isGranted);
+    }
+  }
+
+  /// Re-check after the Allow flow completes so the badge updates immediately.
+  Future<void> _refreshAfterAllow() async {
+    // Call the parent's allow handler (requests the OS permission + advances).
+    widget.onAllow();
+    // After the OS dialog resolves and before the page transitions away,
+    // re-query the permission so the badge animates to green if granted.
+    // The mounted guard ensures this is a no-op if the slide was already
+    // paged away.
+    await Future.delayed(const Duration(milliseconds: 400));
+    await _checkStatus();
+  }
 
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).colorScheme.onSurface;
     final subColor = textColor.withOpacity(0.55);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return LayoutBuilder(builder: (context, constraints) {
       final imgHeight = (constraints.maxHeight * 0.30).clamp(120.0, 200.0);
@@ -574,7 +643,7 @@ class _SlidePermissionRequest extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(28, 32, 28, 0),
             child: Image.asset(
-              imagePath,
+              widget.imagePath,
               height: imgHeight,
               fit: BoxFit.contain,
             ),
@@ -582,11 +651,11 @@ class _SlidePermissionRequest extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(28, 24, 28, 0),
+              padding: const EdgeInsets.fromLTRB(28, 24, 28, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
+                  Text(widget.title,
                       style: TextStyle(
                           color: textColor,
                           fontSize: 28,
@@ -594,12 +663,22 @@ class _SlidePermissionRequest extends StatelessWidget {
                           letterSpacing: -0.8,
                           height: 1.2)),
                   const SizedBox(height: 12),
-                  Text(body,
+                  Text(widget.body,
                       style: TextStyle(
                           color: subColor,
                           fontSize: 15,
                           height: 1.55,
                           letterSpacing: -0.1)),
+
+                  // ── Permission status indicator ──────────────────────
+                  if (widget.permission != null) ...[
+                    const SizedBox(height: 24),
+                    _PermissionStatusBadge(
+                      isGranted: _isGranted,
+                      isDark: isDark,
+                      textColor: textColor,
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -607,13 +686,13 @@ class _SlidePermissionRequest extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(28, 16, 28, 8),
             child: _InlineLoadingButton(
-              text: allowLabel,
-              isLoading: isLoading,
-              onPressed: onAllow,
+              text: widget.allowLabel,
+              isLoading: widget.isLoading,
+              onPressed: _refreshAfterAllow,
             ),
           ),
           TextButton(
-            onPressed: isLoading ? null : onSkip,
+            onPressed: widget.isLoading ? null : widget.onSkip,
             child: Text(AppLocalizations.of(context).commonSkipForNow,
                 style: TextStyle(
                     color: textColor.withOpacity(0.35),
@@ -624,6 +703,95 @@ class _SlidePermissionRequest extends StatelessWidget {
         ],
       );
     });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Permission status badge — shown in the blank space below the body text
+// ─────────────────────────────────────────────────────────────────────────────
+class _PermissionStatusBadge extends StatelessWidget {
+  final bool? isGranted; // null = loading
+  final bool isDark;
+  final Color textColor;
+
+  const _PermissionStatusBadge({
+    required this.isGranted,
+    required this.isDark,
+    required this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // While still checking, show a neutral loading pill.
+    if (isGranted == null) {
+      return _Pill(
+        icon: Icons.hourglass_empty_rounded,
+        label: 'Checking…',
+        iconColor: textColor.withOpacity(0.4),
+        bgColor: textColor.withOpacity(0.06),
+        textColor: textColor.withOpacity(0.45),
+      );
+    }
+
+    if (isGranted == true) {
+      return _Pill(
+        icon: Icons.check_circle_rounded,
+        label: 'Permission enabled',
+        iconColor: const Color(0xFF34C759),
+        bgColor: const Color(0xFF34C759).withOpacity(isDark ? 0.15 : 0.10),
+        textColor: const Color(0xFF34C759),
+      );
+    }
+
+    return _Pill(
+      icon: Icons.radio_button_unchecked_rounded,
+      label: 'Not enabled yet',
+      iconColor: textColor.withOpacity(0.35),
+      bgColor: textColor.withOpacity(0.06),
+      textColor: textColor.withOpacity(0.45),
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color iconColor, bgColor, textColor;
+
+  const _Pill({
+    required this.icon,
+    required this.label,
+    required this.iconColor,
+    required this.bgColor,
+    required this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(50),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: iconColor),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 // ─────────────────────────────────────────────────────────────────────────────

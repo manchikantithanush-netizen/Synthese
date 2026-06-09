@@ -262,6 +262,8 @@
       }
     }
   },
+  "dietPageAiCameraToggleTitle": "AI कैमरा विश्लेषण",
+  "dietPageAiCameraToggleBody": "पोषण विश्लेषण के लिए फ़ोटो AI को भेजी जाती हैं। केवल टेक्स्ट या मैन्युअल एंट्री के लिए बंद करें।",
   "waterIntakeTitle": "पानी का सेवन",
   "waterGlassCount": "{current} / {total} गिलास",
   "@waterGlassCount": {
@@ -1324,6 +1326,9 @@
   "hrDetZoneHigh": "उच्च",
   "hrDetReadNow": "अभी अपनी हृदय गति मापें",
   "hrDetReadNowSub": "बीपीएम मापने के लिए कैमरा और फ़्लैशलाइट का उपयोग करें",
+  "hrDetCameraPermTitle": "कैमरा एक्सेस आवश्यक है",
+  "hrDetCameraPermBody": "हृदय गति मापने के लिए Synthese को कैमरा एक्सेस चाहिए। कैमरा केवल 30 सेकंड के लिए उपयोग होता है — कोई फ़ोटो नहीं ली या संग्रहीत की जाती है।",
+  "hrDetOpenSettings": "सेटिंग खोलें",
   "hrDetInsNoneP": "आज अभी तक हृदय गति का ",
   "hrDetInsNoneK": "कोई डेटा दर्ज नहीं",
   "hrDetInsNoneS": " हुआ।",

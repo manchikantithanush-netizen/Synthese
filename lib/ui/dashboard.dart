@@ -33,6 +33,7 @@ import 'package:synthese/services/review_service.dart';
 import 'package:synthese/services/step_tracker_service.dart';
 import 'package:synthese/services/step_milestone_service.dart';
 import 'package:synthese/services/guest_session_service.dart';
+import 'package:synthese/services/guest_account_service.dart';
 import 'package:synthese/ui/steps_detail_page.dart';
 import 'package:synthese/ui/heart_rate_detail_page.dart';
 import 'package:synthese/ui/calories_detail_page.dart';
@@ -85,6 +86,9 @@ class _DashboardPageState extends State<DashboardPage>
   // Without this, an early save (step-sensor debounce / app pause) can race the
   // async load and overwrite real Firestore data with empty in-memory defaults.
   bool _metricsLoaded = false;
+  // Set to true if a persist was requested before _metricsLoaded became true,
+  // so we flush as soon as the load finishes.
+  bool _pendingSave = false;
   int _eatenCalories = 0; // from diet logs via dailyAgg — live stream
   StreamSubscription<DocumentSnapshot>? _dailyAggSub;
   List<int> _sleepData = [0, 0, 0, 0, 0, 0, 0];
@@ -273,8 +277,11 @@ class _DashboardPageState extends State<DashboardPage>
     if (left == null) return;
     if (left.isNegative || left == Duration.zero) {
       await GuestSessionService.instance.clear();
-      await FirebaseAuth.instance.signOut();
-      return; // authStateChanges() routes back to the StartPage.
+      // Wipe the guest's cloud data + delete the anonymous account so junk
+      // doesn't accumulate. This also signs the user out, so
+      // authStateChanges() routes back to the StartPage.
+      await GuestAccountService.instance.purge();
+      return;
     }
     if (!mounted) return;
     setState(() {
@@ -454,7 +461,8 @@ class _DashboardPageState extends State<DashboardPage>
 
       // We've now read today's stored state (even if the doc doesn't exist yet),
       // so it's safe to start persisting without clobbering real data.
-      _metricsLoaded = true;
+      // NOTE: We set _metricsLoaded = true AFTER all data is applied in setState
+      // below, not here, so any pending save flushes with the correct loaded values.
 
       final data = doc.data();
       if (data == null || !mounted) return;
@@ -523,8 +531,18 @@ class _DashboardPageState extends State<DashboardPage>
         _updateScore();
       });
       _syncDashboardWidgets();
+
+      // All data is now loaded — mark as ready and flush any save that was
+      // blocked while we were waiting for the Firestore read to complete.
+      _metricsLoaded = true;
+      if (_pendingSave) {
+        _pendingSave = false;
+        unawaited(_persistDashboardMetricsNow());
+      }
     } catch (e) {
       debugPrint('Error loading persisted dashboard metrics: $e');
+      // Even on error, unblock saves so the app doesn't get stuck never saving.
+      _metricsLoaded = true;
     }
   }
 
@@ -550,7 +568,11 @@ class _DashboardPageState extends State<DashboardPage>
     final uid = FirebaseAuth.instance.currentUser?.uid;
     // Don't write until today's metrics have been loaded — otherwise a save
     // that races the initial load overwrites stored data with empty defaults.
-    if (uid == null || !_metricsLoaded) return;
+    if (uid == null || !_metricsLoaded) {
+      // Mark that a save was requested so we flush as soon as the load finishes.
+      if (uid != null) _pendingSave = true;
+      return;
+    }
 
     try {
       final dayKey = _dateKey(DateTime.now());
@@ -1205,7 +1227,12 @@ class _DashboardPageState extends State<DashboardPage>
                 textColor: textColor,
                 subTextColor: subTextColor,
                 heartRate: _heartRate,
-                hrHistory: _hrHistory,
+                // Pass an immutable copy so _HeartWavePainter.shouldRepaint
+                // always sees a different list reference when data changes.
+                // Passing the same mutable List means old and new painter both
+                // point to the same object — shouldRepaint sees equal lengths
+                // and skips the repaint, leaving the graph flat.
+                hrHistory: List.unmodifiable(_hrHistory),
                 trendText: t.dashTapForMore,
                 trendColor: subTextColor,
                 onTap: () => Navigator.of(context).push(
@@ -2092,11 +2119,18 @@ class _HeartWavePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _HeartWavePainter old) =>
-      old.hrHistory.length != hrHistory.length ||
-      (hrHistory.isNotEmpty &&
-          old.hrHistory.isNotEmpty &&
-          old.hrHistory.last.bpm != hrHistory.last.bpm);
+  bool shouldRepaint(covariant _HeartWavePainter old) {
+    // Repaint whenever the list reference changes (new copy was passed),
+    // the length changes, or the last BPM value changes.
+    // Using identical() catches the case where the same mutable list was
+    // passed — in that case we can't trust length/content comparisons.
+    if (!identical(old.hrHistory, hrHistory)) return true;
+    if (old.hrHistory.length != hrHistory.length) return true;
+    if (hrHistory.isNotEmpty && old.hrHistory.isNotEmpty) {
+      return old.hrHistory.last.bpm != hrHistory.last.bpm;
+    }
+    return old.color != color;
+  }
 }
 
 // ============================================================================

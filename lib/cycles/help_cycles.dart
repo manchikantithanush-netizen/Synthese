@@ -22,6 +22,9 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
   final PageController _pageController = PageController();
   int _selectedArticleIndex = -1;
 
+  // Retained so articles can be re-enabled by pointing the card's onTap back
+  // here once the content is ready (see _showArticleLockedSheet).
+  // ignore: unused_element
   void _slideForward(int index) {
     setState(() => _selectedArticleIndex = index);
     _pageController.animateToPage(
@@ -139,6 +142,18 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
     );
   }
 
+  /// Navigate to a full-screen locked page so the article list is completely
+  /// hidden — the user sees nothing but the lock screen.
+  void _showArticleLockedSheet(bool isDark) {
+    HapticFeedback.mediumImpact();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => const _ArticleLockedPage(),
+      ),
+    );
+  }
+
   Widget _buildLargeArticleCard({
     required int index,
     required String title,
@@ -152,10 +167,8 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
 
     return GestureDetector(
       onTap: () {
-        HapticFeedback.selectionClick();
-        if (index >= 0 && index <= 5) {
-          _slideForward(index);
-        }
+        // Articles are still being written — locked for now.
+        _showArticleLockedSheet(isDark);
       },
       child: Container(
         decoration: BoxDecoration(
@@ -174,31 +187,82 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // --- IMAGE SECTION ---
+            // --- IMAGE SECTION (locked) ---
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(24),
               ),
               child: AspectRatio(
                 aspectRatio: 1.8,
-                child: Image.asset(
-                  imagePath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    // Fallback just in case the image isn't found
-                    return Container(
-                      color: isDark
-                          ? const Color(0xFF2C2C2E)
-                          : const Color(0xFFE5E5EA),
-                      child: Center(
-                        child: Icon(
-                          CupertinoIcons.photo,
-                          color: isDark ? Colors.white30 : Colors.black26,
-                          size: 40,
-                        ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Image.asset(
+                      imagePath,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        // Fallback just in case the image isn't found
+                        return Container(
+                          color: isDark
+                              ? const Color(0xFF2C2C2E)
+                              : const Color(0xFFE5E5EA),
+                          child: Center(
+                            child: Icon(
+                              CupertinoIcons.photo,
+                              color: isDark ? Colors.white30 : Colors.black26,
+                              size: 40,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    // Dim scrim so the lock reads clearly over any image.
+                    Container(color: Colors.black.withOpacity(0.45)),
+                    // Centered lock badge + "In progress" pill.
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.16),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.35),
+                                width: 1,
+                              ),
+                            ),
+                            child: const Icon(
+                              CupertinoIcons.lock_fill,
+                              color: Colors.white,
+                              size: 26,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.40),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'In progress',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -289,6 +353,127 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
         const SizedBox(height: 16),
         Expanded(child: articleContent),
       ],
+    );
+  }
+}
+
+// ============================================================================
+// FULL-SCREEN LOCKED PAGE
+// Opened when a locked article card is tapped. Covers the entire screen so
+// the article list is completely hidden behind it.
+// ============================================================================
+class _ArticleLockedPage extends StatelessWidget {
+  const _ArticleLockedPage();
+
+  @override
+  Widget build(BuildContext context) {
+    const pink = Color(0xFFEC548A);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF111111) : const Color(0xFFF2F2F7);
+    final textColor = isDark ? Colors.white : Colors.black;
+    const subColor = Color(0xFF8E8E93);
+
+    return Scaffold(
+      backgroundColor: bgColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // ── Header with close button ──────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 12, 16, 0),
+              child: Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: UniversalCloseButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ),
+
+            // ── Centred content ───────────────────────────────────────
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Lock icon in a large badge
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: pink.withOpacity(isDark ? 0.16 : 0.10),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: pink.withOpacity(isDark ? 0.35 : 0.25),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Icon(
+                        CupertinoIcons.lock_fill,
+                        color: pink,
+                        size: 42,
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    Text(
+                      'Articles coming soon',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.6,
+                        height: 1.15,
+                      ),
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    const Text(
+                      "We're still writing these. Each article is carefully "
+                      "researched and reviewed before it goes live. "
+                      "Check back soon.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: subColor,
+                        fontSize: 16,
+                        height: 1.5,
+                      ),
+                    ),
+
+                    const SizedBox(height: 48),
+
+                    // "Go back" button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: FilledButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: pink,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                        ),
+                        child: const Text(
+                          'Go back',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

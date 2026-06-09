@@ -656,6 +656,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get dietPageAiCameraToggleTitle => 'AI Camera Analysis';
+
+  @override
+  String get dietPageAiCameraToggleBody =>
+      'Photos are sent to AI for nutrition analysis. Disable to use text or manual entry only.';
+
+  @override
   String get waterIntakeTitle => 'Water Intake';
 
   @override
@@ -4001,6 +4008,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hrDetReadNow => 'Read your heart now';
+
+  @override
+  String get hrDetCameraPermTitle => 'Camera Access Required';
+
+  @override
+  String get hrDetCameraPermBody =>
+      'To measure your heart rate, Synthese needs camera access. Your camera is used only for the 30-second reading — no photos are taken or stored.';
+
+  @override
+  String get hrDetOpenSettings => 'Open Settings';
 
   @override
   String get hrDetReadNowSub => 'Use camera & flashlight to measure BPM';
