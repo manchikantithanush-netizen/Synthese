@@ -361,11 +361,19 @@ class _HeartRateMeasurePageState extends State<HeartRateMeasurePage>
     if (value <= 0) return;
 
     // Finger-on-lens gate: with the torch lit AND a fingertip pressed
-    // against the lens, the frame is dim-to-medium AND red-dominant.
-    // Without a finger the torch reflection is bright/white (high Y,
-    // low redness). This rejects pointing the phone at air, a desk,
-    // a red mouse, etc.
-    final bool covered = value > 35 && value < 200 && redness > 0.18;
+    // against the lens, the frame is dim-to-medium AND strongly red-dominant.
+    //
+    // Thresholds are intentionally strict to reject false positives:
+    //   intensity 50–160 : fingertip with torch is darker than open air
+    //                       but lighter than a completely blocked lens.
+    //   redness > 0.30   : fingertip tissue is deep red (Cr ≈ 0.35–0.65).
+    //                       Red cloth, red surfaces, etc. typically score
+    //                       0.18–0.28 — deliberately kept below this gate.
+    //
+    // Without a finger, torch reflection off air/desk is bright (Y > 200)
+    // and near-neutral (redness < 0.10). A red cloth is dim but only
+    // moderately red (redness 0.18–0.28). Neither passes both gates.
+    final bool covered = value > 50 && value < 160 && redness > 0.30;
     if (covered != _fingerDetected && mounted) {
       setState(() => _fingerDetected = covered);
     }
@@ -618,8 +626,9 @@ class _HeartRateMeasurePageState extends State<HeartRateMeasurePage>
     }
 
     // 2. Amplitude gate — the detrended signal must actually pulsate.
-    //    This is what rejects pointing the phone at air (where the redness
-    //    gate might briefly pass but there's no real pulse signal).
+    //    Raised threshold (std ≥ 0.4, was 0.25): fabric/cloth noise produces
+    //    low-amplitude random variation that passes 0.25 but not 0.4.
+    //    Real fingertip PPG has std 0.5–3.0 due to blood volume changes.
     if (_detrended.length >= 30) {
       double mean = 0;
       for (final v in _detrended) {
@@ -632,7 +641,7 @@ class _HeartRateMeasurePageState extends State<HeartRateMeasurePage>
         variance += d * d;
       }
       final std = math.sqrt(variance / _detrended.length);
-      if (std < 0.25) {
+      if (std < 0.4) {
         return _BpmResult(null, t.hrMeasFailNoSignal);
       }
     }
@@ -647,6 +656,36 @@ class _HeartRateMeasurePageState extends State<HeartRateMeasurePage>
     if (bpm < 40 || bpm > 200) {
       return _BpmResult(null, t.hrMeasFailLockOn);
     }
+
+    // 4. Peak regularity gate — a real heartbeat has rhythmically consistent
+    //    inter-beat intervals (IBI). Noise from cloth/objects produces peaks
+    //    at irregular, random intervals. We compute the coefficient of
+    //    variation (CV = std/mean) of the last several IBIs.
+    //    Healthy sinus rhythm CV < 20-25%. We reject above 35% to stay
+    //    tolerant of mild arrhythmia but block pure noise.
+    if (_peakTimes.length >= 4) {
+      final recentPeaks = _peakTimes.length > 8
+          ? _peakTimes.sublist(_peakTimes.length - 8)
+          : _peakTimes;
+      final intervals = <int>[];
+      for (int i = 1; i < recentPeaks.length; i++) {
+        intervals.add(recentPeaks[i] - recentPeaks[i - 1]);
+      }
+      if (intervals.length >= 3) {
+        final mean = intervals.reduce((a, b) => a + b) / intervals.length;
+        final variance = intervals
+            .map((x) => (x - mean) * (x - mean))
+            .reduce((a, b) => a + b) /
+            intervals.length;
+        final std = math.sqrt(variance);
+        final cv = mean > 0 ? std / mean : 1.0;
+        if (cv > 0.35) {
+          // Peaks are too irregular — likely noise, not a heartbeat.
+          return _BpmResult(null, t.hrMeasFailNoSteady);
+        }
+      }
+    }
+
     return _BpmResult(bpm, null);
   }
 

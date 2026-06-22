@@ -272,7 +272,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get permLocationBody =>
-      'La ubicación (aproximada y precisa) se usa solo durante sesiones de entrenamiento activas para mapear tu carrera, bicicleta o caminata. La ubicación en segundo plano mantiene tu sesión activa aunque la pantalla esté apagada — sin interrupciones a mitad del entrenamiento.';
+      'La ubicación (aproximada y precisa) se usa solo durante sesiones de entrenamiento activas para mapear tu carrera, bicicleta o caminata. La ubicación permanece activa durante tu sesión aunque la pantalla esté apagada — sin interrupciones a mitad del entrenamiento.';
 
   @override
   String get permLocationAllow => 'Permitir ubicación';
@@ -4419,6 +4419,40 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get hrMeasPreparing => 'Preparando la cámara…';
+
+  @override
+  String get hrWarnTitle => 'Antes de comenzar';
+
+  @override
+  String get hrWarnSubtitle =>
+      'Lee detenidamente antes de colocar el dedo sobre la cámara';
+
+  @override
+  String get hrWarnAccuracy => 'No es un dispositivo médico';
+
+  @override
+  String get hrWarnAccuracyBody =>
+      'Esta función utiliza la cámara y el flash para estimar la frecuencia cardíaca. Los resultados son aproximados y no deben usarse para tomar decisiones médicas. Consulta siempre a un profesional de la salud.';
+
+  @override
+  String get hrWarnHeat => 'El flash puede calentarse';
+
+  @override
+  String get hrWarnHeatBody =>
+      'La linterna permanece encendida durante los 30 segundos completos de la lectura. Esto puede calentar esa área del teléfono. Si sientes alguna molestia, detente inmediatamente.';
+
+  @override
+  String get hrWarnHowTo => 'Cómo sostener el teléfono';
+
+  @override
+  String get hrWarnHowToBody =>
+      'Coloca suavemente la yema del dedo sobre la cámara trasera y el flash. Mantente quieto durante toda la lectura. Evita presionar demasiado fuerte.';
+
+  @override
+  String get hrWarnContinue => 'Entiendo, continuar';
+
+  @override
+  String get hrWarnDismiss => 'No mostrar de nuevo';
 
   @override
   String get hrTip1 => 'Tu corazón late alrededor de 100.000 veces al día.';

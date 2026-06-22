@@ -13,7 +13,7 @@
 
 class UpdateReminder {
   /// Must match pubspec.yaml version exactly, e.g. "1.0.0+3"
-  static const String currentVersion = '2.3.0+22';
+  static const String currentVersion = '2.4.1+24';
   /// What to show the user when they open the app on this version for the first time.
-  static const String updateMessage = """Major bug fix Guest button not working is now fixed, along with some permission related issues and minor UI and Bug fixes.""";
+  static const String updateMessage = """Minor wording changes and bug fixes.""";
 }

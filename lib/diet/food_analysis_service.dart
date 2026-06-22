@@ -65,6 +65,73 @@ class FoodAnalysisService {
   static const String _model = 'openai/gpt-4o-mini';
   static const String _appSecret = String.fromEnvironment('APP_SECRET');
 
+  // ── System message ────────────────────────────────────────────────────────
+  // Establishes the model as a nutritionist with USDA/FDA grounding.
+  // Sent as a separate system turn so it frames every user request.
+  static const String _systemMessage =
+      'You are a registered dietitian and food scientist with deep knowledge '
+      'of USDA FoodData Central and FDA nutritional databases. '
+      'Your job is to estimate the nutritional content of meals from photos or '
+      'text descriptions as accurately as possible. '
+      'Always anchor your estimates to standard USDA database values for the '
+      'identified food, then adjust for visible portion size. '
+      'Never invent data — if you are uncertain about a micronutrient, use the '
+      'known USDA average for a typical serving of that food. '
+      'Macronutrients (calories, protein, carbs, fats) must be internally '
+      'consistent: calories ≈ (protein × 4) + (carbs × 4) + (fats × 9). '
+      'Always respond with valid JSON only — no markdown, no explanation.';
+
+  // ── Image prompt ──────────────────────────────────────────────────────────
+  static const String _imagePrompt =
+      'Analyze this food photo using the following structured approach:\n\n'
+      'STEP 1 — IDENTIFY: What food or dish is this? Be specific '
+      '(e.g. "grilled chicken breast" not just "chicken"). '
+      'If it is a mixed dish, name the dominant components.\n\n'
+      'STEP 2 — PORTION: Estimate the portion size in grams by comparing '
+      'the food to visible context clues (plate size, utensils, hands, '
+      'packaging). State your estimate explicitly before calculating.\n\n'
+      'STEP 3 — CALCULATE: Using USDA FoodData Central values as your '
+      'baseline per 100 g, scale all nutrients to your estimated portion. '
+      'Verify internal consistency: calories must approximately equal '
+      '(protein g × 4) + (carbs g × 4) + (fats g × 9).\n\n'
+      'STEP 4 — MICRONUTRIENTS: Use known USDA average values for the '
+      'identified food. Do not guess micronutrients visually.\n\n'
+      'Respond ONLY in this exact JSON — no markdown, no extra text:\n'
+      '{"food_name":"...","portion_g":200,"calories":300,"protein":25,'
+      '"carbs":30,"fats":10,"fiber":5,"sugar":8,"sodium":400,"iron":2,'
+      '"calcium":150,"potassium":350,"vitamin_c":15,"vitamin_d":1,'
+      '"description":"1-2 sentences on nutritional value."}\n\n'
+      'If no food is visible, return:\n'
+      '{"food_name":"Unknown","portion_g":0,"calories":0,"protein":0,'
+      '"carbs":0,"fats":0,"fiber":0,"sugar":0,"sodium":0,"iron":0,'
+      '"calcium":0,"potassium":0,"vitamin_c":0,"vitamin_d":0,'
+      '"description":"Could not identify food in the image."}';
+
+  // ── Text prompt ───────────────────────────────────────────────────────────
+  static String _textPrompt(String foodText) =>
+      'Analyze this meal description using the following structured approach:\n\n'
+      'STEP 1 — IDENTIFY: What is the most specific food/dish name that '
+      'matches this description?\n\n'
+      'STEP 2 — PORTION: If a quantity is mentioned (e.g. "2 eggs", '
+      '"1 cup rice") use it directly. If not, assume a standard single '
+      'serving from USDA FoodData Central.\n\n'
+      'STEP 3 — CALCULATE: Use USDA FoodData Central values scaled to the '
+      'identified portion. Verify: calories ≈ (protein × 4) + (carbs × 4) '
+      '+ (fats × 9).\n\n'
+      'STEP 4 — MICRONUTRIENTS: Use known USDA average values for the food. '
+      'Do not invent micronutrient data.\n\n'
+      'Meal description: "$foodText"\n\n'
+      'Respond ONLY in this exact JSON — no markdown, no extra text:\n'
+      '{"food_name":"...","portion_g":200,"calories":300,"protein":25,'
+      '"carbs":30,"fats":10,"fiber":5,"sugar":8,"sodium":400,"iron":2,'
+      '"calcium":150,"potassium":350,"vitamin_c":15,"vitamin_d":1,'
+      '"description":"1-2 sentences on nutritional value."}\n\n'
+      'If the input is not food or is too vague, return:\n'
+      '{"food_name":"Unknown","portion_g":0,"calories":0,"protein":0,'
+      '"carbs":0,"fats":0,"fiber":0,"sugar":0,"sodium":0,"iron":0,'
+      '"calcium":0,"potassium":0,"vitamin_c":0,"vitamin_d":0,'
+      '"description":"Could not estimate from the provided text."}';
+
   Future<FoodAnalysisResult> analyzeFood(File imageFile) async {
     try {
       final bytes = await imageFile.readAsBytes();
@@ -86,42 +153,29 @@ class FoodAnalysisService {
           'model': _model,
           'messages': [
             {
+              'role': 'system',
+              'content': _systemMessage,
+            },
+            {
               'role': 'user',
               'content': [
                 {
                   'type': 'text',
-                  'text': '''Analyze this food image and provide:
-1. The name of the food/dish
-2. An estimated calorie count (just the number)
-3. Estimated protein in grams (just the number)
-4. Estimated carbohydrates in grams (just the number)
-5. Estimated fats in grams (just the number)
-6. Estimated fiber in grams
-7. Estimated sugar in grams
-8. Estimated sodium in milligrams
-9. Estimated iron in milligrams
-10. Estimated calcium in milligrams
-11. Estimated potassium in milligrams
-12. Estimated vitamin C in milligrams
-13. Estimated vitamin D in micrograms
-14. A brief description (1-2 sentences about nutritional value or what it contains)
-
-Respond ONLY in this exact JSON format:
-{"food_name": "...", "calories": 123, "protein": 25, "carbs": 30, "fats": 10, "fiber": 5, "sugar": 8, "sodium": 400, "iron": 2, "calcium": 150, "potassium": 350, "vitamin_c": 15, "vitamin_d": 1, "description": "..."}
-
-Be realistic with estimates. All numeric fields should be whole numbers. If you cannot identify the food or it's not food, respond with:
-{"food_name": "Unknown", "calories": 0, "protein": 0, "carbs": 0, "fats": 0, "fiber": 0, "sugar": 0, "sodium": 0, "iron": 0, "calcium": 0, "potassium": 0, "vitamin_c": 0, "vitamin_d": 0, "description": "Could not identify food in the image."}'''
+                  'text': _imagePrompt,
                 },
                 {
                   'type': 'image_url',
                   'image_url': {
-                    'url': 'data:$mimeType;base64,$base64Image'
+                    'url': 'data:$mimeType;base64,$base64Image',
+                    // 'high' detail gives better portion/food recognition
+                    // at the cost of slightly more tokens.
+                    'detail': 'high',
                   }
                 }
               ]
             }
           ],
-          'max_completion_tokens': 500,
+          'max_completion_tokens': 400,
         }),
       );
 
@@ -160,35 +214,15 @@ Be realistic with estimates. All numeric fields should be whole numbers. If you 
           'model': _model,
           'messages': [
             {
+              'role': 'system',
+              'content': _systemMessage,
+            },
+            {
               'role': 'user',
-              'content':
-                  '''Analyze this meal description and provide:
-1. The most likely food/dish name
-2. Estimated calorie count (number only)
-3. Estimated protein in grams (number only)
-4. Estimated carbohydrates in grams (number only)
-5. Estimated fats in grams (number only)
-6. Estimated fiber in grams
-7. Estimated sugar in grams
-8. Estimated sodium in milligrams
-9. Estimated iron in milligrams
-10. Estimated calcium in milligrams
-11. Estimated potassium in milligrams
-12. Estimated vitamin C in milligrams
-13. Estimated vitamin D in micrograms
-14. A brief description (1-2 sentences)
-
-Meal description:
-"$trimmed"
-
-Respond ONLY in this exact JSON format:
-{"food_name": "...", "calories": 123, "protein": 25, "carbs": 30, "fats": 10, "fiber": 5, "sugar": 8, "sodium": 400, "iron": 2, "calcium": 150, "potassium": 350, "vitamin_c": 15, "vitamin_d": 1, "description": "..."}
-
-All numeric fields should be whole numbers. If too vague or not food, respond with:
-{"food_name": "Unknown", "calories": 0, "protein": 0, "carbs": 0, "fats": 0, "fiber": 0, "sugar": 0, "sodium": 0, "iron": 0, "calcium": 0, "potassium": 0, "vitamin_c": 0, "vitamin_d": 0, "description": "Could not estimate from the provided text."}''',
+              'content': _textPrompt(trimmed),
             },
           ],
-          'max_completion_tokens': 500,
+          'max_completion_tokens': 400,
         }),
       );
 
@@ -211,6 +245,12 @@ All numeric fields should be whole numbers. If too vague or not food, respond wi
     try {
       String jsonStr = content.trim();
       
+      // Strip any markdown code fences the model might add despite instructions.
+      jsonStr = jsonStr
+          .replaceAll(RegExp(r'^```json\s*', multiLine: true), '')
+          .replaceAll(RegExp(r'^```\s*', multiLine: true), '')
+          .trim();
+
       final jsonMatch = RegExp(r'\{.*\}', dotAll: true).firstMatch(jsonStr);
       if (jsonMatch != null) {
         jsonStr = jsonMatch.group(0)!;
@@ -224,12 +264,31 @@ All numeric fields should be whole numbers. If too vague or not food, respond wi
         return int.tryParse(v?.toString() ?? '0') ?? 0;
       }
 
+      final protein  = asInt(parsed['protein']);
+      final carbs    = asInt(parsed['carbs']);
+      final fats     = asInt(parsed['fats']);
+      var   calories = asInt(parsed['calories']);
+
+      // Macro consistency check: if the model's calorie figure diverges
+      // more than 20% from the Atwater formula, recalculate from macros.
+      // This catches cases where the model miscounts one field.
+      final calculatedCals = (protein * 4) + (carbs * 4) + (fats * 9);
+      if (calculatedCals > 0 && calories > 0) {
+        final deviation = (calories - calculatedCals).abs() / calculatedCals;
+        if (deviation > 0.20) {
+          // Trust the macro breakdown over the calorie figure.
+          calories = calculatedCals;
+        }
+      } else if (calculatedCals > 0 && calories == 0) {
+        calories = calculatedCals;
+      }
+
       return FoodAnalysisResult(
         foodName: parsed['food_name'] ?? 'Unknown Food',
-        estimatedCalories: asInt(parsed['calories']),
-        protein: asInt(parsed['protein']),
-        carbs: asInt(parsed['carbs']),
-        fats: asInt(parsed['fats']),
+        estimatedCalories: calories,
+        protein: protein,
+        carbs: carbs,
+        fats: fats,
         fiber: asInt(parsed['fiber']),
         sugar: asInt(parsed['sugar']),
         sodium: asInt(parsed['sodium']),
@@ -245,12 +304,18 @@ All numeric fields should be whole numbers. If too vague or not food, respond wi
       debugPrint('Error parsing response: $e');
       debugPrint('Raw content: $content');
       
-      final calorieMatch = RegExp(r'(\d+)\s*(?:cal|kcal|calories)', caseSensitive: false).firstMatch(content);
+      // Last-resort fallback: extract any calorie number from free text.
+      final calorieMatch = RegExp(
+        r'(\d+)\s*(?:cal|kcal|calories)',
+        caseSensitive: false,
+      ).firstMatch(content);
       if (calorieMatch != null) {
         return FoodAnalysisResult(
           foodName: 'Food Item',
           estimatedCalories: int.parse(calorieMatch.group(1)!),
-          description: content.length > 100 ? '${content.substring(0, 100)}...' : content,
+          description: content.length > 100
+              ? '${content.substring(0, 100)}...'
+              : content,
           success: true,
         );
       }

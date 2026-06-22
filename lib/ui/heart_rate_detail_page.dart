@@ -12,7 +12,7 @@ import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/ui/components/universalsegmentedcontrol.dart';
 import 'package:synthese/ui/components/bouncing_dots_loader.dart';
 import 'package:synthese/ui/components/metric_add_data_sheet.dart';
-import 'package:synthese/ui/heart_rate_measure_page.dart';
+import 'package:synthese/ui/heart_rate_measure_warning_page.dart';
 
 class HeartRateDetailPage extends StatefulWidget {
   final int currentBpm;
@@ -118,12 +118,9 @@ class _HeartRateDetailPageState extends State<HeartRateDetailPage> {
     }
 
     HapticFeedback.mediumImpact();
-    final result = await Navigator.of(context).push<int>(
-      MaterialPageRoute(
-        builder: (_) => const HeartRateMeasurePage(),
-        fullscreenDialog: true,
-      ),
-    );
+    // pushHeartRateMeasure shows the warning page on first use,
+    // then routes to the actual measurement page.
+    final result = await pushHeartRateMeasure(context);
     if (result != null && result > 0) {
       await _addManualHeartRate(when: DateTime.now(), bpm: result);
     }

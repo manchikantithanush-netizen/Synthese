@@ -49,26 +49,18 @@ LatLngBounds _boundsForRoutePoints(List<LatLng> points) {
 
 enum WorkoutMode {
   running,
-  trailRun,
   outdoorWalking,
   cycling,
-  mountainBikeRide,
-  eBikeRide,
-  swimming,
 }
 
-/// Step counting only makes sense for foot-based workouts; cycling/swimming
+/// Step counting only makes sense for foot-based workouts; cycling
 /// would record meaningless pedometer noise.
 bool _isFootBasedMode(WorkoutMode? mode) {
   switch (mode) {
     case WorkoutMode.running:
-    case WorkoutMode.trailRun:
     case WorkoutMode.outdoorWalking:
       return true;
     case WorkoutMode.cycling:
-    case WorkoutMode.mountainBikeRide:
-    case WorkoutMode.eBikeRide:
-    case WorkoutMode.swimming:
     case null:
       return false;
   }
@@ -87,26 +79,8 @@ WorkoutMode? _workoutModeFromName(String? raw) {
 }
 
 String formatWorkoutDistance(WorkoutMode? mode, double meters) {
-  switch (mode) {
-    case WorkoutMode.swimming:
-      if (meters < 1) {
-        return '0 m';
-      }
-      if (meters < 1000) {
-        return '${meters.round()} m';
-      }
-      final km = meters / 1000;
-      return '${km.toStringAsFixed(2)} km';
-    case WorkoutMode.running:
-    case WorkoutMode.trailRun:
-    case WorkoutMode.outdoorWalking:
-    case WorkoutMode.cycling:
-    case WorkoutMode.mountainBikeRide:
-    case WorkoutMode.eBikeRide:
-    case null:
-      final km = meters / 1000;
-      return '${km.toStringAsFixed(2)} km';
-  }
+  final km = meters / 1000;
+  return '${km.toStringAsFixed(2)} km';
 }
 
 // ── Google Maps dark style ────────────────────────────────────────────────────
@@ -237,16 +211,8 @@ class _WorkoutPageState extends State<WorkoutPage> {
     switch (_selectedMode) {
       case WorkoutMode.running:
         return 8.0;
-      case WorkoutMode.trailRun:
-        return 9.0;
       case WorkoutMode.cycling:
         return 7.5;
-      case WorkoutMode.mountainBikeRide:
-        return 8.5;
-      case WorkoutMode.eBikeRide:
-        return 4.5;
-      case WorkoutMode.swimming:
-        return 7.0;
       case WorkoutMode.outdoorWalking:
       case null:
         return 3.5;
@@ -255,16 +221,10 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
   int get _activeMinutes => _elapsed.inMinutes;
 
-  bool get _caloriesFromElapsedOnly =>
-      _selectedMode == WorkoutMode.swimming;
-
   int get _estimatedCalories {
     final hours = _elapsed.inSeconds / 3600.0;
     if (!hours.isFinite || hours <= 0) {
       return 0;
-    }
-    if (_caloriesFromElapsedOnly) {
-      return (_currentMetValue * _userWeightKg * hours).round();
     }
     if (_routePoints.length < 2 || _totalDistanceMeters < 1) {
       return 0;
@@ -289,67 +249,15 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 
   String _paceOrSpeedLabel(AppLocalizations t) {
-    switch (_selectedMode) {
-      case WorkoutMode.swimming:
-      case WorkoutMode.trailRun:
-        return t.woPace;
-      case WorkoutMode.running:
-      case WorkoutMode.cycling:
-      case WorkoutMode.mountainBikeRide:
-      case WorkoutMode.eBikeRide:
-      case WorkoutMode.outdoorWalking:
-      case null:
-        return t.woSpeed;
-    }
+    return t.woSpeed;
   }
 
   String get _paceOrSpeedValueText {
-    switch (_selectedMode) {
-      case WorkoutMode.swimming:
-        return _formatSwimPacePer100m();
-      case WorkoutMode.trailRun:
-        return _formatRunPaceMinPerKm(_avgSpeedKmPerHour);
-      case WorkoutMode.running:
-      case WorkoutMode.cycling:
-      case WorkoutMode.mountainBikeRide:
-      case WorkoutMode.eBikeRide:
-      case WorkoutMode.outdoorWalking:
-      case null:
-        final kmh = _avgSpeedKmPerHour;
-        if (kmh == null) {
-          return '-- km/h';
-        }
-        return '${kmh.toStringAsFixed(2)} km/h';
+    final kmh = _avgSpeedKmPerHour;
+    if (kmh == null) {
+      return '-- km/h';
     }
-  }
-
-  String _formatRunPaceMinPerKm(double? kmh) {
-    if (kmh == null || kmh <= 0) {
-      return '-- min/km';
-    }
-    final minPerKm = 60.0 / kmh;
-    final m = minPerKm.floor();
-    final s = ((minPerKm - m) * 60).round().clamp(0, 59);
-    return '$m:${s.toString().padLeft(2, '0')} min/km';
-  }
-
-  String _formatSwimPacePer100m() {
-    if (_totalDistanceMeters < 50) {
-      return '-- /100m';
-    }
-    final totalSec = _elapsed.inMilliseconds / 1000.0;
-    if (totalSec <= 0) {
-      return '-- /100m';
-    }
-    final hundreds = _totalDistanceMeters / 100.0;
-    if (hundreds <= 0) {
-      return '-- /100m';
-    }
-    final secPer100 = totalSec / hundreds;
-    final whole = secPer100.floor();
-    final ss = (whole % 60).toString().padLeft(2, '0');
-    final mm = (whole ~/ 60).toString();
-    return '$mm:$ss /100m';
+    return '${kmh.toStringAsFixed(2)} km/h';
   }
 
   @override
@@ -1218,10 +1126,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     final canSaveSession = modeSnapshot != null &&
         startedAt != null &&
         durationSnapshot.inSeconds > 0 &&
-        (routeSnapshot.length >= 2 ||
-            (modeSnapshot == WorkoutMode.swimming &&
-                routeSnapshot.isNotEmpty &&
-                durationSnapshot.inSeconds >= 30));
+        routeSnapshot.length >= 2;
     if (saveSession && canSaveSession) {
       unawaited(
         _saveWorkoutSession(
@@ -1442,35 +1347,21 @@ class _WorkoutPageState extends State<WorkoutPage> {
     switch (mode) {
       case WorkoutMode.running:
         return t.woModeRunning;
-      case WorkoutMode.trailRun:
-        return t.woModeTrailRun;
       case WorkoutMode.outdoorWalking:
         return t.woModeOutdoorWalking;
       case WorkoutMode.cycling:
         return t.woModeCycling;
-      case WorkoutMode.mountainBikeRide:
-        return t.woModeMountainBike;
-      case WorkoutMode.eBikeRide:
-        return t.woModeEBike;
-      case WorkoutMode.swimming:
-        return t.woModeSwimming;
     }
   }
 
   IconData _modeIcon(WorkoutMode mode) {
     switch (mode) {
       case WorkoutMode.running:
-      case WorkoutMode.trailRun:
         return Icons.directions_run_rounded;
       case WorkoutMode.outdoorWalking:
         return Icons.directions_walk_rounded;
       case WorkoutMode.cycling:
-      case WorkoutMode.mountainBikeRide:
         return Icons.pedal_bike_rounded;
-      case WorkoutMode.eBikeRide:
-        return Icons.electric_bike_rounded;
-      case WorkoutMode.swimming:
-        return Icons.pool_rounded;
     }
   }
 
@@ -1478,18 +1369,10 @@ class _WorkoutPageState extends State<WorkoutPage> {
     switch (mode) {
       case WorkoutMode.running:
         return t.woSubRunning;
-      case WorkoutMode.trailRun:
-        return t.woSubTrailRun;
       case WorkoutMode.outdoorWalking:
         return t.woSubOutdoorWalking;
       case WorkoutMode.cycling:
         return t.woSubCycling;
-      case WorkoutMode.mountainBikeRide:
-        return t.woSubMountainBike;
-      case WorkoutMode.eBikeRide:
-        return t.woSubEBike;
-      case WorkoutMode.swimming:
-        return t.woSubSwimming;
     }
   }
 

@@ -270,7 +270,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get permLocationBody =>
-      'स्थान एक्सेस (कोर्स + फाइन) का उपयोग केवल सक्रिय वर्कआउट सत्रों के दौरान आपकी दौड़, साइकलिंग या वॉक को मैप करने के लिए किया जाता है। बैकग्राउंड स्थान आपके सत्र को स्क्रीन बंद होने पर भी चालू रखता है — वर्कआउट में कोई बाधा नहीं।';
+      'स्थान एक्सेस (कोर्स + फाइन) का उपयोग केवल सक्रिय वर्कआउट सत्रों के दौरान आपकी दौड़, साइकलिंग या वॉक को मैप करने के लिए किया जाता है। स्क्रीन बंद होने पर भी आपके सत्र के दौरान स्थान सक्रिय रहता है — वर्कआउट में कोई बाधा नहीं।';
 
   @override
   String get permLocationAllow => 'स्थान की अनुमति दें';
@@ -4406,6 +4406,39 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get hrMeasPreparing => 'कैमरा तैयार हो रहा है…';
+
+  @override
+  String get hrWarnTitle => 'शुरू करने से पहले';
+
+  @override
+  String get hrWarnSubtitle => 'कैमरे पर उंगली रखने से पहले ध्यान से पढ़ें';
+
+  @override
+  String get hrWarnAccuracy => 'यह चिकित्सा उपकरण नहीं है';
+
+  @override
+  String get hrWarnAccuracyBody =>
+      'यह सुविधा हृदय गति का अनुमान लगाने के लिए कैमरा और फ्लैश का उपयोग करती है। परिणाम अनुमानित हैं और चिकित्सा निर्णयों के लिए उपयोग नहीं किए जाने चाहिए। हमेशा एक योग्य स्वास्थ्य पेशेवर से परामर्श करें।';
+
+  @override
+  String get hrWarnHeat => 'फ्लैश गर्म हो सकता है';
+
+  @override
+  String get hrWarnHeatBody =>
+      'पूरे 30 सेकंड की रीडिंग के दौरान टॉर्च चालू रहती है। इससे उस क्षेत्र में आपका फोन गर्म हो सकता है। यदि आपको कोई असुविधा महसूस हो, तो तुरंत रुकें।';
+
+  @override
+  String get hrWarnHowTo => 'फोन कैसे पकड़ें';
+
+  @override
+  String get hrWarnHowToBody =>
+      'अपनी उंगलियों की नोक को पिछले कैमरे और फ्लैश पर धीरे से रखें। पूरी रीडिंग के दौरान स्थिर रहें। बहुत जोर से न दबाएं।';
+
+  @override
+  String get hrWarnContinue => 'मैं समझता/समझती हूं, जारी रखें';
+
+  @override
+  String get hrWarnDismiss => 'दोबारा न दिखाएं';
 
   @override
   String get hrTip1 => 'आपका दिल दिन में लगभग 100,000 बार धड़कता है।';

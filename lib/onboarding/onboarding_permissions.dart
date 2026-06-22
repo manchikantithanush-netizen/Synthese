@@ -1404,7 +1404,7 @@ class _PolicyContent extends StatelessWidget {
             style: TextStyle(color: subColor, fontSize: 13, height: 1.5)),
       ),
       _section("9. Data Retention",
-          "We retain your data only as long as necessary. Upon account deletion, your data is deleted or anonymised within 90 days."),
+          "We retain your data only as long as necessary. Deleting your account in the app removes your data immediately; requests made by email are completed within 30 days."),
       _section("10. Minors",
           "Synthese is strictly for users aged 18 and older. Users under 18 are not permitted to use this App. The onboarding flow enforces a minimum age of 18 at the point of account setup. If we become aware that a user under 18 has created an account, we will delete their data and terminate their account without notice."),
       _section("11. Changes to This Policy",

@@ -257,7 +257,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get permLocationBody =>
-      '位置访问(粗略 + 精确)仅在你进行锻炼时使用,用于绘制跑步、骑行或散步路线。后台位置可让你的锻炼在屏幕关闭时也持续进行 — 不会中途中断。';
+      '位置访问(粗略 + 精确)仅在你进行锻炼时使用,用于绘制跑步、骑行或散步路线。在锻炼期间,即使屏幕关闭,位置也会保持启用 — 不会中途中断。';
 
   @override
   String get permLocationAllow => '允许位置访问';
@@ -4067,6 +4067,38 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get hrMeasPreparing => '正在准备摄像头…';
+
+  @override
+  String get hrWarnTitle => '开始之前';
+
+  @override
+  String get hrWarnSubtitle => '将手指放在摄像头上之前，请仔细阅读';
+
+  @override
+  String get hrWarnAccuracy => '非医疗设备';
+
+  @override
+  String get hrWarnAccuracyBody =>
+      '此功能使用摄像头和闪光灯估算心率。结果为近似值，不应用于医疗决策。请务必咨询合格的医疗专业人员。';
+
+  @override
+  String get hrWarnHeat => '闪光灯可能会发热';
+
+  @override
+  String get hrWarnHeatBody =>
+      '手电筒在整个30秒测量过程中保持开启状态，这可能导致手机该区域变热。如感到任何不适，请立即停止。';
+
+  @override
+  String get hrWarnHowTo => '如何握持手机';
+
+  @override
+  String get hrWarnHowToBody => '将指尖轻轻放在后置摄像头和闪光灯上。在整个测量过程中保持静止。避免用力过猛。';
+
+  @override
+  String get hrWarnContinue => '我已了解，继续';
+
+  @override
+  String get hrWarnDismiss => '不再显示';
 
   @override
   String get hrTip1 => '你的心脏每天大约跳动 100,000 次。';

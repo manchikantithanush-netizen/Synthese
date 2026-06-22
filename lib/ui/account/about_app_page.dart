@@ -1,14 +1,53 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:synthese/ui/components/universalbackbutton.dart';
 import 'package:synthese/update_reminder.dart';
 import 'package:synthese/services/app_update_service.dart';
 import 'package:synthese/l10n/generated/app_localizations.dart';
 
-class AboutAppPage extends StatelessWidget {
+class AboutAppPage extends StatefulWidget {
   final VoidCallback onBack;
   const AboutAppPage({super.key, required this.onBack});
+
+  @override
+  State<AboutAppPage> createState() => _AboutAppPageState();
+}
+
+class _AboutAppPageState extends State<AboutAppPage> {
+  // null = still loading, true = granted, false = denied
+  bool? _statusNotification;
+  bool? _statusLocation;
+  bool? _statusActivity;
+  bool? _statusCamera;
+  bool? _statusPhotos; // iOS only
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermissions();
+  }
+
+  Future<void> _checkPermissions() async {
+    final results = await Future.wait([
+      Permission.notification.status,
+      Permission.location.status,
+      Permission.activityRecognition.status,
+      Permission.camera.status,
+      if (!Platform.isAndroid) Permission.photos.status,
+    ]);
+
+    if (!mounted) return;
+    setState(() {
+      _statusNotification = results[0].isGranted;
+      _statusLocation     = results[1].isGranted;
+      _statusActivity     = results[2].isGranted;
+      _statusCamera       = results[3].isGranted;
+      if (!Platform.isAndroid) _statusPhotos = results[4].isGranted;
+    });
+  }
 
   Future<void> _launch(String url) async {
     final uri = Uri.parse(url);
@@ -41,7 +80,7 @@ class AboutAppPage extends StatelessWidget {
               children: [
                 Align(
                   alignment: AlignmentDirectional.centerStart,
-                  child: UniversalBackButton(onPressed: onBack),
+                  child: UniversalBackButton(onPressed: widget.onBack),
                 ),
                 Text(t.aboutTitle,
                     style: TextStyle(
@@ -159,18 +198,65 @@ class AboutAppPage extends StatelessWidget {
 
                 const SizedBox(height: 12),
 
-                // Permissions
+                // Permissions — with live status indicators.
+                // Matches exactly the permissions shown in onboarding:
+                // Notifications, Location, Activity, Camera (+ Photos on iOS).
+                // Photos is hidden on Android — the app uses Android Photo
+                // Picker which needs zero permissions.
                 _SectionLabel(label: t.aboutSecPermissions, subColor: subColor),
                 Container(
                   decoration: BoxDecoration(
                       color: cardColor, borderRadius: BorderRadius.circular(20)),
                   clipBehavior: Clip.antiAlias,
                   child: Column(children: [
-                    _InfoRow(icon: Icons.notifications_outlined,  title: t.aboutPermNotifications,        value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
-                    _InfoRow(icon: Icons.location_on_outlined,    title: t.aboutPermLocation,             value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
-                    _InfoRow(icon: Icons.directions_walk_rounded, title: t.aboutPermActivity, value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
-                    _InfoRow(icon: Icons.camera_alt_outlined,     title: t.aboutPermCamera,               value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: false),
-                    _InfoRow(icon: Icons.photo_library_outlined,  title: t.aboutPermPhotos,       value: '', textColor: textColor, subColor: subColor, isDark: isDark, isLast: true),
+                    _PermissionRow(
+                      icon: Icons.notifications_outlined,
+                      title: t.aboutPermNotifications,
+                      isGranted: _statusNotification,
+                      textColor: textColor,
+                      subColor: subColor,
+                      isDark: isDark,
+                      isLast: false,
+                    ),
+                    _PermissionRow(
+                      icon: Icons.location_on_outlined,
+                      title: t.aboutPermLocation,
+                      isGranted: _statusLocation,
+                      textColor: textColor,
+                      subColor: subColor,
+                      isDark: isDark,
+                      isLast: false,
+                    ),
+                    _PermissionRow(
+                      icon: Icons.directions_walk_rounded,
+                      title: t.aboutPermActivity,
+                      isGranted: _statusActivity,
+                      textColor: textColor,
+                      subColor: subColor,
+                      isDark: isDark,
+                      isLast: false,
+                    ),
+                    _PermissionRow(
+                      icon: Icons.camera_alt_outlined,
+                      title: t.aboutPermCamera,
+                      isGranted: _statusCamera,
+                      textColor: textColor,
+                      subColor: subColor,
+                      isDark: isDark,
+                      // Last on Android, not last on iOS (Photos follows)
+                      isLast: Platform.isAndroid,
+                    ),
+                    // Photos — iOS only (Android Photo Picker needs no permission)
+                    if (!Platform.isAndroid)
+                      _PermissionRow(
+                        icon: Icons.photo_library_outlined,
+                        title: t.aboutPermPhotos,
+                        isGranted: _statusPhotos,
+                        textColor: textColor,
+                        subColor: subColor,
+                        isDark: isDark,
+                        isLast: true,
+                      ),
                   ]),
                 ),
 
@@ -397,13 +483,15 @@ class _TappableRowState extends State<_TappableRow> {
 
 class _PermissionRow extends StatelessWidget {
   final IconData icon;
-  final String title, body;
+  final String title;
+  final bool? isGranted; // null = loading
   final Color textColor, subColor;
   final bool isDark, isLast;
+
   const _PermissionRow({
     required this.icon,
     required this.title,
-    required this.body,
+    required this.isGranted,
     required this.textColor,
     required this.subColor,
     required this.isDark,
@@ -412,27 +500,80 @@ class _PermissionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const green = Color(0xFF34C759);
+    final dimColor = textColor.withValues(alpha: 0.30);
+
+    Widget statusBadge;
+    if (isGranted == null) {
+      // Still loading — show a small neutral dot
+      statusBadge = Container(
+        width: 8,
+        height: 8,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: dimColor,
+        ),
+      );
+    } else if (isGranted == true) {
+      statusBadge = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: green,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            'Enabled',
+            style: TextStyle(
+              color: green,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      );
+    } else {
+      statusBadge = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: dimColor,
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            'Not enabled',
+            style: TextStyle(
+              color: dimColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(children: [
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: textColor.withOpacity(0.07),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: textColor, size: 18),
+        child: Row(children: [
+          Icon(icon, color: subColor, size: 20),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(title,
+                style: TextStyle(color: textColor, fontSize: 16)),
           ),
-          const SizedBox(width: 14),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(title,
-                style: TextStyle(
-                    color: textColor, fontSize: 15, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 3),
-            Text(body,
-                style: TextStyle(color: subColor, fontSize: 13, height: 1.45)),
-          ])),
+          const SizedBox(width: 8),
+          statusBadge,
         ]),
       ),
       if (!isLast) _Divider(isDark: isDark),

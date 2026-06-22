@@ -593,7 +593,7 @@ abstract class AppLocalizations {
   /// No description provided for @permLocationBody.
   ///
   /// In en, this message translates to:
-  /// **'Location access (coarse + fine) is used only during active workout sessions to map your run, cycle, or walk. Background location keeps your session running even when the screen is off — no interruptions mid-workout.'**
+  /// **'Location access (coarse + fine) is used only during active workout sessions to map your run, cycle, or walk. Location stays active during your session even when the screen is off — no interruptions mid-workout.'**
   String get permLocationBody;
 
   /// No description provided for @permLocationAllow.
@@ -7703,6 +7703,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Preparing camera…'**
   String get hrMeasPreparing;
+
+  /// No description provided for @hrWarnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before you begin'**
+  String get hrWarnTitle;
+
+  /// No description provided for @hrWarnSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Read carefully before placing your finger on the camera'**
+  String get hrWarnSubtitle;
+
+  /// No description provided for @hrWarnAccuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a medical device'**
+  String get hrWarnAccuracy;
+
+  /// No description provided for @hrWarnAccuracyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This feature uses your camera and flash to estimate heart rate. Results are approximate and should not be used for medical decisions. Always consult a qualified healthcare professional.'**
+  String get hrWarnAccuracyBody;
+
+  /// No description provided for @hrWarnHeat.
+  ///
+  /// In en, this message translates to:
+  /// **'The flash may get hot'**
+  String get hrWarnHeat;
+
+  /// No description provided for @hrWarnHeatBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The torch light stays on for the full 30-second reading. This can make your phone warm in that area. If you feel any discomfort, stop immediately.'**
+  String get hrWarnHeatBody;
+
+  /// No description provided for @hrWarnHowTo.
+  ///
+  /// In en, this message translates to:
+  /// **'How to hold your phone'**
+  String get hrWarnHowTo;
+
+  /// No description provided for @hrWarnHowToBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Place your fingertip gently over the rear camera and flash. Keep still for the full reading. Avoid pressing too hard.'**
+  String get hrWarnHowToBody;
+
+  /// No description provided for @hrWarnContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand, continue'**
+  String get hrWarnContinue;
+
+  /// No description provided for @hrWarnDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t show again'**
+  String get hrWarnDismiss;
 
   /// No description provided for @hrTip1.
   ///

@@ -22,6 +22,12 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
   final PageController _pageController = PageController();
   int _selectedArticleIndex = -1;
 
+  // Articles are still being written, so the page shows _ArticleLockedPage
+  // directly instead of the card list. The list/detail code below is retained
+  // intact — flip this to true (and re-point the cards' onTap to _slideForward)
+  // to re-enable the full article experience.
+  final bool _articlesUnlocked = false;
+
   // Retained so articles can be re-enabled by pointing the card's onTap back
   // here once the content is ready (see _showArticleLockedSheet).
   // ignore: unused_element
@@ -54,6 +60,12 @@ class _HelpCyclesPageState extends State<HelpCyclesPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Until the articles are ready, go straight to the full-screen locked
+    // page — the card list is never shown.
+    if (!_articlesUnlocked) {
+      return const _ArticleLockedPage();
+    }
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark
         ? const Color.fromARGB(255, 26, 26, 28)

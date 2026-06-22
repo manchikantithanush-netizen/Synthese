@@ -269,7 +269,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get permLocationBody =>
-      'يُستخدم الوصول إلى الموقع (تقريبي ودقيق) فقط أثناء جلسات التمرين النشطة لرسم مسار الجري أو الدراجة أو المشي. يُبقي الموقع في الخلفية جلستك مستمرة حتى عند إيقاف الشاشة — دون انقطاع أثناء التمرين.';
+      'يُستخدم الوصول إلى الموقع (تقريبي ودقيق) فقط أثناء جلسات التمرين النشطة لرسم مسار الجري أو الدراجة أو المشي. يظل الموقع نشطًا أثناء جلستك حتى عند إيقاف الشاشة — دون انقطاع أثناء التمرين.';
 
   @override
   String get permLocationAllow => 'السماح بالموقع';
@@ -4352,6 +4352,39 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get hrMeasPreparing => 'جارٍ تحضير الكاميرا…';
+
+  @override
+  String get hrWarnTitle => 'قبل البدء';
+
+  @override
+  String get hrWarnSubtitle => 'اقرأ بعناية قبل وضع إصبعك على الكاميرا';
+
+  @override
+  String get hrWarnAccuracy => 'ليس جهازًا طبيًا';
+
+  @override
+  String get hrWarnAccuracyBody =>
+      'تستخدم هذه الميزة الكاميرا والفلاش لتقدير معدل ضربات القلب. النتائج تقريبية ولا يجب استخدامها لاتخاذ قرارات طبية. استشر دائمًا متخصصًا في الرعاية الصحية.';
+
+  @override
+  String get hrWarnHeat => 'قد يسخن الفلاش';
+
+  @override
+  String get hrWarnHeatBody =>
+      'يبقى ضوء الفلاش مضاءً طوال فترة القراءة الكاملة لمدة 30 ثانية. قد يؤدي ذلك إلى تسخين هاتفك في تلك المنطقة. إذا شعرت بأي إزعاج، توقف فورًا.';
+
+  @override
+  String get hrWarnHowTo => 'كيفية الإمساك بهاتفك';
+
+  @override
+  String get hrWarnHowToBody =>
+      'ضع طرف إصبعك برفق على الكاميرا الخلفية والفلاش. حافظ على ثباتك طوال القراءة. تجنب الضغط الشديد.';
+
+  @override
+  String get hrWarnContinue => 'أفهم، متابعة';
+
+  @override
+  String get hrWarnDismiss => 'عدم الإظهار مجددًا';
 
   @override
   String get hrTip1 => 'ينبض قلبك نحو 100,000 مرة في اليوم.';

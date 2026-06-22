@@ -1,0 +1,199 @@
+PRIVACY POLICY
+Synthese: Workout & Health
+Effective Date: June 22, 2026
+Jurisdiction: United Arab Emirates
+
+
+1. Introduction
+Welcome to Synthese: Workout & Health (“Synthese”, “the App”, “we”, “us”, or “our”). We are committed to protecting your personal information and your right to privacy in compliance with the UAE Federal Decree-Law No. 45 of 2021 on the Protection of Personal Data (PDPL) and all applicable UAE regulations.
+
+This Privacy Policy explains how we collect, use, store, and protect your information when you use our mobile application. By using Synthese, you agree to the terms of this Privacy Policy.
+
+
+2. Who We Are
+Synthese: Workout & Health is a fitness and health application developed and operated from the United Arab Emirates. We are the sole data controller for all personal data processed through this App. We do not share, sell, or transfer your data to any third-party businesses, marketing partners, or affiliates.
+
+
+3. Medical & Health Disclaimer
+NOT A MEDICAL DEVICE
+Synthese: Workout & Health is a general fitness and wellness application only. It is not a medical device and is not intended to diagnose, treat, cure, or prevent any medical condition, disease, or health issue.
+
+NOT A SUBSTITUTE FOR PROFESSIONAL MEDICAL ADVICE
+The content, features, and information provided through Synthese — including but not limited to workout plans, health metrics, heart-rate readings, calorie data, and progress tracking — are for general informational and wellness purposes only. Nothing in this App constitutes or should be construed as medical advice, diagnosis, or treatment.
+
+Always consult a qualified healthcare professional before beginning any new exercise programme, making changes to your diet, or making any decisions related to your health or medical conditions. If you experience any pain, discomfort, or adverse symptoms while using the App, stop immediately and seek medical attention.
+
+Synthese does not assume any responsibility or liability for any health outcomes arising from your use of this App.
+
+
+4. Who This Policy Applies To
+This App is intended for users aged 18 years and older. By using this App, you confirm that you meet this minimum age requirement.
+
+4.1 Users Under 18 Years of Age
+Users under the age of 18 are not permitted to use Synthese. If we become aware that a user under 18 has provided personal data, we will promptly delete that information. If you are a parent or guardian and believe your child has accessed the App, please contact us immediately so we can take appropriate action.
+
+
+5. Data We Collect
+To provide our services, Synthese collects the following categories of data:
+
+5.1 Personal Information
+•       Name, username, or display name
+•       Email address and account credentials
+•       Date of birth and age
+•       Gender (optional)
+
+5.2 Health and Biometric Data
+As a health and fitness application, we collect sensitive health information, including:
+•       Workout and exercise activity logs
+•       Daily step counts and physical-activity data
+•       Physical metrics such as height, weight, and body measurements
+•       Biometric indicators such as heart rate (measured using your device camera) and calorie data
+•       Fitness goals and progress tracking data
+•       Menstrual cycle information (only if you choose to log it)
+•       Medical or clinical health information you voluntarily enter
+
+This constitutes “sensitive personal data” under UAE PDPL. Such data is collected only with your explicit consent and is used solely to deliver the App’s health and fitness features to you.
+
+5.3 Device Permissions
+The App requests the following device permissions to function properly. Each permission is requested in context, with an in-app explanation, before access is granted. You may deny or revoke any permission through your device settings at any time; revoking certain permissions will limit corresponding features of the App.
+
+Network & Connectivity
+•       INTERNET — Required to connect to Firebase (Authentication, Firestore, and Storage), Google Maps, the App’s AI nutrition backend, and to fetch updates within the App.
+
+Camera & Media
+•       CAMERA — Used to take photos directly within the App (for example, profile pictures and food photos for nutritional analysis) and to measure your heart rate by placing your finger over the camera.
+•       Photo selection — When you choose an existing photo from your device, the App uses the Android System Photo Picker (on Android 13 and above), which lets you share only the specific photos you select and requires no broad gallery permission.
+•       READ_EXTERNAL_STORAGE — Provides gallery access only on devices running Android 12 or below (restricted to those devices via maxSdkVersion=“32”). The App does not request READ_MEDIA_IMAGES or broad media access on newer devices.
+
+Physical Activity & Step Tracking
+•       ACTIVITY_RECOGNITION — Required by the step-counting feature to access the device’s built-in step sensor and track your daily steps.
+
+Location
+•       ACCESS_COARSE_LOCATION — Provides approximate location data, used by the mapping features within the App.
+•       ACCESS_FINE_LOCATION — Provides precise GPS location, used for accurate location tracking on the in-app map during an active, user-initiated workout session.
+
+The App does NOT request background location access. Location is accessed only while you are actively using a location-based feature in the foreground.
+
+Foreground Services
+•       FOREGROUND_SERVICE — Required to run a user-visible foreground service (StepMilestoneService) that enables all-day step tracking with a persistent notification, so your steps are counted even when the App is not on screen.
+•       FOREGROUND_SERVICE_HEALTH — Declares that the step-tracking foreground service accesses health-related data (step counts), as required for foreground services of type “health” on Android 14 and above. This is backed by the ACTIVITY_RECOGNITION permission.
+•       FOREGROUND_SERVICE_LOCATION — Declares that location may be used by a foreground service, as required on Android 14 and above, when you run a location-based workout session.
+
+Notifications & Background Restart
+•       POST_NOTIFICATIONS — Required on Android 13 and above to display notifications, used to alert you to step milestones and health reminders. Notifications are service-related only and are never used for marketing.
+•       RECEIVE_BOOT_COMPLETED — Allows the App to restart its step-tracking service automatically after your device reboots, ensuring uninterrupted activity tracking.
+
+Device Function
+•       WAKE_LOCK — Used to keep the screen and processor active during a heart-rate measurement so the reading can complete.
+•       VIBRATE — Used for haptic feedback within the App.
+
+Health Connect
+Synthese does not currently integrate with Google Health Connect. If this changes in a future version, this Privacy Policy will be updated accordingly to describe what Health Connect data is accessed, how it is used, and the permissions required.
+
+5.4 Technical and Usage Data
+•       Device type, operating system, and version
+•       App usage patterns and feature interactions
+•       Crash and diagnostic performance data (provided through Google Play’s standard developer reporting / Android vitals)
+•       IP address and general location region (not precise GPS)
+
+5.5 AI-Powered Nutritional Analysis
+Synthese uses artificial intelligence to estimate nutritional information based on input you provide. Specifically:
+•       When you type a meal or food name, that text is sent to an AI model to generate estimated nutritional data (such as calories, macronutrients, and portion information).
+•       When you take or select a photo of food, that image is sent to an AI model which analyses the visual content to identify the food and estimate its nutritional values.
+
+How this data is routed
+Your food input (text and/or food images) is first transmitted over an encrypted (HTTPS) connection to our own secure backend service, which then forwards it to GitHub Models (powered by OpenAI’s GPT-4o mini) solely to generate the nutritional estimate. This transmission is necessary only to deliver the nutrition feature and is subject to GitHub’s and OpenAI’s applicable data processing terms.
+
+We do not transmit your name, email, account credentials, or any other personally identifying information to this AI service or our backend for this purpose. Only the food-related input (text description or photo) is sent, and it is used solely to return a nutritional estimate — it is not used to train models or for any commercial purpose.
+
+Important Limitations
+AI-generated nutritional information is an estimate only. Results may not be fully accurate and should not be relied upon for medical, clinical, or dietary treatment purposes. Always consult a qualified healthcare professional or registered dietitian for personalised nutritional advice.
+
+
+6. How We Use Your Data
+We use your data exclusively to provide and improve the Synthese service. Specifically:
+•       To create and manage your user account
+•       To deliver personalized workout plans, health insights, and progress tracking
+•       To process and display data captured via camera or stored through file-based storage
+•       To generate AI-based nutritional estimates from food input you provide
+•       To diagnose technical issues and improve App performance
+•       To send you important service-related notifications (not marketing)
+•       To comply with legal obligations under UAE law
+
+We do not use your data for advertising, profiling for commercial purposes, or any purpose beyond the direct delivery of our services.
+
+
+7. Data Storage and Security
+Your data is stored on secure cloud servers (Google Firebase). We implement appropriate technical and organizational safeguards including:
+•       Encryption of data in transit (TLS/SSL) and at rest
+•       Access controls limiting data access to authorized systems only
+•       Regular security audits and vulnerability assessments
+•       Secure deletion protocols when data is no longer required
+
+While we take every reasonable precaution, no digital system can guarantee absolute security. You are responsible for maintaining the confidentiality of your account credentials.
+
+
+8. Data Sharing and Third Parties
+We do not sell, rent, license, or share your personal or health data with any third-party businesses, marketing partners, data brokers, or advertisers — under any circumstances.
+
+We rely on the following service providers strictly to operate the App, acting as data processors on our behalf:
+•       Google Firebase (Authentication, Firestore database, and Storage) — to host your account and app data securely.
+•       Google Maps — to provide in-app mapping for location-based workout features.
+•       Our secure backend and GitHub Models (OpenAI GPT-4o mini) — to process food text or images solely for generating nutritional estimates, as described in Section 5.5.
+
+These are functional data-processor relationships, not data-sharing or commercial arrangements. No personal or health data is sold or used for advertising.
+
+Menstrual Cycle Data
+If you choose to log menstrual cycle information within the App, we are committed to the following absolute protections:
+•       Your menstrual cycle data will never be used to make inferences or decisions related to your employment, job eligibility, or workplace status.
+•       Your menstrual cycle data will never be used in connection with insurance eligibility, premiums, or coverage assessments.
+•       Your menstrual cycle data will never be sold, shared, disclosed, or transferred to any third party under any circumstances.
+
+This data is used exclusively to provide cycle tracking and related wellness features to you within the App, and for no other purpose.
+
+Beyond the above, data may only be disclosed in the following limited and necessary circumstances:
+•       To comply with a legal obligation, court order, or lawful request from UAE government authorities
+•       To protect the rights, safety, or property of Synthese, its users, or the public
+•       In connection with a merger or acquisition, where any successor will be bound by equivalent data protection obligations
+
+
+9. Your Rights Under UAE PDPL
+Under the UAE Federal Decree-Law No. 45 of 2021, you have the following rights regarding your personal data:
+•       Right to Access: Request a copy of the personal data we hold about you
+•       Right to Rectification: Request correction of inaccurate or incomplete data
+•       Right to Erasure: Request deletion of your personal data, subject to legal retention obligations
+•       Right to Restriction: Request that we limit how we process your data
+•       Right to Data Portability: Receive your data in a structured, machine-readable format
+•       Right to Withdraw Consent: Withdraw consent for data processing at any time, without affecting prior lawful processing
+•       Right to Object: Object to processing of your sensitive health data
+
+To exercise any of these rights, please contact us at the details provided in Section 13. We will respond within 30 days in accordance with UAE PDPL requirements.
+
+
+10. Data Retention
+We retain your personal data only for as long as necessary to provide our services or as required by UAE law.
+
+Account Deletion
+You can request deletion of your account at any time from within the App, and also outside the App by contacting us at the email in Section 13. When you delete your account, all of your personal data — including your profile information, health and fitness records, workout history, nutritional logs, menstrual cycle data, progress photos, and any other user-generated content — will be permanently and irreversibly deleted from our systems. No residual copies will be retained for commercial, analytical, or any other purpose.
+
+Deleting your account from within the App removes your data immediately. For deletion requests made by email, deletion will be completed within 30 days of your request. The only exception is data we are strictly required to retain under UAE law, which will be securely isolated, not used for any other purpose, and deleted as soon as the legal retention period expires.
+
+
+11. Children’s Privacy
+Users under the age of 18 are not permitted to use Synthese. If you are a parent or guardian and believe your child has used the App, please contact us immediately so we can delete their data.
+
+
+12. Changes to This Privacy Policy
+We may update this Privacy Policy periodically to reflect changes in our practices or applicable law. We will notify you of material changes through the App or via email. Your continued use of the App after notice of changes constitutes your acceptance of the updated policy.
+
+
+13. Contact Us
+If you have questions about this Privacy Policy, wish to exercise your rights, or have a concern about how your data is handled, please contact us:
+
+•       App Name: Synthese: Workout & Health
+•       Jurisdiction: United Arab Emirates
+•       Email: Thanush.manchikanti@gmail.com
+
+This Privacy Policy is governed by the laws of the United Arab Emirates.
+
+Last updated: June 22, 2026

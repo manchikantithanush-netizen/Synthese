@@ -373,7 +373,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage>
                                                 children: [
                                                   TextSpan(
                                                     text: _fmt(
-                                                      widget.exerciseMinutes,
+                                                      _exerciseMinutes,
                                                     ),
                                                     style: font(
                                                       fontSize: 38,

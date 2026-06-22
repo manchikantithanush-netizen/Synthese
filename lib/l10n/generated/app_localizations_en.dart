@@ -272,7 +272,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permLocationBody =>
-      'Location access (coarse + fine) is used only during active workout sessions to map your run, cycle, or walk. Background location keeps your session running even when the screen is off — no interruptions mid-workout.';
+      'Location access (coarse + fine) is used only during active workout sessions to map your run, cycle, or walk. Location stays active during your session even when the screen is off — no interruptions mid-workout.';
 
   @override
   String get permLocationAllow => 'Allow Location';
@@ -4385,6 +4385,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hrMeasPreparing => 'Preparing camera…';
+
+  @override
+  String get hrWarnTitle => 'Before you begin';
+
+  @override
+  String get hrWarnSubtitle =>
+      'Read carefully before placing your finger on the camera';
+
+  @override
+  String get hrWarnAccuracy => 'Not a medical device';
+
+  @override
+  String get hrWarnAccuracyBody =>
+      'This feature uses your camera and flash to estimate heart rate. Results are approximate and should not be used for medical decisions. Always consult a qualified healthcare professional.';
+
+  @override
+  String get hrWarnHeat => 'The flash may get hot';
+
+  @override
+  String get hrWarnHeatBody =>
+      'The torch light stays on for the full 30-second reading. This can make your phone warm in that area. If you feel any discomfort, stop immediately.';
+
+  @override
+  String get hrWarnHowTo => 'How to hold your phone';
+
+  @override
+  String get hrWarnHowToBody =>
+      'Place your fingertip gently over the rear camera and flash. Keep still for the full reading. Avoid pressing too hard.';
+
+  @override
+  String get hrWarnContinue => 'I understand, continue';
+
+  @override
+  String get hrWarnDismiss => 'Don\'t show again';
 
   @override
   String get hrTip1 => 'Your heart beats around 100,000 times a day.';
